@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<Cluster masterAddress="10.0.0.1">
+	<Node address="10.0.0.1" port="20401">
+		<Window fullScreen="false" monitor="0">
+			<Stereo type="none" />
+			<Size x="640" y="360"/>
+			<Pos x="100" y="100" />
+			<Viewport eye="left">
+				<Pos x="0.0" y="0.0" />
+				<Size x="1.0" y="1.0" />
+				<Viewplane>
+					<!-- Lower left -->
+					<Pos x="-1.7156" y="-0.965" z="0.0" />
+					<!-- Upper left -->
+					<Pos x="-1.7156" y="0.965" z="0.0" />
+					<!-- Upper right -->
+					<Pos x="1.7156" y="0.965" z="0.0" />
+				</Viewplane>
+			</Viewport>
+		</Window>
+	</Node>
+	<Node address="10.0.0.2" port="20402">
+		<Window fullScreen="false" monitor="0">
+			<Stereo type="none" />
+			<Size x="640" y="360"/>
+			<Pos x="100" y="460" />	
+				<Viewport eye="right">
+				<Pos x="0.0" y="0.0" />
+				<Size x="1.0" y="1.0" />
+				<Viewplane>
+					<!-- Lower left -->
+					<Pos x="-1.7156" y="-0.965" z="0.0" />
+					<!-- Upper left -->
+					<Pos x="-1.7156" y="0.965" z="0.0" />
+					<!-- Upper right -->
+					<Pos x="1.7156" y="0.965" z="0.0" />
+				</Viewplane>
+			</Viewport>
+		</Window>
+	</Node>
+	<User eyeSeparation="3.065">
+		<Pos x="0.0" y="0.0" z="4.0" />
+	</User>
+</Cluster>
+
+

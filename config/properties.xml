@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<startNode>"0"</startNode>
+<camImagePath>"images\cam_img.JPG"</camImagePath>
+<camDataPath>"data\out_camera_data.xml"</camDataPath>
+<camSocketIP>"127.0.0.1"</camSocketIP>
+<camSocketPort>"27072"</camSocketPort>
+<masterSocketPort>"27772"</masterSocketPort>
+<alphaTransition>"0"</alphaTransition>
+<blurRepetition>"16"</blurRepetition>
+<blurRadius>"1"</blurRadius>
+</opencv_storage>
