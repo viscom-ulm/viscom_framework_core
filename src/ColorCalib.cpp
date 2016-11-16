@@ -1,6 +1,8 @@
 #include "ColorCalib.h"
 
 namespace pro_cal {	
+	int CELL_COUNT = 10; //config in properties.xml => 1, 2, 4, 8, 10, 20, 40, 60, 120
+
 	//L=minVal=max(lowVals) und H=maxVal=min(highVals)
 	void calcMinMaxColorValue(const std::vector<ColorCalibData>& gccdList, std::vector<int>& maxFromMinValues, std::vector<int>& minFromMaxValues) {
 		//L=minVal=max(lowVals) und H=maxVal=min(highVals)
@@ -19,17 +21,26 @@ namespace pro_cal {
 		}
 	}
 
-	//Farbraum=0-255 | 0.0-1.0 | ...
-	//F(x) = ((H-L)/255)*x + L
+	/**
+	* transfer function from all projector cells
+	* calculate the corresponding value from x-value
+	*/
 	GLfloat transferFunction(GLfloat x, GLfloat L, GLfloat H) {
+		//Farbraum=0-255 | 0.0-1.0 | ...
+		//F(x) = ((H-L)/255)*x + L
 		return ((H - L) / 255.f) * x + L;
 	}
 
-	//inv_f(x) = R_min + (x - P_min)/(P_max-P_min ) * (R_max - R_min )
-	//oder inv_f(x) = (x - L) * 255 / (H-L)
-	//inverse color transfer function of one projector
-	//TODO: more precise 0, 85,170,255..
+
+	/**
+	* inverse transfer function from a single projector cell
+	* calculate the corresponding value from the Fx-value
+	*/
 	GLfloat inverseProjectorTF(GLfloat Fx, GLfloat cellMedianL, GLfloat cellMedianH) {
+		//inv_f(x) = R_min + (x - P_min)/(P_max-P_min ) * (R_max - R_min )
+		//oder inv_f(x) = (x - L) * 255 / (H-L)
+		//inverse color transfer function of one projector
+		//TODO: more precise 0, 85,170,255..
 		return ((Fx - cellMedianL) * 255.f) / (cellMedianH - cellMedianL);
 	}
 
@@ -45,6 +56,10 @@ namespace pro_cal {
 			colorLookUpTable[v] = colorValue;
 		}
 	}
+
+	/**
+	* calculate the LookUpTableData from the ColorCalibData
+	*/
 	std::vector<LookUpTableData> calcColorLookUpTableData(const std::vector<ColorCalibData>& gccdList) {
 		std::vector<int> maxFromMinValues(ColorValues.size(), 0);
 		std::vector<int> minFromMaxValues(ColorValues.size(), 255);
@@ -77,53 +92,126 @@ namespace pro_cal {
 		return lookUpTableDataList;
 	}
 
+	GLfloat calcAvgValue(const std::vector<GLfloat>& values) {
+		float avgVal = 0;
+		if (!values.empty()) {
+			for (GLfloat val : values) {
+				avgVal += val;
+			}
+			return avgVal / (float)values.size();
+		}
+		return 0;
+	}
+
+	/**
+	* find the next neighbor from a cell in the LookUpTableData which value is greater or equal zero
+	*/
 	GLfloat getNextNeighborValueGraterThanZero(const pro_cal::LookUpTableData& lookUpTableData, const int c, const int x, const int y, const int v) {
+		std::vector<GLfloat> neighbors;
 		int cc = pro_cal::CELL_COUNT;
 		for (int i = 1; i < pro_cal::CELL_COUNT; i++) {
 			if ((x + i) < cc && lookUpTableData.LookUpTables[c][x + i][y][v] >= 0.f) { //right
-				return lookUpTableData.LookUpTables[c][x + i][y][v];
+				neighbors.push_back(lookUpTableData.LookUpTables[c][x + i][y][v]);
 			}
 			if ((x - i) > 0 && lookUpTableData.LookUpTables[c][x - i][y][v] >= 0.f) { //left
-				return lookUpTableData.LookUpTables[c][x - i][y][v];
+				neighbors.push_back(lookUpTableData.LookUpTables[c][x - i][y][v]);
 			}
 			if ((y + i) < cc && lookUpTableData.LookUpTables[c][x][y + i][v] >= 0.f) { //top 
-				return lookUpTableData.LookUpTables[c][x][y + i][v];
+				neighbors.push_back(lookUpTableData.LookUpTables[c][x][y + i][v]);
 			}
 			if ((y - i) > 0 && lookUpTableData.LookUpTables[c][x][y - i][v] >= 0.f) { //bot
-				return lookUpTableData.LookUpTables[c][x][y - i][v];
+				neighbors.push_back(lookUpTableData.LookUpTables[c][x][y - i][v]);
 			}
 			if ((x + i) < cc && (y + i) < cc && lookUpTableData.LookUpTables[c][x + i][y + i][v] >= 0.f) { //top_right
-				return lookUpTableData.LookUpTables[c][x + i][y + i][v];
+				neighbors.push_back(lookUpTableData.LookUpTables[c][x + i][y + i][v]);
 			}
 			if ((x + i) < cc && (y - i) > 0 && lookUpTableData.LookUpTables[c][x + i][y - i][v] >= 0.f) { //bot_right
-				return lookUpTableData.LookUpTables[c][x + i][y - i][v];
+				neighbors.push_back(lookUpTableData.LookUpTables[c][x + i][y - i][v]);
 			}
 			if ((x - i) > 0 && (y + i) < cc && lookUpTableData.LookUpTables[c][x - i][y + i][v] >= 0.f) { //top_left
-				return lookUpTableData.LookUpTables[c][x - i][y + i][v];
+				neighbors.push_back(lookUpTableData.LookUpTables[c][x - i][y + i][v]);
 			}
 			if ((x - i) > 0 && (y - i) > 0 && lookUpTableData.LookUpTables[c][x - i][y - i][v] >= 0.f) { //bot_left
-				return lookUpTableData.LookUpTables[c][x - i][y - i][v];
+				neighbors.push_back(lookUpTableData.LookUpTables[c][x - i][y - i][v]);
+			}
+			if (!neighbors.empty()) {
+				return calcAvgValue(neighbors);
 			}
 		}
 		return 0;
 	}
+
+	/**
+	* calculate the median from the values 
+	*/
+	int calcMedian(std::vector<byte> values) {
+		if (!values.empty()) { //TODO: test 10.11.16
+			if (values.size() > 2) {
+				std::sort(values.begin(), values.end());
+				int midIdx = values.size() / 2;
+				return ((values.size() % 2) == 0) ? (values[midIdx] + values[midIdx + 1]) / 2 : values[(values.size() + 1) / 2];
+			}
+			else if (values.size() == 2) {
+				return (values[0] + values[1]) / 2;
+			}
+			else {
+				return values[0];
+			}
+		}
+		return -1;
+	}
+
+	/**
+	* calculate the median from the LookUpTableData of each color value
+	*/
+	std::vector<glm::vec3> calcMediansFromFilteredLookUpTable(const pro_cal::LookUpTableData& lookUpTableData) {
+		std::vector<glm::vec3> medians(VALUE_COUNT);
+		for (int v = 0; v < VALUE_COUNT; v++) {
+			std::vector<byte> chBuffers0;
+			std::vector<byte> chBuffers1;
+			std::vector<byte> chBuffers2;
+			for (int y = CELL_COUNT - 1; y >= 0; y--) {  //TODO: test 05.11.16
+				for (int x = 0; x < CELL_COUNT; x++) {
+					glm::vec3 colors;
+					for (int c = 0; c < 3; c++) {
+						colors[c] = lookUpTableData.LookUpTables[c][x][y][v];
+					}
+					if (colors[0] > 0 && colors[1] > 0 && colors[2] > 0) {
+						chBuffers0.push_back(colors[0]);
+						chBuffers1.push_back(colors[1]);
+						chBuffers2.push_back(colors[2]);
+					}
+				}
+			}
+			medians[v] = glm::vec3(calcMedian(chBuffers0), calcMedian(chBuffers1), calcMedian(chBuffers2));
+		}
+		return medians;
+	}
+
+	/**
+	* converts LookUpTableData-Object to std::vector<glm::vec3> data structure
+	*/
 	std::vector<glm::vec3> lookUpTableDataToOpenGLTextureDataVec3f(const pro_cal::LookUpTableData& lookUpTableData) {
 		int lutTexSize = pro_cal::CELL_COUNT * pro_cal::CELL_COUNT * pro_cal::VALUE_COUNT; //256 * 256 * 256;
 		std::vector<glm::vec3> chBuffers(lutTexSize);
-		int i = 0;	
+		std::vector<glm::vec3> medians = calcMediansFromFilteredLookUpTable(lookUpTableData); //TODO: test 10.11.16
+		int i = 0;
 		//for GL_TEXTURE_2D_ARRAY	
-		for (int v = 0; v < pro_cal::VALUE_COUNT; v++) { 
+		for (int v = 0; v < pro_cal::VALUE_COUNT; v++) {
+			//glm::vec3 avgColors(0);
 			for (int y = pro_cal::CELL_COUNT - 1; y >= 0; y--) {  //TODO: test 05.11.16
-				for (int x = 0; x < pro_cal::CELL_COUNT; x++) {				
+				for (int x = 0; x < pro_cal::CELL_COUNT; x++) {
 					glm::vec3 colors;
 					for (int c = 0; c < 3; c++) {
 						GLfloat value = lookUpTableData.LookUpTables[c][x][y][v];
-						if (value < 0) {
-							value = getNextNeighborValueGraterThanZero(lookUpTableData, c, x, y, v);
+						if (value < 0) { //TODO: test 10.11.16
+							GLfloat neighborValue = getNextNeighborValueGraterThanZero(lookUpTableData, c, x, y, v);
+							value = (neighborValue + medians[v][c]) / 2.f;
+							//value = (neighborValue + (medians[v][c] * 2.f)) / 3.f;
 						}
-						colors[c] = value / 255.f;
+						colors[c] = value;
 					}
-					chBuffers[i++] = colors;
+					chBuffers[i++] = colors / 255.f;
 				}
 			}
 		}
@@ -165,6 +253,9 @@ namespace pro_cal {
 		return colorCalibData;
 	}
 
+	/**
+	* converts std::vector<cv::Vec3f data structure to LookUpTableData-Object
+	*/
 	void vec3fVectorToLookUpTables(const int colorIdx, const std::vector<cv::Vec3f> lookUpTableVec3f, LookUpTableData& gridLut) {
 		for (cv::Vec3f vec : lookUpTableVec3f) {
 			int x = vec[0], y = vec[1];
@@ -216,9 +307,12 @@ namespace pro_cal {
 			}
 		}
 	}
+
+	/**
+	* save the color calibration data to the data\ColorCalibData.xml file
+	*/
 	void saveColorCalibData(const std::vector<ColorCalibData>& colorCalibData) {
 		for (int i = 0; i < colorCalibData.size(); i++) {
-			//std::vector<std::vector<std::vector<int>>> medValues;
 			for (int c = 0; c < ColorValues.size(); c++) {
 				std::vector<cv::Vec3f> colorCalibDataVec3f;
 
@@ -227,6 +321,10 @@ namespace pro_cal {
 			}
 		}
 	}
+
+	/**
+	* converts std::vector<cv::Vec3f data structure to ColorCalibData-Object
+	*/
 	void vec3fVectorToColorCalibData(const int colorIdx, const std::vector<cv::Vec3f> lookUpTableVec3f, ColorCalibData& ccd) {
 		ccd.medValues.resize(ColorValues.size());
 		for (cv::Vec3f vec : lookUpTableVec3f) {
@@ -241,6 +339,10 @@ namespace pro_cal {
 			ccd.medValues[colorIdx][x][y] = val;
 		}
 	}
+
+	/**
+	* load the color calibration data from the data\ColorCalibData.xml file
+	*/
 	void loadColorCalibData(std::vector<ColorCalibData>& colorCalibData) {
 		for (int i = 0; i < colorCalibData.size(); i++) {
 			LookUpTableData gridLutData;
@@ -249,7 +351,6 @@ namespace pro_cal {
 				readVectorOfVec3f(COL_DAT_FILE, "ColorCalibData_" + std::to_string(i) + "_" + std::to_string(c), colorCalibDataVec3f);
 				vec3fVectorToColorCalibData(c, colorCalibDataVec3f, colorCalibData[i]);
 			}
-			//colorCalibData.push_back(gridLutData);
 		}
 	}
 }

@@ -7,6 +7,12 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include "sgct.h"
+/*
+#include "rapidxml-1.13\rapidxml.hpp"
+#include "rapidxml-1.13\rapidxml_iterators.hpp"
+#include "rapidxml-1.13\rapidxml_print.hpp"
+#include "rapidxml-1.13\rapidxml_utils.hpp"
+*/
 
 namespace pro_cal { 
 	const std::string CFG_FILE = "config\\properties.xml";

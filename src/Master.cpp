@@ -18,6 +18,7 @@ namespace pro_cal {
 		delete LocalLowHighVPToSlave;
 		delete colorCalibDataToSlave;
 	}
+
 	/**
 	* loads the properties from config\properties.xml file
 	* masterSocketPort: master socket server port
@@ -27,8 +28,10 @@ namespace pro_cal {
 		cv::FileStorage fs(CFG_FILE, cv::FileStorage::READ);
 		if(fs.isOpened()){
 			this->masterSocketPort = fs["masterSocketPort"];
+			std::string sqrtCellCount = fs["sqrtCellCount"];
+			CELL_COUNT = sqrtCellCount.empty() ? 10 : atoi(sqrtCellCount.c_str());
 			std::string startnode = fs["startNode"];
-			START_NODE = startnode.empty() ? 0 : atoi(startnode.c_str());				
+			START_NODE = startnode.empty() ? 1 : atoi(startnode.c_str());
 		}
 		else {
 			showMsgToUser("config\\properties.xml not found on master", 0);
@@ -36,6 +39,10 @@ namespace pro_cal {
 		fs.release();
 	}
 
+	/**
+	* load all calibration data from data\ProjectorData.xml and data\ColorCalibData.xml files
+	* and send all data to the slaves with shared objects
+	*/
 	void Master::loadAndSendDataToSlaves() {
 		std::vector<std::vector<cv::Point2f>> quad_corners_Vec(projector_count);
 		std::vector<std::vector<cv::Point3f>> TexCoordinates_Vec(projector_count);

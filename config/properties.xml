@@ -6,7 +6,8 @@
 <camSocketIP>"127.0.0.1"</camSocketIP>
 <camSocketPort>"27072"</camSocketPort>
 <masterSocketPort>"27772"</masterSocketPort>
-<alphaTransition>"0"</alphaTransition>
-<blurRepetition>"16"</blurRepetition>
+<alphaTransition>"1"</alphaTransition>
+<blurRepetition>"0"</blurRepetition>
 <blurRadius>"1"</blurRadius>
+<sqrtCellCount>"10"</sqrtCellCount>
 </opencv_storage>

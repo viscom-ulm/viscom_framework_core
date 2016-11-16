@@ -39,20 +39,18 @@ void main()
 	//vec2 alphaCoord1 = (gl_FragCoord.xy + 1.0) / 2.0;
 	float alphaOverlapValue = texture(alphaOverlap, alphaCoord).r;
 
-	if(withAlphaTrans > 0) {
-		float alphaTransValue = texture(alphaTrans, alphaCoord).r;		
-		//Test1 => if (overlaps <= 2.0) then alphaTras else alphaOerlap
-		/*
-		float alphaOverlapValue = texture(alphaOverlap, alphaCoord).r;
-		float alphaValue = texture(alphaOverlap, alphaCoord).r;
-		if(alphaValue >= 0.7 && alphaValue < 1.0) {
+	if(withAlphaTrans > 0) {			
+		//Test1 => if (overlaps <= 2.0) then alphaTras else alphaOerlap			
+		if(alphaOverlapValue >= 0.7 && alphaOverlapValue < 1.0) {
 			float alphaTransValue = texture(alphaTrans, alphaCoord).r;	
-			alphaValue = pow(alphaTransValue, gamma);
+			alphaOverlapValue = pow(alphaTransValue, gamma);
 		}	
-		*/
+			
+		/*
 		//Test2 => AlphaTrans_Idee.txt
 		//TODO: test with and without blur and colorCalib
-		if(alphaTransValue > 0 && alphaTransValue < 1.0) { 
+		if(alphaOverlapValue < 1.0) { 
+			float alphaTransValue = texture(alphaTrans, alphaCoord).r;	
 			//float alphaOverlapValue = texture(alphaOverlap, alphaCoord).r;
 			if(alphaOverlapValue < 0.7) { // => if(overlaps=2) then (alphaOverlapValue=0,72974)
 				float div = pow(alphaOverlapValue, 2.2); //z.B. overlaps=4 => alphaOverlapValue=0,53252 => div=0,25
@@ -63,9 +61,10 @@ void main()
 					alphaTransValue = alphaTransValue * transOverlaps / overlaps;
 				//}
 			}
+			alphaOverlapValue = pow(alphaTransValue, gamma);
 		}
-
-		alphaOverlapValue = pow(alphaTransValue, gamma);
+		*/
+			
 	}
 	
 	
@@ -77,13 +76,13 @@ void main()
 	int indexB = int(colorTex.z*255);		
 
 	//x and y in range [0,1]		
-	float colR = texture(colorLookup, vec3(coord.xy, colorTex.r * 256)).r; //colorTex.r * 256
-	float colG = texture(colorLookup, vec3(coord.xy, colorTex.g * 256)).g;
-	float colB = texture(colorLookup, vec3(coord.xy, colorTex.b * 256)).b;
+	float colR = texture(colorLookup, vec3(alphaCoord, colorTex.r * 256)).r; //colorTex.r * 256
+	float colG = texture(colorLookup, vec3(alphaCoord, colorTex.g * 256)).g;
+	float colB = texture(colorLookup, vec3(alphaCoord, colorTex.b * 256)).b;
 	vec4 correctedColor = vec4(colR, colG, colB, colorTex.a); // werte sind bereits durch 255 geteilt	
-	//color = correctedColor;
+	color = correctedColor;
 	
-	color = mix(vec4(0, 0, 0, 1), colorTex,  alphaOverlapValue); 
+	//color = mix(vec4(0, 0, 0, 1), correctedColor,  alphaOverlapValue); 
 
 	//color = mix(vec4(0, 0, 0, 1), texture(tex, coord.xy),  alphaTransValue);
 	//color = mix(vec4(0, 0, 0, 1), texture(tex, coord.xy),  alphaOverlapValue);

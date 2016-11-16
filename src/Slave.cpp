@@ -322,10 +322,7 @@ namespace pro_cal {
 
 	/**
 	* process the current render command which was received from the master
-	* SHOW_WHITE		show white (black in the test scenario) full screen 
-	* SHOW_ARUCOS		render the aruco image as texture on a full screen quad
-	* SHOW_TRANSFORM	render a test scene with the geometric transformation applied 
-	* SHOW_FINAL		render a test scene with the geometric transformation and alpha blending applied
+	* SHOW_FINAL		render the scene
 	* SHUTDOWN			show black full screen		
 	* NONE				close socket client
 	* 
@@ -336,7 +333,7 @@ namespace pro_cal {
 		response.slaveID = slaveID;
 		response.window = ALL;
 		response.msg = NONE;
-		int activeWindow = gEngine->getCurrentWindowPtr()->getId(); //old sgct version: getActiveWindowPtr()->getId();
+		int activeWindow = gEngine->getCurrentWindowPtr()->getId();
 		sgct_core::SGCTNode * thisNode = sgct_core::ClusterManager::instance()->getThisNodePtr();
 		switch (renderCmd.msg) {
 		case SHOW_FINAL:
@@ -388,7 +385,6 @@ namespace pro_cal {
 
 	void Slave::init_transform(sgct::Engine * gEngine, const std::vector<int> coords, const int window) {
 		checkFrustumUpdate(window);
-		// newCode => order changed
 		if (isVAO_BackgroundGrid_Init[window] == false)
 			initVAO_BackgroundGrid_3v4c(window);
 		if (isVAO_Triangle_Scene_Init[window] == false)
@@ -404,7 +400,7 @@ void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, co
 
 	init_transform(gEngine, coords, window);
 
-	if (isTex_Alpha_Init[window] == false) // && !ProjectorCorners_VP.empty()) //TODO: debug test
+	if (isTex_Alpha_Init[window] == false) 
 	{
 		oFramebuffer = new ProjectorOverlapFramebuffer(gEngine);
 		std::vector<glm::vec3> projectorpoints;
@@ -415,30 +411,8 @@ void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, co
 			// divide the ProjectorPoints throughh Viewplane-Values to get normalized coordinates for the blending
 			projectorpoints.emplace_back(glm::vec3(itr.x, itr.y, 0));
 		}
-		//oFramebuffer->setViewplanePosition(LocalLowHighVP[window].at(0).x / ViewPlaneX, LocalLowHighVP[window].at(1).x / ViewPlaneX, LocalLowHighVP[window].at(0).y / ViewPlaneY, LocalLowHighVP[window].at(1).y / ViewPlaneY);
-
-		//TODO: test
-		//---------------------------------------------------------------------------
-		/*
-		1. für jeden Projektor separat eine WallToProjector Matrix ausrechnen
-		2. mit dieser matrix alle anderen Projektor Punkte transformieren
-		3. in dem Screenspace vom Projektor arbeiten
-		projector_viewport => von -1 bis 1
-		v1(-1, 1)
-		v2( 1, 1)
-		v3( 1,-1)
-		v4(-1,-1)
-		*/
-
-		//TODO: test => calc projector corners for current projector_coord_space
-		//TODO: test durch / ViewPlaneX und y teilen => normalisieren
-		// open cv turns clockwise and starts left top
-
-		//TODO: test eins von beiden 
+		
 		oFramebuffer->setViewplanePosition(-1.77777778f / ViewPlaneX, 1.77777778f / ViewPlaneX, -1.0f / ViewPlaneY, 1.0f / ViewPlaneY);
-		//oFramebuffer->setViewplanePosition(-1.77800000f / ViewPlaneX, 1.77800000f / ViewPlaneX, -1.0f / ViewPlaneY, 1.0f / ViewPlaneY);
-		//oFramebuffer->setViewplanePosition(-1.f / ViewPlaneX, 1.f / ViewPlaneX, -1.f / ViewPlaneY, 1.f / ViewPlaneY);
-
 
 		int idx = current_pro * 4;
 		std::vector<cv::Point2f> proX_wallcoord;
@@ -448,12 +422,7 @@ void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, co
 		proX_wallcoord.push_back(cv::Point2f(ProjectorCorners_Wall[idx + 3].x, ProjectorCorners_Wall[idx + 3].y));
 
 		std::vector<cv::Point2f> proX_viewplane;
-		/*
-		proX_viewplane.push_back(cv::Point2f(-1.f / ViewPlaneX, 1.f / ViewPlaneY));
-		proX_viewplane.push_back(cv::Point2f(1.f / ViewPlaneX, 1.f / ViewPlaneY));
-		proX_viewplane.push_back(cv::Point2f(1.f / ViewPlaneX, -1.f / ViewPlaneY));
-		proX_viewplane.push_back(cv::Point2f(-1.f / ViewPlaneX, -1.f / ViewPlaneY));
-		*/
+
 		proX_viewplane.push_back(cv::Point2f(-1.f, 1.f)); //TEST 14.06.16 evtl. noch Master.sendProjectorCornersToSlave  / ViewPlaneX entfernen
 		proX_viewplane.push_back(cv::Point2f(1.f, 1.f));
 		proX_viewplane.push_back(cv::Point2f(1.f, -1.f));
@@ -461,8 +430,7 @@ void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, co
 
 
 		cv::Mat WallToProXcoord = cv::getPerspectiveTransform(proX_wallcoord, proX_viewplane);
-		std::vector<glm::vec3> proX_viewplaneOGL = opencvPoints2fToGlmVec3(proX_viewplane); //TEST mit proX_wallcoord / proX_viewplane		
-		//projectorPoints[window].insert(projectorPoints[window].end(), proX_viewplaneOGL.begin(), proX_viewplaneOGL.end());
+		std::vector<glm::vec3> proX_viewplaneOGL = opencvPoints2fToGlmVec3(proX_viewplane); //TEST mit proX_wallcoord / proX_viewplane	
 		projectorPoints[window].push_back(proX_viewplaneOGL.at(0));
 		projectorPoints[window].push_back(glm::vec3(1.f, 1.f, 1.f));
 		projectorPoints[window].push_back(proX_viewplaneOGL.at(1));
@@ -494,40 +462,25 @@ void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, co
 				//std::vector<glm::vec3> overlapPoly2;
 				//oberlapingPolygoneSutherlandHodgman(proX_viewplaneOGL, proY_viewplaneOGL, overlapPoly2);
 				overlapingVerticesCounter[window].push_back(polyVertices);
-				//TEST: use overlaping polygon for blending and blurring => blur-effekt an projector kante???
 				projectorPoints[window].insert(projectorPoints[window].end(), overlapPoly.begin(), overlapPoly.end());
 				//projectorPoints[window].insert(projectorPoints[window].end(), proY_viewplaneOGL.begin(), proY_viewplaneOGL.end());
 			}
 		}
-		//TODO: TEST4 21.07.16 => ohne alpha blending!!!
-		//setVertexAlphas(projectorPoints[window], overlapingVerticesCounter[window]);
 		//---------------------------------------------------------------------------
 		//texture width, height, projectorcorners
-		oFramebuffer->CreateContext(coords[2], coords[3], projectorPoints[window], overlapingVerticesCounter[window], lookUpTableData[current_pro]); // projectorPoints[window] //TODO: test
+		oFramebuffer->CreateContext(coords[2], coords[3], projectorPoints[window], overlapingVerticesCounter[window], lookUpTableData[current_pro]);
 		
-		//oFramebuffer->CreateContext(coords[2], coords[3], projectorpoints);
-		oFramebuffer->setBlurRadius(blurRadius); //TODO: test color calib
+		oFramebuffer->setBlurRadius(blurRadius);
 		oFramebuffer->setBlurRepetition(blurRepetition);
 		oFramebuffer->setWithAlphaTrans(alphaTransition == 1);
 
 		tex_Alpha[window] = oFramebuffer->RenderOverlapGamma(); //gamma
-		cv::Mat alphaTexture = pro_cal::openglTextureToOpenCV(coords[2], coords[3]);
-		//pro_cal::saveImage("alphaTexture_" + std::to_string(current_pro) + ".JPG", alphaTexture);
-		//showImgInOCVWindow("alphaTexture_", alphaTexture);
 		
 		if (alphaTransition == 1) {			
 			tex_AlphaTrans[window] = oFramebuffer->RenderOverlapTransistion(); //trans
-			cv::Mat alphaTextureTrans = pro_cal::openglTextureToOpenCV(coords[2], coords[3]);
-			//pro_cal::saveImage("alphaTextureTrans_" + std::to_string(current_pro) + ".JPG", alphaTextureTrans);
-			//showImgInOCVWindow("alphaTextureTrans_", alphaTextureTrans);
 		}
-		//tex_Alpha[window] = oFramebuffer->getBlurredTexture();
-		//it is possible to get the unblurred texture out of the renderprocess
-		//tex_AlphaTrans[window] = oFramebuffer->getUnblurredTexture(); //trans
-		//tex_Alpha[window] = oFramebuffer->getUnblurredTexture(); //gamma
 		isTex_Alpha_Init[window] = true;
 
-		//TODO: test color calib
 		tex_ColorLookup[window] = oFramebuffer->getLookupTexture();
 	}
 }
@@ -719,7 +672,7 @@ void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, co
     */
 	void Slave::draw_scene(int window){
 		//background
-		glm::mat4 MVP = gEngine->getCurrentModelViewProjectionMatrix(); //old sgct version: getActiveModelViewProjectionMatrix();
+		glm::mat4 MVP = gEngine->getCurrentModelViewProjectionMatrix(); 
 
 		sgct::ShaderManager::instance()->bindShaderProgram("backgroundGrid");
 		Matrix_Loc[window] = sgct::ShaderManager::instance()->getShaderProgram("backgroundGrid").getUniformLocation("MVP");

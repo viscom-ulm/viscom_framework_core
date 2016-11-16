@@ -4,7 +4,7 @@
 #include "ShareUtil.h"
 
 namespace pro_cal { 
-	const int CELL_COUNT = 4; //mit 1, 2, 4, 8, 10, 20...
+	extern int CELL_COUNT; //config in properties.xml => 1, 2, 4, 8, 10, 20, 40, 60, 120
 	const int VALUE_COUNT = 256;
 	const std::vector<glm::vec3> ColorValues = {
 		glm::vec3(0, 0, 0), glm::vec3(255, 0, 0), glm::vec3(0, 255, 0), glm::vec3(0, 0, 255)
