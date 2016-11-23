@@ -217,7 +217,7 @@ namespace pro_cal
 	int sendSocketMsgTo(SOCKET& Socket, const std::string msg, sockaddr_in& toAddr)
 	{
 		int sizeOfTo = sizeof(toAddr);
-		int iSendResult = sendto(Socket, msg.c_str(), msg.length(), 0, (struct sockaddr *)&toAddr, sizeOfTo);
+		int iSendResult = sendto(Socket, msg.c_str(), static_cast<int>(msg.length()), 0, (struct sockaddr *)&toAddr, sizeOfTo);
 		if (iSendResult == SOCKET_ERROR) {
 			handleSocketError(Socket, nullptr, "send failed with error: ", WSAGetLastError());
 			return -1;
@@ -259,7 +259,7 @@ namespace pro_cal
 	int sendSocketMsg(SOCKET& Socket, const std::string msg)
 	{
 		// Send an initial buffer
-		int result = send(Socket, msg.c_str(), msg.length(), 0);
+		int result = send(Socket, msg.c_str(), static_cast<int>(msg.length()), 0);
 		if (result == SOCKET_ERROR) {
 			handleSocketError(Socket, nullptr, "send failed with error: ", WSAGetLastError());
 			return -1;

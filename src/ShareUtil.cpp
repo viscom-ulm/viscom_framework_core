@@ -366,7 +366,7 @@ namespace pro_cal {
 		//float l1 = glm::length(a);
 		//float l2 = glm::length(b);
 		//return glm::acos((glm::dot(a, b)) / (l1 * l2));
-		return std::atan2(sin, cos) * (180.f / atan(1) * 4);
+		return std::atan2(sin, cos) * (180.f / atan(1.0f) * 4.0f);
 	}
 	//http://stackoverflow.com/questions/6989100/sort-points-in-clockwise-order
 	bool less(glm::vec2 a, glm::vec2 b, glm::vec2 center)
@@ -470,7 +470,7 @@ namespace pro_cal {
 				overlap.push_back(glm::vec3(co.z, co.z, co.z));
 			}
 		}
-		return overlap.size() / 2;
+		return static_cast<int>(overlap.size()) / 2;
 	}
 
 	int countOverlapsFromVertex(glm::vec3 vertex, const std::vector<glm::vec3> &projectorPoints, const std::vector<int> &polygonVerticesCounter)
@@ -514,7 +514,7 @@ namespace pro_cal {
 		//use fast 4-byte alignment (default anyway) if possible
 		glPixelStorei(GL_PACK_ALIGNMENT, (img.step & 3) ? 1 : 4);
 		//set length of one complete row in destination data (doesn't need to equal img.cols)
-		glPixelStorei(GL_PACK_ROW_LENGTH, img.step / img.elemSize());
+		glPixelStorei(GL_PACK_ROW_LENGTH, static_cast<int>(img.step / img.elemSize()));
 		glReadPixels(0, 0, img.cols, img.rows, GL_BGR, GL_UNSIGNED_BYTE, img.data);
 		cv::Mat flipped;
 		cv::flip(img, flipped, 0);
