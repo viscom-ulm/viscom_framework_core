@@ -154,12 +154,6 @@ void myPostSyncPreDrawFun()
 {
     //=>moved from myPreSyncFunc()
     Slave::getInstance()->checkMsgFromMaster(Master::getInstance()->getMsgToSlave()->getVal());
-    Slave::getInstance()->checkQuadCornersFromMaster(Master::getInstance()->getMsgToSlave()->getVal(), Master::getInstance()->getQuadCornersToSlave()->getVal());
-    Slave::getInstance()->checkTexCoordinatesFromMaster(Master::getInstance()->getMsgToSlave()->getVal(), Master::getInstance()->getTexCoordinatesToSlave()->getVal());
-    Slave::getInstance()->checkLocalLowHighVPFromMaster(Master::getInstance()->getMsgToSlave()->getVal(), Master::getInstance()->getLocalLowHighVPToSlave()->getVal());
-    Slave::getInstance()->checkProjectorCorners_VPFromMaster(Master::getInstance()->getMsgToSlave()->getVal(), Master::getInstance()->getProjectorCorners_VPToSlave()->getVal());
-    Slave::getInstance()->checkProjectorCornersFromMaster(Master::getInstance()->getMsgToSlave()->getVal(), Master::getInstance()->getProjectorCornersToSlave()->getVal());
-    Slave::getInstance()->checkColorCalibDataFromMaster(Master::getInstance()->getMsgToSlave()->getVal(), Master::getInstance()->getColorCalibDataToSlave()->getVal());
 }
 
 void myInitOGLFun()
@@ -182,12 +176,6 @@ void myEncodeFun()
     sgct::SharedData::instance()->writeDouble(&curr_time);
     //write msgs and data from master to slave	
     sgct::SharedData::instance()->writeObj(Master::getInstance()->getMsgToSlave());
-    sgct::SharedData::instance()->writeVector(Master::getInstance()->getLocalLowHighVPToSlave());
-    sgct::SharedData::instance()->writeVector(Master::getInstance()->getQuadCornersToSlave());
-    sgct::SharedData::instance()->writeVector(Master::getInstance()->getTexCoordinatesToSlave());
-    sgct::SharedData::instance()->writeVector(Master::getInstance()->getProjectorCorners_VPToSlave());
-    sgct::SharedData::instance()->writeVector(Master::getInstance()->getProjectorCornersToSlave());
-    sgct::SharedData::instance()->writeVector(Master::getInstance()->getColorCalibDataToSlave());
 }
 
 /**
@@ -198,12 +186,6 @@ void myDecodeFun()
     sgct::SharedData::instance()->readDouble(&curr_time);
     //read msgs and data from master to slave
     sgct::SharedData::instance()->readObj(Master::getInstance()->getMsgToSlave());
-    sgct::SharedData::instance()->readVector(Master::getInstance()->getLocalLowHighVPToSlave());
-    sgct::SharedData::instance()->readVector(Master::getInstance()->getQuadCornersToSlave());
-    sgct::SharedData::instance()->readVector(Master::getInstance()->getTexCoordinatesToSlave());
-    sgct::SharedData::instance()->readVector(Master::getInstance()->getProjectorCorners_VPToSlave());
-    sgct::SharedData::instance()->readVector(Master::getInstance()->getProjectorCornersToSlave());
-    sgct::SharedData::instance()->readVector(Master::getInstance()->getColorCalibDataToSlave());
 }
 
 /**

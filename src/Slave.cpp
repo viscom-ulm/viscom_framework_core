@@ -48,7 +48,36 @@ namespace pro_cal {
         ProjectorCorners_VP.clear();
         ProjectorCorners_Wall.clear();
     }
-    
+
+    void Slave::LoadCalibrationData()
+    {
+        for (int window = 0; window < windowsCount; window++) {
+            int projectorNo = getProjectorNo(slaveID, window);
+            readVectorOfPoint2f(config.projectorData_, "quad_corners" + std::to_string(projectorNo), quad_corners[window]);
+            readVectorOfPoint3f(config.projectorData_, "TexCoordinates" + std::to_string(projectorNo), TexCoordinates[window]);
+            readVectorOfPoint2f(config.projectorData_, "LocalLowHighVP" + std::to_string(projectorNo), LocalLowHighVP[window]);
+        }
+
+        readVectorOfPoint2f(config.projectorData_, "ViewPlaneCoordinates", ProjectorCorners_VP);
+        readVectorOfPoint2f(config.projectorData_, "projectorCorners", ProjectorCorners_Wall);
+
+
+
+        auto slave_count = static_cast<int>(sgct_core::ClusterManager::instance()->getNumberOfNodes());
+        //calc projector count
+        int projector_count = -START_NODE;
+        for (int i = 0; i < slave_count; i++) {
+            sgct_core::SGCTNode * currNode = sgct_core::ClusterManager::instance()->getNodePtr(i);
+            for (int j = 0; j < currNode->getNumberOfWindows(); j++) {
+                projector_count += 1;
+            }
+        }
+
+        std::vector<ColorCalibData> colorCalibData(projector_count);
+        loadColorCalibData(config, colorCalibData);
+        lookUpTableData = calcColorLookUpTableData(colorCalibData);
+    }
+
     /**
     * loads the properties from config\properties.xml file
     * masterSocketPort: master socket server port
@@ -65,6 +94,8 @@ namespace pro_cal {
             this->blurRepetition = tmp.empty() ? 0 : atoi(tmp.c_str());
             tmp = fs["blurRadius"];
             this->blurRadius = tmp.empty() ? 0 : atoi(tmp.c_str());
+            std::string startnode = fs["startNode"];
+            START_NODE = startnode.empty() ? 1 : atoi(startnode.c_str());
         }
         else {
             showMsgToUser("config\\properties.xml not found on slave %d", slaveID);
@@ -190,6 +221,7 @@ namespace pro_cal {
             }
 
         }
+        LoadCalibrationData();
     }
 
 
@@ -227,98 +259,13 @@ namespace pro_cal {
         }
     }
 
-    /**
-    * check if the shared quad corners are destined for this slave and not already assigned
-    * then the quad corners will be assigned to the quad_corners member variable
-    *
-    * @param cmd Shared_Msg render command from the master
-    * @param quadCorners std::vector<cv::Point2f> shared vector from the master
-    */
-    void Slave::checkQuadCornersFromMaster(const Shared_Msg cmd, const std::vector<cv::Point2f> quadCornersData) const
-    {
-        if (cmd.msg == SHOW_FINAL && (cmd.slaveID == this->slaveID || cmd.slaveID == ALL) && !quadCornersData.empty() && quad_corners[0].empty()) {
-            for (int window = 0; window < windowsCount; window++) {
-                int projectorNo = getProjectorNo(slaveID, window);
-                int idx = projectorNo * 4;
-                for (int i = idx; i < (idx + 4); i++) {
-                    quad_corners[window].push_back(quadCornersData[i]);
-                }
-            }
-        }
-    }
 
-
-    /**
-    * check if the shared texture coordinates are destined for this slave and not already assigned
-    * then the texture coordinates will be assigned to the TexCoordinates member variable
-    *
-    * @param cmd Shared_Msg render command from the master
-    * @param texCoordinates std::vector<cv::Point3f> shared vector from the master
-    */
-    void Slave::checkTexCoordinatesFromMaster(const Shared_Msg cmd, const std::vector<cv::Point3f> texCoordinatesData) {
-        if (cmd.msg == SHOW_FINAL && (cmd.slaveID == this->slaveID || cmd.slaveID == ALL) && !texCoordinatesData.empty() && TexCoordinates[0].empty()) {
-            for (int window = 0; window < windowsCount; window++) {
-                int projectorNo = getProjectorNo(slaveID, window);
-                int idx = projectorNo * 4;
-                for (int i = idx; i < (idx+4); i++) {
-                    TexCoordinates[window].push_back(texCoordinatesData[i]);
-                }
-            }
-        }
-    }
-
-    /**
-    * check if the shared viewplane coordinates are destined for this slave and not already assigned
-    * then the viewplane coordinates will be assigned to the LocalLowHighVP member variable
-    *
-    * @param cmd Shared_Msg render command from the master
-    * @param LocalLowHighVP_ std::vector<cv::Point2f> shared vector from the master
-    */
-    void Slave::checkLocalLowHighVPFromMaster(const Shared_Msg cmd, const std::vector<cv::Point2f> LocalLowHighVP_Data) {
-        if (cmd.msg == SHOW_FINAL && (cmd.slaveID == this->slaveID || cmd.slaveID == ALL) && !LocalLowHighVP_Data.empty() && LocalLowHighVP[0].empty()) {
-            for (int window = 0; window < windowsCount; window++) {
-                int projectorNo = getProjectorNo(slaveID, window);
-                int idx = projectorNo * 2;
-                for (int i = idx; i < (idx + 2); i++) {
-                    LocalLowHighVP[window].push_back(LocalLowHighVP_Data[i]);
-                }
-            }
-        }
-    }
-
-    /**
-    * check if the shared projector corners are destined for this slave and not already assigned
-    * then the projector corners will be assigned to the ProjectorCorners_VP member variable
-    *
-    * @param cmd Shared_Msg render command from the master
-    * @param ProjectorCornersinVP std::vector<cv::Point2f> shared vector from the master
-    */
-    void Slave::checkProjectorCorners_VPFromMaster(const Shared_Msg cmd, const std::vector<cv::Point2f> ProjectorCornersinVP) {
-        if (cmd.msg == SHOW_FINAL && (cmd.slaveID == this->slaveID || cmd.slaveID == ALL) && !ProjectorCornersinVP.empty() && ProjectorCorners_VP.empty()) {
-            ProjectorCorners_VP = ProjectorCornersinVP;
-        }
-    }
-
-    /**
-    * check if the shared projector corners are destined for this slave and not already assigned
-    * then the projector corners will be assigned to the ProjectorCorners_VP member variable
-    *
-    * @param cmd Shared_Msg render command from the master
-    * @param ProjectorCornersinVP std::vector<cv::Point2f> shared vector from the master
-    */
-    void Slave::checkProjectorCornersFromMaster(const Shared_Msg cmd, const std::vector<cv::Point2f> ProjectorCornersWall) {
-        if (cmd.msg == SHOW_FINAL && (cmd.slaveID == this->slaveID || cmd.slaveID == ALL) && !ProjectorCornersWall.empty() && ProjectorCorners_Wall.empty()) {
-            ProjectorCorners_Wall = ProjectorCornersWall;
-        }
-    }
-
-
-    void Slave::checkColorCalibDataFromMaster(const Shared_Msg cmd, const std::vector<int> dat) {
+    /*void Slave::checkColorCalibDataFromMaster(const Shared_Msg cmd, const std::vector<int> dat) {
         if (cmd.msg == SHOW_FINAL && (cmd.slaveID == this->slaveID || cmd.slaveID == ALL) && !dat.empty() && lookUpTableData.empty()) {
             std::vector<ColorCalibData> colorCalibData = integerVectorToColorCalibData(dat);
             lookUpTableData = calcColorLookUpTableData(colorCalibData);
         }
-    }
+    }*/
 
 
 

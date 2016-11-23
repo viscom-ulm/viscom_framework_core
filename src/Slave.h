@@ -23,18 +23,14 @@ namespace pro_cal {
         void destroy() { this->getInstance()->~Slave(); }
         void processCommand(sgct::Engine * gEngine);
         void checkMsgFromMaster(const Shared_Msg cmd);
-        void checkQuadCornersFromMaster(const Shared_Msg cmd, const std::vector<cv::Point2f> quadCorners) const;
-        void checkTexCoordinatesFromMaster(const Shared_Msg cmd, const std::vector<cv::Point3f> texCoordinates);
-        void checkProjectorCorners_VPFromMaster(const Shared_Msg cmd, const std::vector<cv::Point2f> ProjectorCornersinVP);
-        void checkProjectorCornersFromMaster(const Shared_Msg cmd, const std::vector<cv::Point2f> ProjectorCornersWall);
-        void checkLocalLowHighVPFromMaster(const Shared_Msg cmd, const std::vector<cv::Point2f> LocalLowHighVP);
-        void checkColorCalibDataFromMaster(const Shared_Msg cmd, const std::vector<int> dat);
         int getSlaveID(){ return this->slaveID; }
     protected:
         Slave() {}
         ~Slave();
     private:
         FWConfiguration config;
+
+        void LoadCalibrationData();
 
         bool initDataDone;
         bool *initFinalDone;

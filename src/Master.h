@@ -17,12 +17,6 @@ namespace pro_cal {
             void destroy() { this->getInstance()->~Master(); }
             void processState();
             sgct::SharedObject<Shared_Msg>* getMsgToSlave(){ return this->msgToSlave; }
-            sgct::SharedVector<cv::Point2f>* getQuadCornersToSlave(){ return this->quadCornersToSlave; }
-            sgct::SharedVector<cv::Point3f>* getTexCoordinatesToSlave(){ return this->texCoordinatesToSlave; }
-            sgct::SharedVector<cv::Point2f>* getProjectorCorners_VPToSlave(){ return this->ProjectorCorners_VPToSlave; }
-            sgct::SharedVector<cv::Point2f>* getProjectorCornersToSlave(){ return this->ProjectorCornersToSlave; }
-            sgct::SharedVector<cv::Point2f>* getLocalLowHighVPToSlave(){ return this->LocalLowHighVPToSlave; }
-            sgct::SharedVector<int>* getColorCalibDataToSlave(){ return this->colorCalibDataToSlave; }
             const int getCurrentState(){ return this->current_state; }
             int isNextStep(){ return this->nextStep; }
             void setNextStep(int r){ this->nextStep = r; }
@@ -48,16 +42,9 @@ namespace pro_cal {
             SOCKET ClientSocket;	
             
             sgct::SharedObject<Shared_Msg>* msgToSlave;
-            sgct::SharedVector<cv::Point2f>* quadCornersToSlave;
-            sgct::SharedVector<cv::Point3f>* texCoordinatesToSlave;
-            sgct::SharedVector<cv::Point2f>* ProjectorCorners_VPToSlave;
-            sgct::SharedVector<cv::Point2f>* ProjectorCornersToSlave;
-            sgct::SharedVector<cv::Point2f>* LocalLowHighVPToSlave;
-            sgct::SharedVector<int>* colorCalibDataToSlave;
-            std::vector<Shared_Msg> msgFromSlaves;	
+            std::vector<Shared_Msg> msgFromSlaves;
             
             void loadProperties();
-            void loadAndSendDataToSlaves();
             void processMsgFromSlave(Message currCmd);
             void finish();
             void checkUserInput();

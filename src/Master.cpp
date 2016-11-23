@@ -11,12 +11,6 @@ namespace pro_cal {
     Master::~Master() // destructor
     {
         delete msgToSlave;
-        delete quadCornersToSlave;
-        delete texCoordinatesToSlave;
-        delete ProjectorCorners_VPToSlave;
-        delete ProjectorCornersToSlave;
-        delete LocalLowHighVPToSlave;
-        delete colorCalibDataToSlave;
     }
 
     /**
@@ -37,43 +31,6 @@ namespace pro_cal {
             showMsgToUser("config\\properties.xml not found on master", 0);
         }
         fs.release();
-    }
-
-    /**
-    * load all calibration data from data\ProjectorData.xml and data\ColorCalibData.xml files
-    * and send all data to the slaves with shared objects
-    */
-    void Master::loadAndSendDataToSlaves() {
-        std::vector<std::vector<cv::Point2f>> quad_corners_Vec(projector_count);
-        std::vector<std::vector<cv::Point3f>> TexCoordinates_Vec(projector_count);
-        std::vector<std::vector<cv::Point2f>> VPCoordinates1D_Vec(projector_count);
-        for (int i = 0; i < projector_count; i++) {		
-            readVectorOfPoint2f(config.projectorData_, "quad_corners" + std::to_string(i), quad_corners_Vec[i]);
-            readVectorOfPoint3f(config.projectorData_, "TexCoordinates" + std::to_string(i), TexCoordinates_Vec[i]);
-            readVectorOfPoint2f(config.projectorData_, "LocalLowHighVP" + std::to_string(i), VPCoordinates1D_Vec[i]);
-
-        }
-        std::vector<cv::Point2f> quad_corners = convertPoint2fVectorOfVectorToVector(quad_corners_Vec);
-        std::vector<cv::Point3f> TexCoordinates = convertPoint3fVectorOfVectorToVector(TexCoordinates_Vec);
-        std::vector<cv::Point2f> VPCoordinates1D = convertPoint2fVectorOfVectorToVector(VPCoordinates1D_Vec);
-
-        std::vector<cv::Point2f> ViewPlaneCoordinates1D;
-        std::vector<cv::Point2f> projectorCorners1D;	
-        readVectorOfPoint2f(config.projectorData_, "ViewPlaneCoordinates", ViewPlaneCoordinates1D);
-        readVectorOfPoint2f(config.projectorData_, "projectorCorners", projectorCorners1D);
-        
-        std::vector<ColorCalibData> colorCalibData(projector_count);
-        loadColorCalibData(config, colorCalibData);
-        std::vector<int> colorCalibDataVector = colorCalibDataToIntegerVector(colorCalibData);
-
-        this->quadCornersToSlave->setVal(quad_corners);
-        this->texCoordinatesToSlave->setVal(TexCoordinates);
-        this->LocalLowHighVPToSlave->setVal(VPCoordinates1D);
-
-        this->ProjectorCorners_VPToSlave->setVal(ViewPlaneCoordinates1D);
-        this->ProjectorCornersToSlave->setVal(projectorCorners1D);
-        
-        this->colorCalibDataToSlave->setVal(colorCalibDataToIntegerVector(colorCalibData));
     }
     
     /**
@@ -101,12 +58,6 @@ namespace pro_cal {
     
         
         msgToSlave = new sgct::SharedObject<Shared_Msg>();
-        quadCornersToSlave = new sgct::SharedVector<cv::Point2f>();
-        texCoordinatesToSlave = new sgct::SharedVector<cv::Point3f>();
-        ProjectorCorners_VPToSlave = new sgct::SharedVector<cv::Point2f>();
-        ProjectorCornersToSlave = new sgct::SharedVector<cv::Point2f>();
-        LocalLowHighVPToSlave = new sgct::SharedVector<cv::Point2f>();
-        colorCalibDataToSlave = new sgct::SharedVector<int>();
         msgFromSlaves = std::vector<Shared_Msg>(slave_count);
         for (int i = 0; i < slave_count; i++) {
             msgFromSlaves[i].slaveID = i;
@@ -159,7 +110,6 @@ namespace pro_cal {
     void Master::processState() {
         switch (current_state) {
         case 0:
-            loadAndSendDataToSlaves();
             sendMsgToSlave(ALL, ALL, SHOW_FINAL);
             current_state += 1;
             break;
