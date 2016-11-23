@@ -29,10 +29,11 @@ sgct::SharedDouble curr_time(0.0);
 
 int argc_;
 char **argv_;
+FWConfiguration config;
 // std::string sgctConfigFile;
 
 int SGCT_Init() {
-    auto config = LoadConfiguration();
+    config = LoadConfiguration();
     std::array<std::vector<char>, 2> argVec;
     std::array<char*, 2> args;
 
@@ -67,7 +68,7 @@ int SGCT_Init() {
     //Master and Slave
     Master::getInstance()->init(config);
     Slave::getInstance()->init(config);
-    
+
     // Main loop
     gEngine->render();
 
@@ -89,7 +90,7 @@ FWConfiguration LoadConfiguration()
     std::string str;
 
     while (ifs >> str && ifs.good()) {
-        if (str == "BASE_DIR:") ifs >> config.baseDirectory_;
+        if (str == "BASE_DIR=") ifs >> config.baseDirectory_;
         else if (str == "PROGRAM_PROPERTIES=") ifs >> config.programProperties_;
         else if (str == "SGCT_CONFIG=") ifs >> config.sgctConfig_;
         else if (str == "PROJECTOR_DATA=") ifs >> config.projectorData_;

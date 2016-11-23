@@ -34,6 +34,8 @@ namespace pro_cal {
         Slave() {}
         ~Slave();
     private:
+        FWConfiguration config;
+
         bool initDataDone;
         bool *initFinalDone;
         bool *frustumupdate;
@@ -55,10 +57,10 @@ namespace pro_cal {
         cv::Mat pic;
         std::string masterSocketPort;
         std::string masterSocketIP;
-        void loadProperties(const FWConfiguration& config);
+        void loadProperties();
         void updateFrustum(float VP_x1, float VP_y1, float VP_x2, float VP_y2, int window);
         void init_transform(sgct::Engine * gEngine, const std::vector<int> coords, const int window);
-        void init_final(const FWConfiguration& config, sgct::Engine * gEngine, const std::vector<int> coords, const int window);
+        void init_final(sgct::Engine * gEngine, const std::vector<int> coords, const int window);
         void show_final(sgct::Engine * gEngine, int window);
 
         void draw_scene(int window);

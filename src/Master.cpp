@@ -23,7 +23,7 @@ namespace pro_cal {
     * loads the properties from config\properties.xml file
     * masterSocketPort: master socket server port
     */
-    void Master::loadProperties(const FWConfiguration& config)
+    void Master::loadProperties()
     {
         cv::FileStorage fs(config.programProperties_, cv::FileStorage::READ);
         if(fs.isOpened()){
@@ -43,7 +43,7 @@ namespace pro_cal {
     * load all calibration data from data\ProjectorData.xml and data\ColorCalibData.xml files
     * and send all data to the slaves with shared objects
     */
-    void Master::loadAndSendDataToSlaves(const FWConfiguration& config) {
+    void Master::loadAndSendDataToSlaves() {
         std::vector<std::vector<cv::Point2f>> quad_corners_Vec(projector_count);
         std::vector<std::vector<cv::Point3f>> TexCoordinates_Vec(projector_count);
         std::vector<std::vector<cv::Point2f>> VPCoordinates1D_Vec(projector_count);
@@ -80,8 +80,9 @@ namespace pro_cal {
     * calls loadProperties() methode, initialize all private member variables
     * and start socket server to receive messages from slaves
     */
-    void Master::init(const FWConfiguration& config) {
-        loadProperties(config);
+    void Master::init(const FWConfiguration& conf) {
+        config = conf;
+        loadProperties();
 
         current_state = 0; 
         current_slave = START_NODE;

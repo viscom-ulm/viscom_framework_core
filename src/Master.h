@@ -31,6 +31,8 @@ namespace pro_cal {
             Master() {}
             ~Master();
         private:
+            FWConfiguration config;
+
             //variables
             static Master *instance;
             std::string masterSocketPort;
@@ -54,8 +56,8 @@ namespace pro_cal {
             sgct::SharedVector<int>* colorCalibDataToSlave;
             std::vector<Shared_Msg> msgFromSlaves;	
             
-            void loadProperties(const FWConfiguration& config);
-            void loadAndSendDataToSlaves(const FWConfiguration& config);
+            void loadProperties();
+            void loadAndSendDataToSlaves();
             void processMsgFromSlave(Message currCmd);
             void finish();
             void checkUserInput();

@@ -53,7 +53,7 @@ namespace pro_cal {
     * loads the properties from config\properties.xml file
     * masterSocketPort: master socket server port
     */
-    void Slave::loadProperties(const FWConfiguration& config)
+    void Slave::loadProperties()
     {
         cv::FileStorage fs(config.programProperties_, cv::FileStorage::READ);
         if (fs.isOpened()){
@@ -81,11 +81,12 @@ namespace pro_cal {
     *
     * Creates all needed elements for rendering
     */
-    void Slave::init(const FWConfiguration& config) {
+    void Slave::init(const FWConfiguration& conf) {
         this->slaveID = sgct_core::ClusterManager::instance()->getThisNodeId();
+        config = conf;
 
         masterSocketIP.assign(sgct_core::ClusterManager::instance()->getMasterAddress()->c_str());
-        loadProperties(config);
+        loadProperties();
 
         ClientSocket = INVALID_SOCKET;
         startSocketClient(ClientSocket, masterSocketIP.c_str(), masterSocketPort.c_str(), IPPROTO_UDP);
@@ -188,12 +189,6 @@ namespace pro_cal {
                 LocalLowHighVP[i].emplace_back(cv::Point2f(ViewPlaneX, ViewPlaneY));
             }
 
-        }
-
-        std::vector<int> coords(4);
-        for (auto i = 0; i < windowsCount; ++i) {
-            getViewportPixelCoords(i, coords);
-            init_final(config, gEngine, coords, i);
         }
     }
 
@@ -403,7 +398,7 @@ namespace pro_cal {
             initTmpFBO_1T(window);
     }
 
-void Slave::init_final(const FWConfiguration& config, sgct::Engine * gEngine, const std::vector<int> coords, const int window) {
+void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, const int window) {
     int current_pro = getProjectorNo(slaveID, window);
 
     init_transform(gEngine, coords, window);
@@ -508,9 +503,9 @@ void Slave::init_final(const FWConfiguration& config, sgct::Engine * gEngine, co
     void Slave::show_final(sgct::Engine * gEngine, int window) {
         std::vector<int> coords(4);
         sgct::SGCTWindow* winPtr = getViewportPixelCoords(window, coords);
-        /*if (!initFinalDone[window]) {
+        if (!initFinalDone[window]) {
             init_final(gEngine, coords, window);
-        }*/
+        }
         
 
         //////////////////////////////////////////////////////////////////////////
