@@ -42,7 +42,6 @@ namespace pro_cal {
         delete[] vbo_backgroundGrid_3v4c;
 
         backgroundGrid.clear();
-        lookUpTableData.clear();	
         masterSocketPort.clear();
         masterSocketIP.clear();
         ProjectorCorners_VP.clear();
@@ -56,6 +55,11 @@ namespace pro_cal {
             readVectorOfPoint2f(config.projectorData_, "quad_corners" + std::to_string(projectorNo), quad_corners[window]);
             readVectorOfPoint3f(config.projectorData_, "TexCoordinates" + std::to_string(projectorNo), TexCoordinates[window]);
             readVectorOfPoint2f(config.projectorData_, "LocalLowHighVP" + std::to_string(projectorNo), LocalLowHighVP[window]);
+
+            /*std::vector<ColorCalibData> colorCalibData(windowsCount); // (projector_count);
+            loadColorCalibDataSingle(config, projectorNo, colorCalibData[window]);
+            lookUpTableData = calcColorLookUpTableDataSingle(colorCalibData[window]);*/
+            lookUpTableData = calcColorLookUpTableDataSingle(config, projectorNo);
         }
 
         readVectorOfPoint2f(config.projectorData_, "ViewPlaneCoordinates", ProjectorCorners_VP);
@@ -63,7 +67,8 @@ namespace pro_cal {
 
 
 
-        auto slave_count = static_cast<int>(sgct_core::ClusterManager::instance()->getNumberOfNodes());
+        // TODO: load color calib data for current projector only. [11/23/2016 Sebastian Maisch]
+        /*auto slave_count = static_cast<int>(sgct_core::ClusterManager::instance()->getNumberOfNodes());
         //calc projector count
         int projector_count = -START_NODE;
         for (int i = 0; i < slave_count; i++) {
@@ -73,9 +78,9 @@ namespace pro_cal {
             }
         }
 
-        std::vector<ColorCalibData> colorCalibData(projector_count);
+        std::vector<ColorCalibData> colorCalibData;
         loadColorCalibData(config, colorCalibData);
-        lookUpTableData = calcColorLookUpTableData(colorCalibData);
+        lookUpTableData = calcColorLookUpTableData(colorCalibData);*/
     }
 
     /**
@@ -232,7 +237,7 @@ namespace pro_cal {
     *
     * @param respMsg Shared_Msg wich will be sended to the master
     */
-    void Slave::sendMsgToMaster(const Shared_Msg respMsg) {
+    /*void Slave::sendMsgToMaster(const Shared_Msg respMsg) {
         if (respondedMsg.msg != respMsg.msg || respondedMsg.window != respMsg.window) {
             if (checkAndStartClientSocket(ClientSocket, masterSocketIP.c_str(), masterSocketPort.c_str(), IPPROTO_UDP)) {
                 sendSocketMsg(ClientSocket, sharedMsgToString(respMsg));
@@ -240,7 +245,7 @@ namespace pro_cal {
                 showMsgToUser("Message from node %d sent: " + MessageToString(respMsg.msg), this->slaveID);
             }
         }
-    }
+    }*/
 
     /**
     * check if the  render command is destined for this slave
@@ -314,14 +319,14 @@ namespace pro_cal {
                 ClientSocket = INVALID_SOCKET;
             }
             response.window = ALL;
-            respondedMsg.window = ALL;
+            // respondedMsg.window = ALL;
             response.msg = NONE;
-            respondedMsg.msg = NONE;
+            // respondedMsg.msg = NONE;
             break;
         }	
         
         oldrenderCmd = renderCmd;
-        sendMsgToMaster(response);
+        // sendMsgToMaster(response);
     }
 
     void Slave::checkFrustumUpdate(int window) {
@@ -418,7 +423,8 @@ void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, co
         }
         //---------------------------------------------------------------------------
         //texture width, height, projectorcorners
-        oFramebuffer->CreateContext(coords[2], coords[3], projectorPoints[window], overlapingVerticesCounter[window], lookUpTableData[current_pro]);
+        // TODO: load color calib data for current projector only. [11/23/2016 Sebastian Maisch]
+        oFramebuffer->CreateContext(coords[2], coords[3], projectorPoints[window], overlapingVerticesCounter[window], lookUpTableData);
         
         oFramebuffer->setBlurRadius(static_cast<float>(blurRadius));
         oFramebuffer->setBlurRepetition(blurRepetition);

@@ -38,7 +38,7 @@ namespace pro_cal {
         static Slave *instance;
         int slaveID;
         int windowsCount;
-        Shared_Msg respondedMsg;
+        // Shared_Msg respondedMsg;
         Shared_Msg renderCmd, oldrenderCmd;
         SOCKET ClientSocket;
         std::vector<cv::Point2f> *quad_corners;
@@ -48,7 +48,8 @@ namespace pro_cal {
         std::vector<cv::Point2f> ProjectorCorners_VP;
         std::vector<cv::Point2f> ProjectorCorners_Wall;
         std::vector<cv::Point2f> *LocalLowHighVP;
-        std::vector<LookUpTableData> lookUpTableData;
+        // std::vector<LookUpTableData> lookUpTableData;
+        LookUpTableData lookUpTableData;
         glm::vec3 showColorValue;
         cv::Mat pic;
         std::string masterSocketPort;
@@ -62,7 +63,7 @@ namespace pro_cal {
         void draw_scene(int window);
 
         void shutdown(int window);
-        void sendMsgToMaster(const Shared_Msg msg);
+        // void sendMsgToMaster(const Shared_Msg msg);
         void calc_transform_coordinates(int window);
 
         bool *isTmpFBO_Init;
