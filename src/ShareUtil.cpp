@@ -86,7 +86,7 @@ namespace pro_cal {
     */
     void readNodeMatrixFromXML(const std::string filename, const std::string nodeID, cv::Mat& mat) {
         cv::FileStorage fs(filename, cv::FileStorage::READ);
-        int frameCount = (int)fs["opencv_storage"];
+        if (fs[nodeID].isNone()) throw std::out_of_range("NodeID does not exist (" + nodeID + ")");
         fs[nodeID] >> mat;
         fs.release();
     }

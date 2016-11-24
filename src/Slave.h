@@ -23,12 +23,6 @@ namespace pro_cal {
         void destroy() { this->getInstance()->~Slave(); }
         void processCommand(sgct::Engine * gEngine);
         void checkMsgFromMaster(const Shared_Msg cmd);
-        void checkQuadCornersFromMaster(const Shared_Msg cmd, const std::vector<cv::Point2f> quadCorners) const;
-        void checkTexCoordinatesFromMaster(const Shared_Msg cmd, const std::vector<cv::Point3f> texCoordinates);
-        void checkProjectorCorners_VPFromMaster(const Shared_Msg cmd, const std::vector<cv::Point2f> ProjectorCornersinVP);
-        void checkProjectorCornersFromMaster(const Shared_Msg cmd, const std::vector<cv::Point2f> ProjectorCornersWall);
-        void checkLocalLowHighVPFromMaster(const Shared_Msg cmd, const std::vector<cv::Point2f> LocalLowHighVP);
-        void checkColorCalibDataFromMaster(const Shared_Msg cmd, const std::vector<int> dat);
         int getSlaveID(){ return this->slaveID; }
     protected:
         Slave() {}
@@ -36,13 +30,15 @@ namespace pro_cal {
     private:
         FWConfiguration config;
 
+        void LoadCalibrationData();
+
         bool initDataDone;
         bool *initFinalDone;
         bool *frustumupdate;
         static Slave *instance;
         int slaveID;
         int windowsCount;
-        Shared_Msg respondedMsg;
+        // Shared_Msg respondedMsg;
         Shared_Msg renderCmd, oldrenderCmd;
         SOCKET ClientSocket;
         std::vector<cv::Point2f> *quad_corners;
@@ -52,7 +48,8 @@ namespace pro_cal {
         std::vector<cv::Point2f> ProjectorCorners_VP;
         std::vector<cv::Point2f> ProjectorCorners_Wall;
         std::vector<cv::Point2f> *LocalLowHighVP;
-        std::vector<LookUpTableData> lookUpTableData;
+        // std::vector<LookUpTableData> lookUpTableData;
+        LookUpTableData lookUpTableData;
         glm::vec3 showColorValue;
         cv::Mat pic;
         std::string masterSocketPort;
@@ -66,7 +63,7 @@ namespace pro_cal {
         void draw_scene(int window);
 
         void shutdown(int window);
-        void sendMsgToMaster(const Shared_Msg msg);
+        // void sendMsgToMaster(const Shared_Msg msg);
         void calc_transform_coordinates(int window);
 
         bool *isTmpFBO_Init;

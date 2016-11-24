@@ -3,6 +3,10 @@
 namespace pro_cal {	
     int CELL_COUNT = 10; //config in properties.xml => 1, 2, 4, 8, 10, 20, 40, 60, 120
 
+    const std::vector<glm::vec3> ColorValues = {
+        glm::vec3(0, 0, 0), glm::vec3(255, 0, 0), glm::vec3(0, 255, 0), glm::vec3(0, 0, 255)
+    };
+
     //L=minVal=max(lowVals) und H=maxVal=min(highVals)
     void calcMinMaxColorValue(const std::vector<ColorCalibData>& gccdList, std::vector<int>& maxFromMinValues, std::vector<int>& minFromMaxValues) {
         //L=minVal=max(lowVals) und H=maxVal=min(highVals)
@@ -90,6 +94,38 @@ namespace pro_cal {
             lookUpTableDataList.push_back(lutData);
         }
         return lookUpTableDataList;
+    }
+
+    LookUpTableData calcColorLookUpTableDataSingle(const FWConfiguration& config, unsigned int projectorId)
+    {
+        std::vector<ColorCalibData> colorCalibData;
+        loadColorCalibData(config, colorCalibData);
+
+        std::vector<int> maxFromMinValues(ColorValues.size(), 0);
+        std::vector<int> minFromMaxValues(ColorValues.size(), 255);
+        calcMinMaxColorValue(colorCalibData, maxFromMinValues, minFromMaxValues);
+        const auto& gccd = colorCalibData[projectorId];
+        LookUpTableData lutData;
+        lutData.LookUpTables.resize(3);
+        //std::vector<std::vector<std::vector<std::vector<GLfloat>>>>(3):
+        for (int c = 1; c < ColorValues.size(); c++) { //R_G_B ohne 0	
+            int lutC = c - 1; 	//c-1 => lut nur R G B	
+            lutData.LookUpTables[lutC].resize(CELL_COUNT);
+            for (int x = 0; x < CELL_COUNT; x++) {
+                lutData.LookUpTables[lutC][x].resize(CELL_COUNT);
+                for (int y = 0; y < CELL_COUNT; y++) {
+                    lutData.LookUpTables[lutC][x][y].resize(VALUE_COUNT);
+                    //std::vector<GLfloat> colorLookUpTable(VALUE_COUNT);
+                    if (gccd.medValues[0][x][y] < 0 || gccd.medValues[c][x][y] < 0) { //TODO: test 08.10.16	
+                        std::fill(lutData.LookUpTables[lutC][x][y].begin(), lutData.LookUpTables[lutC][x][y].end(), -1.f);
+                    } else {
+                        calcColorValue(lutData.LookUpTables[lutC][x][y], maxFromMinValues[0], minFromMaxValues[c], gccd.medValues[0][x][y], gccd.medValues[c][x][y]);
+                    }
+                    //lutData.LookUpTables[lutC][x][y] = colorLookUpTable; 
+                }
+            }
+        }
+        return lutData;
     }
 
     GLfloat calcAvgValue(const std::vector<GLfloat>& values) {
@@ -321,7 +357,27 @@ namespace pro_cal {
     * load the color calibration data from the data\ColorCalibData.xml file
     */
     void loadColorCalibData(const FWConfiguration& config, std::vector<ColorCalibData>& colorCalibData) {
-        for (int i = 0; i < colorCalibData.size(); i++) {
+        auto nodeExists = true;
+        unsigned int projectorId = 0;
+        while (nodeExists) {
+            ColorCalibData ccData;
+            for (auto c = 0U; c < ColorValues.size(); c++) {
+                std::vector<cv::Vec3f> colorCalibDataVec3f;
+                try {
+                    readVectorOfVec3f(config.colorCalibrationData_, "ColorCalibData_" + std::to_string(projectorId) + "_" + std::to_string(c), colorCalibDataVec3f);
+                } catch (std::out_of_range e) {
+                    nodeExists = false;
+                    break;
+                }
+                vec3fVectorToColorCalibData(c, colorCalibDataVec3f, ccData);
+            }
+            if (nodeExists) {
+                colorCalibData.push_back(ccData);
+                ++projectorId;
+            }
+        }
+
+        /*for (int i = 0; i < colorCalibData.size(); i++) {
             LookUpTableData gridLutData;
             for (int c = 0; c < ColorValues.size(); c++) {
                 std::vector<cv::Vec3f> colorCalibDataVec3f;
@@ -329,5 +385,8 @@ namespace pro_cal {
                 vec3fVectorToColorCalibData(c, colorCalibDataVec3f, colorCalibData[i]);
             }
         }
+
+        std::vector<cv::Vec3f> colorCalibDataVec3f;
+        readVectorOfVec3f(config.colorCalibrationData_, "ColorCalibData_" + std::to_string(5) + "_" + std::to_string(0), colorCalibDataVec3f);*/
     }
 }
