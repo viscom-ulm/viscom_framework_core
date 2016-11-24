@@ -19,9 +19,9 @@ namespace pro_cal {
 
     public:
         static Slave* getInstance() { instance = instance == nullptr ? new Slave() : instance; return instance; }		
-        void init(const FWConfiguration& config);
+        void init(const FWConfiguration& config, sgct::Engine* engine);
         void destroy() { this->getInstance()->~Slave(); }
-        void processCommand(sgct::Engine * gEngine);
+        void processCommand(sgct::Engine* gEngine, float currentTime);
         void checkMsgFromMaster(const Shared_Msg cmd);
         int getSlaveID(){ return this->slaveID; }
     protected:
@@ -29,6 +29,7 @@ namespace pro_cal {
         ~Slave();
     private:
         FWConfiguration config;
+        sgct::Engine* engine;
 
         void LoadCalibrationData();
 
@@ -58,9 +59,9 @@ namespace pro_cal {
         void updateFrustum(float VP_x1, float VP_y1, float VP_x2, float VP_y2, int window);
         void init_transform(sgct::Engine * gEngine, const std::vector<int> coords, const int window);
         void init_final(sgct::Engine * gEngine, const std::vector<int> coords, const int window);
-        void show_final(sgct::Engine * gEngine, int window);
+        void show_final(sgct::Engine * gEngine, int window, float currentTime);
 
-        void draw_scene(int window);
+        void draw_scene(int window, float currentTime);
 
         void shutdown(int window);
         // void sendMsgToMaster(const Shared_Msg msg);

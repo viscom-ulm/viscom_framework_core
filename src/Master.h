@@ -42,13 +42,10 @@ namespace pro_cal {
             SOCKET ClientSocket;	
             
             sgct::SharedObject<Shared_Msg>* msgToSlave;
-            // std::vector<Shared_Msg> msgFromSlaves;
             
             void loadProperties();
-            // void processMsgFromSlave(Message currCmd);
             void finish();
             void checkUserInput();
-            // bool checkIfSlavesRdy(int slaveID, int window, Message currCmd);
             void sendMsgToSlave(int slave, int window, Message cmd);
     };
 }

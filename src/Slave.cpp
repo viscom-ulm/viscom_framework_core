@@ -117,9 +117,10 @@ namespace pro_cal {
     *
     * Creates all needed elements for rendering
     */
-    void Slave::init(const FWConfiguration& conf) {
+    void Slave::init(const FWConfiguration& conf, sgct::Engine* eng) {
         this->slaveID = sgct_core::ClusterManager::instance()->getThisNodeId();
         config = conf;
+        engine = eng;
 
         masterSocketIP.assign(sgct_core::ClusterManager::instance()->getMasterAddress()->c_str());
         loadProperties();
@@ -283,7 +284,7 @@ namespace pro_cal {
     * 
     * @param gEngine sgct::Engine * engine pointer to access parameters and methodes from the sgct engine
     */
-    void Slave::processCommand(sgct::Engine * gEngine) {
+    void Slave::processCommand(sgct::Engine * gEngine, float currentTime) {
         Shared_Msg response;
         response.slaveID = slaveID;
         response.window = ALL;
@@ -293,10 +294,10 @@ namespace pro_cal {
         switch (renderCmd.msg) {
         case SHOW_FINAL:
             if (renderCmd.window == ALL) {
-                show_final(gEngine, activeWindow);
+                show_final(gEngine, activeWindow, currentTime);
             }
             else if (activeWindow == renderCmd.window){
-                show_final(gEngine, renderCmd.window);
+                show_final(gEngine, renderCmd.window, currentTime);
             }
             response.window = renderCmd.window;
             response.msg = SHOW_FINAL;
@@ -453,7 +454,7 @@ void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, co
     * @param gEngine sgct::Engine * engine pointer to access parameters and methodes from the sgct engine
     * @param window int indice of which window is currently rendered
     */
-    void Slave::show_final(sgct::Engine * gEngine, int window) {
+    void Slave::show_final(sgct::Engine * gEngine, int window, float currentTime) {
         std::vector<int> coords(4);
         sgct::SGCTWindow* winPtr = getViewportPixelCoords(window, coords);
         if (!initFinalDone[window]) {
@@ -482,7 +483,7 @@ void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, co
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         //TODO: edit for different scene
-        draw_scene(window);
+        draw_scene(window, currentTime);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -626,9 +627,9 @@ void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, co
     *
     * @param window int indice of which window is currently rendered
     */
-    void Slave::draw_scene(int window){
+    void Slave::draw_scene(int window, float currentTime){
         //background
-        glm::mat4 MVP = gEngine->getCurrentModelViewProjectionMatrix(); 
+        glm::mat4 MVP = engine->getCurrentModelViewProjectionMatrix(); 
 
         sgct::ShaderManager::instance()->bindShaderProgram("backgroundGrid");
         Matrix_Loc[window] = sgct::ShaderManager::instance()->getShaderProgram("backgroundGrid").getUniformLocation("MVP");
@@ -651,8 +652,8 @@ void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, co
         sgct::ShaderManager::instance()->unBindShaderProgram();
 
         float speed = 1.0f;
-        glm::mat4 scene_mat = glm::rotate(glm::mat4(1.0f), static_cast<float>(curr_time.getVal()) * speed, glm::vec3(0.0f, 1.0f, 0.0f));
-        MVP = gEngine->getCurrentModelViewProjectionMatrix() * scene_mat;
+        glm::mat4 scene_mat = glm::rotate(glm::mat4(1.0f), currentTime * speed, glm::vec3(0.0f, 1.0f, 0.0f));
+        MVP = engine->getCurrentModelViewProjectionMatrix() * scene_mat;
 
         sgct::ShaderManager::instance()->bindShaderProgram("yform");
         Matrix_Loc[window] = sgct::ShaderManager::instance()->getShaderProgram("yform").getUniformLocation("MVP");
@@ -863,7 +864,7 @@ void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, co
         int fb_width;
         int fb_height;
 
-        sgct::SGCTWindow * winPtr = gEngine->getWindowPtr(window);
+        sgct::SGCTWindow * winPtr = engine->getWindowPtr(window);
         winPtr->getFinalFBODimensions(fb_width, fb_height); //old sgct version: getDrawFBODimensions(fb_width, fb_height);
         
         // NewCode
@@ -893,7 +894,7 @@ void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, co
         //glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, fb_width, fb_height);
         //glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_tmpFBO[window]);
 
-        gEngine->checkForOGLErrors();
+        engine->checkForOGLErrors();
         //sgct::MessageHandler::instance()->print("%d target textures created.\n", numberOfTargets);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -912,7 +913,7 @@ void Slave::init_final(sgct::Engine * gEngine, const std::vector<int> coords, co
         thisNode->getWindowPtr(window)->getCurrentViewport()->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperLeft, glm::vec3(VP_x1, VP_y2, 0));
         thisNode->getWindowPtr(window)->getCurrentViewport()->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperRight, glm::vec3(VP_x2, VP_y2, 0));
         //thisNode->getWindowPtr(window)->update(); //TODO: test!
-        gEngine->updateFrustums(); //TODO: test!
+        engine->updateFrustums(); //TODO: test!
     }
 
 

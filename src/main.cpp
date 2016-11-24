@@ -1,87 +1,82 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <iostream>
-#include <array>
-#include "sgct.h"
+/**
+ * @file   main.cpp
+ * @author Sebastian Maisch <sebastian.maisch@uni-ulm.de>
+ * @date   2016.11.24
+ *
+ * @brief  Program entry point.
+ */
+
 #include "main.h"
+#include <fstream>
+#include <iostream>
+#include <g3log/logworker.hpp>
+#include <g3log/loglevels.hpp>
+#include "core/g3log/filesink.h"
+#include "sgct.h"
+
 #include "Slave.h"
 #include "Master.h"
 
 
-using namespace pro_cal;
-
-sgct::Engine * gEngine;
-
-void myDrawFun();
-void myPreSyncFun();
-void myPostSyncPreDrawFun();
-void myInitOGLFun();
-void myCleanUpFun();
+FWConfiguration LoadConfiguration();
+std::unique_ptr<sgct::Engine> SGCT_Init(FWConfiguration);
+int SGCT_Cleanup(sgct::Engine*);
+void myDrawFun(sgct::Engine*);
+void myPreSyncFun(sgct::Engine*);
+void myPostSyncPreDrawFun(sgct::Engine*);
+void myInitOGLFun(sgct::Engine*);
+void myCleanUpFun(sgct::Engine*);
 void myEncodeFun();
 void myDecodeFun();
-void keyCallback(int key, int action);
+void keyCallback(sgct::Engine*, int, int);
 
-std::vector<fbData> buffers;
-sgct_utils::SGCTBox * myBox = nullptr;
 
-//variables to share across cluster
-sgct::SharedDouble curr_time(0.0);
+void SGCTLog(const char* msg)
+{
+    std::string msgStripped = msg;
+    LOG(INFO) << msgStripped.substr(0, msgStripped.size() - 1);
+}
 
-int argc_;
-char **argv_;
-FWConfiguration config;
-// std::string sgctConfigFile;
 
-int SGCT_Init() {
-    config = LoadConfiguration();
-    std::array<std::vector<char>, 2> argVec;
-    std::array<char*, 2> args;
+int main(int, char**)
+{
+    const std::string directory = "./";
+    const std::string name = "viscomlabfw.log";
+    auto worker = g3::LogWorker::createLogWorker();
+    auto handle = worker->addSink(std2::make_unique<vku::FileSink>(name, directory, false), &vku::FileSink::fileWrite);
 
-    {
-        auto configArg = R"(-config ")" + config.sgctConfig_ + R"(")";
-        auto localArg = "-local " + config.sgctLocal_;
-        std::copy(configArg.begin(), configArg.end(), std::back_inserter(argVec[0]));
-        std::copy(configArg.begin(), configArg.end(), std::back_inserter(argVec[1]));
-        args[0] = argVec[0].data();
-        args[1] = argVec[1].data();
-    }
-    auto argc = static_cast<int>(args.size());
-    auto argv = args.data();
-    gEngine = new sgct::Engine(argc, argv);
+    g3::only_change_at_initialization::setLogLevel(WARNING, false);
 
-    gEngine->setInitOGLFunction(myInitOGLFun);
-    gEngine->setDrawFunction(myDrawFun);
-    gEngine->setPreSyncFunction(myPreSyncFun);
-    gEngine->setPostSyncPreDrawFunction(myPostSyncPreDrawFun);
-    gEngine->setCleanUpFunction(myCleanUpFun);
-    gEngine->setKeyboardCallbackFunction(keyCallback);
+#ifndef NDEBUG
+    g3::only_change_at_initialization::setLogLevel(WARNING, true);
+#endif
 
-    if (!gEngine->init(sgct::Engine::OpenGL_3_3_Core_Profile))
-    {
-        delete gEngine;
-        return EXIT_FAILURE;
-    }
+    g3::initializeLogging(worker.get());
 
-    sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
-    sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
+    LOG(INFO) << "Log created.";
+
+    auto config = LoadConfiguration();
+
+    auto engine = SGCT_Init(config);
+
 
     //Master and Slave
-    Master::getInstance()->init(config);
-    Slave::getInstance()->init(config);
+    if (engine->isMaster()) pro_cal::Master::getInstance()->init(config);
+    pro_cal::Slave::getInstance()->init(config, engine.get());
 
     // Main loop
-    gEngine->render();
+    engine->render();
 
-    // Clean up
-    delete gEngine;
-
-    return EXIT_SUCCESS;
+    return SGCT_Cleanup(engine.get());
 }
+
 
 FWConfiguration LoadConfiguration()
 {
+    LOG(INFO) << "Loading configuration.";
     std::ifstream ifs("framework.cfg");
     if (!ifs.is_open()) {
+        LOG(INFO) << "Could not open config file (framework.cfg)." << std::endl;
         std::cout << "Could not open config file (framework.cfg)." << std::endl;
         throw std::runtime_error("Could not open config file (framework.cfg).");
     }
@@ -101,46 +96,75 @@ FWConfiguration LoadConfiguration()
 
     return config;
 }
-/**
-* assign the config parameter with the path to the sgct config file to the sgctConfigFile variable
-*
-* @param argc int variable from the main methode, count of the parameters for the program
-* @param argv char* parameters for the program, pointer to an array of c strings 
-*/
-/*void getSgctConfigFileName(int argc, char* argv[]) {
-    sgctConfigFile.clear();
-    for (int i = 1; i < argc - 1; i++) {
-        if (strcmp(argv[i], "-config") == 0) {
-            sgctConfigFile.assign(argv[i + 1]);
-        }
+
+
+std::unique_ptr<sgct::Engine> SGCT_Init(FWConfiguration config) {
+    std::array<std::vector<char>, 2> argVec;
+    std::array<char*, 2> args;
+
+    {
+        auto configArg = R"(-config ")" + config.sgctConfig_ + R"(")";
+        auto localArg = "-local " + config.sgctLocal_;
+        std::copy(configArg.begin(), configArg.end(), std::back_inserter(argVec[0]));
+        std::copy(configArg.begin(), configArg.end(), std::back_inserter(argVec[1]));
+        args[0] = argVec[0].data();
+        args[1] = argVec[1].data();
     }
-}*/
+    auto argc = static_cast<int>(args.size());
+    auto argv = args.data();
+    auto engine = std::make_unique<sgct::Engine>(argc, argv);
 
-int main(int argc, char* argv[])
+    sgct::MessageHandler::instance()->setLogCallback(&SGCTLog);
+    sgct::MessageHandler::instance()->setLogToCallback(true);
+
+
+    engine->setInitOGLFunction([engine = engine.get()](){ myInitOGLFun(engine); });
+    engine->setDrawFunction([engine = engine.get()](){ myDrawFun(engine); });
+    engine->setPreSyncFunction([engine = engine.get()](){ myPreSyncFun(engine); });
+    engine->setPostSyncPreDrawFunction([engine = engine.get()](){ myPostSyncPreDrawFun(engine); });
+    engine->setCleanUpFunction([engine = engine.get()](){ myCleanUpFun(engine); });
+    engine->setKeyboardCallbackFunction([engine = engine.get()](int key, int action){ keyCallback(engine, key, action); });
+
+    if (!engine->init(sgct::Engine::OpenGL_3_3_Core_Profile))
+    {
+        LOG(FATAL) << "Failed to create SGCT engine.";
+        throw std::runtime_error("Failed to create SGCT engine.");
+    }
+
+    sgct::SharedData::instance()->setEncodeFunction(myEncodeFun);
+    sgct::SharedData::instance()->setDecodeFunction(myDecodeFun);
+
+    return engine;
+}
+
+
+int SGCT_Cleanup(sgct::Engine*)
 {
-    // getSgctConfigFileName(argc, argv);
-    argc_ = argc;
-    argv_ = argv;
-    SGCT_Init();
+    return 0;
+}
 
-    // Exit program
-    exit(EXIT_SUCCESS);
+
+
+using namespace pro_cal;
+
+
+//variables to share across cluster
+sgct::SharedDouble curr_time(0.0);
+
+/**
+* call for every frame on each node the processCommand method from the slave class
+*/
+void myDrawFun(sgct::Engine* engine)
+{
+    Slave::getInstance()->processCommand(engine, static_cast<float>(curr_time.getVal()));
 }
 
 /**
-* call for every frame on each node the processCommand methode from the slave class
+* Master only: calls the processState method, where the states and user input is handled
 */
-void myDrawFun()
+void myPreSyncFun(sgct::Engine* engine)
 {
-    Slave::getInstance()->processCommand(gEngine);
-}
-
-/**
-* Master only: calls the processState methode, where the states and user input is handled
-*/
-void myPreSyncFun()
-{
-    if (gEngine->isMaster())
+    if (engine->isMaster())
     {
         curr_time.setVal(sgct::Engine::getTime());
         Master::getInstance()->processState();
@@ -150,18 +174,18 @@ void myPreSyncFun()
 /**
 * Master&Slave: call all check methods from the slave class, if the message or data is destined for this slave
 */
-void myPostSyncPreDrawFun()
+void myPostSyncPreDrawFun(sgct::Engine* engine)
 {
     //=>moved from myPreSyncFunc()
     Slave::getInstance()->checkMsgFromMaster(Master::getInstance()->getMsgToSlave()->getVal());
 }
 
-void myInitOGLFun()
+void myInitOGLFun(sgct::Engine* engine)
 {
     // init 
 }
 
-void myCleanUpFun()
+void myCleanUpFun(sgct::Engine* engine)
 {
     Slave::getInstance()->destroy();
     Master::getInstance()->destroy();
@@ -174,12 +198,12 @@ void myCleanUpFun()
 void myEncodeFun()
 {
     sgct::SharedData::instance()->writeDouble(&curr_time);
-    //write msgs and data from master to slave	
+    //write msgs and data from master to slave
     sgct::SharedData::instance()->writeObj(Master::getInstance()->getMsgToSlave());
 }
 
 /**
-* Nodes: read/decode all shared objectsfrom the master for the appropriated state
+* Nodes: read/decode all shared objects from the master for the appropriated state
 */
 void myDecodeFun()
 {
@@ -189,12 +213,12 @@ void myDecodeFun()
 }
 
 /**
-* Master only: callback methode for user input on SGCT window (doesnt work if opencv window is focused!)
+* Master only: callback method for user input on SGCT window (does not work if OpenCV window is focused!)
 * change the next_step variable from the Master, to control if the next or previous step should be processed
 */
-void keyCallback(int key, int action)
+void keyCallback(sgct::Engine* engine, int key, int action)
 {
-    if (gEngine->isMaster())
+    if (engine->isMaster())
     {
         switch (key)
         {
