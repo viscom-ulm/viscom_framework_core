@@ -9,7 +9,7 @@ namespace pro_cal {
 	class ProjectorOverlapFramebuffer {
 	public:
 		//---------------------------------------------------------------------
-		ProjectorOverlapFramebuffer(const FWConfiguration& config, sgct::Engine* engine);
+		ProjectorOverlapFramebuffer(const viscom::FWConfiguration& config, sgct::Engine* engine);
 		~ProjectorOverlapFramebuffer();
 
 		//---------------------------------------------------------------------
@@ -43,7 +43,7 @@ namespace pro_cal {
 		GLuint value_uniform_loc;
 
 		GLuint getVAOFillingQuad(){ return this->vao_filling_quad; };
-	    static bool CreateProgram(const FWConfiguration& config, const std::string& programName, const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
+	    static bool CreateProgram(const viscom::FWConfiguration& config, const std::string& programName, const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
 		void UseProgram(const std::string& programName);
 		bool Destroy();
 		void UnBindProgram();

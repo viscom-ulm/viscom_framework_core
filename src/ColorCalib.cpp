@@ -96,7 +96,7 @@ namespace pro_cal {
         return lookUpTableDataList;
     }
 
-    LookUpTableData calcColorLookUpTableDataSingle(const FWConfiguration& config, unsigned int projectorId)
+    LookUpTableData calcColorLookUpTableDataSingle(const viscom::FWConfiguration& config, unsigned int projectorId)
     {
         std::vector<ColorCalibData> colorCalibData;
         loadColorCalibData(config, colorCalibData);
@@ -305,7 +305,7 @@ namespace pro_cal {
             gridLut.LookUpTables[colorIdx][x][y].push_back(val);
         }
     }
-    void loadColorLutData(const FWConfiguration& config, std::vector<LookUpTableData>& lookUpTableData) {
+    void loadColorLutData(const viscom::FWConfiguration& config, std::vector<LookUpTableData>& lookUpTableData) {
         for (int i = 0; i < lookUpTableData.size(); i++) {
             LookUpTableData gridLutData;
             for (int c = 0; c < 3; c++) {
@@ -356,7 +356,7 @@ namespace pro_cal {
     /**
     * load the color calibration data from the data\ColorCalibData.xml file
     */
-    void loadColorCalibData(const FWConfiguration& config, std::vector<ColorCalibData>& colorCalibData) {
+    void loadColorCalibData(const viscom::FWConfiguration& config, std::vector<ColorCalibData>& colorCalibData) {
         auto nodeExists = true;
         unsigned int projectorId = 0;
         while (nodeExists) {

@@ -8,6 +8,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include "sgct.h"
 
+
 namespace pro_cal {/*
 	const std::string CFG_FILE = "config\\properties.xml";
 	const std::string DAT_PATH = "data\\";
@@ -19,8 +20,8 @@ namespace pro_cal {/*
 	extern int START_NODE;
 	const float ViewPlaneX = 1.77777778f;
 	const float ViewPlaneY = 1.0f;
-	const float resolutionX = 1920.f;
-	const float resolutionY = 1080.f;
+	// const float resolutionX = 1920.f;
+	// const float resolutionY = 1080.f;
 
 	typedef unsigned char byte;
 	enum Message { 

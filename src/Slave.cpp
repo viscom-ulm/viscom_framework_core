@@ -117,7 +117,7 @@ namespace pro_cal {
     *
     * Creates all needed elements for rendering
     */
-    void Slave::init(const FWConfiguration& conf, sgct::Engine* eng) {
+    void Slave::init(const viscom::FWConfiguration& conf, sgct::Engine* eng) {
         this->slaveID = sgct_core::ClusterManager::instance()->getThisNodeId();
         config = conf;
         engine = eng;
@@ -232,13 +232,13 @@ namespace pro_cal {
 
 
     /**
-    * send a response message to answer a render command from the master
-    * check if the response message is already sended
-    * if not sended then the message will be sended with the socket client to the master 
-    *
-    * @param respMsg Shared_Msg wich will be sended to the master
-    */
-    /*void Slave::sendMsgToMaster(const Shared_Msg respMsg) {
+     * send a response message to answer a render command from the master
+     * check if the response message is already sended
+     * if not sended then the message will be sended with the socket client to the master 
+     *
+     * @param respMsg Shared_Msg wich will be sended to the master
+     */
+    void Slave::sendMsgToMaster(const Shared_Msg respMsg) {
         if (respondedMsg.msg != respMsg.msg || respondedMsg.window != respMsg.window) {
             if (checkAndStartClientSocket(ClientSocket, masterSocketIP.c_str(), masterSocketPort.c_str(), IPPROTO_UDP)) {
                 sendSocketMsg(ClientSocket, sharedMsgToString(respMsg));
@@ -246,7 +246,7 @@ namespace pro_cal {
                 showMsgToUser("Message from node %d sent: " + MessageToString(respMsg.msg), this->slaveID);
             }
         }
-    }*/
+    }
 
     /**
     * check if the  render command is destined for this slave
@@ -320,14 +320,14 @@ namespace pro_cal {
                 ClientSocket = INVALID_SOCKET;
             }
             response.window = ALL;
-            // respondedMsg.window = ALL;
+            respondedMsg.window = ALL;
             response.msg = NONE;
-            // respondedMsg.msg = NONE;
+            respondedMsg.msg = NONE;
             break;
         }	
         
         oldrenderCmd = renderCmd;
-        // sendMsgToMaster(response);
+        sendMsgToMaster(response);
     }
 
     void Slave::checkFrustumUpdate(int window) {

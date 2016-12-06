@@ -15,6 +15,7 @@ PROJECT(${APP_NAME})
 set(ADD_FATAL_EXAMPLE OFF CACHE BOOL "Fatal (fatal-crashes/contract) examples " FORCE)
 set(ADD_BUILD_WIN_SHARED OFF CACHE BOOL "Build shared library on Windows" FORCE)
 set(USE_DYNAMIC_LOGGING_LEVELS ON CACHE BOOL "Turn ON/OFF log levels. An disabled level will not push logs of that level to the sink. By default dynamic logging is disabled" FORCE)
+set(CHANGE_G3LOG_DEBUG_TO_DBUG ON CACHE BOOL "Use DBUG logging level instead of DEBUG. By default DEBUG is the debugging level" FORCE)
 add_subdirectory(extern/g3log)
 
 find_package(OpenCV REQUIRED)
@@ -75,7 +76,7 @@ set(SGCT_LIBS
 
 find_package(OpenGL REQUIRED)
 
-include_directories(${SGCT_INCLUDE_DIRECTORY} extern/g3log/src)
+include_directories(${SGCT_INCLUDE_DIRECTORY} src extern/g3log/src)
 
 if( MSVC )
     set(LIBS ${SGCT_LIBS} ${OPENGL_LIBRARY} ws2_32)

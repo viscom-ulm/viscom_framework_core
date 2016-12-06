@@ -1,8 +1,8 @@
 #ifndef  __SLAVE_H__
 #define  __SLAVE_H__
 
-#include "ShareUtil.h"
 #include "main.h"
+#include "ShareUtil.h"
 #include "ColorCalib.h"
 #include "ProjectorOverlapFramebuffer.h"
 
@@ -19,7 +19,7 @@ namespace pro_cal {
 
     public:
         static Slave* getInstance() { instance = instance == nullptr ? new Slave() : instance; return instance; }		
-        void init(const FWConfiguration& config, sgct::Engine* engine);
+        void init(const viscom::FWConfiguration& config, sgct::Engine* engine);
         void destroy() { this->getInstance()->~Slave(); }
         void processCommand(sgct::Engine* gEngine, float currentTime);
         void checkMsgFromMaster(const Shared_Msg cmd);
@@ -28,7 +28,7 @@ namespace pro_cal {
         Slave() {}
         ~Slave();
     private:
-        FWConfiguration config;
+        viscom::FWConfiguration config;
         sgct::Engine* engine;
 
         void LoadCalibrationData();
@@ -39,7 +39,7 @@ namespace pro_cal {
         static Slave *instance;
         int slaveID;
         int windowsCount;
-        // Shared_Msg respondedMsg;
+        Shared_Msg respondedMsg;
         Shared_Msg renderCmd, oldrenderCmd;
         SOCKET ClientSocket;
         std::vector<cv::Point2f> *quad_corners;
@@ -64,7 +64,7 @@ namespace pro_cal {
         void draw_scene(int window, float currentTime);
 
         void shutdown(int window);
-        // void sendMsgToMaster(const Shared_Msg msg);
+        void sendMsgToMaster(const Shared_Msg msg);
         void calc_transform_coordinates(int window);
 
         bool *isTmpFBO_Init;

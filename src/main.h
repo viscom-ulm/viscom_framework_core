@@ -11,14 +11,21 @@
 // ReSharper disable CppUnusedIncludeDirective
 #include <string>
 #include <array>
+#include <vector>
+#include <glm/glm.hpp>
+
+#include <g3log/g3log.hpp>
 // ReSharper restore CppUnusedIncludeDirective
 
-struct FWConfiguration
-{
-    std::string baseDirectory_;
-    std::string programProperties_;
-    std::string sgctConfig_;
-    std::string projectorData_;
-    std::string colorCalibrationData_;
-    std::string sgctLocal_;
-};
+namespace viscom {
+
+    struct FWConfiguration
+    {
+        std::string baseDirectory_;
+        std::string programProperties_;
+        std::string sgctConfig_;
+        std::string projectorData_;
+        std::string colorCalibrationData_;
+        std::string sgctLocal_;
+    };
+}

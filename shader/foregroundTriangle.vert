@@ -9,8 +9,8 @@ out vec3 fragColor;
 void main()
 {
     // Output position of the vertex, in clip space : MVP * position
-	gl_Position =  MVP * vec4(vertPosition, 1.0);
-	//fragColor = vec3(vertColor,0);
-	fragColor = vertColor;
+    gl_Position =  MVP * vec4(vertPosition, 1.0);
+    //fragColor = vec3(vertColor,0);
+    fragColor = vertColor;
 }
 

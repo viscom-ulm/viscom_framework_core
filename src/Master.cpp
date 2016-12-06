@@ -37,33 +37,22 @@ namespace pro_cal {
     * calls loadProperties() methode, initialize all private member variables
     * and start socket server to receive messages from slaves
     */
-    void Master::init(const FWConfiguration& conf) {
+    void Master::init(const viscom::FWConfiguration& conf) {
         config = conf;
         loadProperties();
 
         current_state = 0; 
-        current_slave = START_NODE;
-        current_window = 0;
         nextStep = 0;
-        current_color = 0;
         slave_count = static_cast<int>(sgct_core::ClusterManager::instance()->getNumberOfNodes());
-        //calc projector count
-        projector_count = -current_slave;
-        for (int i = 0; i < slave_count; i++) {
-            sgct_core::SGCTNode * currNode = sgct_core::ClusterManager::instance()->getNodePtr(i);
-            for (int j = 0; j < currNode->getNumberOfWindows(); j++) {
-                projector_count += 1;
-            }
-        }
     
         
         msgToSlave = new sgct::SharedObject<Shared_Msg>();
-        /*msgFromSlaves = std::vector<Shared_Msg>(slave_count);
+        msgFromSlaves = std::vector<Shared_Msg>(slave_count);
         for (int i = 0; i < slave_count; i++) {
             msgFromSlaves[i].slaveID = i;
             msgFromSlaves[i].window = 255;
             msgFromSlaves[i].msg = NONE;
-        }*/
+        }
         
         if (sgct_core::ClusterManager::instance()->getThisNodeId() == 0) {
             ServerSocket = INVALID_SOCKET;
@@ -77,7 +66,7 @@ namespace pro_cal {
     *
     * @param currCmd current command which was send to the slave
     */
-    /*void Master::processMsgFromSlave(Message currCmd) {
+    void Master::processMsgFromSlave(Message currCmd) {
         if (checkAndStartServerSocket(ServerSocket, sgct_core::ClusterManager::instance()->getMasterAddress()->c_str(), masterSocketPort.c_str())) {
             std::string recMsg;
             int result = receiveSocketMsg(ServerSocket, recMsg);
@@ -88,9 +77,9 @@ namespace pro_cal {
                     msgFromSlaves[recmsg.slaveID].window = recmsg.window;
                     showMsgToUser("Message from node %d received: " + MessageToString(recmsg.msg), recmsg.slaveID);
                 }
-            }				
-        }		
-    }*/
+            }
+        }
+    }
 
     void Master::checkUserInput(){
         if (nextStep > 0) {
@@ -131,10 +120,10 @@ namespace pro_cal {
     * if the user input is KEY_DOWN, then the state goes back one step
     */
     void Master::finish(){
-        /*bool slavesRdy = checkIfSlavesRdy(ALL, ALL, SHUTDOWN);
+        bool slavesRdy = checkIfSlavesRdy(ALL, ALL, SHUTDOWN);
         if (!slavesRdy) {
             processMsgFromSlave(SHUTDOWN);
-        }*/
+        }
         if (nextStep > 0) {
             sendMsgToSlave(ALL, ALL, NONE);
             closeSocket(ServerSocket);
@@ -156,7 +145,7 @@ namespace pro_cal {
     * @param currCmd the command message what the slave have to show next
     * @return boolean true if one or all slaves are ready, otherwise return false
     */
-    /*bool Master::checkIfSlavesRdy(int slaveID, int current_window, Message currCmd) {
+    bool Master::checkIfSlavesRdy(int slaveID, int current_window, Message currCmd) {
         if (slaveID == ALL) {
             for (Shared_Msg resp : msgFromSlaves) {
                 if (resp.msg != currCmd || (current_window != ALL && resp.window != current_window)) {
@@ -167,8 +156,8 @@ namespace pro_cal {
         }
         else {
             return msgFromSlaves[slaveID].msg == currCmd && msgFromSlaves[slaveID].window == current_window;
-        }		
-    }*/
+        }
+    }
 
     /**
     * Share a message/command with one or all slaves for one or all windows

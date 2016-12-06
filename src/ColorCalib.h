@@ -9,13 +9,13 @@ namespace pro_cal {
     constexpr int VALUE_COUNT = 256;
 
     std::vector<LookUpTableData> calcColorLookUpTableData(const std::vector<ColorCalibData>& gccdList);
-    LookUpTableData calcColorLookUpTableDataSingle(const FWConfiguration& config, unsigned int projectorId);
+    LookUpTableData calcColorLookUpTableDataSingle(const viscom::FWConfiguration& config, unsigned int projectorId);
 
     std::vector<glm::vec3> lookUpTableDataToOpenGLTextureDataVec3f(const pro_cal::LookUpTableData& lookUpTableData);
-    void loadColorCalibData(const FWConfiguration& config, std::vector<ColorCalibData>& colorCalibData);
-    void loadColorCalibDataSingle(const FWConfiguration& config, unsigned int projectorId, ColorCalibData& colorCalibData);
+    void loadColorCalibData(const viscom::FWConfiguration& config, std::vector<ColorCalibData>& colorCalibData);
+    void loadColorCalibDataSingle(const viscom::FWConfiguration& config, unsigned int projectorId, ColorCalibData& colorCalibData);
 
-    void loadColorLutData(const FWConfiguration& config, std::vector<LookUpTableData>& lookUpTableData);
+    void loadColorLutData(const viscom::FWConfiguration& config, std::vector<LookUpTableData>& lookUpTableData);
     std::vector<int> colorCalibDataToIntegerVector(const std::vector<ColorCalibData>& colorCalibData);
     std::vector<ColorCalibData> integerVectorToColorCalibData(const std::vector<int>& ccdData);
 

@@ -7,7 +7,7 @@ namespace pro_cal {
     *
     * @param engine sgct:Engine * main engine
     */
-    ProjectorOverlapFramebuffer::ProjectorOverlapFramebuffer(const FWConfiguration& config, sgct::Engine* engine)
+    ProjectorOverlapFramebuffer::ProjectorOverlapFramebuffer(const viscom::FWConfiguration& config, sgct::Engine* engine)
     {
         gEngine = engine;
 
@@ -544,7 +544,7 @@ namespace pro_cal {
     * @param const std::string& vertexShaderPath path to the vertex shader
     * @param const std::string& fragmentShaderPath path to the fragment shader
     */
-    bool ProjectorOverlapFramebuffer::CreateProgram(const FWConfiguration& config, const std::string& programName,
+    bool ProjectorOverlapFramebuffer::CreateProgram(const viscom::FWConfiguration& config, const std::string& programName,
         const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
     {
         if (!sgct::ShaderManager::instance()->shaderProgramExists(programName)){
