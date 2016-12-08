@@ -36,6 +36,7 @@ namespace viscom {
     protected:
         sgct::Engine* GetEngine() const { return appNode_->GetEngine(); }
         const FWConfiguration& GetConfig() const { return appNode_->GetConfig(); }
+        unsigned int GetGlobalProjectorId(int nodeId, int windowId) const { return appNode_->GetGlobalProjectorId(nodeId, windowId); }
 
     private:
         /** Holds the application node. */

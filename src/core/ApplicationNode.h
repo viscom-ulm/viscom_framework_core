@@ -41,6 +41,7 @@ namespace viscom {
 
         sgct::Engine* GetEngine() const { return engine_.get(); }
         const FWConfiguration& GetConfig() const { return config_; }
+        unsigned int GetGlobalProjectorId(int nodeId, int windowId) const;
 
     private:
         void loadProperties();
@@ -60,12 +61,6 @@ namespace viscom {
         unsigned int startNode_;
         /** Holds the masters port. */
         std::string masterSocketPort_;
-        /** Holds the number of blur repetitions. */
-        unsigned int blurRepetition_;
-        /** Holds the blur radius. */
-        unsigned int blurRadius_;
-        /** Holds the cell count for color calibration. */
-        unsigned int cellCount_;
 
         /** Holds the synchronized application time. */
         sgct::SharedDouble currentTimeSynced_;

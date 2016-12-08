@@ -25,8 +25,8 @@ namespace viscom {
 //void myPostSyncPreDrawFun(sgct::Engine*);
 //void myInitOGLFun(sgct::Engine*);
 //void myCleanUpFun(sgct::Engine*);
-void myEncodeFun();
-void myDecodeFun();
+//void myEncodeFun();
+//void myDecodeFun();
 void keyCallback(sgct::Engine*, int, int);
 
 
@@ -85,7 +85,6 @@ namespace viscom {
             else if (str == "PROGRAM_PROPERTIES=") ifs >> config.programProperties_;
             else if (str == "SGCT_CONFIG=") ifs >> config.sgctConfig_;
             else if (str == "PROJECTOR_DATA=") ifs >> config.projectorData_;
-            else if (str == "COLOR_CALIBRATION_DATA=") ifs >> config.colorCalibrationData_;
             else if (str == "LOCAL=") ifs >> config.sgctLocal_;
         }
         ifs.close();

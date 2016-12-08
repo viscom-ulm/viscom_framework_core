@@ -9,8 +9,8 @@
 #define GLM_SWIZZLE
 
 #include "SlaveNode.h"
-#include "ColorCalib.h"
 #include "core/OpenCVParserHelper.h"
+#include <fstream>
 
 namespace viscom {
 
@@ -27,19 +27,24 @@ namespace viscom {
 
     void SlaveNode::InitOpenGL()
     {
-        const auto SHADER_PATH = GetConfig().baseDirectory_ + "/shader/";
-        if (!sgct::ShaderManager::instance()->shaderProgramExists("calibrationRendering")) {
-            sgct::ShaderManager::instance()->addShaderProgram(calibrationProgram_, "calibrationRendering", SHADER_PATH + "calibrationRendering.vert", SHADER_PATH + "calibrationRendering.frag");
-            sgct::ShaderManager::instance()->bindShaderProgram(calibrationProgram_);
-            sgct::ShaderManager::instance()->unBindShaderProgram();
-        } else calibrationProgram_ = sgct::ShaderManager::instance()->getShaderProgram("calibrationRendering");
+        ApplicationNodeImplementation::InitOpenGL();
 
-        calibrationUseAlphaTestLoc_ = calibrationProgram_.getUniformLocation("withAlphaTrans");
-        calibrationAlphaTexLoc_ = calibrationProgram_.getUniformLocation("alphaTrans");
-        calibrationAlphaOverlapTexLoc_ = calibrationProgram_.getUniformLocation("alphaOverlap");
-        calibrationColorLookupTexLoc_ = calibrationProgram_.getUniformLocation("colorLookup");
-        calibrationSceneTexLoc_ = calibrationProgram_.getUniformLocation("tex");
-        calibrationResolutionLoc_ = calibrationProgram_.getUniformLocation("resolution");
+        // init shaders
+        {
+            const auto SHADER_PATH = GetConfig().baseDirectory_ + "/shader/";
+            if (!sgct::ShaderManager::instance()->shaderProgramExists("calibrationRendering")) {
+                sgct::ShaderManager::instance()->addShaderProgram(calibrationProgram_, "calibrationRendering", SHADER_PATH + "calibrationRendering.vert", SHADER_PATH + "calibrationRendering.frag");
+                sgct::ShaderManager::instance()->bindShaderProgram(calibrationProgram_);
+                sgct::ShaderManager::instance()->unBindShaderProgram();
+            } else calibrationProgram_ = sgct::ShaderManager::instance()->getShaderProgram("calibrationRendering");
+
+            calibrationUseAlphaTestLoc_ = calibrationProgram_.getUniformLocation("withAlphaTrans");
+            calibrationAlphaTexLoc_ = calibrationProgram_.getUniformLocation("alphaTrans");
+            calibrationAlphaOverlapTexLoc_ = calibrationProgram_.getUniformLocation("alphaOverlap");
+            calibrationColorLookupTexLoc_ = calibrationProgram_.getUniformLocation("colorLookup");
+            calibrationSceneTexLoc_ = calibrationProgram_.getUniformLocation("tex");
+            calibrationResolutionLoc_ = calibrationProgram_.getUniformLocation("resolution");
+        }
 
         tinyxml2::XMLDocument doc;
         OpenCVParserHelper::LoadXMLDocument("Projector data", GetConfig().projectorData_, doc);
@@ -47,27 +52,92 @@ namespace viscom {
         auto slaveId = sgct_core::ClusterManager::instance()->getThisNodeId();
         auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
         resolutionScaling_.resize(numWindows, glm::vec2(1.0f));
-        quadCorners_.resize(numWindows);
-        quadTexCoords_.resize(numWindows);
-        quadCoordsProjector_.resize(numWindows);
         sceneFBOs_.resize(numWindows, 0);
         sceneFBOTextures_.resize(numWindows, 0);
         sceneFBODepthBuffers_.resize(numWindows, 0);
+        alphaTextures_.resize(numWindows, 0);
+        if (useAlphaTransition_) alphaTransTextures_.resize(numWindows, 0);
+        colorLookUpTableTextures_.resize(numWindows, 0);
 
-        glGenFramebuffers(numWindows, sceneFBOs_.data());
-        glGenRenderbuffers(numWindows, sceneFBODepthBuffers_.data());
-        glGenTextures(numWindows, sceneFBOTextures_.data());
+        glGenFramebuffers(static_cast<GLsizei>(numWindows), sceneFBOs_.data());
+        glGenRenderbuffers(static_cast<GLsizei>(numWindows), sceneFBODepthBuffers_.data());
+        glGenTextures(static_cast<GLsizei>(numWindows), sceneFBOTextures_.data());
+        glGenTextures(static_cast<GLsizei>(numWindows), alphaTextures_.data());
+        if (useAlphaTransition_) glGenTextures(static_cast<GLsizei>(numWindows), alphaTransTextures_.data());
+        glGenTextures(static_cast<GLsizei>(numWindows), colorLookUpTableTextures_.data());
 
         for (auto i = 0U; i < numWindows; ++i) {
-            auto projectorNo = pro_cal::getProjectorNo(slaveId, i);
-            auto quadCornersName = "quad_corners" + std::to_string(projectorNo);
-            auto quadTexCoordsName = "TexCoordinates" + std::to_string(projectorNo);
+            glm::ivec2 projectorSize;
+            auto window = GetEngine()->getWindowPtr(i);
+            window->getFinalFBODimensions(projectorSize.x, projectorSize.y);
 
-            quadCorners_[i] = OpenCVParserHelper::ParseVector2f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadCornersName.c_str()));
-            quadTexCoords_[i] = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadTexCoordsName.c_str()));
+            auto projectorNo = GetGlobalProjectorId(slaveId, i);
+            auto quadCornersName = "screenQuadCoords" + std::to_string(projectorNo);
+            auto quadTexCoordsName = "screenQuadTexCoords" + std::to_string(projectorNo);
+            auto resolutionScalingName = "resolutionScaling" + std::to_string(projectorNo);
+            auto viewportName = "viewport" + std::to_string(projectorNo);
+            auto texAlphaName = "texAlphaFile" + std::to_string(projectorNo);
+            auto texAlphaTransName = "texAlphaTransFile" + std::to_string(projectorNo);
+            auto colorLUTName = "colorLUTFile" + std::to_string(projectorNo);
 
-            CreateProjectorQuadVBO(i);
-            CreateProjectorFBO(i);
+            auto screenQuadCoords = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadCornersName.c_str()));
+            auto screenQuadTexCoords = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadTexCoordsName.c_str()));
+            resolutionScaling_[i] = OpenCVParserHelper::Parse2f(doc.FirstChildElement("opencv_storage")->FirstChildElement(resolutionScalingName.c_str()));
+            auto viewport = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(viewportName.c_str()));
+            for (auto j = 0U; j < screenQuadCoords.size(); ++j) quadCoordsProjector_.emplace_back(screenQuadCoords[j], screenQuadTexCoords[j]);
+
+            GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::LowerLeft, viewport[0]);
+            GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperLeft, viewport[1]);
+            GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperRight, viewport[2]);
+
+            CreateProjectorFBO(i, projectorSize);
+
+            std::string texAlphaFilename = GetConfig().baseDirectory_ + "data/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaName.c_str())->GetText();
+            std::string texAlphaTransFilename = GetConfig().baseDirectory_ + "data/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaTransName.c_str())->GetText();
+            std::string colorLUTFilename = GetConfig().baseDirectory_ + "data/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(colorLUTName.c_str())->GetText();
+
+            {
+                std::ifstream texAlphaFile(texAlphaFilename, std::ios::binary);
+                std::vector<glm::vec4> texAlphaData(projectorSize.x * projectorSize.y);
+                texAlphaFile.read(reinterpret_cast<char*>(texAlphaData.data()), sizeof(glm::vec4) * texAlphaData.size());
+
+                glBindTexture(GL_TEXTURE_2D, alphaTextures_[i]);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, projectorSize.x, projectorSize.y, 0, GL_RGBA, GL_FLOAT, texAlphaData.data());
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            }
+
+            if (useAlphaTransition_) {
+                std::ifstream texAlphaTransFile(texAlphaTransFilename, std::ios::binary);
+                std::vector<glm::vec4> texAlphaTransData(projectorSize.x * projectorSize.y);
+                texAlphaTransFile.read(reinterpret_cast<char*>(texAlphaTransData.data()), sizeof(glm::vec4) * texAlphaTransData.size());
+
+                glBindTexture(GL_TEXTURE_2D, alphaTransTextures_[i]);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, projectorSize.x, projectorSize.y, 0, GL_RGBA, GL_FLOAT, texAlphaTransData.data());
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            }
+
+            {
+                std::ifstream colorLUTFile(colorLUTFilename, std::ios::binary);
+                std::vector<glm::vec3> colorLUTData(colorCalibrationCellCount_ * colorCalibrationCellCount_ * colorCalibrationValueCount_);
+                colorLUTFile.read(reinterpret_cast<char*>(colorLUTData.data()), sizeof(glm::vec3) * colorLUTData.size());
+
+                glBindTexture(GL_TEXTURE_2D_ARRAY, colorLookUpTableTextures_[i]);
+                glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGB16F, colorCalibrationCellCount_, colorCalibrationCellCount_, colorCalibrationValueCount_, 0, GL_RGB, GL_FLOAT, colorLUTData.data());
+                glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            }
+
+
+            glBindTexture(GL_TEXTURE_2D, 0);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         }
 
         glGenBuffers(1, &vboProjectorQuads_);
@@ -82,6 +152,7 @@ namespace viscom {
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(CalbrationProjectorQuadVertex), reinterpret_cast<GLvoid*>(offsetof(CalbrationProjectorQuadVertex, texCoords_)));
         glBindVertexArray(0);
     }
+
 
     void SlaveNode::DrawFrame()
     {
@@ -122,12 +193,12 @@ namespace viscom {
             glBindTexture(GL_TEXTURE_2D, sceneFBOTextures_[windowId]);
             if (useAlphaTransition_) {
                 glActiveTexture(GL_TEXTURE1);
-                glBindTexture(GL_TEXTURE_2D, tex_AlphaTrans[windowId]);
+                glBindTexture(GL_TEXTURE_2D, alphaTransTextures_[windowId]);
             }
             glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, tex_Alpha[windowId]);
+            glBindTexture(GL_TEXTURE_2D, alphaTextures_[windowId]);
             glActiveTexture(GL_TEXTURE3);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, tex_ColorLookup[windowId]);
+            glBindTexture(GL_TEXTURE_2D_ARRAY, colorLookUpTableTextures_[windowId]);
 
             glUniform1i(calibrationSceneTexLoc_, 0);
             glUniform2f(calibrationResolutionLoc_, static_cast<float>(viewport[2]), static_cast<float>(viewport[3]));
@@ -142,29 +213,10 @@ namespace viscom {
         }
     }
 
-    void SlaveNode::CreateProjectorQuadVBO(size_t windowId)
+
+    void SlaveNode::CreateProjectorFBO(size_t windowId, const glm::ivec2& projectorSize)
     {
-        quadCoordsProjector_.emplace_back(glm::vec3(quadCorners_[windowId][3] * 2.0f - 1.0f, 0.0f), quadTexCoords_[windowId][0]);
-        quadCoordsProjector_.emplace_back(glm::vec3(quadCorners_[windowId][2] * 2.0f - 1.0f, 0.0f), quadTexCoords_[windowId][1]);
-        quadCoordsProjector_.emplace_back(glm::vec3(quadCorners_[windowId][1] * 2.0f - 1.0f, 0.0f), quadTexCoords_[windowId][2]);
-        quadCoordsProjector_.emplace_back(glm::vec3(quadCorners_[windowId][0] * 2.0f - 1.0f, 0.0f), quadTexCoords_[windowId][3]);
-
-        glm::vec2 minCoords = quadCoordsProjector_[4 * windowId].position_.xy;
-        glm::vec2 maxCoords = quadCoordsProjector_[4 * windowId].position_.xy;
-        for (auto i = 1U; i < 4U; ++i) {
-            minCoords = glm::min(minCoords, glm::vec2(quadCoordsProjector_[4 * windowId + i].position_.xy));
-            minCoords = glm::max(maxCoords, glm::vec2(quadCoordsProjector_[4 * windowId + i].position_.xy));
-        }
-        resolutionScaling_[windowId] = (maxCoords - minCoords) * 1.1f;
-    }
-
-    void SlaveNode::CreateProjectorFBO(size_t windowId)
-    {
-        glm::ivec2 fboSize;
-        auto window = GetEngine()->getWindowPtr(windowId);
-        window->getFinalFBODimensions(fboSize.x, fboSize.y);
-
-        fboSize = glm::ivec2(glm::ceil(glm::vec2(fboSize) * resolutionScaling_[windowId]));
+        auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling_[windowId]));
 
         glBindFramebuffer(GL_FRAMEBUFFER, sceneFBOs_[windowId]);
         glBindTexture(GL_TEXTURE_2D, sceneFBOTextures_[windowId]);
@@ -189,11 +241,40 @@ namespace viscom {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
+
     void SlaveNode::loadProperties()
     {
         tinyxml2::XMLDocument doc;
         OpenCVParserHelper::LoadXMLDocument("Program properties", GetConfig().programProperties_, doc);
 
         useAlphaTransition_ = OpenCVParserHelper::ParseText<bool>(doc.FirstChildElement("opencv_storage")->FirstChildElement("alphaTransition"));
+        colorCalibrationCellCount_ = OpenCVParserHelper::ParseText<unsigned int>(doc.FirstChildElement("opencv_storage")->FirstChildElement("ccCellCount"));
+        colorCalibrationValueCount_ = OpenCVParserHelper::ParseText<unsigned int>(doc.FirstChildElement("opencv_storage")->FirstChildElement("ccValueCount"));
     }
+
+
+    void SlaveNode::CleanUp()
+    {
+        if (vaoProjectorQuads_ != 0) glDeleteVertexArrays(0, &vaoProjectorQuads_);
+        vaoProjectorQuads_ = 0;
+        if (vboProjectorQuads_ != 0) glDeleteBuffers(0, &vboProjectorQuads_);
+        vboProjectorQuads_ = 0;
+
+        if (!sceneFBOTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(sceneFBOTextures_.size()), sceneFBOTextures_.data());
+        sceneFBOTextures_.clear();
+        if (!sceneFBODepthBuffers_.empty()) glDeleteRenderbuffers(static_cast<GLsizei>(sceneFBODepthBuffers_.size()), sceneFBODepthBuffers_.data());
+        sceneFBODepthBuffers_.clear();
+        if (!sceneFBOs_.empty()) glDeleteTextures(static_cast<GLsizei>(sceneFBOs_.size()), sceneFBOs_.data());
+        sceneFBOs_.clear();
+
+        if (!alphaTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(alphaTextures_.size()), alphaTextures_.data());
+        alphaTextures_.clear();
+        if (!alphaTransTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(alphaTransTextures_.size()), alphaTransTextures_.data());
+        alphaTransTextures_.clear();
+        if (!colorLookUpTableTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(colorLookUpTableTextures_.size()), colorLookUpTableTextures_.data());
+        colorLookUpTableTextures_.clear();
+
+        ApplicationNodeImplementation::CleanUp();
+    }
+
 }

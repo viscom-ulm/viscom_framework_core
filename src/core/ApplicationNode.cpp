@@ -21,9 +21,6 @@ namespace viscom {
         engine_{ std::move(engine) },
         startNode_{ 0 },
         masterSocketPort_{ "27772" },
-        blurRepetition_{ 1 },
-        blurRadius_{ 1 },
-        cellCount_{ 10 },
         currentTimeSynced_{ 0.0 },
         currentTime_{ 0.0 }
     {
@@ -109,6 +106,7 @@ namespace viscom {
 
     void ApplicationNode::BaseCleanUp() const
     {
+        instance_ = nullptr;
         appNodeImpl_->CleanUp();
     }
 
@@ -126,12 +124,12 @@ namespace viscom {
 
     void ApplicationNode::BaseEncodeDataStatic()
     {
-        instance_->BaseEncodeData();
+        if (instance_) instance_->BaseEncodeData();
     }
 
     void ApplicationNode::BaseDecodeDataStatic()
     {
-        instance_->BaseDecodeData();
+        if (instance_) instance_->BaseDecodeData();
     }
 
     void ApplicationNode::loadProperties()
@@ -141,8 +139,21 @@ namespace viscom {
 
         startNode_ = OpenCVParserHelper::ParseText<unsigned int>(doc.FirstChildElement("opencv_storage")->FirstChildElement("startNode"));
         masterSocketPort_ = OpenCVParserHelper::ParseTextString(doc.FirstChildElement("opencv_storage")->FirstChildElement("masterSocketPort"));
-        blurRepetition_ = OpenCVParserHelper::ParseText<unsigned int>(doc.FirstChildElement("opencv_storage")->FirstChildElement("blurRepetition"));
-        blurRadius_ = OpenCVParserHelper::ParseText<unsigned int>(doc.FirstChildElement("opencv_storage")->FirstChildElement("blurRadius"));
-        cellCount_ = OpenCVParserHelper::ParseText<unsigned int>(doc.FirstChildElement("opencv_storage")->FirstChildElement("sqrtCellCount"));
+    }
+
+    unsigned int ApplicationNode::GetGlobalProjectorId(int nodeId, int windowId) const
+    {
+        if (static_cast<unsigned int>(nodeId) >= startNode_) {
+            unsigned int current_projector = 0;
+            for (int i = startNode_; i < sgct_core::ClusterManager::instance()->getNumberOfNodes(); i++) {
+                sgct_core::SGCTNode * currNode = sgct_core::ClusterManager::instance()->getNodePtr(i);
+                for (int j = 0; j < currNode->getNumberOfWindows(); j++) {
+                    if (i == nodeId && j == windowId) return current_projector;
+
+                    current_projector += 1;
+                }
+            }
+        }
+        return 0;
     }
 }

@@ -17,6 +17,7 @@ namespace viscom {
         glm::vec3 position_;
         glm::vec3 texCoords_;
 
+        CalbrationProjectorQuadVertex() {}
         CalbrationProjectorQuadVertex(const glm::vec3& pos, const glm::vec3& tex) : position_(pos), texCoords_(tex) {}
     };
 

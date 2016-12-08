@@ -21,22 +21,21 @@ namespace viscom {
 
         void InitOpenGL() override;
         void DrawFrame() override;
+        void CleanUp() override;
 
     private:
         void loadProperties();
-        void CreateProjectorQuadVBO(size_t windowId);
-        void CreateProjectorFBO(size_t windowId);
+        void CreateProjectorFBO(size_t windowId, const glm::ivec2& projectorSize);
 
         /** Holds whether to use alpha transition for blending. */
         bool useAlphaTransition_;
+        /** Holds the cell count for color calibration. */
+        unsigned int colorCalibrationCellCount_;
+        /** Holds the value count for color calibration. */
+        unsigned int colorCalibrationValueCount_;
 
         /** Holds the resolution scaling for each quad. */
         std::vector<glm::vec2> resolutionScaling_;
-        /** Holds the quad corners for each window. */
-        std::vector<std::vector<glm::vec2>> quadCorners_;
-        /** Holds the texture coordinates at the quad corners for each window. */
-        std::vector<std::vector<glm::vec3>> quadTexCoords_;
-
         /** Holds the vertex coordinates for the screen aligned quad to render to (in projector space). */
         std::vector<CalbrationProjectorQuadVertex> quadCoordsProjector_;
 
@@ -66,5 +65,11 @@ namespace viscom {
         std::vector<GLuint> sceneFBOTextures_;
         /** Holds the frame buffer depth buffers for rendering the scene into. */
         std::vector<GLuint> sceneFBODepthBuffers_;
+        /** Holds the alpha textures. */
+        std::vector<GLuint> alphaTextures_;
+        /** Holds the alpha trans textures. */
+        std::vector<GLuint> alphaTransTextures_;
+        /** Holds the color lookup tables textures. */
+        std::vector<GLuint> colorLookUpTableTextures_;
     };
 }

@@ -67,4 +67,12 @@ namespace viscom {
         }
         return result;
     }
+
+    glm::vec2 OpenCVParserHelper::Parse2f(tinyxml2::XMLElement* element)
+    {
+        std::stringstream dataStream(element->GetText());
+        float x, y;
+        dataStream >> x >> y;
+        return glm::vec2(x, y);
+    }
 }

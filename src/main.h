@@ -25,7 +25,6 @@ namespace viscom {
         std::string programProperties_;
         std::string sgctConfig_;
         std::string projectorData_;
-        std::string colorCalibrationData_;
         std::string sgctLocal_;
     };
 }
