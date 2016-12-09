@@ -36,13 +36,14 @@ namespace viscom {
         engine_->setPostDrawFunction([app = this]() { app->BasePostDraw(); });
         engine_->setCleanUpFunction([app = this](){ app->BaseCleanUp(); });
 
+        engine_->setKeyboardCallbackFunction([app = this](int key, int scancode, int action, int mods) { app->BaseKeyboardCallback(key, scancode, action, mods); });
+        engine_->setCharCallbackFunction([app = this](unsigned int character, int mods) { app->BaseCharCallback(character, mods); });
+        engine_->setMouseButtonCallbackFunction([app = this](int button, int action) { app->BaseMouseButtonCallback(button, action); });
+        engine_->setMouseScrollCallbackFunction([app = this](double xoffset, double yoffset) { app->BaseMouseScrollCallback(xoffset, yoffset); });
+
         /*
 
-        void setKeyboardCallbackFunction(sgct_cppxeleven::function<void(int, int, int, int)> fn); //arguments: int key, int scancode, int action, int mods
-        void setCharCallbackFunction(sgct_cppxeleven::function<void(unsigned int, int)> fn); //arguments: unsigned int unicode character, int mods
-        void setMouseButtonCallbackFunction(sgct_cppxeleven::function<void(int, int)> fn); //arguments: int button, int action
         void setMousePosCallbackFunction(sgct_cppxeleven::function<void(double, double)> fn); //arguments: double x, double y
-        void setMouseScrollCallbackFunction(sgct_cppxeleven::function<void(double, double)> fn); //arguments: double xoffset, double yoffset
         void setDropCallbackFunction(sgct_cppxeleven::function<void(int, const char**)> fn); //arguments: int count, const char ** list of path strings
 
         void setExternalControlCallback(sgct_cppxeleven::function<void(const char *, int)> fn); //arguments: const char * buffer, int buffer length
@@ -130,6 +131,26 @@ namespace viscom {
         appNodeImpl_->CleanUp();
     }
 
+    void ApplicationNode::BaseKeyboardCallback(int key, int scancode, int action, int mods) const
+    {
+        appNodeImpl_->KeyboardCallback(key, scancode, action, mods);
+    }
+
+    void ApplicationNode::BaseCharCallback(unsigned int character, int mods) const
+    {
+        appNodeImpl_->CharCallback(character, mods);
+    }
+
+    void ApplicationNode::BaseMouseButtonCallback(int button, int action) const
+    {
+        appNodeImpl_->MouseButtonCallback(button, action);
+    }
+
+    void ApplicationNode::BaseMouseScrollCallback(double xoffset, double yoffset) const
+    {
+        appNodeImpl_->MouseScrollCallback(xoffset, yoffset);
+    }
+
     void ApplicationNode::BaseEncodeData()
     {
         sgct::SharedData::instance()->writeDouble(&currentTimeSynced_);
@@ -168,8 +189,8 @@ namespace viscom {
         if (static_cast<unsigned int>(nodeId) >= startNode_) {
             unsigned int current_projector = 0;
             for (int i = startNode_; i < sgct_core::ClusterManager::instance()->getNumberOfNodes(); i++) {
-                sgct_core::SGCTNode * currNode = sgct_core::ClusterManager::instance()->getNodePtr(i);
-                for (int j = 0; j < currNode->getNumberOfWindows(); j++) {
+                auto currNode = sgct_core::ClusterManager::instance()->getNodePtr(i);
+                for (auto j = 0; j < currNode->getNumberOfWindows(); j++) {
                     if (i == nodeId && j == windowId) return current_projector;
 
                     current_projector += 1;

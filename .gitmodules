@@ -1,3 +1,7 @@
 [submodule "extern/g3log"]
 	path = extern/g3log
 	url = https://github.com/KjellKod/g3log.git
+[submodule "extern/imgui"]
+	path = extern/imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = master

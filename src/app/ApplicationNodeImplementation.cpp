@@ -149,6 +149,22 @@ namespace viscom {
         vboBackgroundGrid_ = 0;
     }
 
+    void ApplicationNodeImplementation::KeyboardCallback(int key, int scancode, int action, int mods)
+    {
+    }
+
+    void ApplicationNodeImplementation::CharCallback(unsigned character, int mods)
+    {
+    }
+
+    void ApplicationNodeImplementation::MouseButtonCallback(int button, int action)
+    {
+    }
+
+    void ApplicationNodeImplementation::MouseScrollCallback(double xoffset, double yoffset)
+    {
+    }
+
     void ApplicationNodeImplementation::EncodeData()
     {
     }

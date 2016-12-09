@@ -39,6 +39,11 @@ namespace viscom {
         void BasePostDraw() const;
         void BaseCleanUp() const;
 
+        void BaseKeyboardCallback(int key, int scancode, int action, int mods) const;
+        void BaseCharCallback(unsigned int character, int mods) const;
+        void BaseMouseButtonCallback(int button, int action) const;
+        void BaseMouseScrollCallback(double xoffset, double yoffset) const;
+
         static void BaseEncodeDataStatic();
         static void BaseDecodeDataStatic();
         void BaseEncodeData();

@@ -34,6 +34,11 @@ namespace viscom {
         virtual void PostDraw();
         virtual void CleanUp();
 
+        virtual void KeyboardCallback(int key, int scancode, int action, int mods);
+        virtual void CharCallback(unsigned int character, int mods);
+        virtual void MouseButtonCallback(int button, int action);
+        virtual void MouseScrollCallback(double xoffset, double yoffset);
+
         virtual void EncodeData();
         virtual void DecodeData();
 
