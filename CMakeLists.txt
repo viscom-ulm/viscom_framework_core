@@ -12,11 +12,11 @@ endif()
 
 PROJECT(${APP_NAME})
 
-find_package(OpenCV REQUIRED)
-file(GLOB OPENCV_DEBUG_DLLs $ENV{OPENCV_DIR}/bin/Debug/*.dll)
-file(GLOB OPENCV_RELEASE_DLLs $ENV{OPENCV_DIR}/bin/Release/*.dll)
-file(COPY ${OPENCV_DEBUG_DLLs} DESTINATION ${PROJECT_SOURCE_DIR})
-file(COPY ${OPENCV_RELEASE_DLLs} DESTINATION ${PROJECT_SOURCE_DIR})
+set(ADD_FATAL_EXAMPLE OFF CACHE BOOL "Fatal (fatal-crashes/contract) examples " FORCE)
+set(ADD_BUILD_WIN_SHARED OFF CACHE BOOL "Build shared library on Windows" FORCE)
+set(USE_DYNAMIC_LOGGING_LEVELS ON CACHE BOOL "Turn ON/OFF log levels. An disabled level will not push logs of that level to the sink. By default dynamic logging is disabled" FORCE)
+set(CHANGE_G3LOG_DEBUG_TO_DBUG ON CACHE BOOL "Use DBUG logging level instead of DEBUG. By default DEBUG is the debugging level" FORCE)
+add_subdirectory(extern/g3log)
 
 file(GLOB_RECURSE CFG_FILES ${PROJECT_SOURCE_DIR}/config/*.*)
 file(GLOB_RECURSE DATA_FILES ${PROJECT_SOURCE_DIR}/data/*.*)
@@ -70,7 +70,7 @@ set(SGCT_LIBS
 
 find_package(OpenGL REQUIRED)
 
-include_directories(${SGCT_INCLUDE_DIRECTORY})
+include_directories(${SGCT_INCLUDE_DIRECTORY} src extern/g3log/src)
 
 if( MSVC )
     set(LIBS ${SGCT_LIBS} ${OPENGL_LIBRARY} ws2_32)
@@ -137,7 +137,7 @@ if( CMAKE_COMPILER_IS_GNUCXX )
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static")
 endif()
 
-target_link_libraries(${APP_NAME} ${LIBS} ${OpenCV_LIBS})
+target_link_libraries(${APP_NAME} ${LIBS} g3logger)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${APP_NAME})
 configure_file("framework_ide.cfg" "framework.cfg" COPYONLY)
 

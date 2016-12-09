@@ -1,41 +1,30 @@
+/**
+ * @file   main.h
+ * @author Sebastian Maisch <sebastian.maisch@uni-ulm.de>
+ * @date   2016.11.24
+ *
+ * @brief  Variables, definitions and includes used throughout the framework.
+ */
 
-#ifndef  __MAIN_H__
-#define  __MAIN_H__
+#pragma once
 
-extern sgct::Engine * gEngine;
+// ReSharper disable CppUnusedIncludeDirective
+#include <string>
+#include <array>
+#include <vector>
+#include <glm/glm.hpp>
 
-//FBO-stuff
-struct fbData
-{
-    unsigned int texture;
-    unsigned int fbo;
-    unsigned int renderBuffer;
-    unsigned int depthBuffer;
-    int width;
-    int height;
-};
+#include <g3log/g3log.hpp>
+// ReSharper restore CppUnusedIncludeDirective
 
-struct FWConfiguration
-{
-    std::string baseDirectory_;
-    std::string programProperties_;
-    std::string sgctConfig_;
-    std::string projectorData_;
-    std::string colorCalibrationData_;
-    std::string sgctLocal_;
-};
+namespace viscom {
 
-extern std::vector<fbData> buffers;
-extern sgct_utils::SGCTBox * myBox;
-
-//variables to share across cluster
-extern sgct::SharedDouble curr_time;
-
-// extern void drawScene();
-FWConfiguration LoadConfiguration();
-
-int SGCT_Init();
-
-extern bool SGCT_Restart;
-
-#endif  /*__MAIN_H__*/
+    struct FWConfiguration
+    {
+        std::string baseDirectory_;
+        std::string programProperties_;
+        std::string sgctConfig_;
+        std::string projectorData_;
+        std::string sgctLocal_;
+    };
+}

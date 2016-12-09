@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <opencv_storage>
-<startNode>"0"</startNode>
+<startNode>"1"</startNode>
 <camImagePath>"images\cam_img.JPG"</camImagePath>
 <camDataPath>"data\out_camera_data.xml"</camDataPath>
 <camSocketIP>"127.0.0.1"</camSocketIP>
