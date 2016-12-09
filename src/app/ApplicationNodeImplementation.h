@@ -23,11 +23,15 @@ namespace viscom {
         ApplicationNodeImplementation& operator=(ApplicationNodeImplementation&&) = delete;
         virtual ~ApplicationNodeImplementation();
 
+        virtual void PreWindow();
         virtual void InitOpenGL();
         virtual void PreSync();
         virtual void UpdateSyncedInfo();
         virtual void UpdateFrame(double currentTime, double elapsedTime);
+        virtual void ClearBuffer();
         virtual void DrawFrame();
+        virtual void Draw2D();
+        virtual void PostDraw();
         virtual void CleanUp();
 
         virtual void EncodeData();

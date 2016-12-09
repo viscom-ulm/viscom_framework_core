@@ -10,6 +10,7 @@
 
 #include "main.h"
 #include "sgct.h"
+#include <mutex>
 
 namespace viscom {
 
@@ -28,10 +29,14 @@ namespace viscom {
         void InitNode();
         void Render() const;
 
-        void BaseInitOpenGL();
+        void BasePreWindow();
+        void BaseInitOpenGL() const;
         void BasePreSync();
         void PostSyncFunction();
+        void BaseClearBuffer() const;
         void BaseDrawFrame() const;
+        void BaseDraw2D() const;
+        void BasePostDraw() const;
         void BaseCleanUp() const;
 
         static void BaseEncodeDataStatic();
@@ -49,6 +54,8 @@ namespace viscom {
         /** Holds a static pointer to an object to this class making it singleton in a way. */
         // TODO: This is only a workaround and should be fixed in the future. [12/5/2016 Sebastian Maisch]
         static ApplicationNode* instance_;
+        /** Holds the mutex for the instance pointer. */
+        static std::mutex instanceMutex_;
 
         /** Holds the applications configuration. */
         FWConfiguration config_;

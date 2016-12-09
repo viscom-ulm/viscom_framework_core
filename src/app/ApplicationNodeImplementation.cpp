@@ -19,6 +19,10 @@ namespace viscom {
 
     ApplicationNodeImplementation::~ApplicationNodeImplementation() = default;
 
+    void ApplicationNodeImplementation::PreWindow()
+    {
+    }
+
     void ApplicationNodeImplementation::InitOpenGL()
     {
         const auto SHADER_PATH = GetConfig().baseDirectory_ + "/shader/";
@@ -97,6 +101,13 @@ namespace viscom {
         triangleModelMatrix_ = glm::rotate(glm::mat4(1.0f), static_cast<float>(currentTime), glm::vec3(0.0f, 1.0f, 0.0f));
     }
 
+    void ApplicationNodeImplementation::ClearBuffer()
+    {
+        auto colorPtr = sgct::Engine::instance()->getClearColor();
+        glClearColor(colorPtr[0], colorPtr[1], colorPtr[2], colorPtr[3]);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
     void ApplicationNodeImplementation::DrawFrame()
     {
         glBindVertexArray(vaoBackgroundGrid_);
@@ -120,6 +131,14 @@ namespace viscom {
         glBindVertexArray(0);
 
         sgct::ShaderManager::instance()->unBindShaderProgram();
+    }
+
+    void ApplicationNodeImplementation::Draw2D()
+    {
+    }
+
+    void ApplicationNodeImplementation::PostDraw()
+    {
     }
 
     void ApplicationNodeImplementation::CleanUp()

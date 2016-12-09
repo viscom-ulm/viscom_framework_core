@@ -14,7 +14,8 @@
 
 namespace viscom {
 
-    ApplicationNode* ApplicationNode::instance_ = nullptr;
+    ApplicationNode* ApplicationNode::instance_{ nullptr };
+    std::mutex ApplicationNode::instanceMutex_{ };
 
     ApplicationNode::ApplicationNode(FWConfiguration&& config, std::unique_ptr<sgct::Engine> engine) :
         config_( std::move(config) ),
@@ -25,18 +26,17 @@ namespace viscom {
         currentTime_{ 0.0 }
     {
         loadProperties();
+        engine_->setPreWindowFunction([app = this]() { app->BasePreWindow(); });
         engine_->setInitOGLFunction([app = this]() { app->BaseInitOpenGL(); });
         engine_->setPreSyncFunction([app = this](){ app->BasePreSync(); });
         engine_->setPostSyncPreDrawFunction([app = this]() { app->PostSyncFunction(); });
+        engine_->setClearBufferFunction([app = this]() { app->BaseClearBuffer(); });
         engine_->setDrawFunction([app = this]() { app->BaseDrawFrame(); });
+        engine_->setDraw2DFunction([app = this]() { app->BaseDraw2D(); });
+        engine_->setPostDrawFunction([app = this]() { app->BasePostDraw(); });
         engine_->setCleanUpFunction([app = this](){ app->BaseCleanUp(); });
 
         /*
-
-        void setPreWindowFunction(sgct_cppxeleven::function<void(void)> fn);
-        void setClearBufferFunction(sgct_cppxeleven::function<void(void)> fn);
-        void setDraw2DFunction(sgct_cppxeleven::function<void(void)> fn);
-        void setPostDrawFunction(sgct_cppxeleven::function<void(void)> fn);
 
         void setKeyboardCallbackFunction(sgct_cppxeleven::function<void(int, int, int, int)> fn); //arguments: int key, int scancode, int action, int mods
         void setCharCallbackFunction(sgct_cppxeleven::function<void(unsigned int, int)> fn); //arguments: unsigned int unicode character, int mods
@@ -77,10 +77,14 @@ namespace viscom {
         engine_->render();
     }
 
-    void ApplicationNode::BaseInitOpenGL()
+    void ApplicationNode::BasePreWindow()
     {
         if (engine_->isMaster()) appNodeImpl_ = std::make_unique<MasterNode>(this);
         else appNodeImpl_ = std::make_unique<SlaveNode>(this);
+    }
+
+    void ApplicationNode::BaseInitOpenGL() const
+    {
         appNodeImpl_->InitOpenGL();
     }
 
@@ -99,13 +103,29 @@ namespace viscom {
         appNodeImpl_->UpdateFrame(currentTime_, elapsed);
     }
 
+    void ApplicationNode::BaseClearBuffer() const
+    {
+        appNodeImpl_->ClearBuffer();
+    }
+
     void ApplicationNode::BaseDrawFrame() const
     {
         appNodeImpl_->DrawFrame();
     }
 
+    void ApplicationNode::BaseDraw2D() const
+    {
+        appNodeImpl_->Draw2D();
+    }
+
+    void ApplicationNode::BasePostDraw() const
+    {
+        appNodeImpl_->PostDraw();
+    }
+
     void ApplicationNode::BaseCleanUp() const
     {
+        std::lock_guard<std::mutex> lock{ instanceMutex_ };
         instance_ = nullptr;
         appNodeImpl_->CleanUp();
     }
@@ -124,11 +144,13 @@ namespace viscom {
 
     void ApplicationNode::BaseEncodeDataStatic()
     {
+        std::lock_guard<std::mutex> lock{ instanceMutex_ };
         if (instance_) instance_->BaseEncodeData();
     }
 
     void ApplicationNode::BaseDecodeDataStatic()
     {
+        std::lock_guard<std::mutex> lock{ instanceMutex_ };
         if (instance_) instance_->BaseDecodeData();
     }
 

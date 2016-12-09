@@ -92,9 +92,9 @@ namespace viscom {
 
             CreateProjectorFBO(i, projectorSize);
 
-            std::string texAlphaFilename = GetConfig().baseDirectory_ + "data/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaName.c_str())->GetText();
-            std::string texAlphaTransFilename = GetConfig().baseDirectory_ + "data/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaTransName.c_str())->GetText();
-            std::string colorLUTFilename = GetConfig().baseDirectory_ + "data/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(colorLUTName.c_str())->GetText();
+            auto texAlphaFilename = GetConfig().baseDirectory_ + "data/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaName.c_str())->GetText();
+            auto texAlphaTransFilename = GetConfig().baseDirectory_ + "data/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaTransName.c_str())->GetText();
+            auto colorLUTFilename = GetConfig().baseDirectory_ + "data/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(colorLUTName.c_str())->GetText();
 
             {
                 std::ifstream texAlphaFile(texAlphaFilename, std::ios::binary);
@@ -171,8 +171,7 @@ namespace viscom {
             GLenum drawBuffers = GL_COLOR_ATTACHMENT0;
             glDrawBuffers(1, &drawBuffers);
 
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            ClearBuffer();
 
             ApplicationNodeImplementation::DrawFrame();
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
