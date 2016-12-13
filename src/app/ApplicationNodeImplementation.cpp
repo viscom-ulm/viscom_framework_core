@@ -8,6 +8,8 @@
 
 #include "ApplicationNodeImplementation.h"
 #include "Vertices.h"
+#include <imgui.h>
+#include "core/imgui/imgui_impl_glfw_gl3.h"
 
 namespace viscom {
 
@@ -35,8 +37,7 @@ namespace viscom {
         backgroundMVPLoc_ = backgroundProgram_.getUniformLocation("MVP");
 
 
-        if (!sgct::ShaderManager::instance()->shaderProgramExists("foregroundTriangle"))
-        {
+        if (!sgct::ShaderManager::instance()->shaderProgramExists("foregroundTriangle")) {
             sgct::ShaderManager::instance()->addShaderProgram(triangleProgram_, "foregroundTriangle", SHADER_PATH + "foregroundTriangle.vert", SHADER_PATH + "foregroundTriangle.frag");
             sgct::ShaderManager::instance()->bindShaderProgram(triangleProgram_);
             sgct::ShaderManager::instance()->unBindShaderProgram();
@@ -135,10 +136,18 @@ namespace viscom {
 
     void ApplicationNodeImplementation::Draw2D()
     {
+        auto window = GetEngine()->getCurrentWindowPtr();
+
+        ImGui_ImplGlfwGL3_NewFrame(-GetViewportOrigin(window->getId()), GetViewportSize(window->getId()), GetViewportScaling(window->getId()));
+
+        ImGui::ShowTestWindow();
+
+        ImGui::Render();
     }
 
     void ApplicationNodeImplementation::PostDraw()
     {
+        ImGui_ImplGlfwGL3_FinishAllFrames();
     }
 
     void ApplicationNodeImplementation::CleanUp()
@@ -151,18 +160,27 @@ namespace viscom {
 
     void ApplicationNodeImplementation::KeyboardCallback(int key, int scancode, int action, int mods)
     {
+        ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
     }
 
     void ApplicationNodeImplementation::CharCallback(unsigned character, int mods)
     {
+        ImGui_ImplGlfwGL3_CharCallback(character);
     }
 
     void ApplicationNodeImplementation::MouseButtonCallback(int button, int action)
     {
+        ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
+    }
+
+    void ApplicationNodeImplementation::MousePosCallback(double x, double y)
+    {
+        ImGui_ImplGlfwGL3_MousePositionCallback(x, y);
     }
 
     void ApplicationNodeImplementation::MouseScrollCallback(double xoffset, double yoffset)
     {
+        ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
     }
 
     void ApplicationNodeImplementation::EncodeData()
