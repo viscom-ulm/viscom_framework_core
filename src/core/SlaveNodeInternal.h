@@ -21,11 +21,12 @@ namespace viscom {
 
         void InitOpenGL() override;
         void DrawFrame() override;
+        void Draw2D() override;
         void CleanUp() override;
 
     private:
         void loadProperties();
-        void CreateProjectorFBO(size_t windowId, const glm::ivec2& projectorSize);
+        void CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize);
 
         /** Holds whether to use alpha transition for blending. */
         bool useAlphaTransition_;
@@ -34,8 +35,9 @@ namespace viscom {
         /** Holds the value count for color calibration. */
         unsigned int colorCalibrationValueCount_;
 
-        /** Holds the resolution scaling for each quad. */
-        std::vector<glm::vec2> resolutionScaling_;
+
+        /** Holds the viewport for rendering directly to the projector. */
+        std::vector<std::pair<glm::ivec2, glm::ivec2>> projectorViewport_;
         /** Holds the vertex coordinates for the screen aligned quad to render to (in projector space). */
         std::vector<CalbrationProjectorQuadVertex> quadCoordsProjector_;
 

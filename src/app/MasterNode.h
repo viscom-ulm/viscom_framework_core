@@ -21,6 +21,7 @@ namespace viscom {
         void InitOpenGL() override;
         void PreSync() override;
         void DrawFrame() override;
+        void Draw2D() override;
         void CleanUp() override;
 
         void KeyboardCallback(int key, int scancode, int action, int mods) override;

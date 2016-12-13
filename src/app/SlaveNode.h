@@ -19,6 +19,8 @@ namespace viscom {
         explicit SlaveNode(ApplicationNode* appNode);
         ~SlaveNode();
 
+        void Draw2D() override;
+
     private:
     };
 }

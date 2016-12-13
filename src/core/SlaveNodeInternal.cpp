@@ -51,7 +51,7 @@ namespace viscom {
 
         auto slaveId = sgct_core::ClusterManager::instance()->getThisNodeId();
         auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
-        resolutionScaling_.resize(numWindows, glm::vec2(1.0f));
+        projectorViewport_.resize(numWindows, std::make_pair(glm::ivec2(0), glm::ivec2(0)));
         sceneFBOs_.resize(numWindows, 0);
         sceneFBOTextures_.resize(numWindows, 0);
         sceneFBODepthBuffers_.resize(numWindows, 0);
@@ -67,9 +67,8 @@ namespace viscom {
         glGenTextures(static_cast<GLsizei>(numWindows), colorLookUpTableTextures_.data());
 
         for (auto i = 0U; i < numWindows; ++i) {
-            glm::ivec2 projectorSize;
-            auto window = GetEngine()->getWindowPtr(i);
-            window->getFinalFBODimensions(projectorSize.x, projectorSize.y);
+            projectorViewport_[i] = GetViewport(i);
+            glm::ivec2 projectorSize = GetViewport(i).second;
 
             auto projectorNo = GetGlobalProjectorId(slaveId, i);
             auto quadCornersName = "screenQuadCoords" + std::to_string(projectorNo);
@@ -82,7 +81,7 @@ namespace viscom {
 
             auto screenQuadCoords = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadCornersName.c_str()));
             auto screenQuadTexCoords = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadTexCoordsName.c_str()));
-            resolutionScaling_[i] = OpenCVParserHelper::Parse2f(doc.FirstChildElement("opencv_storage")->FirstChildElement(resolutionScalingName.c_str()));
+            auto resolutionScaling = OpenCVParserHelper::Parse2f(doc.FirstChildElement("opencv_storage")->FirstChildElement(resolutionScalingName.c_str()));
             auto viewport = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(viewportName.c_str()));
             for (auto j = 0U; j < screenQuadCoords.size(); ++j) quadCoordsProjector_.emplace_back(screenQuadCoords[j], screenQuadTexCoords[j]);
 
@@ -90,7 +89,16 @@ namespace viscom {
             GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperLeft, viewport[1]);
             GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperRight, viewport[2]);
 
-            CreateProjectorFBO(i, projectorSize);
+
+            auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling));
+            GetViewport(i).second = fboSize;
+            glm::vec3 vpSize(1.7777777777777f, 1.0f, 1.0f);
+            auto totalScreenSize = (glm::vec2(fboSize) * 2.0f * vpSize.xy) / (viewport[2] - viewport[0]).xy;
+            GetViewportOrigin(i) = glm::ivec2(glm::floor(((viewport[0] + vpSize) / (2.0f * vpSize)).xy * totalScreenSize));
+            GetViewportScaling(i) = totalScreenSize / glm::vec2(1920.0f, 1080.0f);
+            GetViewportSize(i) = glm::ivec2(glm::floor(totalScreenSize));
+
+            CreateProjectorFBO(i, fboSize);
 
             auto texAlphaFilename = GetConfig().baseDirectory_ + "data/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaName.c_str())->GetText();
             auto texAlphaTransFilename = GetConfig().baseDirectory_ + "data/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaTransName.c_str())->GetText();
@@ -158,14 +166,12 @@ namespace viscom {
     {
         auto window = GetEngine()->getCurrentWindowPtr();
         auto windowId = window->getId();
-        std::array<int, 4> viewport;
-        window->getCurrentViewportPixelCoords(viewport[0], viewport[1], viewport[2], viewport[3]);
 
         window->getFBOPtr()->unBind();
 
         // Draw scene to off screen texture.
         {
-            glViewport(viewport[0], viewport[1], static_cast<GLsizei>(viewport[2] * resolutionScaling_[windowId].x), static_cast<GLsizei>(viewport[3] * resolutionScaling_[windowId].y));
+            glViewport(GetViewport(windowId).first.x, GetViewport(windowId).first.y, GetViewport(windowId).second.x, GetViewport(windowId).second.y);
 
             glBindFramebuffer(GL_FRAMEBUFFER, sceneFBOs_[windowId]);
             GLenum drawBuffers = GL_COLOR_ATTACHMENT0;
@@ -174,17 +180,25 @@ namespace viscom {
             ClearBuffer();
 
             ApplicationNodeImplementation::DrawFrame();
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
+    }
+
+    void SlaveNodeInternal::Draw2D()
+    {
+        ApplicationNodeImplementation::Draw2D();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         glDisable(GL_SCISSOR_TEST);
         glDisable(GL_STENCIL_TEST);
         glDisable(GL_DEPTH_TEST);
 
+        auto window = GetEngine()->getCurrentWindowPtr();
+        auto windowId = window->getId();
+
         // Draw off screen texture to screen
         {
             window->getFBOPtr()->bind();
-            glViewport(viewport[0], viewport[1], viewport[2], viewport[3]);
+            glViewport(projectorViewport_[windowId].first.x, projectorViewport_[windowId].first.y, projectorViewport_[windowId].second.x, projectorViewport_[windowId].second.y);
 
             sgct::ShaderManager::instance()->bindShaderProgram(calibrationProgram_);
 
@@ -200,7 +214,7 @@ namespace viscom {
             glBindTexture(GL_TEXTURE_2D_ARRAY, colorLookUpTableTextures_[windowId]);
 
             glUniform1i(calibrationSceneTexLoc_, 0);
-            glUniform2f(calibrationResolutionLoc_, static_cast<float>(viewport[2]), static_cast<float>(viewport[3]));
+            glUniform2f(calibrationResolutionLoc_, static_cast<float>(projectorViewport_[windowId].second.x), static_cast<float>(projectorViewport_[windowId].second.y));
             glUniform1i(calibrationUseAlphaTestLoc_, useAlphaTransition_ ? 1 : 0);
             if (useAlphaTransition_) glUniform1i(calibrationAlphaTexLoc_, 1);
             glUniform1i(calibrationAlphaOverlapTexLoc_, 2);
@@ -213,10 +227,8 @@ namespace viscom {
     }
 
 
-    void SlaveNodeInternal::CreateProjectorFBO(size_t windowId, const glm::ivec2& projectorSize)
+    void SlaveNodeInternal::CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize)
     {
-        auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling_[windowId]));
-
         glBindFramebuffer(GL_FRAMEBUFFER, sceneFBOs_[windowId]);
         glBindTexture(GL_TEXTURE_2D, sceneFBOTextures_[windowId]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -275,5 +287,4 @@ namespace viscom {
 
         ApplicationNodeImplementation::CleanUp();
     }
-
 }

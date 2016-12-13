@@ -24,9 +24,6 @@ namespace viscom {
     void MasterNode::InitOpenGL()
     {
         ApplicationNodeImplementation::InitOpenGL();
-
-        ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), false);
-
     }
 
     void MasterNode::PreSync()
@@ -37,37 +34,50 @@ namespace viscom {
     void MasterNode::DrawFrame()
     {
         ApplicationNodeImplementation::DrawFrame();
+    }
 
-        ImGui_ImplGlfwGL3_NewFrame();
-        ImGui::ShowTestWindow();
+    void MasterNode::Draw2D()
+    {
+        auto window = GetEngine()->getCurrentWindowPtr();
+
+        ImGui_ImplGlfwGL3_NewFrame(-GetViewportOrigin(window->getId()), GetViewport(window->getId()).second, GetViewportScaling(window->getId()));
+
+        ImGui::SetNextWindowPos(ImVec2(700, 60), ImGuiSetCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiSetCond_FirstUseEver);
+        if (ImGui::Begin("MasterTestWindow", nullptr, ImGuiWindowFlags_ShowBorders))
+        {
+            ImGui::Text("Hello World on Master!");
+            ImGui::End();
+        }
 
         ImGui::Render();
+
+        ApplicationNodeImplementation::Draw2D();
     }
 
     void MasterNode::CleanUp()
     {
-        ImGui_ImplGlfwGL3_Shutdown();
         ApplicationNodeImplementation::CleanUp();
     }
 
     void MasterNode::KeyboardCallback(int key, int scancode, int action, int mods)
     {
-        ImGui_ImplGlfwGL3_KeyCallback(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), key, scancode, action, mods);
+        ApplicationNodeImplementation::KeyboardCallback(key, scancode, action, mods);
     }
 
     void MasterNode::CharCallback(unsigned character, int mods)
     {
-        ImGui_ImplGlfwGL3_CharCallback(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), character);
+        ApplicationNodeImplementation::CharCallback(character, mods);
     }
 
     void MasterNode::MouseButtonCallback(int button, int action)
     {
-        ImGui_ImplGlfwGL3_MouseButtonCallback(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), button, action, 0);
+        ApplicationNodeImplementation::MouseButtonCallback(button, action);
     }
 
     void MasterNode::MouseScrollCallback(double xoffset, double yoffset)
     {
-        ImGui_ImplGlfwGL3_ScrollCallback(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), xoffset, yoffset);
+        ApplicationNodeImplementation::MouseScrollCallback(xoffset, yoffset);
     }
 
 }

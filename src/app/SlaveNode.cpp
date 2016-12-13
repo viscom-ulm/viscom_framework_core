@@ -15,6 +15,11 @@ namespace viscom {
     {
     }
 
+    void SlaveNode::Draw2D()
+    {
+        // always do this call last!
+        SlaveNodeInternal::Draw2D();
+    }
 
     SlaveNode::~SlaveNode() = default;
 
