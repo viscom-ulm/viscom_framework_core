@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<ColorCalibData_0_0 type_id="opencv-matrix">
+  <rows>1</rows>
+  <cols>1</cols>
+  <dt>"3f"</dt>
+  <data>
+    0. 0. 0.</data></ColorCalibData_0_0>
+ <!-- resumed -->
+
+<ColorCalibData_0_1 type_id="opencv-matrix">
+  <rows>1</rows>
+  <cols>1</cols>
+  <dt>"3f"</dt>
+  <data>
+    0. 0. 1.</data></ColorCalibData_0_1>
+ <!-- resumed -->
+
+<ColorCalibData_0_2 type_id="opencv-matrix">
+  <rows>1</rows>
+  <cols>1</cols>
+  <dt>"3f"</dt>
+  <data>
+    0. 0. 1.</data></ColorCalibData_0_2>
+ <!-- resumed -->
+
+<ColorCalibData_0_3 type_id="opencv-matrix">
+  <rows>1</rows>
+  <cols>1</cols>
+  <dt>"3f"</dt>
+  <data>
+    0. 0. 1.</data></ColorCalibData_0_3>
+</opencv_storage>

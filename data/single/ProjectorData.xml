@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<WallCorners type_id="opencv-matrix">
+  <rows>4</rows>
+  <cols>1</cols>
+  <dt>"2f"</dt>
+  <data>
+    10.0 0. 1920.0 0. 1920.0 1080.0 0. 1080.0</data></WallCorners>
+ <!-- resumed -->
+
+<LocalLowHighVP0 type_id="opencv-matrix">
+  <rows>2</rows>
+  <cols>1</cols>
+  <dt>"2f"</dt>
+  <data>
+    -1.77777778 -1.0 1.77777778 1.0</data></LocalLowHighVP0>
+ <!-- resumed -->
+
+<quad_corners0 type_id="opencv-matrix">
+  <rows>4</rows>
+  <cols>1</cols>
+  <dt>"2f"</dt>
+  <data>
+    0. 1.0 1.0 1.0 
+	1.0 0. 0. 0.</data></quad_corners0>
+ <!-- resumed -->
+
+<TexCoordinates0 type_id="opencv-matrix">
+  <rows>4</rows>
+  <cols>1</cols>
+  <dt>"3f"</dt>
+  <data>
+    0. 0. 2.0 2.0 
+	0. 2.0 2.0 2.0 
+	2.0 0. 2.0 2.0</data></TexCoordinates0>
+ <!-- resumed -->
+
+<ViewPlaneCoordinates type_id="opencv-matrix">
+  <rows>4</rows>
+  <cols>1</cols>
+  <dt>"2f"</dt>
+  <data>
+    -1.0 1.0 1.0 1.0
+    1.0 -1.0 -1.0 -1.0</data></ViewPlaneCoordinates>
+ <!-- resumed -->
+
+<projectorCorners type_id="opencv-matrix">
+  <rows>4</rows>
+  <cols>1</cols>
+  <dt>"2f"</dt>
+  <data>
+    0. 0. 1920.0 0.
+    1920.0 1080.0 0. 1080.0</data></projectorCorners>
+</opencv_storage>
