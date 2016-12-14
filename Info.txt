@@ -1,10 +1,7 @@
-Es müssen folgende Umgebungsvariablen gesetzt sein:
+You need to set the environment variable to find SGCT:
 SGCT_ROOT_DIR
-OPENCV_DIR
 
-In CMake müssen dann noch folgende beiden Werte eingetragen werden, z.B.:
-SGCT_RELEASE_LIBRARY => D:/APIs/SGCT/sgct-2.7.0/lib/msvc12_x64/sgct.lib
-SGCT_DEBUG_LIBRARY => D:/APIs/SGCT/sgct-2.7.0/lib/msvc12_x64/sgctd.lib
-
-In Visual Studio kann mit folgendem Befehlsargument ein lokaler Test gestartet werden:
--config "data/single_quad.xml" -local 0
+Some CMake variables influence the build process:
+VISCOM_CLIENTGUI
+VISCOM_CLIENTMOUSECURSOR
+VISCOM_SYNCINPUT

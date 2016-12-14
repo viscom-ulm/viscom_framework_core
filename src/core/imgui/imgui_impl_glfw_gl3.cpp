@@ -364,7 +364,7 @@ void ImGui_ImplGlfwGL3_Shutdown()
     ImGui::Shutdown();
 }
 
-void ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ivec2& viewportSize, const glm::vec2& scaling)
+void ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ivec2& viewportSize, const glm::vec2& scaling, double currentTime, double deltaTime)
 {
     if (!g_FontTexture)
         ImGui_ImplGlfwGL3_CreateDeviceObjects();
@@ -385,9 +385,11 @@ void ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ive
     io.DisplayFramebufferScale = ImVec2(scaling.x, scaling.y);
 
     // Setup time step
-    double current_time =  glfwGetTime();
-    io.DeltaTime = g_Time > 0.0 ? (float)(current_time - g_Time) : (float)(1.0f/60.0f);
-    g_Time = current_time;
+    // double current_time =  glfwGetTime();
+    // io.DeltaTime = g_Time > 0.0 ? (float)(current_time - g_Time) : (float)(1.0f/60.0f);
+    // g_Time = current_time;
+    io.DeltaTime = static_cast<float>(deltaTime);
+    g_Time = currentTime;
 
     // Setup inputs
     // (we already got mouse wheel, keyboard keys & characters from glfw callbacks polled in glfwPollEvents())

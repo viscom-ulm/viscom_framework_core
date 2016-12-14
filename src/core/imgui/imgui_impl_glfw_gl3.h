@@ -12,7 +12,7 @@ struct GLFWwindow;
 
 IMGUI_API bool        ImGui_ImplGlfwGL3_Init(GLFWwindow* window, bool drawCursor);
 IMGUI_API void        ImGui_ImplGlfwGL3_Shutdown();
-IMGUI_API void        ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ivec2& viewportSize, const glm::vec2& scaling);
+IMGUI_API void        ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ivec2& viewportSize, const glm::vec2& scaling, double currentTime, double deltaTime);
 IMGUI_API void        ImGui_ImplGlfwGL3_FinishAllFrames();
 
 // Use if you want to reset your rendering device without losing ImGui state.

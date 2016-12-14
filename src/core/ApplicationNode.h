@@ -54,14 +54,16 @@ namespace viscom {
         sgct::Engine* GetEngine() const { return engine_.get(); }
         const FWConfiguration& GetConfig() const { return config_; }
         unsigned int GetGlobalProjectorId(int nodeId, int windowId) const;
-        const std::pair<glm::ivec2, glm::ivec2>& GetViewport(size_t windowId) const { return viewport_[windowId]; }
-        std::pair<glm::ivec2, glm::ivec2>& GetViewport(size_t windowId) { return viewport_[windowId]; }
+
+        const std::pair<glm::ivec2, glm::ivec2>& GetViewportScreen(size_t windowId) const { return viewportScreen_[windowId]; }
+        std::pair<glm::ivec2, glm::ivec2>& GetViewportScreen(size_t windowId) { return viewportScreen_[windowId]; }
+        const glm::ivec2& GetViewportQuadSize(size_t windowId) const { return viewportQuadSize_[windowId]; }
+        glm::ivec2& GetViewportQuadSize(size_t windowId) { return viewportQuadSize_[windowId]; }
         const glm::vec2& GetViewportScaling(size_t windowId) const { return viewportScaling_[windowId]; }
         glm::vec2& GetViewportScaling(size_t windowId) { return viewportScaling_[windowId]; }
-        const glm::ivec2& GetViewportOrigin(size_t windowId) const { return viewportOrigin_[windowId]; }
-        glm::ivec2& GetViewportOrigin(size_t windowId) { return viewportOrigin_[windowId]; }
-        const glm::ivec2& GetViewportSize(size_t windowId) const { return viewportSize_[windowId]; }
-        glm::ivec2& GetViewportSize(size_t windowId) { return viewportSize_[windowId]; }
+
+        double GetCurrentAppTime() const { return currentTime_; }
+        double GetElapsedTime() const { return elapsedTime_; }
 
     private:
         void loadProperties();
@@ -83,20 +85,27 @@ namespace viscom {
         /** Holds the masters port. */
         std::string masterSocketPort_;
 
-        /** Holds the viewport for rendering content to each window. */
-        std::vector<std::pair<glm::ivec2, glm::ivec2>> viewport_;
+        /** Holds the viewport for rendering content to the total screen. */
+        std::vector<std::pair<glm::ivec2, glm::ivec2>> viewportScreen_;
+        /** Holds the size of the viewport for each window quad. */
+        std::vector<glm::ivec2> viewportQuadSize_;
         /** Holds the viewport scaling if one applies. */
         std::vector<glm::vec2> viewportScaling_;
+
+        /** Holds the viewport for rendering content to each window. */
+        //std::vector<std::pair<glm::ivec2, glm::ivec2>> viewport_;
+
         /** Holds the viewport origin if exists. */
-        std::vector<glm::ivec2> viewportOrigin_;
-        /** Holds the viewport scaling if one applies. */
-        std::vector<glm::ivec2> viewportSize_;
+        // std::vector<glm::ivec2> viewportOrigin_;
 
         /** Holds the synchronized application time. */
         sgct::SharedDouble currentTimeSynced_;
         /** Holds the current application time. */
         double currentTime_;
+        /** Holds the time elapsed since the last frame. */
+        double elapsedTime_;
 
+#ifdef VISCOM_SYNCINPUT
         /** Holds the vector with keyboard events. */
         std::vector<KeyboardEvent> keyboardEvents_;
         /** Holds the synchronized vector with keyboard events. */
@@ -117,5 +126,6 @@ namespace viscom {
         std::vector<MouseScrollEvent> mouseScrollEvents_;
         /** Holds the synchronized vector with mouse scroll events. */
         sgct::SharedVector<MouseScrollEvent> mouseScrollEventsSynced_;
+#endif
     };
 }

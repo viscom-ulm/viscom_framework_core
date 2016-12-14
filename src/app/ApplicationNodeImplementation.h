@@ -47,14 +47,16 @@ namespace viscom {
         sgct::Engine* GetEngine() const { return appNode_->GetEngine(); }
         const FWConfiguration& GetConfig() const { return appNode_->GetConfig(); }
         unsigned int GetGlobalProjectorId(int nodeId, int windowId) const { return appNode_->GetGlobalProjectorId(nodeId, windowId); }
-        const std::pair<glm::ivec2, glm::ivec2>& GetViewport(size_t windowId) const { return appNode_->GetViewport(windowId); }
-        std::pair<glm::ivec2, glm::ivec2>& GetViewport(size_t windowId) { return appNode_->GetViewport(windowId); }
+
+        const std::pair<glm::ivec2, glm::ivec2>& GetViewportScreen(size_t windowId) const { return appNode_->GetViewportScreen(windowId); }
+        std::pair<glm::ivec2, glm::ivec2>& GetViewportScreen(size_t windowId) { return appNode_->GetViewportScreen(windowId); }
+        const glm::ivec2& GetViewportQuadSize(size_t windowId) const { return appNode_->GetViewportQuadSize(windowId); }
+        glm::ivec2& GetViewportQuadSize(size_t windowId) { return appNode_->GetViewportQuadSize(windowId); }
         const glm::vec2& GetViewportScaling(size_t windowId) const { return appNode_->GetViewportScaling(windowId); }
         glm::vec2& GetViewportScaling(size_t windowId) { return appNode_->GetViewportScaling(windowId); }
-        const glm::ivec2& GetViewportOrigin(size_t windowId) const { return appNode_->GetViewportOrigin(windowId); }
-        glm::ivec2& GetViewportOrigin(size_t windowId) { return appNode_->GetViewportOrigin(windowId); }
-        const glm::ivec2& GetViewportSize(size_t windowId) const { appNode_->GetViewportSize(windowId); }
-        glm::ivec2& GetViewportSize(size_t windowId) { return appNode_->GetViewportSize(windowId); }
+
+        double GetCurrentAppTime() const { return appNode_->GetCurrentAppTime(); }
+        double GetElapsedTime() const { return appNode_->GetElapsedTime(); }
 
     private:
         /** Holds the application node. */

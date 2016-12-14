@@ -11,6 +11,7 @@
 #include "SlaveNodeInternal.h"
 #include "core/OpenCVParserHelper.h"
 #include <fstream>
+#include <imgui.h>
 
 namespace viscom {
 
@@ -67,8 +68,8 @@ namespace viscom {
         glGenTextures(static_cast<GLsizei>(numWindows), colorLookUpTableTextures_.data());
 
         for (auto i = 0U; i < numWindows; ++i) {
-            projectorViewport_[i] = GetViewport(i);
-            glm::ivec2 projectorSize = GetViewport(i).second;
+            projectorViewport_[i] = GetViewportScreen(i);
+            auto projectorSize = GetViewportScreen(i).second;
 
             auto projectorNo = GetGlobalProjectorId(slaveId, i);
             auto quadCornersName = "screenQuadCoords" + std::to_string(projectorNo);
@@ -91,12 +92,12 @@ namespace viscom {
 
 
             auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling));
-            GetViewport(i).second = fboSize;
             glm::vec3 vpSize(1.7777777777777f, 1.0f, 1.0f);
             auto totalScreenSize = (glm::vec2(fboSize) * 2.0f * vpSize.xy) / (viewport[2] - viewport[0]).xy;
-            GetViewportOrigin(i) = glm::ivec2(glm::floor(((viewport[0] + vpSize) / (2.0f * vpSize)).xy * totalScreenSize));
+            GetViewportScreen(i).first = glm::ivec2(glm::floor(((viewport[0] + vpSize) / (2.0f * vpSize)).xy * totalScreenSize));
+            GetViewportScreen(i).second = glm::ivec2(glm::floor(totalScreenSize));
+            GetViewportQuadSize(i) = fboSize;
             GetViewportScaling(i) = totalScreenSize / glm::vec2(1920.0f, 1080.0f);
-            GetViewportSize(i) = glm::ivec2(glm::floor(totalScreenSize));
 
             CreateProjectorFBO(i, fboSize);
 
@@ -171,7 +172,7 @@ namespace viscom {
 
         // Draw scene to off screen texture.
         {
-            glViewport(GetViewport(windowId).first.x, GetViewport(windowId).first.y, GetViewport(windowId).second.x, GetViewport(windowId).second.y);
+            glViewport(projectorViewport_[windowId].first.x, projectorViewport_[windowId].first.y, GetViewportQuadSize(windowId).x, GetViewportQuadSize(windowId).y);
 
             glBindFramebuffer(GL_FRAMEBUFFER, sceneFBOs_[windowId]);
             GLenum drawBuffers = GL_COLOR_ATTACHMENT0;
@@ -186,6 +187,11 @@ namespace viscom {
     void SlaveNodeInternal::Draw2D()
     {
         ApplicationNodeImplementation::Draw2D();
+
+#ifdef VISCOM_CLIENTGUI
+        ImGui::Render();
+#endif
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         glDisable(GL_SCISSOR_TEST);

@@ -14,6 +14,12 @@
 #include <imgui.h>
 #include "core/imgui/imgui_impl_glfw_gl3.h"
 
+#ifdef VISCOM_CLIENTMOUSECURSOR
+#define CLIENTMOUSE true
+#else
+#define CLIENTMOUSE false
+#endif
+
 namespace viscom {
 
     ApplicationNode* ApplicationNode::instance_{ nullptr };
@@ -88,22 +94,26 @@ namespace viscom {
     void ApplicationNode::BaseInitOpenGL()
     {
         auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
-        viewport_.resize(numWindows, std::make_pair(glm::ivec2(0), glm::ivec2()));
-        viewportOrigin_.resize(numWindows, glm::ivec2(0));
+        viewportScreen_.resize(numWindows, std::make_pair(glm::ivec2(0), glm::ivec2()));
+        viewportQuadSize_.resize(numWindows, glm::ivec2(0));
         viewportScaling_.resize(numWindows, glm::vec2(1.0f));
-        viewportSize_.resize(numWindows, glm::ivec2(0));
 
         for (size_t wId = 0; wId < numWindows; ++wId) {
             glm::ivec2 projectorSize;
             auto window = GetEngine()->getWindowPtr(wId);
             window->getFinalFBODimensions(projectorSize.x, projectorSize.y);
-            viewport_[wId].second = projectorSize;
-            viewportOrigin_[wId] = glm::ivec2(0);
+            viewportScreen_[wId].first = glm::ivec2(0);
+            viewportScreen_[wId].second = projectorSize;
+            viewportQuadSize_[wId] = projectorSize;
             viewportScaling_[wId] = glm::vec2(projectorSize) / glm::vec2(1920.0f, 1080.0f);
-            viewportSize_[wId] = projectorSize;
         }
 
-        ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster());
+#ifdef VISCOM_CLIENTGUI
+        ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && CLIENTMOUSE);
+#else
+        if (GetEngine()->isMaster()) ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && CLIENTMOUSE);
+#endif
+        
 
         appNodeImpl_->InitOpenGL();
     }
@@ -111,6 +121,7 @@ namespace viscom {
     void ApplicationNode::BasePreSync()
     {
         if (engine_->isMaster()) {
+#ifdef VISCOM_SYNCINPUT
             {
                 std::vector<KeyboardEvent> keybEvts;
                 keybEvts.swap(keyboardEvents_);
@@ -140,6 +151,7 @@ namespace viscom {
                 mScrlEvts.swap(mouseScrollEvents_);
                 mouseScrollEventsSynced_.setVal(mScrlEvts);
             }
+#endif
 
             currentTimeSynced_.setVal(sgct::Engine::getTime());
         }
@@ -148,6 +160,7 @@ namespace viscom {
 
     void ApplicationNode::PostSyncFunction()
     {
+#ifdef VISCOM_SYNCINPUT
         if (!engine_->isMaster()) {
             {
                 auto keybEvts = keyboardEventsSynced_.getVal();
@@ -175,13 +188,14 @@ namespace viscom {
                 for (const auto s : mScrlEvts) appNodeImpl_->MouseScrollCallback(s.xoffset_, s.yoffset_);
             }
         }
+#endif
 
         auto lastTime = currentTime_;
         currentTime_ = currentTimeSynced_.getVal();
         appNodeImpl_->UpdateSyncedInfo();
 
-        auto elapsed = currentTimeSynced_ - lastTime;
-        appNodeImpl_->UpdateFrame(currentTime_, elapsed);
+        elapsedTime_ = currentTimeSynced_ - lastTime;
+        appNodeImpl_->UpdateFrame(currentTime_, elapsedTime_);
     }
 
     void ApplicationNode::BaseClearBuffer() const
@@ -196,74 +210,115 @@ namespace viscom {
 
     void ApplicationNode::BaseDraw2D() const
     {
+        auto window = GetEngine()->getCurrentWindowPtr();
+
+#ifdef VISCOM_CLIENTGUI
+        ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(window->getId()).first, GetViewportScreen(window->getId()).second, GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
+#else
+        if (engine_->isMaster()) ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(window->getId()).first, GetViewportScreen(window->getId()).second, GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
+#endif
         appNodeImpl_->Draw2D();
+
+        // ImGui::Render for slaves is called in SlaveNodeInternal...
+        if (engine_->isMaster()) ImGui::Render();
     }
 
     void ApplicationNode::BasePostDraw() const
     {
         appNodeImpl_->PostDraw();
+#ifdef VISCOM_CLIENTGUI
+        ImGui_ImplGlfwGL3_FinishAllFrames();
+#else
+        if (engine_->isMaster()) ImGui_ImplGlfwGL3_FinishAllFrames();
+#endif
     }
 
     void ApplicationNode::BaseCleanUp() const
     {
         std::lock_guard<std::mutex> lock{ instanceMutex_ };
         instance_ = nullptr;
+#ifdef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_Shutdown();
+#else
+        if (GetEngine()->isMaster()) ImGui_ImplGlfwGL3_Shutdown();
+#endif
         appNodeImpl_->CleanUp();
     }
 
     void ApplicationNode::BaseKeyboardCallback(int key, int scancode, int action, int mods)
     {
-        if (engine_->isMaster()) keyboardEvents_.emplace_back(key, scancode, action, mods);
-        appNodeImpl_->KeyboardCallback(key, scancode, action, mods);
+        if (engine_->isMaster()) {
+#ifdef VISCOM_SYNCINPUT
+            keyboardEvents_.emplace_back(key, scancode, action, mods);
+#endif
+            appNodeImpl_->KeyboardCallback(key, scancode, action, mods);
+        }
     }
 
     void ApplicationNode::BaseCharCallback(unsigned int character, int mods)
     {
-        if (engine_->isMaster()) charEvents_.emplace_back(character, mods);
-        appNodeImpl_->CharCallback(character, mods);
+        if (engine_->isMaster()) {
+#ifdef VISCOM_SYNCINPUT
+            charEvents_.emplace_back(character, mods);
+#endif
+            appNodeImpl_->CharCallback(character, mods);
+        }
     }
 
     void ApplicationNode::BaseMouseButtonCallback(int button, int action)
     {
-        if (engine_->isMaster()) mouseButtonEvents_.emplace_back(button, action);
-        appNodeImpl_->MouseButtonCallback(button, action);
+        if (engine_->isMaster()) {
+#ifdef VISCOM_SYNCINPUT
+            mouseButtonEvents_.emplace_back(button, action);
+#endif
+            appNodeImpl_->MouseButtonCallback(button, action);
+        }
     }
 
     void ApplicationNode::BaseMousePosCallback(double x, double y)
     {
-        x /= static_cast<double>(viewport_[0].second.x);
-        y /= static_cast<double>(viewport_[0].second.y);
+        x /= static_cast<double>(viewportScreen_[0].second.x);
+        y /= static_cast<double>(viewportScreen_[0].second.y);
         if (engine_->isMaster()) {
+#ifdef VISCOM_SYNCINPUT
             mousePosEvents_.emplace_back(x, y);
+#endif
             appNodeImpl_->MousePosCallback(x, y);
         }
     }
 
     void ApplicationNode::BaseMouseScrollCallback(double xoffset, double yoffset)
     {
-        if (engine_->isMaster()) mouseScrollEvents_.emplace_back(xoffset, yoffset);
-        appNodeImpl_->MouseScrollCallback(xoffset, yoffset);
+        if (engine_->isMaster()) {
+#ifdef VISCOM_SYNCINPUT
+            mouseScrollEvents_.emplace_back(xoffset, yoffset);
+#endif
+            appNodeImpl_->MouseScrollCallback(xoffset, yoffset);
+        }
     }
 
     void ApplicationNode::BaseEncodeData()
     {
+#ifdef VISCOM_SYNCINPUT
         sgct::SharedData::instance()->writeVector(&keyboardEventsSynced_);
         sgct::SharedData::instance()->writeVector(&charEventsSynced_);
         sgct::SharedData::instance()->writeVector(&mouseButtonEventsSynced_);
         sgct::SharedData::instance()->writeVector(&mousePosEventsSynced_);
         sgct::SharedData::instance()->writeVector(&mouseScrollEventsSynced_);
+#endif
         sgct::SharedData::instance()->writeDouble(&currentTimeSynced_);
         appNodeImpl_->EncodeData();
     }
 
     void ApplicationNode::BaseDecodeData()
     {
+#ifdef VISCOM_SYNCINPUT
         sgct::SharedData::instance()->readVector(&keyboardEventsSynced_);
         sgct::SharedData::instance()->readVector(&charEventsSynced_);
         sgct::SharedData::instance()->readVector(&mouseButtonEventsSynced_);
         sgct::SharedData::instance()->readVector(&mousePosEventsSynced_);
         sgct::SharedData::instance()->readVector(&mouseScrollEventsSynced_);
+#endif
         sgct::SharedData::instance()->readDouble(&currentTimeSynced_);
         appNodeImpl_->DecodeData();
     }

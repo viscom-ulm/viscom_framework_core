@@ -138,16 +138,17 @@ namespace viscom {
     {
         auto window = GetEngine()->getCurrentWindowPtr();
 
-        ImGui_ImplGlfwGL3_NewFrame(-GetViewportOrigin(window->getId()), GetViewportSize(window->getId()), GetViewportScaling(window->getId()));
+#ifdef VISCOM_CLIENTGUI
+        // ImGui_ImplGlfwGL3_NewFrame(-GetViewportOrigin(window->getId()), GetViewportSize(window->getId()), GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
 
         ImGui::ShowTestWindow();
 
-        ImGui::Render();
+        // ImGui::Render();
+#endif
     }
 
     void ApplicationNodeImplementation::PostDraw()
     {
-        ImGui_ImplGlfwGL3_FinishAllFrames();
     }
 
     void ApplicationNodeImplementation::CleanUp()
@@ -160,27 +161,37 @@ namespace viscom {
 
     void ApplicationNodeImplementation::KeyboardCallback(int key, int scancode, int action, int mods)
     {
+#ifdef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
+#endif
     }
 
     void ApplicationNodeImplementation::CharCallback(unsigned character, int mods)
     {
+#ifdef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_CharCallback(character);
+#endif
     }
 
     void ApplicationNodeImplementation::MouseButtonCallback(int button, int action)
     {
+#ifdef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
+#endif
     }
 
     void ApplicationNodeImplementation::MousePosCallback(double x, double y)
     {
+#ifdef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_MousePositionCallback(x, y);
+#endif
     }
 
     void ApplicationNodeImplementation::MouseScrollCallback(double xoffset, double yoffset)
     {
+#ifdef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
+#endif
     }
 
     void ApplicationNodeImplementation::EncodeData()

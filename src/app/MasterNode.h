@@ -27,12 +27,8 @@ namespace viscom {
         void KeyboardCallback(int key, int scancode, int action, int mods) override;
         void CharCallback(unsigned int character, int mods) override;
         void MouseButtonCallback(int button, int action) override;
+        void MousePosCallback(double x, double y) override;
         void MouseScrollCallback(double xoffset, double yoffset) override;
 
-    private:
-        /** Holds the resolution scaling for each window. */
-        std::vector<glm::vec2> resolutionScaling_;
-        /** Holds the quad corners for each window. */
-        std::vector<std::vector<glm::vec2>> quadCorners_;
     };
 }
