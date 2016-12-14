@@ -21,6 +21,7 @@ add_subdirectory(extern/g3log)
 set(VISCOM_CLIENTGUI ON CACHE BOOL "Use ImGui on clients.")
 set(VISCOM_SYNCINPUT ON CACHE BOOL "Synchronize input from master to clients.")
 set(VISCOM_CLIENTMOUSECURSOR ON CACHE BOOL "Show the mouse cursor on clients.")
+set(VISCOM_CONFIG_NAME "quad" CACHE STRING "Name/directory of the configuration files to be used.")
 
 file(GLOB_RECURSE CFG_FILES ${PROJECT_SOURCE_DIR}/config/*.*)
 file(GLOB_RECURSE DATA_FILES ${PROJECT_SOURCE_DIR}/data/*.*)
@@ -148,7 +149,7 @@ endif()
 
 target_link_libraries(${APP_NAME} ${LIBS} g3logger)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${APP_NAME})
-configure_file("framework_ide.cfg" "framework.cfg" COPYONLY)
+configure_file("framework_ide.cfg" "framework.cfg")
 
 if (${VISCOM_CLIENTMOUSECURSOR})
     target_compile_definitions(${APP_NAME} PRIVATE VISCOM_CLIENTGUI VISCOM_SYNCINPUT VISCOM_CLIENTMOUSECURSOR)

@@ -22,6 +22,7 @@ namespace viscom {
     struct FWConfiguration
     {
         std::string baseDirectory_;
+        std::string viscomConfigName_;
         std::string programProperties_;
         std::string sgctConfig_;
         std::string projectorData_;

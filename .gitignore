@@ -2,3 +2,5 @@ build/
 _SYNCAPP/
 shaderold/
 srcold/
+data/old/
+**/*Precompute*.???

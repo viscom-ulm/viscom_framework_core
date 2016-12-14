@@ -101,9 +101,9 @@ namespace viscom {
 
             CreateProjectorFBO(i, fboSize);
 
-            auto texAlphaFilename = GetConfig().baseDirectory_ + "data/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaName.c_str())->GetText();
-            auto texAlphaTransFilename = GetConfig().baseDirectory_ + "data/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaTransName.c_str())->GetText();
-            auto colorLUTFilename = GetConfig().baseDirectory_ + "data/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(colorLUTName.c_str())->GetText();
+            auto texAlphaFilename = GetConfig().baseDirectory_ + "data/" + GetConfig().viscomConfigName_ + "/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaName.c_str())->GetText();
+            auto texAlphaTransFilename = GetConfig().baseDirectory_ + "data/" + GetConfig().viscomConfigName_ + "/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaTransName.c_str())->GetText();
+            auto colorLUTFilename = GetConfig().baseDirectory_ + "data/" + GetConfig().viscomConfigName_ + "/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(colorLUTName.c_str())->GetText();
 
             {
                 std::ifstream texAlphaFile(texAlphaFilename, std::ios::binary);

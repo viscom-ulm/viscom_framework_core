@@ -20,15 +20,6 @@ namespace viscom {
     std::unique_ptr<ApplicationNode> SGCT_Init(FWConfiguration);
 }
 
-//void myDrawFun(sgct::Engine*);
-//void myPreSyncFun(sgct::Engine*);
-//void myPostSyncPreDrawFun(sgct::Engine*);
-//void myInitOGLFun(sgct::Engine*);
-//void myCleanUpFun(sgct::Engine*);
-//void myEncodeFun();
-//void myDecodeFun();
-void keyCallback(sgct::Engine*, int, int);
-
 
 void SGCTLog(const char* msg)
 {
@@ -82,6 +73,7 @@ namespace viscom {
 
         while (ifs >> str && ifs.good()) {
             if (str == "BASE_DIR=") ifs >> config.baseDirectory_;
+            else if (str == "VISCOM_CONFIG=") ifs >> config.viscomConfigName_;
             else if (str == "PROGRAM_PROPERTIES=") ifs >> config.programProperties_;
             else if (str == "SGCT_CONFIG=") ifs >> config.sgctConfig_;
             else if (str == "PROJECTOR_DATA=") ifs >> config.projectorData_;
@@ -131,42 +123,9 @@ namespace viscom {
         sgct::MessageHandler::instance()->setLogCallback(&SGCTLog);
         sgct::MessageHandler::instance()->setLogToCallback(true);
 
-
-        // engine->setInitOGLFunction([engine = engine.get()](){ myInitOGLFun(engine); });
-        // engine->setDrawFunction([engine = engine.get()](){ myDrawFun(engine); });
-        // engine->setPreSyncFunction([engine = engine.get()](){ myPreSyncFun(engine); });
-        // engine->setPostSyncPreDrawFunction([engine = engine.get()](){ myPostSyncPreDrawFun(engine); });
-        // engine->setCleanUpFunction([engine = engine.get()](){ myCleanUpFun(engine); });
-        engine->setKeyboardCallbackFunction([engine = engine.get()](int key, int action){ keyCallback(engine, key, action); });
-
         auto node = std::make_unique<viscom::ApplicationNode>(std::move(config), std::move(engine));
         node->InitNode();
 
         return node;
-    }
-}
-
-/**
-* Master only: callback method for user input on SGCT window (does not work if OpenCV window is focused!)
-* change the next_step variable from the Master, to control if the next or previous step should be processed
-*/
-void keyCallback(sgct::Engine* engine, int key, int action)
-{
-    if (engine->isMaster())
-    {
-        switch (key)
-        {
-        case SGCT_KEY_UP:
-            if (action == SGCT_PRESS) {
-                // Master::getInstance()->setNextStep(1);
-            }
-            break;
-        case SGCT_KEY_DOWN:
-            if (action == SGCT_PRESS) {
-                // Master::getInstance()->setNextStep(-1);
-            }
-            break;
-        default: break;
-        }
     }
 }
