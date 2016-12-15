@@ -19,6 +19,8 @@
 
 namespace viscom {
 
+    static const std::string resourceBasePath = "resources/";
+
     struct FWConfiguration
     {
         std::string baseDirectory_;
@@ -28,4 +30,34 @@ namespace viscom {
         std::string projectorData_;
         std::string sgctLocal_;
     };
+
+
+    namespace utils {
+
+        /**
+         *  Checks if a string end with another.
+         *  @param s the string to check.
+         *  @param e the ending to check for.
+         */
+        static bool endsWith(const std::string& s, const std::string& e) {
+            if (s.length() >= e.length()) {
+                return (0 == s.compare(s.length() - e.length(), e.length(), e));
+            } else {
+                return false;
+            }
+        }
+
+        /**
+         *  Checks if a string starts with another.
+         *  @param s the string to check.
+         *  @param e the beginning to check for.
+         */
+        static bool beginsWith(const std::string& s, const std::string& b) {
+            if (s.length() >= b.length()) {
+                return (0 == s.compare(0, b.length(), b));
+            } else {
+                return false;
+            }
+        }
+    }
 }

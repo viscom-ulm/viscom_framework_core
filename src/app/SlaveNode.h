@@ -9,7 +9,6 @@
 #pragma once
 
 #include "core/SlaveNodeInternal.h"
-#include "core/CalibrationVertices.h"
 
 namespace viscom {
 
@@ -21,6 +20,5 @@ namespace viscom {
 
         void Draw2D() override;
 
-    private:
     };
 }

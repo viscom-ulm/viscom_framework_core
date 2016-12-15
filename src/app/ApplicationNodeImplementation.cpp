@@ -9,7 +9,6 @@
 #include "ApplicationNodeImplementation.h"
 #include "Vertices.h"
 #include <imgui.h>
-#include "core/imgui/imgui_impl_glfw_gl3.h"
 
 namespace viscom {
 
@@ -97,7 +96,7 @@ namespace viscom {
     {
     }
 
-    void ApplicationNodeImplementation::UpdateFrame(double currentTime, double elapsedTime)
+    void ApplicationNodeImplementation::UpdateFrame(double currentTime, double)
     {
         triangleModelMatrix_ = glm::rotate(glm::mat4(1.0f), static_cast<float>(currentTime), glm::vec3(0.0f, 1.0f, 0.0f));
     }
@@ -136,14 +135,8 @@ namespace viscom {
 
     void ApplicationNodeImplementation::Draw2D()
     {
-        auto window = GetEngine()->getCurrentWindowPtr();
-
 #ifdef VISCOM_CLIENTGUI
-        // ImGui_ImplGlfwGL3_NewFrame(-GetViewportOrigin(window->getId()), GetViewportSize(window->getId()), GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
-
         ImGui::ShowTestWindow();
-
-        // ImGui::Render();
 #endif
     }
 
@@ -159,6 +152,7 @@ namespace viscom {
         vboBackgroundGrid_ = 0;
     }
 
+    // ReSharper disable CppParameterNeverUsed
     void ApplicationNodeImplementation::KeyboardCallback(int key, int scancode, int action, int mods)
     {
 #ifdef VISCOM_CLIENTGUI
@@ -193,6 +187,7 @@ namespace viscom {
         ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
 #endif
     }
+    // ReSharper restore CppParameterNeverUsed
 
     void ApplicationNodeImplementation::EncodeData()
     {

@@ -10,8 +10,13 @@
 
 #include "main.h"
 #include "sgct.h"
+#ifdef VISCOM_SYNCINPUT
 #include "InputWrapper.h"
+#endif
 #include <mutex>
+#include "resources/GPUProgramManager.h"
+#include "resources/TextureManager.h"
+#include "resources/MeshManager.h"
 
 namespace viscom {
 
@@ -65,6 +70,10 @@ namespace viscom {
         double GetCurrentAppTime() const { return currentTime_; }
         double GetElapsedTime() const { return elapsedTime_; }
 
+        GPUProgramManager& GetGPUProgramManager() { return gpuProgramManager_; }
+        TextureManager& GetTextureManager() { return textureManager_; }
+        MeshManager& GetMeshManager() { return meshManager_; }
+
     private:
         void loadProperties();
 
@@ -92,18 +101,19 @@ namespace viscom {
         /** Holds the viewport scaling if one applies. */
         std::vector<glm::vec2> viewportScaling_;
 
-        /** Holds the viewport for rendering content to each window. */
-        //std::vector<std::pair<glm::ivec2, glm::ivec2>> viewport_;
-
-        /** Holds the viewport origin if exists. */
-        // std::vector<glm::ivec2> viewportOrigin_;
-
         /** Holds the synchronized application time. */
         sgct::SharedDouble currentTimeSynced_;
         /** Holds the current application time. */
         double currentTime_;
         /** Holds the time elapsed since the last frame. */
         double elapsedTime_;
+
+        /** Holds the GPU program manager. */
+        GPUProgramManager gpuProgramManager_;
+        /** Holds the texture manager. */
+        TextureManager textureManager_;
+        /** Holds the mesh manager. */
+        MeshManager meshManager_;
 
 #ifdef VISCOM_SYNCINPUT
         /** Holds the vector with keyboard events. */

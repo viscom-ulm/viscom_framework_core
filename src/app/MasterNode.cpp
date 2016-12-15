@@ -38,10 +38,6 @@ namespace viscom {
 
     void MasterNode::Draw2D()
     {
-        auto window = GetEngine()->getCurrentWindowPtr();
-
-        //ImGui_ImplGlfwGL3_NewFrame(-GetViewportOrigin(window->getId()), GetViewport(window->getId()).second, GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
-
 #ifndef VISCOM_CLIENTGUI
         ImGui::ShowTestWindow();
 #endif
@@ -52,8 +48,6 @@ namespace viscom {
             ImGui::Text("Hello World on Master!");
         }
         ImGui::End();
-
-        //ImGui::Render();
 
         ApplicationNodeImplementation::Draw2D();
     }

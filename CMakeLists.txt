@@ -18,6 +18,11 @@ set(USE_DYNAMIC_LOGGING_LEVELS ON CACHE BOOL "Turn ON/OFF log levels. An disable
 set(CHANGE_G3LOG_DEBUG_TO_DBUG ON CACHE BOOL "Use DBUG logging level instead of DEBUG. By default DEBUG is the debugging level" FORCE)
 add_subdirectory(extern/g3log)
 
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+add_subdirectory(extern/assimp)
+
 set(VISCOM_CLIENTGUI ON CACHE BOOL "Use ImGui on clients.")
 set(VISCOM_SYNCINPUT ON CACHE BOOL "Synchronize input from master to clients.")
 set(VISCOM_CLIENTMOUSECURSOR ON CACHE BOOL "Show the mouse cursor on clients.")
@@ -80,7 +85,9 @@ find_package(OpenGL REQUIRED)
 include_directories(${SGCT_INCLUDE_DIRECTORY}
                     src
                     extern/g3log/src 
-                    extern/imgui)
+                    extern/imgui
+                    extern/stb/
+                    extern/assimp/include/)
 
 if( MSVC )
     set(LIBS ${SGCT_LIBS} ${OPENGL_LIBRARY} ws2_32)
@@ -147,7 +154,7 @@ if( CMAKE_COMPILER_IS_GNUCXX )
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -static")
 endif()
 
-target_link_libraries(${APP_NAME} ${LIBS} g3logger)
+target_link_libraries(${APP_NAME} ${LIBS} g3logger assimp)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${APP_NAME})
 configure_file("framework_ide.cfg" "framework.cfg")
 

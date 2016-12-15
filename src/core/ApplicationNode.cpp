@@ -31,7 +31,11 @@ namespace viscom {
         startNode_{ 0 },
         masterSocketPort_{ "27772" },
         currentTimeSynced_{ 0.0 },
-        currentTime_{ 0.0 }
+        currentTime_{ 0.0 },
+        elapsedTime_{ 0.0 },
+        gpuProgramManager_{ this },
+        textureManager_{ this },
+        meshManager_{ this }
     {
         loadProperties();
         engine_->setPreWindowFunction([app = this]() { app->BasePreWindow(); });
@@ -245,6 +249,7 @@ namespace viscom {
         appNodeImpl_->CleanUp();
     }
 
+    // ReSharper disable CppMemberFunctionMayBeConst
     void ApplicationNode::BaseKeyboardCallback(int key, int scancode, int action, int mods)
     {
         if (engine_->isMaster()) {
@@ -296,6 +301,7 @@ namespace viscom {
             appNodeImpl_->MouseScrollCallback(xoffset, yoffset);
         }
     }
+    // ReSharper restore CppMemberFunctionMayBeConst
 
     void ApplicationNode::BaseEncodeData()
     {
