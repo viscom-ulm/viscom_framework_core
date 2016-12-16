@@ -10,11 +10,10 @@
 
 #include "main.h"
 #include "core/math/primitives.h"
-#include <unordered_map>
 
 namespace viscom {
 
-    class Material;
+    struct Material;
     class Mesh;
 
     /**

@@ -157,6 +157,7 @@ endif()
 target_link_libraries(${APP_NAME} ${LIBS} g3logger assimp)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${APP_NAME})
 configure_file("framework_ide.cfg" "framework.cfg")
+target_compile_definitions(${APP_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS)
 
 if (${VISCOM_CLIENTMOUSECURSOR})
     target_compile_definitions(${APP_NAME} PRIVATE VISCOM_CLIENTGUI VISCOM_SYNCINPUT VISCOM_CLIENTMOUSECURSOR)

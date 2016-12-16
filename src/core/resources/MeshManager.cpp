@@ -25,10 +25,10 @@ namespace viscom {
     MeshManager& MeshManager::operator=(const MeshManager&) = default;
 
     /** Default move constructor. */
-    MeshManager::MeshManager(MeshManager&& rhs) : ResourceManagerBase(std::move(rhs)) {}
+    MeshManager::MeshManager(MeshManager&& rhs) noexcept : ResourceManagerBase(std::move(rhs)) {}
 
     /** Default move assignment operator. */
-    MeshManager& MeshManager::operator=(MeshManager&& rhs)
+    MeshManager& MeshManager::operator=(MeshManager&& rhs) noexcept
     {
         ResourceManagerBase* tResMan = this;
         *tResMan = static_cast<ResourceManagerBase&&>(std::move(rhs));

@@ -25,10 +25,10 @@ namespace viscom {
     TextureManager& TextureManager::operator=(const TextureManager&) = default;
 
     /** Default move constructor. */
-    TextureManager::TextureManager(TextureManager&& rhs) : ResourceManagerBase(std::move(rhs)) {}
+    TextureManager::TextureManager(TextureManager&& rhs) noexcept : ResourceManagerBase(std::move(rhs)) {}
 
     /** Default move assignment operator. */
-    TextureManager& TextureManager::operator=(TextureManager&& rhs)
+    TextureManager& TextureManager::operator=(TextureManager&& rhs) noexcept
     {
         ResourceManagerBase* tResMan = this;
         *tResMan = static_cast<ResourceManagerBase&&>(std::move(rhs));

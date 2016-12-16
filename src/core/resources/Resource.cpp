@@ -26,14 +26,14 @@ namespace viscom {
     Resource& Resource::operator=(const Resource&) = default;
 
     /** Move constructor. */
-    Resource::Resource(Resource&& orig) :
+    Resource::Resource(Resource&& orig) noexcept :
         id_{ std::move(orig.id_) },
         appNode_{ orig.appNode_ }
     {
     }
 
     /** Move assignment operator. */
-    Resource& Resource::operator=(Resource&& orig)
+    Resource& Resource::operator=(Resource&& orig) noexcept
     {
         if (this != &orig) {
             this->~Resource();

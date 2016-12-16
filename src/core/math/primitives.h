@@ -11,6 +11,9 @@
 #include <array>
 #include <glm/glm.hpp>
 
+#undef near
+#undef far
+
 namespace viscom { namespace math {
 
     template<typename real> using Seg2 = std::array<glm::tvec2<real, glm::highp>, 2>;

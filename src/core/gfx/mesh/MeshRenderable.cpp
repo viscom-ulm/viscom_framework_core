@@ -7,12 +7,11 @@
  */
 
 #include "MeshRenderable.h"
-#include "GPUProgram.h"
 #include <glm/gtc/matrix_inverse.hpp>
-#include "mesh/SceneMeshNode.h"
-#include "mesh/SubMesh.h"
-#include "Material.h"
-#include "Texture.h"
+#include "SceneMeshNode.h"
+#include "SubMesh.h"
+#include "core/gfx/Material.h"
+#include "core/gfx/Texture.h"
 
 namespace viscom {
 
@@ -44,7 +43,7 @@ namespace viscom {
      * Move constructor.
      * @param orig the original object
      */
-    MeshRenderable::MeshRenderable(MeshRenderable&& orig) :
+    MeshRenderable::MeshRenderable(MeshRenderable&& orig) noexcept :
         mesh_(orig.mesh_),
         vbo_(orig.vbo_),
         vao_(orig.vao_),
@@ -61,7 +60,7 @@ namespace viscom {
      * Move assignment operator.
      * @param orig the original object
      */
-    MeshRenderable& MeshRenderable::operator=(MeshRenderable&& orig)
+    MeshRenderable& MeshRenderable::operator=(MeshRenderable&& orig) noexcept
     {
         if (this != &orig) {
             this->~MeshRenderable();

@@ -11,6 +11,8 @@
 #include "core/ApplicationNode.h"
 #include "SceneMeshNode.h"
 #include "core/gfx/Material.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 
 #undef max
 #undef min
@@ -166,58 +168,10 @@ namespace viscom {
     }
 
     /** Destructor. */
-    Mesh::~Mesh() noexcept
+    Mesh::~Mesh()
     {
         if (indexBuffer_ != 0) glDeleteBuffers(1, &indexBuffer_);
         indexBuffer_ = 0;
-    }
-
-
-    Mesh::Mesh(const std::string& path, const aiMesh* mesh, const aiScene* scene) :
-        subMeshes_(),
-        indices_(),
-        vertices_(),
-        indexBuffer_(0)
-    {
-        // Create Vertex Data from Mesh Node
-        MeshVertex vertex;
-        for (unsigned int i = 0; i < mesh->mNumVertices; i++)
-        {
-            if (mesh->mTextureCoords[0])
-                vertex.textureCoordinate = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
-            vertex.position = glm::vec4(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, 1.0f);
-            vertex.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
-            vertices_.push_back(vertex);
-        }
-
-        // Create Mesh Indices for Indexed Drawing
-        for (unsigned int i = 0; i < mesh->mNumFaces; i++)
-            for (unsigned int j = 0; j < mesh->mFaces[i].mNumIndices; j++)
-                indices_.push_back(mesh->mFaces[i].mIndices[j]);
-
-        // Bind a Vertex Array Object
-        glGenVertexArrays(1, &vertexArray_);
-        glBindVertexArray(vertexArray_);
-
-        // Copy Vertex Buffer Data
-        glGenBuffers(1, &vertexBuffer_);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer_);
-        glBufferData(GL_ARRAY_BUFFER, vertices_.size() * sizeof(MeshVertex), vertices_.data(), GL_STATIC_DRAW);
-
-        // Copy Index Buffer Data
-        glGenBuffers(1, &indexBuffer_);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer_);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_.size() * sizeof(GLuint), indices_.data(), GL_STATIC_DRAW);
-
-        // Set Shader Attributes
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), reinterpret_cast<GLvoid*>(offsetof(MeshVertex, position)));
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), reinterpret_cast<GLvoid*>(offsetof(MeshVertex, normal)));
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(MeshVertex), reinterpret_cast<GLvoid*>(offsetof(MeshVertex, textureCoordinate)));
-        glEnableVertexAttribArray(0); // Vertex Positions
-        glEnableVertexAttribArray(1); // Vertex Normals
-        glEnableVertexAttribArray(2); // Vertex UVs
-
-        glBindVertexArray(0);
     }
 
     std::shared_ptr<const Texture> Mesh::loadTexture(const std::string& relFilename, ApplicationNode* node) const

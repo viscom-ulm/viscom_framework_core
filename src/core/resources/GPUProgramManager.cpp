@@ -25,10 +25,10 @@ namespace viscom {
     GPUProgramManager& GPUProgramManager::operator=(const GPUProgramManager&) = default;
 
     /** Default move constructor. */
-    GPUProgramManager::GPUProgramManager(GPUProgramManager&& rhs) : ResourceManagerBase(std::move(rhs)) {}
+    GPUProgramManager::GPUProgramManager(GPUProgramManager&& rhs) noexcept : ResourceManagerBase(std::move(rhs)) {}
 
     /** Default move assignment operator. */
-    GPUProgramManager& GPUProgramManager::operator=(GPUProgramManager&& rhs)
+    GPUProgramManager& GPUProgramManager::operator=(GPUProgramManager&& rhs) noexcept
     {
         ResourceManagerBase* tResMan = this;
         *tResMan = static_cast<ResourceManagerBase&&>(std::move(rhs));
@@ -41,12 +41,7 @@ namespace viscom {
     void GPUProgramManager::RecompileAll()
     {
         for (auto& program : resources_) {
-            try {
-                if (!program.second.expired()) program.second.lock()->recompileProgram();
-            }
-            catch (shader_compiler_error compilerError) {
-                HandleShaderCompileException(compilerError);
-            }
+            if (!program.second.expired()) program.second.lock()->recompileProgram();
         }
     }
 }

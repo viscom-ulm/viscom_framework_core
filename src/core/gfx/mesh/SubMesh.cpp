@@ -9,8 +9,6 @@
 #define GLM_SWIZZLE
 #include "SubMesh.h"
 #include "Mesh.h"
-#include <unordered_map>
-#include "core/gfx/Mesh.h"
 
 #undef min
 #undef max
@@ -43,7 +41,7 @@ namespace viscom {
     SubMesh& SubMesh::operator=(const SubMesh&) = default;
 
     /** Default move constructor. */
-    SubMesh::SubMesh(SubMesh&& rhs) :
+    SubMesh::SubMesh(SubMesh&& rhs) noexcept :
         objectName_(std::move(rhs.objectName_)),
         indexOffset_(std::move(rhs.indexOffset_)),
         numIndices_(std::move(rhs.numIndices_)),
@@ -53,7 +51,7 @@ namespace viscom {
     }
 
     /** Default move assignment operator. */
-    SubMesh& SubMesh::operator=(SubMesh&& rhs)
+    SubMesh& SubMesh::operator=(SubMesh&& rhs) noexcept
     {
         if (this != &rhs) {
             this->~SubMesh();

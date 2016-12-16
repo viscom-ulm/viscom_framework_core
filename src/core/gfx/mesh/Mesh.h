@@ -9,17 +9,15 @@
 #pragma once
 
 #include "main.h"
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
 #include <sgct.h>
 #include "core/resources/Resource.h"
+#include "SubMesh.h"
 
 namespace viscom {
 
     class ApplicationNode;
-    class Material;
+    struct Material;
     class SceneMeshNode;
-    class SubMesh;
     class Texture;
 
     /** The vertex object used in these examples. */
@@ -33,8 +31,8 @@ namespace viscom {
     };
 
     /**
-    * Helper class for loading an OpenGL texture from file.
-    */
+     * Helper class for loading an OpenGL texture from file.
+     */
     class Mesh final : public Resource
     {
     public:
@@ -43,7 +41,7 @@ namespace viscom {
         Mesh& operator=(const Mesh&) = delete;
         Mesh(Mesh&&) noexcept;
         Mesh& operator=(Mesh&&) noexcept;
-        ~Mesh() noexcept;
+        ~Mesh();
 
         /**
          *  Accessor to the meshes sub-meshes. This can be used to render more complicated meshes (with multiple sets
@@ -89,7 +87,7 @@ namespace viscom {
         std::vector<SubMesh> subMeshes_;
 
         /** The root scene node. */
-        std::unique_ptr<viscom::SceneMeshNode> rootNode_;
+        std::unique_ptr<SceneMeshNode> rootNode_;
 
         /** Holds the OpenGL index buffer. */
         GLuint indexBuffer_;

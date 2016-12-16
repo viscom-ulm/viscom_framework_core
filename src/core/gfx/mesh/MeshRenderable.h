@@ -9,8 +9,8 @@
 #pragma once
 
 #include "main.h"
-#include "GPUProgram.h"
 #include "Mesh.h"
+#include "core/gfx/GPUProgram.h"
 
 namespace viscom {
 
@@ -66,7 +66,7 @@ namespace viscom {
     template <class VTX>
     std::unique_ptr<MeshRenderable> MeshRenderable::create(const Mesh* renderMesh, GPUProgram* program)
     {
-        std::unique_ptr<MeshRenderable> result{ new MeshRenderable(renderMesh, renderMesh->GetVertexBuffer<VTX>(), program) };
+        std::unique_ptr<MeshRenderable> result{ new MeshRenderable(renderMesh, VTX::CreateVertexBuffer(renderMesh), program) };
         result->NotifyRecompiledShader<VTX>(program);
         return std::move(result);
     }

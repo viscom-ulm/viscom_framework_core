@@ -60,7 +60,7 @@ namespace viscom {
         for (auto i = 0; i < children_.size(); ++i) children_[i] = std::make_unique<SceneMeshNode>(*rhs.children_[i]);
     }
 
-    SceneMeshNode::SceneMeshNode(SceneMeshNode&& rhs) :
+    SceneMeshNode::SceneMeshNode(SceneMeshNode&& rhs) noexcept :
         nodeName_(std::move(rhs.nodeName_)),
         children_(std::move(rhs.children_)),
         meshes_(std::move(rhs.meshes_)),
@@ -80,7 +80,7 @@ namespace viscom {
         return *this;
     }
 
-    SceneMeshNode SceneMeshNode::operator=(SceneMeshNode&& rhs)
+    SceneMeshNode SceneMeshNode::operator=(SceneMeshNode&& rhs) noexcept
     {
         if (this != &rhs) {
             this->~SceneMeshNode();
