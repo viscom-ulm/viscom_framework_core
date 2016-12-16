@@ -32,7 +32,7 @@ namespace viscom {
 
         // init shaders
         {
-            const auto SHADER_PATH = GetConfig().baseDirectory_ + "/shader/";
+            const auto SHADER_PATH = GetConfig().baseDirectory_ + "/resources/shader/";
             if (!sgct::ShaderManager::instance()->shaderProgramExists("calibrationRendering")) {
                 sgct::ShaderManager::instance()->addShaderProgram(calibrationProgram_, "calibrationRendering", SHADER_PATH + "calibrationRendering.vert", SHADER_PATH + "calibrationRendering.frag");
                 sgct::ShaderManager::instance()->bindShaderProgram(calibrationProgram_);

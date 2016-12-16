@@ -26,7 +26,12 @@ namespace viscom {
 
     void ApplicationNodeImplementation::InitOpenGL()
     {
-        const auto SHADER_PATH = GetConfig().baseDirectory_ + "/shader/";
+        backgroundProgram_ = appNode_->GetGPUProgramManager().GetResource("backgroundGrid", std::initializer_list<std::string>{ "backgroundGrid.vert", "backgroundGrid.frag" });
+        backgroundMVPLoc_ = backgroundProgram_->getUniformLocation("MVP");
+
+        triangleProgram_ = appNode_->GetGPUProgramManager().GetResource("foregroundTriangle", std::initializer_list<std::string>{ "foregroundTriangle.vert", "foregroundTriangle.frag" });
+        triangleMVPLoc_ = triangleProgram_->getUniformLocation("MVP");
+        /*const auto SHADER_PATH = GetConfig().baseDirectory_ + "/shader/";
         if (!sgct::ShaderManager::instance()->shaderProgramExists("backgroundGrid")) {
             sgct::ShaderManager::instance()->addShaderProgram(backgroundProgram_, "backgroundGrid", SHADER_PATH + "backgroundGrid.vert", SHADER_PATH + "backgroundGrid.frag");
             sgct::ShaderManager::instance()->bindShaderProgram(backgroundProgram_);
@@ -42,7 +47,7 @@ namespace viscom {
             sgct::ShaderManager::instance()->unBindShaderProgram();
         } else triangleProgram_ = sgct::ShaderManager::instance()->getShaderProgram("foregroundTriangle");
 
-        triangleMVPLoc_ = triangleProgram_.getUniformLocation("MVP");
+        triangleMVPLoc_ = triangleProgram_.getUniformLocation("MVP");*/
 
         std::vector<GridVertex> gridVertices;
 
@@ -115,22 +120,25 @@ namespace viscom {
 
         auto MVP = GetEngine()->getCurrentModelViewProjectionMatrix();
         {
-            sgct::ShaderManager::instance()->bindShaderProgram(backgroundProgram_);
+            glUseProgram(backgroundProgram_->getProgramId());
+            // sgct::ShaderManager::instance()->bindShaderProgram(backgroundProgram_);
             glUniformMatrix4fv(backgroundMVPLoc_, 1, GL_FALSE, glm::value_ptr(MVP));
             glDrawArrays(GL_TRIANGLES, 0, numBackgroundVertices_);
         }
 
         {
             MVP *= triangleModelMatrix_;
-            sgct::ShaderManager::instance()->bindShaderProgram(triangleProgram_);
+            glUseProgram(triangleProgram_->getProgramId());
+            // sgct::ShaderManager::instance()->bindShaderProgram(triangleProgram_);
             glUniformMatrix4fv(triangleMVPLoc_, 1, GL_FALSE, glm::value_ptr(MVP));
             glDrawArrays(GL_TRIANGLES, numBackgroundVertices_, 3);
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
+        glUseProgram(0);
 
-        sgct::ShaderManager::instance()->unBindShaderProgram();
+        // sgct::ShaderManager::instance()->unBindShaderProgram();
     }
 
     void ApplicationNodeImplementation::Draw2D()

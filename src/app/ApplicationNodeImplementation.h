@@ -63,12 +63,12 @@ namespace viscom {
         ApplicationNode* appNode_;
 
         /** Holds the shader program for drawing the background. */
-        sgct::ShaderProgram backgroundProgram_;
+        std::shared_ptr<GPUProgram> backgroundProgram_;
         /** Holds the location of the MVP matrix. */
         GLint backgroundMVPLoc_ = -1;
 
         /** Holds the shader program for drawing the foreground triangle. */
-        sgct::ShaderProgram triangleProgram_;
+        std::shared_ptr<GPUProgram> triangleProgram_;
         /** Holds the location of the MVP matrix. */
         GLint triangleMVPLoc_ = -1;
 
