@@ -43,7 +43,7 @@ namespace viscom {
 
 
         /** Holds the shader program for applying the calibration to a rendered scene. */
-        sgct::ShaderProgram calibrationProgram_;
+        std::shared_ptr<GPUProgram> calibrationProgram_;
         /** Holds the location of the use alpha test flag. */
         GLint calibrationUseAlphaTestLoc_ = -1;
         /** Holds the location of the use alpha test flag. */

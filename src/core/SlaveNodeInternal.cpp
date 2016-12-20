@@ -31,21 +31,13 @@ namespace viscom {
         ApplicationNodeImplementation::InitOpenGL();
 
         // init shaders
-        {
-            const auto SHADER_PATH = GetConfig().baseDirectory_ + "/resources/shader/";
-            if (!sgct::ShaderManager::instance()->shaderProgramExists("calibrationRendering")) {
-                sgct::ShaderManager::instance()->addShaderProgram(calibrationProgram_, "calibrationRendering", SHADER_PATH + "calibrationRendering.vert", SHADER_PATH + "calibrationRendering.frag");
-                sgct::ShaderManager::instance()->bindShaderProgram(calibrationProgram_);
-                sgct::ShaderManager::instance()->unBindShaderProgram();
-            } else calibrationProgram_ = sgct::ShaderManager::instance()->getShaderProgram("calibrationRendering");
-
-            calibrationUseAlphaTestLoc_ = calibrationProgram_.getUniformLocation("withAlphaTrans");
-            calibrationAlphaTexLoc_ = calibrationProgram_.getUniformLocation("alphaTrans");
-            calibrationAlphaOverlapTexLoc_ = calibrationProgram_.getUniformLocation("alphaOverlap");
-            calibrationColorLookupTexLoc_ = calibrationProgram_.getUniformLocation("colorLookup");
-            calibrationSceneTexLoc_ = calibrationProgram_.getUniformLocation("tex");
-            calibrationResolutionLoc_ = calibrationProgram_.getUniformLocation("resolution");
-        }
+        calibrationProgram_ = GetApplication()->GetGPUProgramManager().GetResource("calibrationRendering", std::initializer_list<std::string>{ "calibrationRendering.vert", "calibrationRendering.frag" });
+        calibrationUseAlphaTestLoc_ = calibrationProgram_->getUniformLocation("withAlphaTrans");
+        calibrationAlphaTexLoc_ = calibrationProgram_->getUniformLocation("alphaTrans");
+        calibrationAlphaOverlapTexLoc_ = calibrationProgram_->getUniformLocation("alphaOverlap");
+        calibrationColorLookupTexLoc_ = calibrationProgram_->getUniformLocation("colorLookup");
+        calibrationSceneTexLoc_ = calibrationProgram_->getUniformLocation("tex");
+        calibrationResolutionLoc_ = calibrationProgram_->getUniformLocation("resolution");
 
         tinyxml2::XMLDocument doc;
         OpenCVParserHelper::LoadXMLDocument("Projector data", GetConfig().projectorData_, doc);
@@ -206,7 +198,7 @@ namespace viscom {
             window->getFBOPtr()->bind();
             glViewport(projectorViewport_[windowId].first.x, projectorViewport_[windowId].first.y, projectorViewport_[windowId].second.x, projectorViewport_[windowId].second.y);
 
-            sgct::ShaderManager::instance()->bindShaderProgram(calibrationProgram_);
+            glUseProgram(calibrationProgram_->getProgramId());
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, sceneFBOTextures_[windowId]);

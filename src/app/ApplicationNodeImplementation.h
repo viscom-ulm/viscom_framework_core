@@ -46,6 +46,8 @@ namespace viscom {
     protected:
         sgct::Engine* GetEngine() const { return appNode_->GetEngine(); }
         const FWConfiguration& GetConfig() const { return appNode_->GetConfig(); }
+        ApplicationNode* GetApplication() const { return appNode_; }
+
         unsigned int GetGlobalProjectorId(int nodeId, int windowId) const { return appNode_->GetGlobalProjectorId(nodeId, windowId); }
 
         const std::pair<glm::ivec2, glm::ivec2>& GetViewportScreen(size_t windowId) const { return appNode_->GetViewportScreen(windowId); }
