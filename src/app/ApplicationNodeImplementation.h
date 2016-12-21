@@ -13,6 +13,8 @@
 
 namespace viscom {
 
+    class MeshRenderable;
+
     class ApplicationNodeImplementation
     {
     public:
@@ -74,6 +76,11 @@ namespace viscom {
         /** Holds the location of the MVP matrix. */
         GLint triangleMVPLoc_ = -1;
 
+        /** Holds the shader program for drawing the foreground teapot. */
+        std::shared_ptr<GPUProgram> teapotProgram_;
+        /** Holds the location of the VP matrix. */
+        GLint teapotVPLoc_ = -1;
+
         /** Holds the number of vertices of the background grid. */
         unsigned int numBackgroundVertices_ = 0;
         /** Holds the vertex buffer for the background grid. */
@@ -81,6 +88,12 @@ namespace viscom {
         /** Holds the vertex array object for the background grid. */
         GLuint vaoBackgroundGrid_ = 0;
 
+        /** Holds the teapot mesh. */
+        std::shared_ptr<Mesh> teapotMesh_;
+        /** Holds the teapot mesh renderable. */
+        std::unique_ptr<MeshRenderable> teapotRenderable_;
+
         glm::mat4 triangleModelMatrix_;
+        glm::mat4 teapotModelMatrix_;
     };
 }

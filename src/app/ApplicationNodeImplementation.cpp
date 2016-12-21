@@ -9,6 +9,7 @@
 #include "ApplicationNodeImplementation.h"
 #include "Vertices.h"
 #include <imgui.h>
+#include "core/gfx/mesh/MeshRenderable.h"
 
 namespace viscom {
 
@@ -31,23 +32,9 @@ namespace viscom {
 
         triangleProgram_ = appNode_->GetGPUProgramManager().GetResource("foregroundTriangle", std::initializer_list<std::string>{ "foregroundTriangle.vert", "foregroundTriangle.frag" });
         triangleMVPLoc_ = triangleProgram_->getUniformLocation("MVP");
-        /*const auto SHADER_PATH = GetConfig().baseDirectory_ + "/shader/";
-        if (!sgct::ShaderManager::instance()->shaderProgramExists("backgroundGrid")) {
-            sgct::ShaderManager::instance()->addShaderProgram(backgroundProgram_, "backgroundGrid", SHADER_PATH + "backgroundGrid.vert", SHADER_PATH + "backgroundGrid.frag");
-            sgct::ShaderManager::instance()->bindShaderProgram(backgroundProgram_);
-            sgct::ShaderManager::instance()->unBindShaderProgram();
-        } else backgroundProgram_ = sgct::ShaderManager::instance()->getShaderProgram("backgroundGrid");
 
-        backgroundMVPLoc_ = backgroundProgram_.getUniformLocation("MVP");
-
-
-        if (!sgct::ShaderManager::instance()->shaderProgramExists("foregroundTriangle")) {
-            sgct::ShaderManager::instance()->addShaderProgram(triangleProgram_, "foregroundTriangle", SHADER_PATH + "foregroundTriangle.vert", SHADER_PATH + "foregroundTriangle.frag");
-            sgct::ShaderManager::instance()->bindShaderProgram(triangleProgram_);
-            sgct::ShaderManager::instance()->unBindShaderProgram();
-        } else triangleProgram_ = sgct::ShaderManager::instance()->getShaderProgram("foregroundTriangle");
-
-        triangleMVPLoc_ = triangleProgram_.getUniformLocation("MVP");*/
+        teapotProgram_ = appNode_->GetGPUProgramManager().GetResource("foregroundMesh", std::initializer_list<std::string>{ "foregroundMesh.vert", "foregroundMesh.frag" });
+        teapotVPLoc_ = teapotProgram_->getUniformLocation("viewProjectionMatrix");
 
         std::vector<GridVertex> gridVertices;
 
@@ -77,7 +64,6 @@ namespace viscom {
         gridVertices.emplace_back(glm::vec3(0.0f, 0.5f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
         gridVertices.emplace_back(glm::vec3(0.5f, -0.5f, 0.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 
-
         glGenBuffers(1, &vboBackgroundGrid_);
         glBindBuffer(GL_ARRAY_BUFFER, vboBackgroundGrid_);
         glBufferData(GL_ARRAY_BUFFER, gridVertices.size() * sizeof(GridVertex), gridVertices.data(), GL_STATIC_DRAW);
@@ -91,6 +77,9 @@ namespace viscom {
         glBindVertexArray(0);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        teapotMesh_ = appNode_->GetMeshManager().GetResource("/models/teapot/teapot.obj");
+        teapotRenderable_ = MeshRenderable::create<SimpleMeshVertex>(teapotMesh_.get(), teapotProgram_.get());
     }
 
     void ApplicationNodeImplementation::PreSync()
@@ -103,7 +92,8 @@ namespace viscom {
 
     void ApplicationNodeImplementation::UpdateFrame(double currentTime, double)
     {
-        triangleModelMatrix_ = glm::rotate(glm::mat4(1.0f), static_cast<float>(currentTime), glm::vec3(0.0f, 1.0f, 0.0f));
+        triangleModelMatrix_ = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)), static_cast<float>(currentTime), glm::vec3(0.0f, 1.0f, 0.0f));
+        teapotModelMatrix_ = glm::scale(glm::rotate(glm::translate(glm::mat4(0.01f), glm::vec3(-3.0f, 0.0f, -5.0f)), static_cast<float>(currentTime), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.01f));
     }
 
     void ApplicationNodeImplementation::ClearBuffer()
@@ -121,24 +111,28 @@ namespace viscom {
         auto MVP = GetEngine()->getCurrentModelViewProjectionMatrix();
         {
             glUseProgram(backgroundProgram_->getProgramId());
-            // sgct::ShaderManager::instance()->bindShaderProgram(backgroundProgram_);
             glUniformMatrix4fv(backgroundMVPLoc_, 1, GL_FALSE, glm::value_ptr(MVP));
             glDrawArrays(GL_TRIANGLES, 0, numBackgroundVertices_);
         }
 
         {
-            MVP *= triangleModelMatrix_;
+            glDisable(GL_CULL_FACE);
+            auto triangleMVP = MVP * triangleModelMatrix_;
             glUseProgram(triangleProgram_->getProgramId());
-            // sgct::ShaderManager::instance()->bindShaderProgram(triangleProgram_);
-            glUniformMatrix4fv(triangleMVPLoc_, 1, GL_FALSE, glm::value_ptr(MVP));
+            glUniformMatrix4fv(triangleMVPLoc_, 1, GL_FALSE, glm::value_ptr(triangleMVP));
             glDrawArrays(GL_TRIANGLES, numBackgroundVertices_, 3);
+            glEnable(GL_CULL_FACE);
+        }
+
+        {
+            glUseProgram(teapotProgram_->getProgramId());
+            glUniformMatrix4fv(teapotVPLoc_, 1, GL_FALSE, glm::value_ptr(MVP));
+            teapotRenderable_->Draw(teapotModelMatrix_);
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
         glUseProgram(0);
-
-        // sgct::ShaderManager::instance()->unBindShaderProgram();
     }
 
     void ApplicationNodeImplementation::Draw2D()

@@ -30,13 +30,11 @@ set(VISCOM_CONFIG_NAME "quad" CACHE STRING "Name/directory of the configuration 
 
 file(GLOB_RECURSE CFG_FILES ${PROJECT_SOURCE_DIR}/config/*.*)
 file(GLOB_RECURSE DATA_FILES ${PROJECT_SOURCE_DIR}/data/*.*)
-file(GLOB_RECURSE SHADER_FILES ${PROJECT_SOURCE_DIR}/shader/*.*)
+file(GLOB_RECURSE SHADER_FILES ${PROJECT_SOURCE_DIR}/resources/shader/*.*)
 file(GLOB EXTERN_SOURCES extern/imgui/imgui.cpp extern/imgui/imgui_draw.cpp extern/imgui/imgui_demo.cpp)
 file(GLOB_RECURSE SRC_FILES
     ${PROJECT_SOURCE_DIR}/src/*.h
     ${PROJECT_SOURCE_DIR}/src/*.cpp)
-source_group("config" FILES ${CFG_FILES})
-source_group("data" FILES ${DATA_FILES})
 source_group("shader" FILES ${SHADER_FILES})
 source_group("extern" FILES ${EXTERN_SOURCES})
 
@@ -51,7 +49,7 @@ macro (set_xcode_property TARGET XCODE_PROPERTY XCODE_VALUE)
     set_property (TARGET ${TARGET} PROPERTY XCODE_ATTRIBUTE_${XCODE_PROPERTY} ${XCODE_VALUE})
 endmacro (set_xcode_property)
 
-add_executable(${APP_NAME} ${SRC_FILES} ${CFG_FILES} ${DATA_FILES} ${SHADER_FILES} ${EXTERN_SOURCES})
+add_executable(${APP_NAME} ${SRC_FILES} ${SHADER_FILES} ${EXTERN_SOURCES})
 
 if( APPLE )
     option(SGCT_CPP11 "Use libc++ instead of libstdc++" ON)

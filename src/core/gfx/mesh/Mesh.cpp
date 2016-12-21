@@ -111,9 +111,6 @@ namespace viscom {
             for (unsigned int ci = 0; ci < mesh->GetNumColorChannels(); ++ci) {
                 std::copy(mesh->mColors[ci], &mesh->mColors[ci][mesh->mNumVertices], reinterpret_cast<aiColor4D*>(&colors_[ci][currentMeshVertexOffset]));
             }
-            if (mesh->GetNumUVChannels() > 0) {
-                std::copy(mesh->mTextureCoords[1], &mesh->mTextureCoords[1][mesh->mNumVertices], reinterpret_cast<aiVector3D*>(&texCoords_[currentMeshVertexOffset]));
-            }
 
             std::transform(indices[i].begin(), indices[i].end(), &indices_[currentMeshIndexOffset], [currentMeshVertexOffset](unsigned int idx) { return idx + currentMeshVertexOffset; });
 

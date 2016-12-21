@@ -186,6 +186,10 @@ namespace viscom {
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+        GLboolean last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
+        GLboolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
+        GLboolean last_enable_stencil_test = glIsEnabled(GL_STENCIL_TEST);
+
         glDisable(GL_SCISSOR_TEST);
         glDisable(GL_STENCIL_TEST);
         glDisable(GL_DEPTH_TEST);
@@ -222,6 +226,10 @@ namespace viscom {
             glDrawArrays(GL_TRIANGLE_FAN, 4 * windowId, 4);
             glBindVertexArray(0);
         }
+
+        if (last_enable_depth_test) glEnable(GL_DEPTH_TEST);
+        if (last_enable_scissor_test) glEnable(GL_SCISSOR_TEST);
+        if (last_enable_stencil_test) glEnable(GL_STENCIL_TEST);
     }
 
 

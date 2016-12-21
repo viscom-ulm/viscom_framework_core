@@ -97,6 +97,11 @@ namespace viscom {
 
     void ApplicationNode::BaseInitOpenGL()
     {
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_DEPTH_TEST);
+
         auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
         viewportScreen_.resize(numWindows, std::make_pair(glm::ivec2(0), glm::ivec2()));
         viewportQuadSize_.resize(numWindows, glm::ivec2(0));
@@ -209,6 +214,10 @@ namespace viscom {
 
     void ApplicationNode::BaseDrawFrame() const
     {
+        glCullFace(GL_BACK);
+        glFrontFace(GL_CCW);
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_DEPTH_TEST);
         appNodeImpl_->DrawFrame();
     }
 
