@@ -17,6 +17,7 @@
 #include "resources/GPUProgramManager.h"
 #include "resources/TextureManager.h"
 #include "resources/MeshManager.h"
+#include "gfx/FrameBuffer.h"
 
 namespace viscom {
 
@@ -39,9 +40,9 @@ namespace viscom {
         void BaseInitOpenGL();
         void BasePreSync();
         void PostSyncFunction();
-        void BaseClearBuffer() const;
-        void BaseDrawFrame() const;
-        void BaseDraw2D() const;
+        void BaseClearBuffer();
+        void BaseDrawFrame();
+        void BaseDraw2D();
         void BasePostDraw() const;
         void BaseCleanUp() const;
 
@@ -59,9 +60,10 @@ namespace viscom {
         sgct::Engine* GetEngine() const { return engine_.get(); }
         const FWConfiguration& GetConfig() const { return config_; }
         unsigned int GetGlobalProjectorId(int nodeId, int windowId) const;
+        FrameBuffer& GetFramebuffer(size_t windowId) { return framebuffers_[windowId]; }
 
-        const std::pair<glm::ivec2, glm::ivec2>& GetViewportScreen(size_t windowId) const { return viewportScreen_[windowId]; }
-        std::pair<glm::ivec2, glm::ivec2>& GetViewportScreen(size_t windowId) { return viewportScreen_[windowId]; }
+        const Viewport& GetViewportScreen(size_t windowId) const { return viewportScreen_[windowId]; }
+        Viewport& GetViewportScreen(size_t windowId) { return viewportScreen_[windowId]; }
         const glm::ivec2& GetViewportQuadSize(size_t windowId) const { return viewportQuadSize_[windowId]; }
         glm::ivec2& GetViewportQuadSize(size_t windowId) { return viewportQuadSize_[windowId]; }
         const glm::vec2& GetViewportScaling(size_t windowId) const { return viewportScaling_[windowId]; }
@@ -95,11 +97,13 @@ namespace viscom {
         std::string masterSocketPort_;
 
         /** Holds the viewport for rendering content to the total screen. */
-        std::vector<std::pair<glm::ivec2, glm::ivec2>> viewportScreen_;
+        std::vector<Viewport> viewportScreen_;
         /** Holds the size of the viewport for each window quad. */
         std::vector<glm::ivec2> viewportQuadSize_;
         /** Holds the viewport scaling if one applies. */
         std::vector<glm::vec2> viewportScaling_;
+        /** Holds the frame buffer objects for each window. */
+        std::vector<FrameBuffer> framebuffers_;
 
         /** Holds the synchronized application time. */
         sgct::SharedDouble currentTimeSynced_;

@@ -103,7 +103,7 @@ namespace viscom {
         glEnable(GL_DEPTH_TEST);
 
         auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
-        viewportScreen_.resize(numWindows, std::make_pair(glm::ivec2(0), glm::ivec2()));
+        viewportScreen_.resize(numWindows);
         viewportQuadSize_.resize(numWindows, glm::ivec2(0));
         viewportScaling_.resize(numWindows, glm::vec2(1.0f));
 
@@ -111,8 +111,10 @@ namespace viscom {
             glm::ivec2 projectorSize;
             auto window = GetEngine()->getWindowPtr(wId);
             window->getFinalFBODimensions(projectorSize.x, projectorSize.y);
-            viewportScreen_[wId].first = glm::ivec2(0);
-            viewportScreen_[wId].second = projectorSize;
+            framebuffers_.emplace_back();
+            framebuffers_.back().Resize(projectorSize.x, projectorSize.y);
+            viewportScreen_[wId].position_ = glm::ivec2(0);
+            viewportScreen_[wId].size_ = projectorSize;
             viewportQuadSize_[wId] = projectorSize;
             viewportScaling_[wId] = glm::vec2(projectorSize) / glm::vec2(1920.0f, 1080.0f);
         }
@@ -122,7 +124,6 @@ namespace viscom {
 #else
         if (GetEngine()->isMaster()) ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && CLIENTMOUSE);
 #endif
-        
 
         appNodeImpl_->InitOpenGL();
     }
@@ -207,30 +208,30 @@ namespace viscom {
         appNodeImpl_->UpdateFrame(currentTime_, elapsedTime_);
     }
 
-    void ApplicationNode::BaseClearBuffer() const
+    void ApplicationNode::BaseClearBuffer()
     {
-        appNodeImpl_->ClearBuffer();
+        appNodeImpl_->ClearBuffer(framebuffers_[GetEngine()->getCurrentWindowIndex()]);
     }
 
-    void ApplicationNode::BaseDrawFrame() const
+    void ApplicationNode::BaseDrawFrame()
     {
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
-        appNodeImpl_->DrawFrame();
+        appNodeImpl_->DrawFrame(framebuffers_[GetEngine()->getCurrentWindowIndex()]);
     }
 
-    void ApplicationNode::BaseDraw2D() const
+    void ApplicationNode::BaseDraw2D()
     {
         auto window = GetEngine()->getCurrentWindowPtr();
 
 #ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(window->getId()).first, GetViewportScreen(window->getId()).second, GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
+        ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(window->getId()).position_, GetViewportScreen(window->getId()).size_, GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
 #else
-        if (engine_->isMaster()) ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(window->getId()).first, GetViewportScreen(window->getId()).second, GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
+        if (engine_->isMaster()) ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(window->getId()).position_, GetViewportScreen(window->getId()).size_, GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
 #endif
-        appNodeImpl_->Draw2D();
+        appNodeImpl_->Draw2D(framebuffers_[GetEngine()->getCurrentWindowIndex()]);
 
         // ImGui::Render for slaves is called in SlaveNodeInternal...
         if (engine_->isMaster()) ImGui::Render();
@@ -291,8 +292,8 @@ namespace viscom {
 
     void ApplicationNode::BaseMousePosCallback(double x, double y)
     {
-        x /= static_cast<double>(viewportScreen_[0].second.x);
-        y /= static_cast<double>(viewportScreen_[0].second.y);
+        x /= static_cast<double>(viewportScreen_[0].size_.x);
+        y /= static_cast<double>(viewportScreen_[0].size_.y);
         if (engine_->isMaster()) {
 #ifdef VISCOM_SYNCINPUT
             mousePosEvents_.emplace_back(x, y);

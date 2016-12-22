@@ -44,24 +44,19 @@ namespace viscom {
 
         auto slaveId = sgct_core::ClusterManager::instance()->getThisNodeId();
         auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
-        projectorViewport_.resize(numWindows, std::make_pair(glm::ivec2(0), glm::ivec2(0)));
-        sceneFBOs_.resize(numWindows, 0);
-        sceneFBOTextures_.resize(numWindows, 0);
-        sceneFBODepthBuffers_.resize(numWindows, 0);
+        projectorViewport_.resize(numWindows);
+        sceneFBOs_.reserve(numWindows);
         alphaTextures_.resize(numWindows, 0);
         if (useAlphaTransition_) alphaTransTextures_.resize(numWindows, 0);
         colorLookUpTableTextures_.resize(numWindows, 0);
 
-        glGenFramebuffers(static_cast<GLsizei>(numWindows), sceneFBOs_.data());
-        glGenRenderbuffers(static_cast<GLsizei>(numWindows), sceneFBODepthBuffers_.data());
-        glGenTextures(static_cast<GLsizei>(numWindows), sceneFBOTextures_.data());
         glGenTextures(static_cast<GLsizei>(numWindows), alphaTextures_.data());
         if (useAlphaTransition_) glGenTextures(static_cast<GLsizei>(numWindows), alphaTransTextures_.data());
         glGenTextures(static_cast<GLsizei>(numWindows), colorLookUpTableTextures_.data());
 
         for (auto i = 0U; i < numWindows; ++i) {
             projectorViewport_[i] = GetViewportScreen(i);
-            auto projectorSize = GetViewportScreen(i).second;
+            auto projectorSize = GetViewportScreen(i).size_;
 
             auto projectorNo = GetGlobalProjectorId(slaveId, i);
             auto quadCornersName = "screenQuadCoords" + std::to_string(projectorNo);
@@ -86,12 +81,15 @@ namespace viscom {
             auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling));
             glm::vec3 vpSize(1.7777777777777f, 1.0f, 1.0f);
             auto totalScreenSize = (glm::vec2(fboSize) * 2.0f * vpSize.xy) / (viewport[2] - viewport[0]).xy;
-            GetViewportScreen(i).first = glm::ivec2(glm::floor(((viewport[0] + vpSize) / (2.0f * vpSize)).xy * totalScreenSize));
-            GetViewportScreen(i).second = glm::ivec2(glm::floor(totalScreenSize));
+            GetViewportScreen(i).position_ = glm::ivec2(glm::floor(((viewport[0] + vpSize) / (2.0f * vpSize)).xy * totalScreenSize));
+            GetViewportScreen(i).size_ = glm::uvec2(glm::floor(totalScreenSize));
             GetViewportQuadSize(i) = fboSize;
             GetViewportScaling(i) = totalScreenSize / glm::vec2(1920.0f, 1080.0f);
 
             CreateProjectorFBO(i, fboSize);
+
+            sceneFBOs_[i].SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, GetViewportQuadSize(i).x, GetViewportQuadSize(i).y);
+            GetApplication()->GetFramebuffer(i).SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, projectorViewport_[i].size_.x, projectorViewport_[i].size_.y);
 
             auto texAlphaFilename = GetConfig().baseDirectory_ + "data/" + GetConfig().viscomConfigName_ + "/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaName.c_str())->GetText();
             auto texAlphaTransFilename = GetConfig().baseDirectory_ + "data/" + GetConfig().viscomConfigName_ + "/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaTransName.c_str())->GetText();
@@ -155,107 +153,87 @@ namespace viscom {
     }
 
 
-    void SlaveNodeInternal::DrawFrame()
+    void SlaveNodeInternal::DrawFrame(FrameBuffer& fbo)
     {
         auto window = GetEngine()->getCurrentWindowPtr();
         auto windowId = window->getId();
 
         window->getFBOPtr()->unBind();
 
-        // Draw scene to off screen texture.
-        {
-            glViewport(projectorViewport_[windowId].first.x, projectorViewport_[windowId].first.y, GetViewportQuadSize(windowId).x, GetViewportQuadSize(windowId).y);
+        ClearBuffer(sceneFBOs_[windowId]);
 
-            glBindFramebuffer(GL_FRAMEBUFFER, sceneFBOs_[windowId]);
-            GLenum drawBuffers = GL_COLOR_ATTACHMENT0;
-            glDrawBuffers(1, &drawBuffers);
-
-            ClearBuffer();
-
-            ApplicationNodeImplementation::DrawFrame();
-        }
+        ApplicationNodeImplementation::DrawFrame(sceneFBOs_[windowId]);
     }
 
-    void SlaveNodeInternal::Draw2D()
+    void SlaveNodeInternal::Draw2D(FrameBuffer& fbo)
     {
-        ApplicationNodeImplementation::Draw2D();
+        auto window = GetEngine()->getCurrentWindowPtr();
+        auto windowId = window->getId();
+        ApplicationNodeImplementation::Draw2D(sceneFBOs_[windowId]);
 
 #ifdef VISCOM_CLIENTGUI
-        ImGui::Render();
+        sceneFBOs_[windowId].DrawToFBO([]() {
+            ImGui::Render();
+        });
 #endif
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        GLboolean last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
-        GLboolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
-        GLboolean last_enable_stencil_test = glIsEnabled(GL_STENCIL_TEST);
+        fbo.DrawToFBO([windowId, this]() {
+            GLboolean last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
+            GLboolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);
+            GLboolean last_enable_stencil_test = glIsEnabled(GL_STENCIL_TEST);
 
-        glDisable(GL_SCISSOR_TEST);
-        glDisable(GL_STENCIL_TEST);
-        glDisable(GL_DEPTH_TEST);
+            glDisable(GL_SCISSOR_TEST);
+            glDisable(GL_STENCIL_TEST);
+            glDisable(GL_DEPTH_TEST);
 
-        auto window = GetEngine()->getCurrentWindowPtr();
-        auto windowId = window->getId();
+            // Draw off screen texture to screen
+            {
+                glUseProgram(calibrationProgram_->getProgramId());
 
-        // Draw off screen texture to screen
-        {
-            window->getFBOPtr()->bind();
-            glViewport(projectorViewport_[windowId].first.x, projectorViewport_[windowId].first.y, projectorViewport_[windowId].second.x, projectorViewport_[windowId].second.y);
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, sceneFBOs_[windowId].GetTextures()[0]);
+                if (useAlphaTransition_) {
+                    glActiveTexture(GL_TEXTURE1);
+                    glBindTexture(GL_TEXTURE_2D, alphaTransTextures_[windowId]);
+                }
+                glActiveTexture(GL_TEXTURE2);
+                glBindTexture(GL_TEXTURE_2D, alphaTextures_[windowId]);
+                glActiveTexture(GL_TEXTURE3);
+                glBindTexture(GL_TEXTURE_2D_ARRAY, colorLookUpTableTextures_[windowId]);
 
-            glUseProgram(calibrationProgram_->getProgramId());
+                glUniform1i(calibrationSceneTexLoc_, 0);
+                glUniform2f(calibrationResolutionLoc_, static_cast<float>(projectorViewport_[windowId].size_.x), static_cast<float>(projectorViewport_[windowId].size_.y));
+                glUniform1i(calibrationUseAlphaTestLoc_, useAlphaTransition_ ? 1 : 0);
+                if (useAlphaTransition_) glUniform1i(calibrationAlphaTexLoc_, 1);
+                glUniform1i(calibrationAlphaOverlapTexLoc_, 2);
+                glUniform1i(calibrationColorLookupTexLoc_, 3);
 
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, sceneFBOTextures_[windowId]);
-            if (useAlphaTransition_) {
-                glActiveTexture(GL_TEXTURE1);
-                glBindTexture(GL_TEXTURE_2D, alphaTransTextures_[windowId]);
+                glBindVertexArray(vaoProjectorQuads_);
+                glDrawArrays(GL_TRIANGLE_FAN, 4 * windowId, 4);
+                glBindVertexArray(0);
             }
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, alphaTextures_[windowId]);
-            glActiveTexture(GL_TEXTURE3);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, colorLookUpTableTextures_[windowId]);
 
-            glUniform1i(calibrationSceneTexLoc_, 0);
-            glUniform2f(calibrationResolutionLoc_, static_cast<float>(projectorViewport_[windowId].second.x), static_cast<float>(projectorViewport_[windowId].second.y));
-            glUniform1i(calibrationUseAlphaTestLoc_, useAlphaTransition_ ? 1 : 0);
-            if (useAlphaTransition_) glUniform1i(calibrationAlphaTexLoc_, 1);
-            glUniform1i(calibrationAlphaOverlapTexLoc_, 2);
-            glUniform1i(calibrationColorLookupTexLoc_, 3);
-
-            glBindVertexArray(vaoProjectorQuads_);
-            glDrawArrays(GL_TRIANGLE_FAN, 4 * windowId, 4);
-            glBindVertexArray(0);
-        }
-
-        if (last_enable_depth_test) glEnable(GL_DEPTH_TEST);
-        if (last_enable_scissor_test) glEnable(GL_SCISSOR_TEST);
-        if (last_enable_stencil_test) glEnable(GL_STENCIL_TEST);
+            if (last_enable_depth_test) glEnable(GL_DEPTH_TEST);
+            if (last_enable_scissor_test) glEnable(GL_SCISSOR_TEST);
+            if (last_enable_stencil_test) glEnable(GL_STENCIL_TEST);
+        });
     }
 
 
     void SlaveNodeInternal::CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, sceneFBOs_[windowId]);
-        glBindTexture(GL_TEXTURE_2D, sceneFBOTextures_[windowId]);
+        FrameBufferDescriptor fbDesc;
+        fbDesc.texDesc_.emplace_back(GL_RGBA32F, GL_TEXTURE_2D);
+        fbDesc.rbDesc_.emplace_back(GL_DEPTH_COMPONENT32);
+        sceneFBOs_.emplace_back(fboSize.x, fboSize.y, fbDesc);
+        glBindTexture(GL_TEXTURE_2D, sceneFBOs_[windowId].GetTextures()[0]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, fboSize.x, fboSize.y, 0, GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sceneFBOTextures_[windowId], 0);
-
-        glBindRenderbuffer(GL_RENDERBUFFER, sceneFBODepthBuffers_[windowId]);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, fboSize.x, fboSize.y);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, sceneFBODepthBuffers_[windowId]);
-
-        GLenum drawBuffers = GL_COLOR_ATTACHMENT0;
-        glDrawBuffers(1, &drawBuffers);
-
-        auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        if (fboStatus != GL_FRAMEBUFFER_COMPLETE) throw std::runtime_error("Could not create frame buffer.");
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
 
@@ -276,13 +254,6 @@ namespace viscom {
         vaoProjectorQuads_ = 0;
         if (vboProjectorQuads_ != 0) glDeleteBuffers(0, &vboProjectorQuads_);
         vboProjectorQuads_ = 0;
-
-        if (!sceneFBOTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(sceneFBOTextures_.size()), sceneFBOTextures_.data());
-        sceneFBOTextures_.clear();
-        if (!sceneFBODepthBuffers_.empty()) glDeleteRenderbuffers(static_cast<GLsizei>(sceneFBODepthBuffers_.size()), sceneFBODepthBuffers_.data());
-        sceneFBODepthBuffers_.clear();
-        if (!sceneFBOs_.empty()) glDeleteTextures(static_cast<GLsizei>(sceneFBOs_.size()), sceneFBOs_.data());
-        sceneFBOs_.clear();
 
         if (!alphaTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(alphaTextures_.size()), alphaTextures_.data());
         alphaTextures_.clear();

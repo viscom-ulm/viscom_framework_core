@@ -20,8 +20,8 @@ namespace viscom {
         ~SlaveNodeInternal();
 
         void InitOpenGL() override;
-        void DrawFrame() override;
-        void Draw2D() override;
+        void DrawFrame(FrameBuffer& fbo) override;
+        void Draw2D(FrameBuffer& fbo) override;
         void CleanUp() override;
 
     private:
@@ -37,7 +37,7 @@ namespace viscom {
 
 
         /** Holds the viewport for rendering directly to the projector. */
-        std::vector<std::pair<glm::ivec2, glm::ivec2>> projectorViewport_;
+        std::vector<Viewport> projectorViewport_;
         /** Holds the vertex coordinates for the screen aligned quad to render to (in projector space). */
         std::vector<CalbrationProjectorQuadVertex> quadCoordsProjector_;
 
@@ -62,11 +62,7 @@ namespace viscom {
         /** Holds the vertex array object for the projector quads. */
         GLuint vaoProjectorQuads_ = 0;
         /** Holds the frame buffers for rendering the scene into. */
-        std::vector<GLuint> sceneFBOs_;
-        /** Holds the frame buffer textures for rendering the scene into. */
-        std::vector<GLuint> sceneFBOTextures_;
-        /** Holds the frame buffer depth buffers for rendering the scene into. */
-        std::vector<GLuint> sceneFBODepthBuffers_;
+        std::vector<FrameBuffer> sceneFBOs_;
         /** Holds the alpha textures. */
         std::vector<GLuint> alphaTextures_;
         /** Holds the alpha trans textures. */

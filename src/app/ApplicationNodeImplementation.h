@@ -30,9 +30,9 @@ namespace viscom {
         virtual void PreSync();
         virtual void UpdateSyncedInfo();
         virtual void UpdateFrame(double currentTime, double elapsedTime);
-        virtual void ClearBuffer();
-        virtual void DrawFrame();
-        virtual void Draw2D();
+        virtual void ClearBuffer(FrameBuffer& fbo);
+        virtual void DrawFrame(FrameBuffer& fbo);
+        virtual void Draw2D(FrameBuffer& fbo);
         virtual void PostDraw();
         virtual void CleanUp();
 
@@ -52,8 +52,8 @@ namespace viscom {
 
         unsigned int GetGlobalProjectorId(int nodeId, int windowId) const { return appNode_->GetGlobalProjectorId(nodeId, windowId); }
 
-        const std::pair<glm::ivec2, glm::ivec2>& GetViewportScreen(size_t windowId) const { return appNode_->GetViewportScreen(windowId); }
-        std::pair<glm::ivec2, glm::ivec2>& GetViewportScreen(size_t windowId) { return appNode_->GetViewportScreen(windowId); }
+        const Viewport& GetViewportScreen(size_t windowId) const { return appNode_->GetViewportScreen(windowId); }
+        Viewport& GetViewportScreen(size_t windowId) { return appNode_->GetViewportScreen(windowId); }
         const glm::ivec2& GetViewportQuadSize(size_t windowId) const { return appNode_->GetViewportQuadSize(windowId); }
         glm::ivec2& GetViewportQuadSize(size_t windowId) { return appNode_->GetViewportQuadSize(windowId); }
         const glm::vec2& GetViewportScaling(size_t windowId) const { return appNode_->GetViewportScaling(windowId); }

@@ -31,25 +31,27 @@ namespace viscom {
         ApplicationNodeImplementation::PreSync();
     }
 
-    void MasterNode::DrawFrame()
+    void MasterNode::DrawFrame(FrameBuffer& fbo)
     {
-        ApplicationNodeImplementation::DrawFrame();
+        ApplicationNodeImplementation::DrawFrame(fbo);
     }
 
-    void MasterNode::Draw2D()
+    void MasterNode::Draw2D(FrameBuffer& fbo)
     {
+        fbo.DrawToFBO([]() {
 #ifndef VISCOM_CLIENTGUI
-        ImGui::ShowTestWindow();
+            ImGui::ShowTestWindow();
 #endif
-        ImGui::SetNextWindowPos(ImVec2(700, 60), ImGuiSetCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiSetCond_FirstUseEver);
-        if (ImGui::Begin("MasterTestWindow", nullptr, ImGuiWindowFlags_ShowBorders))
-        {
-            ImGui::Text("Hello World on Master!");
-        }
-        ImGui::End();
+            ImGui::SetNextWindowPos(ImVec2(700, 60), ImGuiSetCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(550, 680), ImGuiSetCond_FirstUseEver);
+            if (ImGui::Begin("MasterTestWindow", nullptr, ImGuiWindowFlags_ShowBorders))
+            {
+                ImGui::Text("Hello World on Master!");
+            }
+            ImGui::End();
+        });
 
-        ApplicationNodeImplementation::Draw2D();
+        ApplicationNodeImplementation::Draw2D(fbo);
     }
 
     void MasterNode::CleanUp()

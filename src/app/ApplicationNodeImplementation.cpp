@@ -96,50 +96,56 @@ namespace viscom {
         teapotModelMatrix_ = glm::scale(glm::rotate(glm::translate(glm::mat4(0.01f), glm::vec3(-3.0f, 0.0f, -5.0f)), static_cast<float>(currentTime), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.01f));
     }
 
-    void ApplicationNodeImplementation::ClearBuffer()
+    void ApplicationNodeImplementation::ClearBuffer(FrameBuffer& fbo)
     {
-        auto colorPtr = sgct::Engine::instance()->getClearColor();
-        glClearColor(colorPtr[0], colorPtr[1], colorPtr[2], colorPtr[3]);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        fbo.DrawToFBO([]() {
+            auto colorPtr = sgct::Engine::instance()->getClearColor();
+            glClearColor(colorPtr[0], colorPtr[1], colorPtr[2], colorPtr[3]);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        });
     }
 
-    void ApplicationNodeImplementation::DrawFrame()
+    void ApplicationNodeImplementation::DrawFrame(FrameBuffer& fbo)
     {
-        glBindVertexArray(vaoBackgroundGrid_);
-        glBindBuffer(GL_ARRAY_BUFFER, vboBackgroundGrid_);
+        fbo.DrawToFBO([this]() {
+            glBindVertexArray(vaoBackgroundGrid_);
+            glBindBuffer(GL_ARRAY_BUFFER, vboBackgroundGrid_);
 
-        auto MVP = GetEngine()->getCurrentModelViewProjectionMatrix();
-        {
-            glUseProgram(backgroundProgram_->getProgramId());
-            glUniformMatrix4fv(backgroundMVPLoc_, 1, GL_FALSE, glm::value_ptr(MVP));
-            glDrawArrays(GL_TRIANGLES, 0, numBackgroundVertices_);
-        }
+            auto MVP = GetEngine()->getCurrentModelViewProjectionMatrix();
+            {
+                glUseProgram(backgroundProgram_->getProgramId());
+                glUniformMatrix4fv(backgroundMVPLoc_, 1, GL_FALSE, glm::value_ptr(MVP));
+                glDrawArrays(GL_TRIANGLES, 0, numBackgroundVertices_);
+            }
 
-        {
-            glDisable(GL_CULL_FACE);
-            auto triangleMVP = MVP * triangleModelMatrix_;
-            glUseProgram(triangleProgram_->getProgramId());
-            glUniformMatrix4fv(triangleMVPLoc_, 1, GL_FALSE, glm::value_ptr(triangleMVP));
-            glDrawArrays(GL_TRIANGLES, numBackgroundVertices_, 3);
-            glEnable(GL_CULL_FACE);
-        }
+            {
+                glDisable(GL_CULL_FACE);
+                auto triangleMVP = MVP * triangleModelMatrix_;
+                glUseProgram(triangleProgram_->getProgramId());
+                glUniformMatrix4fv(triangleMVPLoc_, 1, GL_FALSE, glm::value_ptr(triangleMVP));
+                glDrawArrays(GL_TRIANGLES, numBackgroundVertices_, 3);
+                glEnable(GL_CULL_FACE);
+            }
 
-        {
-            glUseProgram(teapotProgram_->getProgramId());
-            glUniformMatrix4fv(teapotVPLoc_, 1, GL_FALSE, glm::value_ptr(MVP));
-            teapotRenderable_->Draw(teapotModelMatrix_);
-        }
+            {
+                glUseProgram(teapotProgram_->getProgramId());
+                glUniformMatrix4fv(teapotVPLoc_, 1, GL_FALSE, glm::value_ptr(MVP));
+                teapotRenderable_->Draw(teapotModelMatrix_);
+            }
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-        glUseProgram(0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+            glUseProgram(0);
+        });
     }
 
-    void ApplicationNodeImplementation::Draw2D()
+    void ApplicationNodeImplementation::Draw2D(FrameBuffer& fbo)
     {
+        fbo.DrawToFBO([]() {
 #ifdef VISCOM_CLIENTGUI
-        ImGui::ShowTestWindow();
+            ImGui::ShowTestWindow();
 #endif
+        });
     }
 
     void ApplicationNodeImplementation::PostDraw()
