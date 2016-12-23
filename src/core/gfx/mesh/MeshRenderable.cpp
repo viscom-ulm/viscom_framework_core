@@ -99,15 +99,15 @@ namespace viscom {
         glUniformMatrix4fv(uniformLocations_[0], 1, GL_FALSE, glm::value_ptr(modelMatrix));
         glUniformMatrix3fv(uniformLocations_[1], 1, GL_FALSE, glm::value_ptr(glm::inverseTranspose(glm::mat3(modelMatrix))));
 
-        if (subMesh->GetMaterial()->diffuseTex && uniformLocations_.size() != 0) {
+        if (subMesh->GetMaterial()->diffuseTex && uniformLocations_.size() > 2) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, subMesh->GetMaterial()->diffuseTex->getTextureId());
-            glUniform1ui(uniformLocations_[2], 0);
+            glUniform1i(uniformLocations_[2], 0);
         }
-        if (subMesh->GetMaterial()->bumpTex && uniformLocations_.size() >= 2) {
+        if (subMesh->GetMaterial()->bumpTex && uniformLocations_.size() > 3) {
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, subMesh->GetMaterial()->bumpTex->getTextureId());
-            glUniform1ui(uniformLocations_[3], 1);
+            glUniform1i(uniformLocations_[3], 1);
             if (!overrideBump) glUniform1f(uniformLocations_[4], subMesh->GetMaterial()->bumpMultiplier);
         }
 

@@ -231,10 +231,13 @@ namespace viscom {
 #else
         if (engine_->isMaster()) ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(window->getId()).position_, GetViewportScreen(window->getId()).size_, GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
 #endif
-        appNodeImpl_->Draw2D(framebuffers_[GetEngine()->getCurrentWindowIndex()]);
+        auto& fbo = framebuffers_[GetEngine()->getCurrentWindowIndex()];
+        appNodeImpl_->Draw2D(fbo);
 
-        // ImGui::Render for slaves is called in SlaveNodeInternal...
-        if (engine_->isMaster()) ImGui::Render();
+        fbo.DrawToFBO([this]() {
+            // ImGui::Render for slaves is called in SlaveNodeInternal...
+            if (engine_->isMaster()) ImGui::Render();
+        });
     }
 
     void ApplicationNode::BasePostDraw() const

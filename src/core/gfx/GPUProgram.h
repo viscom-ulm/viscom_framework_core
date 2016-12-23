@@ -40,7 +40,7 @@ namespace viscom {
         /** Returns a attribute locations. */
         GLint getAttributeLocation(const std::string& name) const;
         /** Returns a list of attribute locations. */
-        std::vector<GLint> getAttribureLocations(const std::initializer_list<std::string>& names) const;
+        std::vector<GLint> getAttributeLocations(const std::initializer_list<std::string>& names) const;
 
     private:
         using ShaderList = std::vector<std::unique_ptr<Shader>>;

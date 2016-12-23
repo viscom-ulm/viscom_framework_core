@@ -32,9 +32,9 @@ namespace viscom {
         virtual ~SubMesh();
 
         const std::string& GetName() const { return objectName_; }
-        unsigned int GetIndexOffset() const { return indexOffset_; };
-        unsigned int GetNumberOfIndices() const { return numIndices_; };
-        unsigned int GetNumberOfTriangles() const { return numIndices_ / 3; };
+        unsigned int GetIndexOffset() const { return indexOffset_; }
+        unsigned int GetNumberOfIndices() const { return numIndices_; }
+        unsigned int GetNumberOfTriangles() const { return numIndices_ / 3; }
         const math::AABB3<float>& GetLocalAABB() const { return aabb_; }
         const Material* GetMaterial() const { return material_; }
 

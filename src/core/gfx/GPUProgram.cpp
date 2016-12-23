@@ -175,7 +175,7 @@ namespace viscom {
         return glGetAttribLocation(program_, name.c_str());
     }
 
-    std::vector<GLint> GPUProgram::getAttribureLocations(const std::initializer_list<std::string>& names) const
+    std::vector<GLint> GPUProgram::getAttributeLocations(const std::initializer_list<std::string>& names) const
     {
         std::vector<GLint> result;
         result.reserve(names.size());
