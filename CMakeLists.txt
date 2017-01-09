@@ -12,6 +12,8 @@ endif()
 
 PROJECT(${APP_NAME})
 
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Force compiler to create static libs." FORCE)
+
 set(ADD_FATAL_EXAMPLE OFF CACHE BOOL "Fatal (fatal-crashes/contract) examples " FORCE)
 set(ADD_BUILD_WIN_SHARED OFF CACHE BOOL "Build shared library on Windows" FORCE)
 set(USE_DYNAMIC_LOGGING_LEVELS ON CACHE BOOL "Turn ON/OFF log levels. An disabled level will not push logs of that level to the sink. By default dynamic logging is disabled" FORCE)
