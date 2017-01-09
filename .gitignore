@@ -4,3 +4,4 @@ shaderold/
 srcold/
 data/old/
 **/*Precompute*.???
+data/*/*.dat
