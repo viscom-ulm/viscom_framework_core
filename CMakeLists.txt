@@ -78,6 +78,7 @@ set(VISCOM_CLIENTGUI ON CACHE BOOL "Use ImGui on clients.")
 set(VISCOM_SYNCINPUT ON CACHE BOOL "Synchronize input from master to clients.")
 set(VISCOM_CLIENTMOUSECURSOR ON CACHE BOOL "Show the mouse cursor on clients.")
 set(VISCOM_CONFIG_NAME "quad" CACHE STRING "Name/directory of the configuration files to be used.")
+set(VISCOM_APP_NAME "${APP_NAME}" CACHE STRING "Name of the application to be build.")
 
 file(GLOB_RECURSE CFG_FILES ${PROJECT_SOURCE_DIR}/config/*.*)
 file(GLOB_RECURSE DATA_FILES ${PROJECT_SOURCE_DIR}/data/*.*)
@@ -101,6 +102,7 @@ macro (set_xcode_property TARGET XCODE_PROPERTY XCODE_VALUE)
 endmacro (set_xcode_property)
 
 add_executable(${APP_NAME} ${SRC_FILES} ${SHADER_FILES} ${EXTERN_SOURCES})
+set_target_properties(${APP_NAME} PROPERTIES OUTPUT_NAME ${VISCOM_APP_NAME})
 
 if( APPLE )
     option(SGCT_CPP11 "Use libc++ instead of libstdc++" ON)
