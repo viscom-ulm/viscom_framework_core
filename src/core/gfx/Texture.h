@@ -42,7 +42,7 @@ namespace viscom {
         Texture& operator=(const Texture&) = delete;
         Texture(Texture&&) noexcept;
         Texture& operator=(Texture&&) noexcept;
-        ~Texture() noexcept;
+        virtual ~Texture() noexcept override;
 
         /** Returns the size of the texture. */
         glm::uvec2 getDimensions() const noexcept { return glm::uvec2(width_, height_); }

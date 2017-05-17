@@ -21,6 +21,6 @@ namespace viscom {
         MeshManager& operator=(const MeshManager&);
         MeshManager(MeshManager&&) noexcept;
         MeshManager& operator=(MeshManager&&) noexcept;
-        virtual ~MeshManager();
+        virtual ~MeshManager() override;
     };
 }

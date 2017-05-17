@@ -21,7 +21,7 @@ namespace viscom {
         GPUProgramManager& operator=(const GPUProgramManager&);
         GPUProgramManager(GPUProgramManager&&) noexcept;
         GPUProgramManager& operator=(GPUProgramManager&&) noexcept;
-        virtual ~GPUProgramManager();
+        virtual ~GPUProgramManager() override;
 
         void RecompileAll();
     };

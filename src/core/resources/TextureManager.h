@@ -21,6 +21,6 @@ namespace viscom {
         TextureManager& operator=(const TextureManager&);
         TextureManager(TextureManager&&) noexcept;
         TextureManager& operator=(TextureManager&&) noexcept;
-        virtual ~TextureManager();
+        virtual ~TextureManager() override;
     };
 }

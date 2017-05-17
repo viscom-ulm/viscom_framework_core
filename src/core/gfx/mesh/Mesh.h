@@ -41,7 +41,7 @@ namespace viscom {
         Mesh& operator=(const Mesh&) = delete;
         Mesh(Mesh&&) noexcept;
         Mesh& operator=(Mesh&&) noexcept;
-        ~Mesh();
+        virtual ~Mesh() override;
 
         /**
          *  Accessor to the meshes sub-meshes. This can be used to render more complicated meshes (with multiple sets

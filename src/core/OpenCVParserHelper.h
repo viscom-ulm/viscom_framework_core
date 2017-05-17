@@ -27,7 +27,7 @@ namespace viscom {
         static glm::vec2 Parse2f(tinyxml2::XMLElement* element);
 
     private:
-        OpenCVParserHelper() {}
+        OpenCVParserHelper() = default;
         ~OpenCVParserHelper() = default;
     };
 

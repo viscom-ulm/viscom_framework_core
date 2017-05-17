@@ -27,7 +27,7 @@ namespace viscom {
         GPUProgram& operator=(const GPUProgram&) = delete;
         GPUProgram(GPUProgram&&) noexcept;
         GPUProgram& operator=(GPUProgram&&) noexcept;
-        ~GPUProgram() noexcept;
+        virtual ~GPUProgram() noexcept override;
 
         void recompileProgram();
         /** Returns the OpenGL program id. */

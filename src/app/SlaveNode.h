@@ -16,7 +16,7 @@ namespace viscom {
     {
     public:
         explicit SlaveNode(ApplicationNode* appNode);
-        ~SlaveNode();
+        virtual ~SlaveNode() override;
 
         void Draw2D(FrameBuffer& fbo) override;
 
