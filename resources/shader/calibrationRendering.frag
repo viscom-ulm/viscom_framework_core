@@ -40,9 +40,9 @@ void main()
     float alphaOverlapValue = texture(alphaOverlap, alphaCoord).r;
 
     if(withAlphaTrans) {
-        //Test1 => if (overlaps <= 2.0) then alphaTras else alphaOerlap			
+        //Test1 => if (overlaps <= 2.0) then alphaTras else alphaOerlap
         if(alphaOverlapValue >= 0.7 && alphaOverlapValue < 1.0) {
-            float alphaTransValue = texture(alphaTrans, alphaCoord).r;	
+            float alphaTransValue = texture(alphaTrans, alphaCoord).r;
             alphaOverlapValue = pow(alphaTransValue, gamma);
         }	
             
@@ -64,22 +64,19 @@ void main()
             alphaOverlapValue = pow(alphaTransValue, gamma);
         }
         */
-            
     }
-    
-    
-    
 
     //uint8_t
     int indexR = int(colorTex.x*255);
     int indexG = int(colorTex.y*255);
-    int indexB = int(colorTex.z*255);		
+    int indexB = int(colorTex.z*255);
 
-    //x and y in range [0,1]		
-    float colR = texture(colorLookup, vec3(alphaCoord, colorTex.r * 256)).r; //colorTex.r * 256
-    float colG = texture(colorLookup, vec3(alphaCoord, colorTex.g * 256)).g;
-    float colB = texture(colorLookup, vec3(alphaCoord, colorTex.b * 256)).b;
-    vec4 correctedColor = vec4(colR, colG, colB, colorTex.a); // werte sind bereits durch 255 geteilt	
+    //x and y in range [0,1]
+    // float colR = texture(colorLookup, vec3(alphaCoord, colorTex.r * 256)).r; //colorTex.r * 256
+    // float colG = texture(colorLookup, vec3(alphaCoord, colorTex.g * 256)).g;
+    // float colB = texture(colorLookup, vec3(alphaCoord, colorTex.b * 256)).b;
+    // vec4 correctedColor = vec4(colR, colG, colB, colorTex.a); // werte sind bereits durch 255 geteilt
+    correctedColor = colorTex;
     color = correctedColor;
     
     //color = mix(vec4(0, 0, 0, 1), correctedColor,  alphaOverlapValue); 
