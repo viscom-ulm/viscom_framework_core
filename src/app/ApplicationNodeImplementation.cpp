@@ -154,9 +154,9 @@ namespace viscom {
 
     void ApplicationNodeImplementation::CleanUp()
     {
-        if (vaoBackgroundGrid_ != 0) glDeleteVertexArrays(0, &vaoBackgroundGrid_);
+        if (vaoBackgroundGrid_ != 0) glDeleteVertexArrays(1, &vaoBackgroundGrid_);
         vaoBackgroundGrid_ = 0;
-        if (vboBackgroundGrid_ != 0) glDeleteBuffers(0, &vboBackgroundGrid_);
+        if (vboBackgroundGrid_ != 0) glDeleteBuffers(1, &vboBackgroundGrid_);
         vboBackgroundGrid_ = 0;
     }
 
