@@ -37,7 +37,7 @@ namespace viscom {
     class Texture final : public Resource
     {
     public:
-        Texture(const std::string& texFilename, ApplicationNode* node);
+        Texture(const std::string& texFilename, ApplicationNode* node, bool useSRGB = true);
         Texture(const Texture&) = delete;
         Texture& operator=(const Texture&) = delete;
         Texture(Texture&&) noexcept;
@@ -50,6 +50,10 @@ namespace viscom {
         GLuint getTextureId() const noexcept { return textureId_; }
 
     private:
+        void LoadTextureLDR(const std::string& filename, bool useSRGB);
+        void LoadTextureHDR(const std::string& filename);
+        std::tuple<int, int> FindFormat(const std::string& filename, int imgChannels, bool useSRGB = false) const;
+
         /** Holds the OpenGL texture id. */
         GLuint textureId_;
         /** Holds the texture descriptor. */
