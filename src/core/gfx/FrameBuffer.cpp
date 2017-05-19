@@ -148,6 +148,8 @@ namespace viscom {
         glGenTextures(static_cast<GLsizei>(textures_.size()), textures_.data());
         for (auto i = 0U; i < textures_.size(); ++i) {
             glBindTexture(desc_.texDesc_[i].texType_, textures_[i]);
+            glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_BASE_LEVEL, 0);
+            glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_MAX_LEVEL, 0);
             if (desc_.texDesc_[i].texType_ == GL_TEXTURE_CUBE_MAP) {
                 for (auto i = 0; i < 6; ++i) {
                     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, desc_.texDesc_[i].internalFormat_, width_, height_, 0, GL_RGBA, GL_FLOAT, nullptr);
