@@ -45,45 +45,6 @@ namespace viscom {
         else LoadTextureLDR(fullFilename, useSRGB);
 
         glBindTexture(GL_TEXTURE_2D, 0);
-
-        auto width = 0, height = 0, channels = 0;
-        auto image = stbi_load(fullFilename.c_str(), &width, &height, &channels, 0);
-        if (!image) {
-            LOG(WARNING) << "Failed to load texture (" << fullFilename << ").";
-            throw resource_loading_error(fullFilename, "Failed to load texture.");
-        }
-
-        // Set the Correct Channel Format
-        switch (channels)
-        {
-        case 1:
-            descriptor_.internalFormat_ = GL_R8;
-            descriptor_.format_ = GL_RED;
-            break;
-        case 2:
-            descriptor_.internalFormat_ = GL_RG8;
-            descriptor_.format_ = GL_RG;
-            break;
-        case 3:
-            descriptor_.internalFormat_ = GL_RGB8;
-            descriptor_.format_ = GL_RGB;
-            break;
-        case 4:
-            descriptor_.internalFormat_ = GL_RGBA8;
-            descriptor_.format_ = GL_RGBA;
-            break;
-        default: break;
-        }
-
-        // Bind Texture and Set Filtering Levels
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width, height, 0, descriptor_.format_, descriptor_.type_, image);
-
-        // Release Image Pointer and Store the Texture
-        stbi_image_free(image);
     }
 
     /**
