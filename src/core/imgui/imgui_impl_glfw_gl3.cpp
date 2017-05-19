@@ -152,6 +152,8 @@ void ImGui_ImplGlfwGL3_MouseButtonCallback(int button, int action, int /*mods*/)
 {
     if (action == GLFW_PRESS && button >= 0 && button < 3)
         g_MousePressed[button] = true;
+    if (action == GLFW_RELEASE && button >= 0 && button < 3)
+        g_MousePressed[button] = false;
 }
 
 void ImGui_ImplGlfwGL3_MousePositionCallback(double x, double y)
@@ -414,11 +416,6 @@ void ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ive
 void ImGui_ImplGlfwGL3_FinishAllFrames()
 {
     ImGuiIO& io = ImGui::GetIO();
-
-    for (bool& bttn : g_MousePressed)
-    {
-        bttn = false;
-    }
 
     g_MouseWheel = 0.0f;
 }
