@@ -10,7 +10,7 @@
 
 namespace viscom {
 
-    SlaveNode::SlaveNode(ApplicationNode* appNode) :
+    SlaveNode::SlaveNode(ApplicationNodeInternal* appNode) :
         SlaveNodeInternal{ appNode }
     {
     }

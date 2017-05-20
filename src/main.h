@@ -29,6 +29,7 @@ namespace viscom {
         std::string sgctConfig_;
         std::string projectorData_;
         std::string sgctLocal_;
+        bool sgctSlave_ = false;
     };
 
 

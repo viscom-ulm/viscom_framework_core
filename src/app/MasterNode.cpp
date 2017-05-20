@@ -12,7 +12,7 @@
 
 namespace viscom {
 
-    MasterNode::MasterNode(ApplicationNode* appNode) :
+    MasterNode::MasterNode(ApplicationNodeInternal* appNode) :
         ApplicationNodeImplementation{ appNode }
     {
     }

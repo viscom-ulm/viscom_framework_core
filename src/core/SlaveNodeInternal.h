@@ -13,10 +13,16 @@
 
 namespace viscom {
 
+#ifdef VISCOM_LOCAL_ONLY
+
+    using SlaveNodeInternal = ApplicationNodeImplementation;
+
+#else
+
     class SlaveNodeInternal : public ApplicationNodeImplementation
     {
     public:
-        explicit SlaveNodeInternal(ApplicationNode* appNode);
+        explicit SlaveNodeInternal(ApplicationNodeInternal* appNode);
         virtual ~SlaveNodeInternal() override;
 
         void InitOpenGL() override;
@@ -70,4 +76,6 @@ namespace viscom {
         /** Holds the color lookup tables textures. */
         std::vector<GLuint> colorLookUpTableTextures_;
     };
+
+#endif
 }

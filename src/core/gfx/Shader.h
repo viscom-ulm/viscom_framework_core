@@ -13,7 +13,7 @@
 
 namespace viscom {
 
-    class ApplicationNode;
+    class ApplicationNodeInternal;
 
     /**
      * Exception class for shader compiler errors.
@@ -43,7 +43,7 @@ namespace viscom {
     class Shader final
     {
     public:
-        Shader(const std::string& shaderFilename, const ApplicationNode* node);
+        Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node);
         Shader(const Shader& orig) = delete;
         Shader& operator=(const Shader&) = delete;
         Shader(Shader&& orig) noexcept;

@@ -14,7 +14,7 @@
 
 namespace viscom {
 
-    class ApplicationNode;
+    class ApplicationNodeInternal;
 
     /**
      * Complete GPU program with multiple Shader objects working together.
@@ -22,7 +22,7 @@ namespace viscom {
     class GPUProgram final : Resource
     {
     public:
-        GPUProgram(const std::string& programName, ApplicationNode* node, std::initializer_list<std::string> shaderNames);
+        GPUProgram(const std::string& programName, ApplicationNodeInternal* node, std::initializer_list<std::string> shaderNames);
         GPUProgram(const GPUProgram& orig) = delete;
         GPUProgram& operator=(const GPUProgram&) = delete;
         GPUProgram(GPUProgram&&) noexcept;

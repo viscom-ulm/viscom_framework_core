@@ -14,7 +14,7 @@
 #include <iostream>
 #include <sstream>
 #include <iterator>
-#include "core/ApplicationNode.h"
+#include "core/ApplicationNodeInternal.h"
 
 namespace viscom {
 
@@ -98,7 +98,7 @@ namespace viscom {
      * Constructor.
      * @param shaderFilename the shader file name
      */
-    Shader::Shader(const std::string& shaderFilename, const ApplicationNode* node) :
+    Shader::Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node) :
         filename_{ node->GetConfig().baseDirectory_ + resourceBasePath + "shader/" + shaderFilename },
         shader_{ 0 },
         type_{ GL_VERTEX_SHADER },

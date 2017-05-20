@@ -14,7 +14,7 @@ namespace viscom {
      * Constructor.
      * @param node the application object for resolving dependencies.
      */
-    MeshManager::MeshManager(ApplicationNode* node) :
+    MeshManager::MeshManager(ApplicationNodeInternal* node) :
         ResourceManagerBase(node)
     {
     }

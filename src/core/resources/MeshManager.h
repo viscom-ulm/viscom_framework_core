@@ -16,7 +16,7 @@ namespace viscom {
     class MeshManager final : public ResourceManager<Mesh>
     {
     public:
-        explicit MeshManager(ApplicationNode* node);
+        explicit MeshManager(ApplicationNodeInternal* node);
         MeshManager(const MeshManager&);
         MeshManager& operator=(const MeshManager&);
         MeshManager(MeshManager&&) noexcept;

@@ -15,7 +15,7 @@
 
 namespace viscom {
 
-    SlaveNodeInternal::SlaveNodeInternal(ApplicationNode* appNode) :
+    SlaveNodeInternal::SlaveNodeInternal(ApplicationNodeInternal* appNode) :
         ApplicationNodeImplementation{ appNode },
         useAlphaTransition_{ false }
     {

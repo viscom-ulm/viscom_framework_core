@@ -13,11 +13,11 @@
 #include <g3log/loglevels.hpp>
 #include "core/g3log/filesink.h"
 #include "sgct.h"
-#include "core/ApplicationNode.h"
+#include "core/ApplicationNodeInternal.h"
 
 namespace viscom {
-    FWConfiguration LoadConfiguration();
-    std::unique_ptr<ApplicationNode> SGCT_Init(FWConfiguration);
+    FWConfiguration LoadConfiguration(const std::string& configFilename);
+    std::unique_ptr<ApplicationNodeInternal> SGCT_Init(FWConfiguration);
 }
 
 
@@ -28,7 +28,7 @@ void SGCTLog(const char* msg)
 }
 
 
-int main(int, char**)
+int main(int argc, char** argv)
 {
     const std::string directory = "./";
     const std::string name = "viscomlabfw.log";
@@ -45,7 +45,9 @@ int main(int, char**)
 
     LOG(INFO) << "Log created.";
 
-    auto config = viscom::LoadConfiguration();
+    viscom::FWConfiguration config;
+    if (argc > 1) config = viscom::LoadConfiguration(argv[1]);
+    else config = viscom::LoadConfiguration("framework.cfg");
 
     auto appNode = SGCT_Init(config);
 
@@ -58,14 +60,14 @@ int main(int, char**)
 
 namespace viscom {
 
-    FWConfiguration LoadConfiguration()
+    FWConfiguration LoadConfiguration(const std::string& configFilename)
     {
         LOG(INFO) << "Loading configuration.";
-        std::ifstream ifs("framework.cfg");
+        std::ifstream ifs(configFilename);
         if (!ifs.is_open()) {
-            LOG(INFO) << "Could not open config file (framework.cfg)." << std::endl;
-            std::cout << "Could not open config file (framework.cfg)." << std::endl;
-            throw std::runtime_error("Could not open config file (framework.cfg).");
+            LOG(INFO) << "Could not open config file (" << configFilename << ")." << std::endl;
+            std::cout << "Could not open config file (" << configFilename << ")." << std::endl;
+            throw std::runtime_error("Could not open config file (" + configFilename + ").");
         }
 
         FWConfiguration config;
@@ -78,6 +80,7 @@ namespace viscom {
             else if (str == "SGCT_CONFIG=") ifs >> config.sgctConfig_;
             else if (str == "PROJECTOR_DATA=") ifs >> config.projectorData_;
             else if (str == "LOCAL=") ifs >> config.sgctLocal_;
+            else if (str == "--slave") config.sgctSlave_ = true;
         }
         ifs.close();
 
@@ -85,7 +88,7 @@ namespace viscom {
     }
 
 
-    std::unique_ptr<ApplicationNode> SGCT_Init(FWConfiguration config) {
+    std::unique_ptr<ApplicationNodeInternal> SGCT_Init(FWConfiguration config) {
         std::vector<std::vector<char>> argVec;
         std::vector<char*> args;
 
@@ -114,6 +117,11 @@ namespace viscom {
                 copy(localNumberArg.begin(), localNumberArg.end(), back_inserter(argVec.back()));
                 argVec.back().push_back('\0');
                 args.push_back(argVec.back().data());
+
+                if (config.sgctSlave_) {
+                    argVec.emplace_back(); argVec.back() = {'-', '-', 's', 'l', 'a', 'v', 'e', '\0'};
+                    args.push_back(argVec.back().data());
+                }
             }
         }
         auto argc = static_cast<int>(args.size());
@@ -123,7 +131,7 @@ namespace viscom {
         sgct::MessageHandler::instance()->setLogCallback(&SGCTLog);
         sgct::MessageHandler::instance()->setLogToCallback(true);
 
-        auto node = std::make_unique<viscom::ApplicationNode>(std::move(config), std::move(engine));
+        auto node = std::make_unique<viscom::ApplicationNodeInternal>(std::move(config), std::move(engine));
         node->InitNode();
 
         return node;

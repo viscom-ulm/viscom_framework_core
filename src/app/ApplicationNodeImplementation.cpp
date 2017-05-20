@@ -14,7 +14,7 @@
 
 namespace viscom {
 
-    ApplicationNodeImplementation::ApplicationNodeImplementation(ApplicationNode* appNode) :
+    ApplicationNodeImplementation::ApplicationNodeImplementation(ApplicationNodeInternal* appNode) :
         appNode_{ appNode }
     {
     }
