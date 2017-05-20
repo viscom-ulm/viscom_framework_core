@@ -93,8 +93,6 @@ namespace viscom {
         std::unique_ptr<sgct::Engine> engine_;
         /** Holds the start node used for slaves. */
         unsigned int startNode_;
-        /** Holds the masters port. */
-        std::string masterSocketPort_;
 
         /** Holds the viewport for rendering content to the total screen. */
         std::vector<Viewport> viewportScreen_;

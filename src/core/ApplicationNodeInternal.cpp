@@ -29,7 +29,6 @@ namespace viscom {
         config_( std::move(config) ),
         engine_{ std::move(engine) },
         startNode_{ 0 },
-        masterSocketPort_{ "27772" },
         currentTimeSynced_{ 0.0 },
         currentTime_{ 0.0 },
         elapsedTime_{ 0.0 },
@@ -360,7 +359,6 @@ namespace viscom {
         OpenCVParserHelper::LoadXMLDocument("Program properties", config_.programProperties_, doc);
 
         startNode_ = OpenCVParserHelper::ParseText<unsigned int>(doc.FirstChildElement("opencv_storage")->FirstChildElement("startNode"));
-        masterSocketPort_ = OpenCVParserHelper::ParseTextString(doc.FirstChildElement("opencv_storage")->FirstChildElement("masterSocketPort"));
     }
 
     unsigned int ApplicationNodeInternal::GetGlobalProjectorId(int nodeId, int windowId) const
