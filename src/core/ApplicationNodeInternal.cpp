@@ -10,9 +10,12 @@
 #include "external/tinyxml2.h"
 #include "app/MasterNode.h"
 #include "app/SlaveNode.h"
-#include "OpenCVParserHelper.h"
 #include <imgui.h>
 #include "core/imgui/imgui_impl_glfw_gl3.h"
+
+#ifndef VISCOM_LOCAL_ONLY
+#include "OpenCVParserHelper.h"
+#endif
 
 #ifdef VISCOM_CLIENTMOUSECURSOR
 #define CLIENTMOUSE true
