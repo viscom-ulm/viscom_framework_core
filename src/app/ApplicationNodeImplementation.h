@@ -50,8 +50,6 @@ namespace viscom {
         const FWConfiguration& GetConfig() const { return appNode_->GetConfig(); }
         ApplicationNodeInternal* GetApplication() const { return appNode_; }
 
-        unsigned int GetGlobalProjectorId(int nodeId, int windowId) const { return appNode_->GetGlobalProjectorId(nodeId, windowId); }
-
         const Viewport& GetViewportScreen(size_t windowId) const { return appNode_->GetViewportScreen(windowId); }
         Viewport& GetViewportScreen(size_t windowId) { return appNode_->GetViewportScreen(windowId); }
         const glm::ivec2& GetViewportQuadSize(size_t windowId) const { return appNode_->GetViewportQuadSize(windowId); }
@@ -95,5 +93,10 @@ namespace viscom {
 
         glm::mat4 triangleModelMatrix_;
         glm::mat4 teapotModelMatrix_;
+
+#ifndef VISCOM_LOCAL_ONLY
+    protected:
+        unsigned int GetGlobalProjectorId(int nodeId, int windowId) const { return appNode_->GetGlobalProjectorId(nodeId, windowId); }
+#endif
     };
 }

@@ -28,7 +28,6 @@ namespace viscom {
     ApplicationNodeInternal::ApplicationNodeInternal(FWConfiguration&& config, std::unique_ptr<sgct::Engine> engine) :
         config_( std::move(config) ),
         engine_{ std::move(engine) },
-        startNode_{ 0 },
         currentTimeSynced_{ 0.0 },
         currentTime_{ 0.0 },
         elapsedTime_{ 0.0 },
@@ -36,7 +35,9 @@ namespace viscom {
         textureManager_{ this },
         meshManager_{ this }
     {
+#ifndef VISCOM_LOCAL_ONLY
         loadProperties();
+#endif
         engine_->setPreWindowFunction([app = this]() { app->BasePreWindow(); });
         engine_->setInitOGLFunction([app = this]() { app->BaseInitOpenGL(); });
         engine_->setPreSyncFunction([app = this](){ app->BasePreSync(); });
@@ -353,6 +354,7 @@ namespace viscom {
         if (instance_) instance_->BaseDecodeData();
     }
 
+#ifndef VISCOM_LOCAL_ONLY
     void ApplicationNodeInternal::loadProperties()
     {
         tinyxml2::XMLDocument doc;
@@ -376,4 +378,5 @@ namespace viscom {
         }
         return 0;
     }
+#endif
 }

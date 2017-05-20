@@ -59,7 +59,6 @@ namespace viscom {
 
         sgct::Engine* GetEngine() const { return engine_.get(); }
         const FWConfiguration& GetConfig() const { return config_; }
-        unsigned int GetGlobalProjectorId(int nodeId, int windowId) const;
         FrameBuffer& GetFramebuffer(size_t windowId) { return framebuffers_[windowId]; }
 
         const Viewport& GetViewportScreen(size_t windowId) const { return viewportScreen_[windowId]; }
@@ -77,8 +76,6 @@ namespace viscom {
         MeshManager& GetMeshManager() { return meshManager_; }
 
     private:
-        void loadProperties();
-
         /** Holds a static pointer to an object to this class making it singleton in a way. */
         // TODO: This is only a workaround and should be fixed in the future. [12/5/2016 Sebastian Maisch]
         static ApplicationNodeInternal* instance_;
@@ -91,8 +88,6 @@ namespace viscom {
         std::unique_ptr<ApplicationNodeImplementation> appNodeImpl_;
         /** Holds the SGCT engine. */
         std::unique_ptr<sgct::Engine> engine_;
-        /** Holds the start node used for slaves. */
-        unsigned int startNode_;
 
         /** Holds the viewport for rendering content to the total screen. */
         std::vector<Viewport> viewportScreen_;
@@ -138,6 +133,17 @@ namespace viscom {
         std::vector<MouseScrollEvent> mouseScrollEvents_;
         /** Holds the synchronized vector with mouse scroll events. */
         sgct::SharedVector<MouseScrollEvent> mouseScrollEventsSynced_;
+#endif
+
+#ifndef VISCOM_LOCAL_ONLY
+    public:
+        unsigned int GetGlobalProjectorId(int nodeId, int windowId) const;
+
+    private:
+        void loadProperties();
+
+        /** Holds the start node used for slaves. */
+        unsigned int startNode_ = 0;
 #endif
     };
 }

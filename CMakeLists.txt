@@ -91,6 +91,10 @@ file(GLOB_RECURSE SRC_FILES
 source_group("shader" FILES ${SHADER_FILES})
 source_group("extern" FILES ${EXTERN_SOURCES})
 
+if (${VISCOM_LOCAL_ONLY})
+    list(REMOVE_ITEM SRC_FILES "${PROJECT_SOURCE_DIR}/src/core/SlaveNodeInternal.cpp")
+endif()
+
 foreach(f ${SRC_FILES})
     file(RELATIVE_PATH SRCGR ${PROJECT_SOURCE_DIR} ${f})
     string(REGEX REPLACE "(.*)(/[^/]*)$" "\\1" SRCGR ${SRCGR})
@@ -221,4 +225,8 @@ else()
     if(${VISCOM_CLIENTGUI})
         target_compile_definitions(${APP_NAME} PRIVATE VISCOM_CLIENTGUI)
     endif()
+endif()
+
+if (${VISCOM_LOCAL_ONLY})
+    target_compile_definitions(${APP_NAME} PRIVATE VISCOM_LOCAL_ONLY)
 endif()
