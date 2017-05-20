@@ -8,7 +8,7 @@
 
 #include "Mesh.h"
 #include <assimp/postprocess.h>
-#include "core/ApplicationNode.h"
+#include "core/ApplicationNodeInternal.h"
 #include "SceneMeshNode.h"
 #include "core/gfx/Material.h"
 #include <assimp/Importer.hpp>
@@ -23,7 +23,7 @@ namespace viscom {
      * Constructor, creates a mesh from file.
      * @param meshFilename the filename of the mesh file.
      */
-    Mesh::Mesh(const std::string& meshFilename, ApplicationNode* node) :
+    Mesh::Mesh(const std::string& meshFilename, ApplicationNodeInternal* node) :
         Resource(meshFilename, node),
         indexBuffer_(0)
     {
@@ -171,7 +171,7 @@ namespace viscom {
         indexBuffer_ = 0;
     }
 
-    std::shared_ptr<const Texture> Mesh::loadTexture(const std::string& relFilename, ApplicationNode* node) const
+    std::shared_ptr<const Texture> Mesh::loadTexture(const std::string& relFilename, ApplicationNodeInternal* node) const
     {
         auto path = GetId().substr(0, GetId().find_last_of("/") + 1);
         auto texFilename = path + relFilename;

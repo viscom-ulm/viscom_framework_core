@@ -9,7 +9,7 @@
 #pragma once
 
 #include <sgct/Engine.h>
-#include "core/ApplicationNode.h"
+#include "core/ApplicationNodeInternal.h"
 
 namespace viscom {
 
@@ -18,7 +18,7 @@ namespace viscom {
     class ApplicationNodeImplementation
     {
     public:
-        explicit ApplicationNodeImplementation(ApplicationNode* appNode);
+        explicit ApplicationNodeImplementation(ApplicationNodeInternal* appNode);
         ApplicationNodeImplementation(const ApplicationNodeImplementation&) = delete;
         ApplicationNodeImplementation(ApplicationNodeImplementation&&) = delete;
         ApplicationNodeImplementation& operator=(const ApplicationNodeImplementation&) = delete;
@@ -48,7 +48,7 @@ namespace viscom {
     protected:
         sgct::Engine* GetEngine() const { return appNode_->GetEngine(); }
         const FWConfiguration& GetConfig() const { return appNode_->GetConfig(); }
-        ApplicationNode* GetApplication() const { return appNode_; }
+        ApplicationNodeInternal* GetApplication() const { return appNode_; }
 
         unsigned int GetGlobalProjectorId(int nodeId, int windowId) const { return appNode_->GetGlobalProjectorId(nodeId, windowId); }
 
@@ -64,7 +64,7 @@ namespace viscom {
 
     private:
         /** Holds the application node. */
-        ApplicationNode* appNode_;
+        ApplicationNodeInternal* appNode_;
 
         /** Holds the shader program for drawing the background. */
         std::shared_ptr<GPUProgram> backgroundProgram_;

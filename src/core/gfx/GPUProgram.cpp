@@ -8,7 +8,7 @@
 
 #include "GPUProgram.h"
 #include <iostream>
-#include "core/ApplicationNode.h"
+#include "core/ApplicationNodeInternal.h"
 
 namespace viscom {
 
@@ -17,7 +17,7 @@ namespace viscom {
      * @param theProgramName the name of the program used to identify during logging.
      * @param theShaderNames the filenames of all shaders to use in this program.
      */
-    GPUProgram::GPUProgram(const std::string& theProgramName, ApplicationNode* node, std::initializer_list<std::string> theShaderNames) :
+    GPUProgram::GPUProgram(const std::string& theProgramName, ApplicationNodeInternal* node, std::initializer_list<std::string> theShaderNames) :
         Resource(theProgramName, node),
         programName_(theProgramName),
         shaderNames_(theShaderNames),

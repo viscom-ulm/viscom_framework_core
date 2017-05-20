@@ -79,6 +79,7 @@ set(VISCOM_SYNCINPUT ON CACHE BOOL "Synchronize input from master to clients.")
 set(VISCOM_CLIENTMOUSECURSOR ON CACHE BOOL "Show the mouse cursor on clients.")
 set(VISCOM_CONFIG_NAME "quad" CACHE STRING "Name/directory of the configuration files to be used.")
 set(VISCOM_APP_NAME "${APP_NAME}" CACHE STRING "Name of the application to be build.")
+set(VISCOM_LOCAL_ONLY ON CACHE BOOL "Only do a local build without calibration information.")
 
 file(GLOB_RECURSE CFG_FILES ${PROJECT_SOURCE_DIR}/config/*.*)
 file(GLOB_RECURSE DATA_FILES ${PROJECT_SOURCE_DIR}/data/*.*)

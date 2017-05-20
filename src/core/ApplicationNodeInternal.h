@@ -1,5 +1,5 @@
 /**
- * @file   ApplicationNode.h
+ * @file   ApplicationNodeInternal.h
  * @author Sebastian Maisch <sebastian.maisch@uni-ulm.de>
  * @date   2016.11.25
  *
@@ -23,15 +23,15 @@ namespace viscom {
 
     class ApplicationNodeImplementation;
 
-    class ApplicationNode
+    class ApplicationNodeInternal
     {
     public:
-        ApplicationNode(FWConfiguration&& config, std::unique_ptr<sgct::Engine> engine);
-        ApplicationNode(const ApplicationNode&) = delete;
-        ApplicationNode(ApplicationNode&&) = delete;
-        ApplicationNode& operator=(const ApplicationNode&) = delete;
-        ApplicationNode& operator=(ApplicationNode&&) = delete;
-        virtual ~ApplicationNode();
+        ApplicationNodeInternal(FWConfiguration&& config, std::unique_ptr<sgct::Engine> engine);
+        ApplicationNodeInternal(const ApplicationNodeInternal&) = delete;
+        ApplicationNodeInternal(ApplicationNodeInternal&&) = delete;
+        ApplicationNodeInternal& operator=(const ApplicationNodeInternal&) = delete;
+        ApplicationNodeInternal& operator=(ApplicationNodeInternal&&) = delete;
+        virtual ~ApplicationNodeInternal();
 
         void InitNode();
         void Render() const;
@@ -81,7 +81,7 @@ namespace viscom {
 
         /** Holds a static pointer to an object to this class making it singleton in a way. */
         // TODO: This is only a workaround and should be fixed in the future. [12/5/2016 Sebastian Maisch]
-        static ApplicationNode* instance_;
+        static ApplicationNodeInternal* instance_;
         /** Holds the mutex for the instance pointer. */
         static std::mutex instanceMutex_;
 

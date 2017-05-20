@@ -13,7 +13,7 @@ namespace viscom {
      * Constructor.
      * @param resourceId the resource id to use
      */
-    Resource::Resource(const std::string& resourceId, ApplicationNode* appNode) :
+    Resource::Resource(const std::string& resourceId, ApplicationNodeInternal* appNode) :
         id_{ resourceId },
         appNode_{ appNode }
     {

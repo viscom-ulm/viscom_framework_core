@@ -15,7 +15,7 @@
 
 namespace viscom {
 
-    class ApplicationNode;
+    class ApplicationNodeInternal;
     struct Material;
     class SceneMeshNode;
     class Texture;
@@ -36,7 +36,7 @@ namespace viscom {
     class Mesh final : public Resource
     {
     public:
-        Mesh(const std::string& meshFilename, ApplicationNode* node);
+        Mesh(const std::string& meshFilename, ApplicationNodeInternal* node);
         Mesh(const Mesh&) = delete;
         Mesh& operator=(const Mesh&) = delete;
         Mesh(Mesh&&) noexcept;
@@ -62,7 +62,7 @@ namespace viscom {
         GLuint GetIndexBuffer() const { return indexBuffer_; }
 
     private:
-        std::shared_ptr<const Texture> loadTexture(const std::string& relFilename, ApplicationNode* node) const;
+        std::shared_ptr<const Texture> loadTexture(const std::string& relFilename, ApplicationNodeInternal* node) const;
 
 
         /** Holds all the single points used by the mesh (and its sub-meshes) as points or in vertices. */

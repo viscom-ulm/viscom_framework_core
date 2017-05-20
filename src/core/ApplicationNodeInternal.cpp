@@ -1,12 +1,12 @@
 /**
- * @file   ApplicationNode.cpp
+ * @file   ApplicationNodeInternal.cpp
  * @author Sebastian Maisch <sebastian.maisch@uni-ulm.de>
  * @date   2016.11.25
  *
  * @brief  Implementation of the base application node base class.
  */
 
-#include "ApplicationNode.h"
+#include "ApplicationNodeInternal.h"
 #include "external/tinyxml2.h"
 #include "app/MasterNode.h"
 #include "app/SlaveNode.h"
@@ -22,10 +22,10 @@
 
 namespace viscom {
 
-    ApplicationNode* ApplicationNode::instance_{ nullptr };
-    std::mutex ApplicationNode::instanceMutex_{ };
+    ApplicationNodeInternal* ApplicationNodeInternal::instance_{ nullptr };
+    std::mutex ApplicationNodeInternal::instanceMutex_{ };
 
-    ApplicationNode::ApplicationNode(FWConfiguration&& config, std::unique_ptr<sgct::Engine> engine) :
+    ApplicationNodeInternal::ApplicationNodeInternal(FWConfiguration&& config, std::unique_ptr<sgct::Engine> engine) :
         config_( std::move(config) ),
         engine_{ std::move(engine) },
         startNode_{ 0 },
@@ -68,9 +68,9 @@ namespace viscom {
     }
 
 
-    ApplicationNode::~ApplicationNode() = default;
+    ApplicationNodeInternal::~ApplicationNodeInternal() = default;
 
-    void ApplicationNode::InitNode()
+    void ApplicationNodeInternal::InitNode()
     {
         if (!engine_->init(sgct::Engine::OpenGL_3_3_Core_Profile))
         {
@@ -84,18 +84,18 @@ namespace viscom {
         sgct::SharedData::instance()->setDecodeFunction(BaseDecodeDataStatic);
     }
 
-    void ApplicationNode::Render() const
+    void ApplicationNodeInternal::Render() const
     {
         engine_->render();
     }
 
-    void ApplicationNode::BasePreWindow()
+    void ApplicationNodeInternal::BasePreWindow()
     {
         if (engine_->isMaster()) appNodeImpl_ = std::make_unique<MasterNode>(this);
         else appNodeImpl_ = std::make_unique<SlaveNode>(this);
     }
 
-    void ApplicationNode::BaseInitOpenGL()
+    void ApplicationNodeInternal::BaseInitOpenGL()
     {
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
@@ -128,7 +128,7 @@ namespace viscom {
         appNodeImpl_->InitOpenGL();
     }
 
-    void ApplicationNode::BasePreSync()
+    void ApplicationNodeInternal::BasePreSync()
     {
         if (engine_->isMaster()) {
 #ifdef VISCOM_SYNCINPUT
@@ -168,7 +168,7 @@ namespace viscom {
         appNodeImpl_->PreSync();
     }
 
-    void ApplicationNode::PostSyncFunction()
+    void ApplicationNodeInternal::PostSyncFunction()
     {
 #ifdef VISCOM_SYNCINPUT
         if (!engine_->isMaster()) {
@@ -208,12 +208,12 @@ namespace viscom {
         appNodeImpl_->UpdateFrame(currentTime_, elapsedTime_);
     }
 
-    void ApplicationNode::BaseClearBuffer()
+    void ApplicationNodeInternal::BaseClearBuffer()
     {
         appNodeImpl_->ClearBuffer(framebuffers_[GetEngine()->getCurrentWindowIndex()]);
     }
 
-    void ApplicationNode::BaseDrawFrame()
+    void ApplicationNodeInternal::BaseDrawFrame()
     {
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
@@ -222,7 +222,7 @@ namespace viscom {
         appNodeImpl_->DrawFrame(framebuffers_[GetEngine()->getCurrentWindowIndex()]);
     }
 
-    void ApplicationNode::BaseDraw2D()
+    void ApplicationNodeInternal::BaseDraw2D()
     {
         auto window = GetEngine()->getCurrentWindowPtr();
 
@@ -240,7 +240,7 @@ namespace viscom {
         });
     }
 
-    void ApplicationNode::BasePostDraw() const
+    void ApplicationNodeInternal::BasePostDraw() const
     {
         appNodeImpl_->PostDraw();
 #ifdef VISCOM_CLIENTGUI
@@ -250,7 +250,7 @@ namespace viscom {
 #endif
     }
 
-    void ApplicationNode::BaseCleanUp() const
+    void ApplicationNodeInternal::BaseCleanUp() const
     {
         std::lock_guard<std::mutex> lock{ instanceMutex_ };
         instance_ = nullptr;
@@ -263,7 +263,7 @@ namespace viscom {
     }
 
     // ReSharper disable CppMemberFunctionMayBeConst
-    void ApplicationNode::BaseKeyboardCallback(int key, int scancode, int action, int mods)
+    void ApplicationNodeInternal::BaseKeyboardCallback(int key, int scancode, int action, int mods)
     {
         if (engine_->isMaster()) {
 #ifdef VISCOM_SYNCINPUT
@@ -273,7 +273,7 @@ namespace viscom {
         }
     }
 
-    void ApplicationNode::BaseCharCallback(unsigned int character, int mods)
+    void ApplicationNodeInternal::BaseCharCallback(unsigned int character, int mods)
     {
         if (engine_->isMaster()) {
 #ifdef VISCOM_SYNCINPUT
@@ -283,7 +283,7 @@ namespace viscom {
         }
     }
 
-    void ApplicationNode::BaseMouseButtonCallback(int button, int action)
+    void ApplicationNodeInternal::BaseMouseButtonCallback(int button, int action)
     {
         if (engine_->isMaster()) {
 #ifdef VISCOM_SYNCINPUT
@@ -293,7 +293,7 @@ namespace viscom {
         }
     }
 
-    void ApplicationNode::BaseMousePosCallback(double x, double y)
+    void ApplicationNodeInternal::BaseMousePosCallback(double x, double y)
     {
         x /= static_cast<double>(viewportScreen_[0].size_.x);
         y /= static_cast<double>(viewportScreen_[0].size_.y);
@@ -305,7 +305,7 @@ namespace viscom {
         }
     }
 
-    void ApplicationNode::BaseMouseScrollCallback(double xoffset, double yoffset)
+    void ApplicationNodeInternal::BaseMouseScrollCallback(double xoffset, double yoffset)
     {
         if (engine_->isMaster()) {
 #ifdef VISCOM_SYNCINPUT
@@ -316,7 +316,7 @@ namespace viscom {
     }
     // ReSharper restore CppMemberFunctionMayBeConst
 
-    void ApplicationNode::BaseEncodeData()
+    void ApplicationNodeInternal::BaseEncodeData()
     {
 #ifdef VISCOM_SYNCINPUT
         sgct::SharedData::instance()->writeVector(&keyboardEventsSynced_);
@@ -329,7 +329,7 @@ namespace viscom {
         appNodeImpl_->EncodeData();
     }
 
-    void ApplicationNode::BaseDecodeData()
+    void ApplicationNodeInternal::BaseDecodeData()
     {
 #ifdef VISCOM_SYNCINPUT
         sgct::SharedData::instance()->readVector(&keyboardEventsSynced_);
@@ -342,19 +342,19 @@ namespace viscom {
         appNodeImpl_->DecodeData();
     }
 
-    void ApplicationNode::BaseEncodeDataStatic()
+    void ApplicationNodeInternal::BaseEncodeDataStatic()
     {
         std::lock_guard<std::mutex> lock{ instanceMutex_ };
         if (instance_) instance_->BaseEncodeData();
     }
 
-    void ApplicationNode::BaseDecodeDataStatic()
+    void ApplicationNodeInternal::BaseDecodeDataStatic()
     {
         std::lock_guard<std::mutex> lock{ instanceMutex_ };
         if (instance_) instance_->BaseDecodeData();
     }
 
-    void ApplicationNode::loadProperties()
+    void ApplicationNodeInternal::loadProperties()
     {
         tinyxml2::XMLDocument doc;
         OpenCVParserHelper::LoadXMLDocument("Program properties", config_.programProperties_, doc);
@@ -363,7 +363,7 @@ namespace viscom {
         masterSocketPort_ = OpenCVParserHelper::ParseTextString(doc.FirstChildElement("opencv_storage")->FirstChildElement("masterSocketPort"));
     }
 
-    unsigned int ApplicationNode::GetGlobalProjectorId(int nodeId, int windowId) const
+    unsigned int ApplicationNodeInternal::GetGlobalProjectorId(int nodeId, int windowId) const
     {
         if (static_cast<unsigned int>(nodeId) >= startNode_) {
             unsigned int current_projector = 0;

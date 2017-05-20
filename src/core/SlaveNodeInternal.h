@@ -16,7 +16,7 @@ namespace viscom {
     class SlaveNodeInternal : public ApplicationNodeImplementation
     {
     public:
-        explicit SlaveNodeInternal(ApplicationNode* appNode);
+        explicit SlaveNodeInternal(ApplicationNodeInternal* appNode);
         virtual ~SlaveNodeInternal() override;
 
         void InitOpenGL() override;

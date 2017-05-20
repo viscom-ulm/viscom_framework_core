@@ -15,7 +15,7 @@ namespace viscom {
     class MasterNode final : public ApplicationNodeImplementation
     {
     public:
-        explicit MasterNode(ApplicationNode* appNode);
+        explicit MasterNode(ApplicationNodeInternal* appNode);
         virtual ~MasterNode() override;
 
         void InitOpenGL() override;

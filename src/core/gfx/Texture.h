@@ -14,7 +14,7 @@
 
 namespace viscom {
 
-    class ApplicationNode;
+    class ApplicationNodeInternal;
 
     /** Describes the format of a texture. */
     struct TextureDescriptor
@@ -37,7 +37,7 @@ namespace viscom {
     class Texture final : public Resource
     {
     public:
-        Texture(const std::string& texFilename, ApplicationNode* node, bool useSRGB = true);
+        Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool useSRGB = true);
         Texture(const Texture&) = delete;
         Texture& operator=(const Texture&) = delete;
         Texture(Texture&&) noexcept;

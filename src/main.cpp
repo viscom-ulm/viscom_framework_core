@@ -13,11 +13,11 @@
 #include <g3log/loglevels.hpp>
 #include "core/g3log/filesink.h"
 #include "sgct.h"
-#include "core/ApplicationNode.h"
+#include "core/ApplicationNodeInternal.h"
 
 namespace viscom {
     FWConfiguration LoadConfiguration();
-    std::unique_ptr<ApplicationNode> SGCT_Init(FWConfiguration);
+    std::unique_ptr<ApplicationNodeInternal> SGCT_Init(FWConfiguration);
 }
 
 
@@ -85,7 +85,7 @@ namespace viscom {
     }
 
 
-    std::unique_ptr<ApplicationNode> SGCT_Init(FWConfiguration config) {
+    std::unique_ptr<ApplicationNodeInternal> SGCT_Init(FWConfiguration config) {
         std::vector<std::vector<char>> argVec;
         std::vector<char*> args;
 
@@ -123,7 +123,7 @@ namespace viscom {
         sgct::MessageHandler::instance()->setLogCallback(&SGCTLog);
         sgct::MessageHandler::instance()->setLogToCallback(true);
 
-        auto node = std::make_unique<viscom::ApplicationNode>(std::move(config), std::move(engine));
+        auto node = std::make_unique<viscom::ApplicationNodeInternal>(std::move(config), std::move(engine));
         node->InitNode();
 
         return node;

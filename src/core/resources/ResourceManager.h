@@ -12,7 +12,7 @@
 #include <unordered_map>
 
 namespace viscom {
-    class ApplicationNode;
+    class ApplicationNodeInternal;
 
     struct resource_loading_error
     {
@@ -42,7 +42,7 @@ namespace viscom {
 
     public:
         /** Constructor for resource managers. */
-        explicit ResourceManager(ApplicationNode* node) : appNode_{ node } {}
+        explicit ResourceManager(ApplicationNodeInternal* node) : appNode_{ node } {}
 
         /** Copy constructor. */
         ResourceManager(const ResourceManager& rhs) : ResourceManager(rhs.appNode_)
@@ -141,6 +141,6 @@ namespace viscom {
         /** Holds the resources managed. */
         ResourceMap resources_;
         /** Holds the application base. */
-        ApplicationNode* appNode_;
+        ApplicationNodeInternal* appNode_;
     };
 }

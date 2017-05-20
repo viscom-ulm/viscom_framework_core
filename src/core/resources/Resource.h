@@ -12,12 +12,12 @@
 
 namespace viscom {
 
-    class ApplicationNode;
+    class ApplicationNodeInternal;
 
     class Resource
     {
     public:
-        Resource(const std::string& resourceId, ApplicationNode* appNode);
+        Resource(const std::string& resourceId, ApplicationNodeInternal* appNode);
         Resource(const Resource&);
         Resource& operator=(const Resource&);
         Resource(Resource&&) noexcept;
@@ -27,13 +27,13 @@ namespace viscom {
         const std::string& GetId() const { return id_; }
 
     protected:
-        const ApplicationNode* GetAppNode() const { return appNode_; }
-        ApplicationNode* GetAppNode() { return appNode_; }
+        const ApplicationNodeInternal* GetAppNode() const { return appNode_; }
+        ApplicationNodeInternal* GetAppNode() { return appNode_; }
 
     private:
         /** Holds the resources id. */
         std::string id_;
         /** Holds the application object for dependencies. */
-        ApplicationNode* appNode_;
+        ApplicationNodeInternal* appNode_;
     };
 }
