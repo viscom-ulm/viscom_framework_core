@@ -13,12 +13,6 @@
 
 namespace viscom {
 
-#ifdef VISCOM_LOCAL_ONLY
-
-    using SlaveNodeInternal = ApplicationNodeImplementation;
-
-#else
-
     class SlaveNodeInternal : public ApplicationNodeImplementation
     {
     public:
@@ -76,6 +70,4 @@ namespace viscom {
         /** Holds the color lookup tables textures. */
         std::vector<GLuint> colorLookUpTableTextures_;
     };
-
-#endif
 }

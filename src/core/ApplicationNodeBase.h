@@ -14,6 +14,24 @@ namespace viscom {
 
     class MeshRenderable;
 
+    class SGCTEngineWrapper
+    {
+        friend class SlaveNodeInternal;
+
+    public:
+        SGCTEngineWrapper(sgct::Engine* engine) : engine_{ engine } {}
+
+    private:
+        int GetCurrentWindowId() const { return engine_->getCurrentWindowPtr()->getId(); }
+        void UnbindCurrentWindowFBO() const { engine_->getCurrentWindowPtr()->getFBOPtr()->unBind(); }
+        void SetProjectionPlaneCoordinate(std::size_t windowIdx, std::size_t vpIndex, std::size_t corner, glm::vec3 coordinate) const {
+            engine_->getWindowPtr(windowIdx)->getViewport(vpIndex)->getProjectionPlane()->setCoordinate(corner, coordinate);
+        }
+
+        /** Holds the SGCT engine. */
+        sgct::Engine* engine_;
+    };
+
     class ApplicationNodeBase
     {
     public:
@@ -61,6 +79,8 @@ namespace viscom {
         GPUProgramManager& GetGPUProgramManager() { return appNode_->GetGPUProgramManager(); }
         TextureManager& GetTextureManager() { return appNode_->GetTextureManager(); }
         MeshManager& GetMeshManager() { return appNode_->GetMeshManager(); }
+
+        SGCTEngineWrapper GetEngine() const { return appNode_->GetEngine(); }
 
         [[deprecated("Added to make code compile. This needs to be replaced by proper camera handling.")]]
         glm::mat4 GetCurrentModelViewProjectionMatrix() const { return appNode_->GetEngine()->getCurrentModelViewProjectionMatrix(); }
