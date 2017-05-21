@@ -73,6 +73,7 @@ namespace viscom {
         double GetElapsedTime() const { return elapsedTime_; }
 
         CameraHelper* GetCamera() { return &camHelper_; }
+        std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc) const;
 
         GPUProgramManager& GetGPUProgramManager() { return gpuProgramManager_; }
         TextureManager& GetTextureManager() { return textureManager_; }

@@ -84,6 +84,7 @@ namespace viscom {
         MeshManager& GetMeshManager() { return appNode_->GetMeshManager(); }
 
         CameraHelper* GetCamera() { return appNode_->GetCamera(); }
+        std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc) const { return appNode_->CreateOffscreenBuffers(fboDesc); }
 
         [[deprecated("Added to make code compile. This needs to be replaced by proper camera handling.")]]
         glm::mat4 GetCurrentModelViewProjectionMatrix() const { return appNode_->GetEngine()->getCurrentModelViewProjectionMatrix(); }

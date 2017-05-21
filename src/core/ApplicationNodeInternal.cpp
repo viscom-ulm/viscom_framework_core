@@ -358,6 +358,16 @@ namespace viscom {
         if (instance_) instance_->BaseDecodeData();
     }
 
+    std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc) const
+    {
+        std::vector<FrameBuffer> result;
+        auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
+        for (const auto& fboSize : viewportQuadSize_) {
+            result.emplace_back(fboSize.x, fboSize.y, fboDesc);
+        }
+        return result;
+    }
+
 #ifndef VISCOM_LOCAL_ONLY
     void ApplicationNodeInternal::loadProperties()
     {
