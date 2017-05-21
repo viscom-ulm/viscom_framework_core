@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "core/SlaveNodeInternal.h"
+#include "core/SlaveNodeHelper.h"
 
 namespace viscom {
 

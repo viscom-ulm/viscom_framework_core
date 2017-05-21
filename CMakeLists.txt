@@ -92,6 +92,7 @@ source_group("shader" FILES ${SHADER_FILES})
 source_group("extern" FILES ${EXTERN_SOURCES})
 
 if (${VISCOM_LOCAL_ONLY})
+    list(REMOVE_ITEM SRC_FILES "${PROJECT_SOURCE_DIR}/src/core/SlaveNodeInternal.h")
     list(REMOVE_ITEM SRC_FILES "${PROJECT_SOURCE_DIR}/src/core/SlaveNodeInternal.cpp")
     list(REMOVE_ITEM SRC_FILES "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.h")
     list(REMOVE_ITEM SRC_FILES "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.cpp")
