@@ -1,6 +1,6 @@
 /**
  * @file   SlaveNodeHelper.h
- * @author Sebastian Maisch <sebastian.maisch@googlemail.com>
+ * @author Sebastian Maisch <sebastian.maisch@uni-ulm.com>
  * @date   2017.05.21
  *
  * @brief  Helper header for using the internal SlaveNodeInternal class only if calibration is needed.

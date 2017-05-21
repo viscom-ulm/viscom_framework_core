@@ -31,6 +31,7 @@ namespace viscom {
     ApplicationNodeInternal::ApplicationNodeInternal(FWConfiguration&& config, std::unique_ptr<sgct::Engine> engine) :
         config_( std::move(config) ),
         engine_{ std::move(engine) },
+        camHelper_{ engine_.get() },
         currentTimeSynced_{ 0.0 },
         currentTime_{ 0.0 },
         elapsedTime_{ 0.0 },
@@ -119,7 +120,7 @@ namespace viscom {
             viewportScreen_[wId].position_ = glm::ivec2(0);
             viewportScreen_[wId].size_ = projectorSize;
             viewportQuadSize_[wId] = projectorSize;
-            viewportScaling_[wId] = glm::vec2(projectorSize) / glm::vec2(1920.0f, 1080.0f);
+            viewportScaling_[wId] = glm::vec2(projectorSize) / config_.virtualScreenSize_;
         }
 
 #ifdef VISCOM_CLIENTGUI

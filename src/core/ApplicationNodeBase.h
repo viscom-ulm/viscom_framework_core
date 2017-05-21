@@ -14,6 +14,8 @@ namespace viscom {
 
     class MeshRenderable;
 
+
+#ifndef VISCOM_LOCAL_ONLY
     class SGCTEngineWrapper
     {
         friend class SlaveNodeInternal;
@@ -31,6 +33,7 @@ namespace viscom {
         /** Holds the SGCT engine. */
         sgct::Engine* engine_;
     };
+#endif
 
     class ApplicationNodeBase
     {
@@ -80,7 +83,7 @@ namespace viscom {
         TextureManager& GetTextureManager() { return appNode_->GetTextureManager(); }
         MeshManager& GetMeshManager() { return appNode_->GetMeshManager(); }
 
-        SGCTEngineWrapper GetEngine() const { return appNode_->GetEngine(); }
+        CameraHelper* GetCamera() { return appNode_->GetCamera(); }
 
         [[deprecated("Added to make code compile. This needs to be replaced by proper camera handling.")]]
         glm::mat4 GetCurrentModelViewProjectionMatrix() const { return appNode_->GetEngine()->getCurrentModelViewProjectionMatrix(); }
@@ -91,6 +94,7 @@ namespace viscom {
 #ifndef VISCOM_LOCAL_ONLY
     protected:
         unsigned int GetGlobalProjectorId(int nodeId, int windowId) const { return appNode_->GetGlobalProjectorId(nodeId, windowId); }
+        SGCTEngineWrapper GetEngine() const { return appNode_->GetEngine(); }
 #endif
     };
 }

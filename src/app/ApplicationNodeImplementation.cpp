@@ -11,6 +11,8 @@
 #include <imgui.h>
 #include "core/gfx/mesh/MeshRenderable.h"
 #include "core/imgui/imgui_impl_glfw_gl3.h"
+#include <glm/gtc/matrix_inverse.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace viscom {
 
@@ -30,6 +32,8 @@ namespace viscom {
         triangleMVPLoc_ = triangleProgram_->getUniformLocation("MVP");
 
         teapotProgram_ = GetGPUProgramManager().GetResource("foregroundMesh", std::initializer_list<std::string>{ "foregroundMesh.vert", "foregroundMesh.frag" });
+        teapotModelMLoc_ = teapotProgram_->getUniformLocation("modelMatrix");
+        teapotNormalMLoc_ = teapotProgram_->getUniformLocation("normalMatrix");
         teapotVPLoc_ = teapotProgram_->getUniformLocation("viewProjectionMatrix");
 
         std::vector<GridVertex> gridVertices;
@@ -80,6 +84,12 @@ namespace viscom {
 
     void ApplicationNodeImplementation::UpdateFrame(double currentTime, double)
     {
+        GetCamera()->SetPosition(camPos_);
+        glm::quat pitchQuat = glm::angleAxis(camRot_.x, glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::quat yawQuat = glm::angleAxis(camRot_.y, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::quat rollQuat = glm::angleAxis(camRot_.z, glm::vec3(0.0f, 0.0f, 1.0f));
+        GetCamera()->SetOrientation(yawQuat * pitchQuat * rollQuat);
+
         triangleModelMatrix_ = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)), static_cast<float>(currentTime), glm::vec3(0.0f, 1.0f, 0.0f));
         teapotModelMatrix_ = glm::scale(glm::rotate(glm::translate(glm::mat4(0.01f), glm::vec3(-3.0f, 0.0f, -5.0f)), static_cast<float>(currentTime), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.01f));
     }
@@ -99,7 +109,7 @@ namespace viscom {
             glBindVertexArray(vaoBackgroundGrid_);
             glBindBuffer(GL_ARRAY_BUFFER, vboBackgroundGrid_);
 
-            auto MVP = GetCurrentModelViewProjectionMatrix();
+            auto MVP = GetCamera()->GetViewPerspectiveMatrix();
             {
                 glUseProgram(backgroundProgram_->getProgramId());
                 glUniformMatrix4fv(backgroundMVPLoc_, 1, GL_FALSE, glm::value_ptr(MVP));
@@ -117,6 +127,9 @@ namespace viscom {
 
             {
                 glUseProgram(teapotProgram_->getProgramId());
+                auto normalMatrix = glm::inverseTranspose(glm::mat3(teapotModelMatrix_));
+                glUniformMatrix4fv(teapotModelMLoc_, 1, GL_FALSE, glm::value_ptr(teapotModelMatrix_));
+                glUniformMatrix4fv(teapotNormalMLoc_, 1, GL_FALSE, glm::value_ptr(normalMatrix));
                 glUniformMatrix4fv(teapotVPLoc_, 1, GL_FALSE, glm::value_ptr(MVP));
                 teapotRenderable_->Draw(teapotModelMatrix_);
             }
@@ -134,4 +147,59 @@ namespace viscom {
         if (vboBackgroundGrid_ != 0) glDeleteBuffers(1, &vboBackgroundGrid_);
         vboBackgroundGrid_ = 0;
     }
+
+    void ApplicationNodeImplementation::KeyboardCallback(int key, int scancode, int action, int mods)
+    {
+        switch (key)
+        {
+        case GLFW_KEY_W:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.0, 0.0, -0.001);
+            break;
+
+        case GLFW_KEY_S:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.0, 0.0, 0.001);
+            break;
+
+        case GLFW_KEY_A:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(-0.001, 0.0, 0.0);
+            break;
+
+        case GLFW_KEY_D:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.001, 0.0, 0.0);
+            break;
+
+        case GLFW_KEY_LEFT_CONTROL:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.0, -0.001, 0.0);
+            break;
+
+        case GLFW_KEY_LEFT_SHIFT:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.0, 0.001, 0.0);
+            break;
+
+        case GLFW_KEY_UP:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.001, 0.0, 0.0);
+            break;
+
+        case GLFW_KEY_DOWN:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(-0.001, 0.0, 0.0);
+            break;
+
+        case GLFW_KEY_LEFT:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.0, 0.001, 0.0);
+            break;
+
+        case GLFW_KEY_RIGHT:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.0, -0.001, 0.0);
+            break;
+
+        case GLFW_KEY_Q:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.0, 0.0, 0.001);
+            break;
+
+        case GLFW_KEY_E:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.0, 0.0, -0.001);
+            break;
+        }
+    }
+
 }

@@ -31,6 +31,8 @@ namespace viscom {
         virtual void DrawFrame(FrameBuffer& fbo) override;
         virtual void CleanUp() override;
 
+        virtual void KeyboardCallback(int key, int scancode, int action, int mods) override;
+
     private:
         /** Holds the shader program for drawing the background. */
         std::shared_ptr<GPUProgram> backgroundProgram_;
@@ -44,6 +46,10 @@ namespace viscom {
 
         /** Holds the shader program for drawing the foreground teapot. */
         std::shared_ptr<GPUProgram> teapotProgram_;
+        /** Holds the location of the model matrix. */
+        GLint teapotModelMLoc_ = -1;
+        /** Holds the location of the normal matrix. */
+        GLint teapotNormalMLoc_ = -1;
         /** Holds the location of the VP matrix. */
         GLint teapotVPLoc_ = -1;
 
@@ -61,5 +67,7 @@ namespace viscom {
 
         glm::mat4 triangleModelMatrix_;
         glm::mat4 teapotModelMatrix_;
+        glm::vec3 camPos_;
+        glm::vec3 camRot_;
     };
 }

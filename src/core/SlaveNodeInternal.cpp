@@ -84,7 +84,7 @@ namespace viscom {
             GetViewportScreen(i).position_ = glm::ivec2(glm::floor(((viewport[0] + vpSize) / (2.0f * vpSize)).xy * totalScreenSize));
             GetViewportScreen(i).size_ = glm::uvec2(glm::floor(totalScreenSize));
             GetViewportQuadSize(i) = fboSize;
-            GetViewportScaling(i) = totalScreenSize / glm::vec2(1920.0f, 1080.0f);
+            GetViewportScaling(i) = totalScreenSize / GetConfig().virtualScreenSize_;
 
             CreateProjectorFBO(i, fboSize);
 

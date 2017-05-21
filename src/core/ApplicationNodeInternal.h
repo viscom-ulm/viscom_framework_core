@@ -18,10 +18,11 @@
 #include "resources/TextureManager.h"
 #include "resources/MeshManager.h"
 #include "gfx/FrameBuffer.h"
+#include "core/CameraHelper.h"
 
 namespace viscom {
 
-    class ApplicationNodeImplementation;
+    class ApplicationNodeBase;
 
     class ApplicationNodeInternal
     {
@@ -71,6 +72,8 @@ namespace viscom {
         double GetCurrentAppTime() const { return currentTime_; }
         double GetElapsedTime() const { return elapsedTime_; }
 
+        CameraHelper* GetCamera() { return &camHelper_; }
+
         GPUProgramManager& GetGPUProgramManager() { return gpuProgramManager_; }
         TextureManager& GetTextureManager() { return textureManager_; }
         MeshManager& GetMeshManager() { return meshManager_; }
@@ -85,7 +88,7 @@ namespace viscom {
         /** Holds the applications configuration. */
         FWConfiguration config_;
         /** Holds the application node implementation. */
-        std::unique_ptr<ApplicationNodeImplementation> appNodeImpl_;
+        std::unique_ptr<ApplicationNodeBase> appNodeImpl_;
         /** Holds the SGCT engine. */
         std::unique_ptr<sgct::Engine> engine_;
 
@@ -97,6 +100,9 @@ namespace viscom {
         std::vector<glm::vec2> viewportScaling_;
         /** Holds the frame buffer objects for each window. */
         std::vector<FrameBuffer> framebuffers_;
+
+        /** The camera helper class. */
+        CameraHelper camHelper_;
 
         /** Holds the synchronized application time. */
         sgct::SharedDouble currentTimeSynced_;

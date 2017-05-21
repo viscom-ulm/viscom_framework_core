@@ -81,6 +81,8 @@ namespace viscom {
             else if (str == "PROJECTOR_DATA=") ifs >> config.projectorData_;
             else if (str == "LOCAL=") ifs >> config.sgctLocal_;
             else if (str == "--slave") config.sgctSlave_ = true;
+            else if (str == "VIRTUAL_SCREEN_X=") ifs >> config.virtualScreenSize_.x;
+            else if (str == "VIRTUAL_SCREEN_Y=") ifs >> config.virtualScreenSize_.y;
         }
         ifs.close();
 
