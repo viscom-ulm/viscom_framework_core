@@ -15,25 +15,21 @@
 namespace viscom {
 
     ApplicationNodeImplementation::ApplicationNodeImplementation(ApplicationNodeInternal* appNode) :
-        appNode_{ appNode }
+        ApplicationNodeBase{ appNode }
     {
     }
 
     ApplicationNodeImplementation::~ApplicationNodeImplementation() = default;
 
-    void ApplicationNodeImplementation::PreWindow()
-    {
-    }
-
     void ApplicationNodeImplementation::InitOpenGL()
     {
-        backgroundProgram_ = appNode_->GetGPUProgramManager().GetResource("backgroundGrid", std::initializer_list<std::string>{ "backgroundGrid.vert", "backgroundGrid.frag" });
+        backgroundProgram_ = GetGPUProgramManager().GetResource("backgroundGrid", std::initializer_list<std::string>{ "backgroundGrid.vert", "backgroundGrid.frag" });
         backgroundMVPLoc_ = backgroundProgram_->getUniformLocation("MVP");
 
-        triangleProgram_ = appNode_->GetGPUProgramManager().GetResource("foregroundTriangle", std::initializer_list<std::string>{ "foregroundTriangle.vert", "foregroundTriangle.frag" });
+        triangleProgram_ = GetGPUProgramManager().GetResource("foregroundTriangle", std::initializer_list<std::string>{ "foregroundTriangle.vert", "foregroundTriangle.frag" });
         triangleMVPLoc_ = triangleProgram_->getUniformLocation("MVP");
 
-        teapotProgram_ = appNode_->GetGPUProgramManager().GetResource("foregroundMesh", std::initializer_list<std::string>{ "foregroundMesh.vert", "foregroundMesh.frag" });
+        teapotProgram_ = GetGPUProgramManager().GetResource("foregroundMesh", std::initializer_list<std::string>{ "foregroundMesh.vert", "foregroundMesh.frag" });
         teapotVPLoc_ = teapotProgram_->getUniformLocation("viewProjectionMatrix");
 
         std::vector<GridVertex> gridVertices;
@@ -78,16 +74,8 @@ namespace viscom {
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        teapotMesh_ = appNode_->GetMeshManager().GetResource("/models/teapot/teapot.obj");
+        teapotMesh_ = GetMeshManager().GetResource("/models/teapot/teapot.obj");
         teapotRenderable_ = MeshRenderable::create<SimpleMeshVertex>(teapotMesh_.get(), teapotProgram_.get());
-    }
-
-    void ApplicationNodeImplementation::PreSync()
-    {
-    }
-
-    void ApplicationNodeImplementation::UpdateSyncedInfo()
-    {
     }
 
     void ApplicationNodeImplementation::UpdateFrame(double currentTime, double)
@@ -111,7 +99,7 @@ namespace viscom {
             glBindVertexArray(vaoBackgroundGrid_);
             glBindBuffer(GL_ARRAY_BUFFER, vboBackgroundGrid_);
 
-            auto MVP = GetEngine()->getCurrentModelViewProjectionMatrix();
+            auto MVP = GetCurrentModelViewProjectionMatrix();
             {
                 glUseProgram(backgroundProgram_->getProgramId());
                 glUniformMatrix4fv(backgroundMVPLoc_, 1, GL_FALSE, glm::value_ptr(MVP));
@@ -139,69 +127,11 @@ namespace viscom {
         });
     }
 
-    void ApplicationNodeImplementation::Draw2D(FrameBuffer& fbo)
-    {
-        fbo.DrawToFBO([]() {
-#ifdef VISCOM_CLIENTGUI
-            ImGui::ShowTestWindow();
-#endif
-        });
-    }
-
-    void ApplicationNodeImplementation::PostDraw()
-    {
-    }
-
     void ApplicationNodeImplementation::CleanUp()
     {
         if (vaoBackgroundGrid_ != 0) glDeleteVertexArrays(1, &vaoBackgroundGrid_);
         vaoBackgroundGrid_ = 0;
         if (vboBackgroundGrid_ != 0) glDeleteBuffers(1, &vboBackgroundGrid_);
         vboBackgroundGrid_ = 0;
-    }
-
-    // ReSharper disable CppParameterNeverUsed
-    void ApplicationNodeImplementation::KeyboardCallback(int key, int scancode, int action, int mods)
-    {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
-#endif
-    }
-
-    void ApplicationNodeImplementation::CharCallback(unsigned int character, int mods)
-    {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_CharCallback(character);
-#endif
-    }
-
-    void ApplicationNodeImplementation::MouseButtonCallback(int button, int action)
-    {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
-#endif
-    }
-
-    void ApplicationNodeImplementation::MousePosCallback(double x, double y)
-    {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_MousePositionCallback(x, y);
-#endif
-    }
-
-    void ApplicationNodeImplementation::MouseScrollCallback(double xoffset, double yoffset)
-    {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
-#endif
-    }
-    // ReSharper restore CppParameterNeverUsed
-
-    void ApplicationNodeImplementation::EncodeData()
-    {
-    }
-
-    void ApplicationNodeImplementation::DecodeData()
-    {
     }
 }
