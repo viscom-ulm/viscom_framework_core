@@ -28,4 +28,9 @@ namespace viscom {
 
         return engine_->getCurrentModelViewProjectionMatrix() * result;
     }
+
+    glm::mat4 CameraHelper::GetCentralPerspectiveMatrix() const
+    {
+        return engine_->getWindowPtr(0)->getViewport(0)->getProjection(sgct_core::Frustum::MonoEye)->getProjectionMatrix();
+    }
 }
