@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "main.h"
+#include "core/main.h"
 
 namespace viscom {
 

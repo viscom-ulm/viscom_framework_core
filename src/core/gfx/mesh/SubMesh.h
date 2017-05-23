@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "main.h"
+#include "core/main.h"
 #include "core/math/primitives.h"
 
 namespace viscom {

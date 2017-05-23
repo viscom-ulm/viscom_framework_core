@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "main.h"
+#include "core/main.h"
 #include "Mesh.h"
 #include "core/gfx/GPUProgram.h"
 
