@@ -49,7 +49,7 @@ option(ASSIMP_BUILD_X3D_IMPORTER OFF)
 option(ASSIMP_BUILD_XGL_IMPORTER OFF)
 option(ASSIMP_BUILD_X_IMPORTER OFF)
 
-include(${PROJECT_SOURCE_DIR}/src/core/CMake_core.txt)
+include(${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/CMake_core.txt)
 
 set(VISCOM_CONFIG_NAME "single" CACHE STRING "Name/directory of the configuration files to be used.")
 set(VISCOM_VIRTUAL_SCREEN_X 1920 CACHE INTEGER "Virtual screen size in x direction.")

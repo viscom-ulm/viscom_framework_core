@@ -37,20 +37,20 @@ endif()
 
 file(GLOB EXTERN_SOURCES extern/imgui/imgui.cpp extern/imgui/imgui_draw.cpp extern/imgui/imgui_demo.cpp)
 file(GLOB_RECURSE SRC_FILES_CORE
-    ${PROJECT_SOURCE_DIR}/src/core/*.h
-    ${PROJECT_SOURCE_DIR}/src/core/*.cpp)
+    ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.h
+    ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.cpp)
 source_group("extern" FILES ${EXTERN_SOURCES})
 
 if (${VISCOM_LOCAL_ONLY})
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/CalibrationVertices.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/SlaveNodeInternal.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/SlaveNodeInternal.cpp")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.cpp")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/CalibrationVertices.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/SlaveNodeInternal.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/SlaveNodeInternal.cpp")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/OpenCVParserHelper.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/OpenCVParserHelper.cpp")
 endif()
 
 foreach(f ${SRC_FILES_CORE})
-    file(RELATIVE_PATH SRCGR ${PROJECT_SOURCE_DIR} ${f})
+    file(RELATIVE_PATH SRCGR ${PROJECT_SOURCE_DIR}/extern/fwcore ${f})
     string(REGEX REPLACE "(.*)(/[^/]*)$" "\\1" SRCGR ${SRCGR})
     string(REPLACE / \\ SRCGR ${SRCGR})
     source_group("${SRCGR}" FILES ${f})
@@ -68,10 +68,11 @@ set(SGCT_LIBS
 
 include_directories(${SGCT_INCLUDE_DIRECTORY}
     src
+    extern/fwcore/src
     extern/g3log/src
     extern/imgui
-    extern/stb/
-    extern/assimp/include/)
+    extern/stb
+    extern/assimp/include)
 
 list(APPEND CORE_LIBS ${SGCT_LIBS} ${OPENGL_LIBRARY} ws2_32 g3logger assimp)
 
