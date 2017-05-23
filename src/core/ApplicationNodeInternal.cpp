@@ -368,6 +368,16 @@ namespace viscom {
         return result;
     }
 
+    const FrameBuffer* ApplicationNodeInternal::SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const
+    {
+        return &offscreenBuffers[engine_->getCurrentWindowPtr()->getId()];
+    }
+
+    std::unique_ptr<FullscreenQuad> ApplicationNodeInternal::CreateFullscreenQuad(const std::string& fragmentShader)
+    {
+        return std::make_unique<FullscreenQuad>(fragmentShader, this);
+    }
+
 #ifndef VISCOM_LOCAL_ONLY
     void ApplicationNodeInternal::loadProperties()
     {

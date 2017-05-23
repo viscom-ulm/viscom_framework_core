@@ -109,9 +109,4 @@ namespace viscom {
     void ApplicationNodeBase::DecodeData()
     {
     }
-
-    const viscom::FrameBuffer* ApplicationNodeBase::SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const
-    {
-        return &offscreenBuffers[appNode_->GetEngine()->getCurrentWindowPtr()->getId()];
-    }
 }

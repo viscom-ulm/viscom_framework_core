@@ -19,6 +19,7 @@
 #include "resources/MeshManager.h"
 #include "gfx/FrameBuffer.h"
 #include "core/CameraHelper.h"
+#include "core/gfx/FullscreenQuad.h"
 
 namespace viscom {
 
@@ -74,6 +75,8 @@ namespace viscom {
 
         CameraHelper* GetCamera() { return &camHelper_; }
         std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc) const;
+        const FrameBuffer* SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const;
+        std::unique_ptr<FullscreenQuad> CreateFullscreenQuad(const std::string& fragmentShader);
 
         GPUProgramManager& GetGPUProgramManager() { return gpuProgramManager_; }
         TextureManager& GetTextureManager() { return textureManager_; }
