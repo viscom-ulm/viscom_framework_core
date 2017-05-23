@@ -18,6 +18,7 @@ namespace viscom {
     public:
         CameraHelper(sgct::Engine* engine);
 
+        glm::vec3 GetUserPosition() const;
         const glm::vec3& GetPosition() const { return position_; }
         const glm::quat& GetOrientation() const { return camera_orientation_; }
         void SetPosition(const glm::vec3& position) { position_ = position; }

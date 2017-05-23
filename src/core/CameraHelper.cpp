@@ -15,6 +15,11 @@ namespace viscom {
     {
     }
 
+    glm::vec3 CameraHelper::GetUserPosition() const
+    {
+        return sgct::Engine::getDefaultUserPtr()->getPos();
+    }
+
     glm::mat4 CameraHelper::GetViewPerspectiveMatrix() const
     {
         //4. transform user back to original position
