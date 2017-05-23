@@ -49,7 +49,7 @@ option(ASSIMP_BUILD_X3D_IMPORTER OFF)
 option(ASSIMP_BUILD_XGL_IMPORTER OFF)
 option(ASSIMP_BUILD_X_IMPORTER OFF)
 
-include(${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/CMake_core.txt)
+include(${PROJECT_SOURCE_DIR}/extern/fwcore/CMake_core.txt)
 
 set(VISCOM_CONFIG_NAME "single" CACHE STRING "Name/directory of the configuration files to be used.")
 set(VISCOM_VIRTUAL_SCREEN_X 1920 CACHE INTEGER "Virtual screen size in x direction.")
@@ -75,7 +75,7 @@ foreach(f ${SRC_FILES})
     source_group("${SRCGR}" FILES ${f})
 endforeach()
 
-add_executable(${APP_NAME} ${SRC_FILES} ${SRC_FILES_CORE} ${SHADER_FILES} ${EXTERN_SOURCES})
+add_executable(${APP_NAME} ${SRC_FILES} ${SRC_FILES_CORE} ${SHADER_FILES} ${SHADER_FILES_CORE} ${EXTERN_SOURCES_CORE})
 set_target_properties(${APP_NAME} PROPERTIES OUTPUT_NAME ${VISCOM_APP_NAME})
 target_link_libraries(${APP_NAME} ${CORE_LIBS})
 target_compile_definitions(${APP_NAME} PRIVATE ${COMPILE_TIME_DEFS})

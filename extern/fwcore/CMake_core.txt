@@ -35,11 +35,13 @@ elseif(MSVC)
 endif()
 
 
-file(GLOB EXTERN_SOURCES extern/imgui/imgui.cpp extern/imgui/imgui_draw.cpp extern/imgui/imgui_demo.cpp)
+file(GLOB EXTERN_SOURCES_CORE extern/imgui/imgui.cpp extern/imgui/imgui_draw.cpp extern/imgui/imgui_demo.cpp)
+file(GLOB_RECURSE SHADER_FILES_CORE ${PROJECT_SOURCE_DIR}/extern/fwcore/resources/shader/*.*)
 file(GLOB_RECURSE SRC_FILES_CORE
     ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.h
     ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.cpp)
-source_group("extern" FILES ${EXTERN_SOURCES})
+source_group("extern\\core" FILES ${EXTERN_SOURCES_CORE})
+source_group("shader\\core" FILES ${SHADER_FILES_CORE})
 
 if (${VISCOM_LOCAL_ONLY})
     list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/CalibrationVertices.h")
