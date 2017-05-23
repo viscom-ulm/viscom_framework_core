@@ -78,14 +78,14 @@ namespace viscom {
         FrameBuffer& operator=(FrameBuffer&&) noexcept;
         ~FrameBuffer();
 
-        void UseAsRenderTarget();
-        void UseAsRenderTarget(const std::vector<unsigned int> drawBufferIndices);
+        void UseAsRenderTarget() const;
+        void UseAsRenderTarget(const std::vector<unsigned int> drawBufferIndices) const;
 
-        void DrawToFBO(std::function<void()> drawFn);
-        void DrawToFBO(const std::vector<unsigned int>& drawBufferIndices, std::function<void()> drawFn);
+        void DrawToFBO(std::function<void()> drawFn) const;
+        void DrawToFBO(const std::vector<unsigned int>& drawBufferIndices, std::function<void()> drawFn) const;
 
         void Resize(unsigned int fbWidth, unsigned int fbHeight);
-        const std::vector<GLuint>& GetTextures() const { return textures_; };
+        const std::vector<GLuint>& GetTextures() const { return textures_; }
         void SetStandardViewport(const Viewport& vp) { standardViewport_ = vp; }
         void SetStandardViewport(int x, int y, unsigned int sizex, unsigned int sizey) { standardViewport_.position_ = glm::ivec2(x, y); standardViewport_.size_ = glm::ivec2(sizex, sizey); }
 

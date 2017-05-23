@@ -11,29 +11,29 @@
 #include <imgui.h>
 #include "core/gfx/mesh/MeshRenderable.h"
 #include "core/imgui/imgui_impl_glfw_gl3.h"
+#include <glm/gtc/matrix_inverse.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace viscom {
 
     ApplicationNodeImplementation::ApplicationNodeImplementation(ApplicationNodeInternal* appNode) :
-        appNode_{ appNode }
+        ApplicationNodeBase{ appNode }
     {
     }
 
     ApplicationNodeImplementation::~ApplicationNodeImplementation() = default;
 
-    void ApplicationNodeImplementation::PreWindow()
-    {
-    }
-
     void ApplicationNodeImplementation::InitOpenGL()
     {
-        backgroundProgram_ = appNode_->GetGPUProgramManager().GetResource("backgroundGrid", std::initializer_list<std::string>{ "backgroundGrid.vert", "backgroundGrid.frag" });
+        backgroundProgram_ = GetGPUProgramManager().GetResource("backgroundGrid", std::initializer_list<std::string>{ "backgroundGrid.vert", "backgroundGrid.frag" });
         backgroundMVPLoc_ = backgroundProgram_->getUniformLocation("MVP");
 
-        triangleProgram_ = appNode_->GetGPUProgramManager().GetResource("foregroundTriangle", std::initializer_list<std::string>{ "foregroundTriangle.vert", "foregroundTriangle.frag" });
+        triangleProgram_ = GetGPUProgramManager().GetResource("foregroundTriangle", std::initializer_list<std::string>{ "foregroundTriangle.vert", "foregroundTriangle.frag" });
         triangleMVPLoc_ = triangleProgram_->getUniformLocation("MVP");
 
-        teapotProgram_ = appNode_->GetGPUProgramManager().GetResource("foregroundMesh", std::initializer_list<std::string>{ "foregroundMesh.vert", "foregroundMesh.frag" });
+        teapotProgram_ = GetGPUProgramManager().GetResource("foregroundMesh", std::initializer_list<std::string>{ "foregroundMesh.vert", "foregroundMesh.frag" });
+        teapotModelMLoc_ = teapotProgram_->getUniformLocation("modelMatrix");
+        teapotNormalMLoc_ = teapotProgram_->getUniformLocation("normalMatrix");
         teapotVPLoc_ = teapotProgram_->getUniformLocation("viewProjectionMatrix");
 
         std::vector<GridVertex> gridVertices;
@@ -78,20 +78,18 @@ namespace viscom {
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        teapotMesh_ = appNode_->GetMeshManager().GetResource("/models/teapot/teapot.obj");
+        teapotMesh_ = GetMeshManager().GetResource("/models/teapot/teapot.obj");
         teapotRenderable_ = MeshRenderable::create<SimpleMeshVertex>(teapotMesh_.get(), teapotProgram_.get());
-    }
-
-    void ApplicationNodeImplementation::PreSync()
-    {
-    }
-
-    void ApplicationNodeImplementation::UpdateSyncedInfo()
-    {
     }
 
     void ApplicationNodeImplementation::UpdateFrame(double currentTime, double)
     {
+        GetCamera()->SetPosition(camPos_);
+        glm::quat pitchQuat = glm::angleAxis(camRot_.x, glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::quat yawQuat = glm::angleAxis(camRot_.y, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::quat rollQuat = glm::angleAxis(camRot_.z, glm::vec3(0.0f, 0.0f, 1.0f));
+        GetCamera()->SetOrientation(yawQuat * pitchQuat * rollQuat);
+
         triangleModelMatrix_ = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)), static_cast<float>(currentTime), glm::vec3(0.0f, 1.0f, 0.0f));
         teapotModelMatrix_ = glm::scale(glm::rotate(glm::translate(glm::mat4(0.01f), glm::vec3(-3.0f, 0.0f, -5.0f)), static_cast<float>(currentTime), glm::vec3(0.0f, 1.0f, 0.0f)), glm::vec3(0.01f));
     }
@@ -111,7 +109,7 @@ namespace viscom {
             glBindVertexArray(vaoBackgroundGrid_);
             glBindBuffer(GL_ARRAY_BUFFER, vboBackgroundGrid_);
 
-            auto MVP = GetEngine()->getCurrentModelViewProjectionMatrix();
+            auto MVP = GetCamera()->GetViewPerspectiveMatrix();
             {
                 glUseProgram(backgroundProgram_->getProgramId());
                 glUniformMatrix4fv(backgroundMVPLoc_, 1, GL_FALSE, glm::value_ptr(MVP));
@@ -129,6 +127,9 @@ namespace viscom {
 
             {
                 glUseProgram(teapotProgram_->getProgramId());
+                auto normalMatrix = glm::inverseTranspose(glm::mat3(teapotModelMatrix_));
+                glUniformMatrix4fv(teapotModelMLoc_, 1, GL_FALSE, glm::value_ptr(teapotModelMatrix_));
+                glUniformMatrix4fv(teapotNormalMLoc_, 1, GL_FALSE, glm::value_ptr(normalMatrix));
                 glUniformMatrix4fv(teapotVPLoc_, 1, GL_FALSE, glm::value_ptr(MVP));
                 teapotRenderable_->Draw(teapotModelMatrix_);
             }
@@ -139,19 +140,6 @@ namespace viscom {
         });
     }
 
-    void ApplicationNodeImplementation::Draw2D(FrameBuffer& fbo)
-    {
-        fbo.DrawToFBO([]() {
-#ifdef VISCOM_CLIENTGUI
-            ImGui::ShowTestWindow();
-#endif
-        });
-    }
-
-    void ApplicationNodeImplementation::PostDraw()
-    {
-    }
-
     void ApplicationNodeImplementation::CleanUp()
     {
         if (vaoBackgroundGrid_ != 0) glDeleteVertexArrays(1, &vaoBackgroundGrid_);
@@ -160,48 +148,61 @@ namespace viscom {
         vboBackgroundGrid_ = 0;
     }
 
-    // ReSharper disable CppParameterNeverUsed
-    void ApplicationNodeImplementation::KeyboardCallback(int key, int scancode, int action, int mods)
+    bool ApplicationNodeImplementation::KeyboardCallback(int key, int scancode, int action, int mods)
     {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
-#endif
+        if (ApplicationNodeBase::KeyboardCallback(key, scancode, action, mods)) return true;
+
+        switch (key)
+        {
+        case GLFW_KEY_W:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.0, 0.0, -0.001);
+            return true;
+
+        case GLFW_KEY_S:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.0, 0.0, 0.001);
+            return true;
+
+        case GLFW_KEY_A:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(-0.001, 0.0, 0.0);
+            return true;
+
+        case GLFW_KEY_D:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.001, 0.0, 0.0);
+            return true;
+
+        case GLFW_KEY_LEFT_CONTROL:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.0, -0.001, 0.0);
+            return true;
+
+        case GLFW_KEY_LEFT_SHIFT:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.0, 0.001, 0.0);
+            return true;
+
+        case GLFW_KEY_UP:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.001, 0.0, 0.0);
+            return true;
+
+        case GLFW_KEY_DOWN:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(-0.001, 0.0, 0.0);
+            return true;
+
+        case GLFW_KEY_LEFT:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.0, 0.001, 0.0);
+            return true;
+
+        case GLFW_KEY_RIGHT:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.0, -0.001, 0.0);
+            return true;
+
+        case GLFW_KEY_Q:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.0, 0.0, 0.001);
+            return true;
+
+        case GLFW_KEY_E:
+            if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.0, 0.0, -0.001);
+            return true;
+        }
+        return false;
     }
 
-    void ApplicationNodeImplementation::CharCallback(unsigned int character, int mods)
-    {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_CharCallback(character);
-#endif
-    }
-
-    void ApplicationNodeImplementation::MouseButtonCallback(int button, int action)
-    {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
-#endif
-    }
-
-    void ApplicationNodeImplementation::MousePosCallback(double x, double y)
-    {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_MousePositionCallback(x, y);
-#endif
-    }
-
-    void ApplicationNodeImplementation::MouseScrollCallback(double xoffset, double yoffset)
-    {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
-#endif
-    }
-    // ReSharper restore CppParameterNeverUsed
-
-    void ApplicationNodeImplementation::EncodeData()
-    {
-    }
-
-    void ApplicationNodeImplementation::DecodeData()
-    {
-    }
 }

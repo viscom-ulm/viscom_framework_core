@@ -2,10 +2,10 @@
 <Cluster masterAddress="localhost" debug = "true">
 	<Node address="localhost" port="20401">
 		<Window fullScreen="false" monitor="0">
-			<Stereo type="aktive" />
+			<Stereo type="none" />
 			<Size x="1280" y="720"/>
 			<Pos x="0" y="0" />
-			<Viewport eye="left">
+			<Viewport eye="right">
 				<Pos x="0.0" y="0.0" />
 				<Size x="1.0" y="1.0" />
 				<Viewplane>
@@ -21,7 +21,7 @@
 	</Node>
 	<Node address="8.8.8.8" port="20402">
 		<Window fullScreen="false" monitor="0">
-			<Stereo type="aktive" />
+			<Stereo type="none" />
 			<Size x="1280" y="720"/>
 			<Pos x="0" y="0" />
 			<Viewport eye="left">
@@ -38,7 +38,7 @@
 			</Viewport>
 		</Window>
 	</Node>
-	<User eyeSeparation="0.065">
+	<User eyeSeparation="1.065">
 		<Pos x="0.0" y="-0.065" z="4.0" />
 	</User>
 </Cluster>

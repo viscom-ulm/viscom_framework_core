@@ -30,6 +30,7 @@ namespace viscom {
         std::string projectorData_;
         std::string sgctLocal_;
         bool sgctSlave_ = false;
+        glm::vec2 virtualScreenSize_;
     };
 
 

@@ -73,9 +73,9 @@ namespace viscom {
             auto viewport = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(viewportName.c_str()));
             for (auto j = 0U; j < screenQuadCoords.size(); ++j) quadCoordsProjector_.emplace_back(screenQuadCoords[j], screenQuadTexCoords[j]);
 
-            GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::LowerLeft, viewport[0]);
-            GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperLeft, viewport[1]);
-            GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperRight, viewport[2]);
+            GetEngine().SetProjectionPlaneCoordinate(i, 0, sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::LowerLeft, viewport[0]);
+            GetEngine().SetProjectionPlaneCoordinate(i, 0, sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperLeft, viewport[1]);
+            GetEngine().SetProjectionPlaneCoordinate(i, 0, sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperRight, viewport[2]);
 
 
             auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling));
@@ -84,7 +84,7 @@ namespace viscom {
             GetViewportScreen(i).position_ = glm::ivec2(glm::floor(((viewport[0] + vpSize) / (2.0f * vpSize)).xy * totalScreenSize));
             GetViewportScreen(i).size_ = glm::uvec2(glm::floor(totalScreenSize));
             GetViewportQuadSize(i) = fboSize;
-            GetViewportScaling(i) = totalScreenSize / glm::vec2(1920.0f, 1080.0f);
+            GetViewportScaling(i) = totalScreenSize / GetConfig().virtualScreenSize_;
 
             CreateProjectorFBO(i, fboSize);
 
@@ -155,10 +155,9 @@ namespace viscom {
 
     void SlaveNodeInternal::DrawFrame(FrameBuffer& fbo)
     {
-        auto window = GetEngine()->getCurrentWindowPtr();
-        auto windowId = window->getId();
+        auto windowId = GetEngine().GetCurrentWindowId();
 
-        window->getFBOPtr()->unBind();
+        GetEngine().UnbindCurrentWindowFBO();
 
         ClearBuffer(sceneFBOs_[windowId]);
 
@@ -167,8 +166,7 @@ namespace viscom {
 
     void SlaveNodeInternal::Draw2D(FrameBuffer& fbo)
     {
-        auto window = GetEngine()->getCurrentWindowPtr();
-        auto windowId = window->getId();
+        auto windowId = GetEngine().GetCurrentWindowId();
         ApplicationNodeImplementation::Draw2D(sceneFBOs_[windowId]);
 
 #ifdef VISCOM_CLIENTGUI

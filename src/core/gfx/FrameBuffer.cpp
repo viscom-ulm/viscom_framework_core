@@ -192,7 +192,7 @@ namespace viscom {
     /**
      * Use this frame buffer object as target for rendering.
      */
-    void FrameBuffer::UseAsRenderTarget()
+    void FrameBuffer::UseAsRenderTarget() const
     {
         if (isBackbuffer_) {
             sgct::Engine::instance()->getCurrentWindowPtr()->getFBOPtr()->bind();
@@ -208,7 +208,7 @@ namespace viscom {
     * Use this frame buffer object as target for rendering and select the draw buffers used.
     * @param drawBufferIndices the indices in the draw buffer to be used.
     */
-    void FrameBuffer::UseAsRenderTarget(const std::vector<unsigned int> drawBufferIndices)
+    void FrameBuffer::UseAsRenderTarget(const std::vector<unsigned int> drawBufferIndices) const
     {
         assert(!isBackbuffer_);
         std::vector<GLenum> drawBuffersReduced(drawBuffers_.size());
@@ -220,13 +220,13 @@ namespace viscom {
         glScissor(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
     }
 
-    void FrameBuffer::DrawToFBO(std::function<void()> drawFn)
+    void FrameBuffer::DrawToFBO(std::function<void()> drawFn) const
     {
         UseAsRenderTarget();
         drawFn();
     }
 
-    void FrameBuffer::DrawToFBO(const std::vector<unsigned>& drawBufferIndices, std::function<void()> drawFn)
+    void FrameBuffer::DrawToFBO(const std::vector<unsigned>& drawBufferIndices, std::function<void()> drawFn) const
     {
         UseAsRenderTarget(drawBufferIndices);
         drawFn();

@@ -31,6 +31,7 @@ namespace viscom {
     ApplicationNodeInternal::ApplicationNodeInternal(FWConfiguration&& config, std::unique_ptr<sgct::Engine> engine) :
         config_( std::move(config) ),
         engine_{ std::move(engine) },
+        camHelper_{ engine_.get() },
         currentTimeSynced_{ 0.0 },
         currentTime_{ 0.0 },
         elapsedTime_{ 0.0 },
@@ -119,7 +120,7 @@ namespace viscom {
             viewportScreen_[wId].position_ = glm::ivec2(0);
             viewportScreen_[wId].size_ = projectorSize;
             viewportQuadSize_[wId] = projectorSize;
-            viewportScaling_[wId] = glm::vec2(projectorSize) / glm::vec2(1920.0f, 1080.0f);
+            viewportScaling_[wId] = glm::vec2(projectorSize) / config_.virtualScreenSize_;
         }
 
 #ifdef VISCOM_CLIENTGUI
@@ -355,6 +356,26 @@ namespace viscom {
     {
         std::lock_guard<std::mutex> lock{ instanceMutex_ };
         if (instance_) instance_->BaseDecodeData();
+    }
+
+    std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc) const
+    {
+        std::vector<FrameBuffer> result;
+        auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
+        for (const auto& fboSize : viewportQuadSize_) {
+            result.emplace_back(fboSize.x, fboSize.y, fboDesc);
+        }
+        return result;
+    }
+
+    const FrameBuffer* ApplicationNodeInternal::SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const
+    {
+        return &offscreenBuffers[engine_->getCurrentWindowPtr()->getId()];
+    }
+
+    std::unique_ptr<FullscreenQuad> ApplicationNodeInternal::CreateFullscreenQuad(const std::string& fragmentShader)
+    {
+        return std::make_unique<FullscreenQuad>(fragmentShader, this);
     }
 
 #ifndef VISCOM_LOCAL_ONLY
