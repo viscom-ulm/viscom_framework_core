@@ -58,44 +58,49 @@ namespace viscom {
         ApplicationNodeImplementation::CleanUp();
     }
 
-    void MasterNode::KeyboardCallback(int key, int scancode, int action, int mods)
+    bool MasterNode::KeyboardCallback(int key, int scancode, int action, int mods)
     {
 #ifndef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
+        if (ImGui::GetIO().WantCaptureKeyboard) return true;
 #endif
-        ApplicationNodeImplementation::KeyboardCallback(key, scancode, action, mods);
+        return ApplicationNodeImplementation::KeyboardCallback(key, scancode, action, mods);
     }
 
-    void MasterNode::CharCallback(unsigned int character, int mods)
+    bool MasterNode::CharCallback(unsigned int character, int mods)
     {
 #ifndef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_CharCallback(character);
+        if (ImGui::GetIO().WantCaptureKeyboard) return true;
 #endif
-        ApplicationNodeImplementation::CharCallback(character, mods);
+        return ApplicationNodeImplementation::CharCallback(character, mods);
     }
 
-    void MasterNode::MouseButtonCallback(int button, int action)
+    bool MasterNode::MouseButtonCallback(int button, int action)
     {
 #ifndef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
+        if (ImGui::GetIO().WantCaptureMouse) return true;
 #endif
-        ApplicationNodeImplementation::MouseButtonCallback(button, action);
+        return ApplicationNodeImplementation::MouseButtonCallback(button, action);
     }
 
-    void MasterNode::MousePosCallback(double x, double y)
+    bool MasterNode::MousePosCallback(double x, double y)
     {
 #ifndef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_MousePositionCallback(x, y);
+        if (ImGui::GetIO().WantCaptureMouse) return true;
 #endif
-        ApplicationNodeImplementation::MousePosCallback(x, y);
+        return ApplicationNodeImplementation::MousePosCallback(x, y);
     }
 
-    void MasterNode::MouseScrollCallback(double xoffset, double yoffset)
+    bool MasterNode::MouseScrollCallback(double xoffset, double yoffset)
     {
 #ifndef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
+        if (ImGui::GetIO().WantCaptureMouse) return true;
 #endif
-        ApplicationNodeImplementation::MouseScrollCallback(xoffset, yoffset);
+        return ApplicationNodeImplementation::MouseScrollCallback(xoffset, yoffset);
     }
 
 }

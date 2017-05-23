@@ -66,39 +66,49 @@ namespace viscom {
     }
 
     // ReSharper disable CppParameterNeverUsed
-    void ApplicationNodeBase::KeyboardCallback(int key, int scancode, int action, int mods)
+    bool ApplicationNodeBase::KeyboardCallback(int key, int scancode, int action, int mods)
     {
 #ifdef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
+        if (ImGui::GetIO().WantCaptureKeyboard) return true;
 #endif
+        return false;
     }
 
-    void ApplicationNodeBase::CharCallback(unsigned int character, int mods)
+    bool ApplicationNodeBase::CharCallback(unsigned int character, int mods)
     {
 #ifdef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_CharCallback(character);
+        if (ImGui::GetIO().WantCaptureKeyboard) return true;
 #endif
+        return false;
     }
 
-    void ApplicationNodeBase::MouseButtonCallback(int button, int action)
+    bool ApplicationNodeBase::MouseButtonCallback(int button, int action)
     {
 #ifdef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
+        if (ImGui::GetIO().WantCaptureMouse) return true;
 #endif
+        return false;
     }
 
-    void ApplicationNodeBase::MousePosCallback(double x, double y)
+    bool ApplicationNodeBase::MousePosCallback(double x, double y)
     {
 #ifdef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_MousePositionCallback(x, y);
+        if (ImGui::GetIO().WantCaptureMouse) return true;
 #endif
+        return false;
     }
 
-    void ApplicationNodeBase::MouseScrollCallback(double xoffset, double yoffset)
+    bool ApplicationNodeBase::MouseScrollCallback(double xoffset, double yoffset)
     {
 #ifdef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
+        if (ImGui::GetIO().WantCaptureMouse) return true;
 #endif
+        return false;
     }
     // ReSharper restore CppParameterNeverUsed
 

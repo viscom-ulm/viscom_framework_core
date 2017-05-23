@@ -148,58 +148,61 @@ namespace viscom {
         vboBackgroundGrid_ = 0;
     }
 
-    void ApplicationNodeImplementation::KeyboardCallback(int key, int scancode, int action, int mods)
+    bool ApplicationNodeImplementation::KeyboardCallback(int key, int scancode, int action, int mods)
     {
+        if (ApplicationNodeBase::KeyboardCallback(key, scancode, action, mods)) return true;
+
         switch (key)
         {
         case GLFW_KEY_W:
             if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.0, 0.0, -0.001);
-            break;
+            return true;
 
         case GLFW_KEY_S:
             if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.0, 0.0, 0.001);
-            break;
+            return true;
 
         case GLFW_KEY_A:
             if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(-0.001, 0.0, 0.0);
-            break;
+            return true;
 
         case GLFW_KEY_D:
             if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.001, 0.0, 0.0);
-            break;
+            return true;
 
         case GLFW_KEY_LEFT_CONTROL:
             if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.0, -0.001, 0.0);
-            break;
+            return true;
 
         case GLFW_KEY_LEFT_SHIFT:
             if (action == GLFW_REPEAT || action == GLFW_PRESS) camPos_ += glm::vec3(0.0, 0.001, 0.0);
-            break;
+            return true;
 
         case GLFW_KEY_UP:
             if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.001, 0.0, 0.0);
-            break;
+            return true;
 
         case GLFW_KEY_DOWN:
             if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(-0.001, 0.0, 0.0);
-            break;
+            return true;
 
         case GLFW_KEY_LEFT:
             if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.0, 0.001, 0.0);
-            break;
+            return true;
 
         case GLFW_KEY_RIGHT:
             if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.0, -0.001, 0.0);
-            break;
+            return true;
 
         case GLFW_KEY_Q:
             if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.0, 0.0, 0.001);
-            break;
+            return true;
 
         case GLFW_KEY_E:
             if (action == GLFW_REPEAT || action == GLFW_PRESS) camRot_ += glm::vec3(0.0, 0.0, -0.001);
-            break;
+            return true;
         }
+        return false;
     }
 
 }
