@@ -7,6 +7,8 @@
  */
 
 #include "Resource.h"
+#include "core/ApplicationNodeInternal.h"
+#include "core/utils.h"
 
 namespace viscom {
     /**
@@ -44,4 +46,20 @@ namespace viscom {
     }
 
     Resource::~Resource() = default;
+
+    std::string Resource::FindResourceLocation(const std::string& localFilename, const ApplicationNodeInternal* appNode, const std::string& resourceId)
+    {
+        for (const auto& dir : appNode->GetConfig().resourceSearchPaths_) {
+            auto filename = dir + "/" + localFilename;
+            if (utils::file_exists(filename)) return filename;
+        }
+
+        LOG(WARNING) << "Cannot find local resource file \"" << localFilename.c_str() << "\".";
+        throw resource_loading_error(resourceId, "Cannot find local resource file (" + localFilename + ").");
+    }
+
+    std::string Resource::FindResourceLocation(const std::string & localFilename) const
+    {
+        return FindResourceLocation(localFilename, appNode_, id_);
+    }
 }

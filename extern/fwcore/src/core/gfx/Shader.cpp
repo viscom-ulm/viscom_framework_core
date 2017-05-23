@@ -99,7 +99,7 @@ namespace viscom {
      * @param shaderFilename the shader file name
      */
     Shader::Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node) :
-        filename_{ node->GetConfig().baseDirectory_ + resourceBasePath + "shader/" + shaderFilename },
+        filename_{ Resource::FindResourceLocation("shader/" + shaderFilename, node) },
         shader_{ 0 },
         type_{ GL_VERTEX_SHADER },
         strType_{ "vertex" }

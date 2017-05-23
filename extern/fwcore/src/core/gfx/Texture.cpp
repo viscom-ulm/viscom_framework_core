@@ -29,7 +29,7 @@ namespace viscom {
         width_{ 0 },
         height_{ 0 }
     {
-        auto fullFilename = node->GetConfig().baseDirectory_ + resourceBasePath + texFilename;
+        auto fullFilename = FindResourceLocation(texFilename);
 
         stbi_set_flip_vertically_on_load(1);
 

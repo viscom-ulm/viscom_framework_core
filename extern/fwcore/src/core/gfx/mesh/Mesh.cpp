@@ -27,7 +27,7 @@ namespace viscom {
         Resource(meshFilename, node),
         indexBuffer_(0)
     {
-        auto fullFilename = node->GetConfig().baseDirectory_ + resourceBasePath + meshFilename;
+        auto fullFilename = FindResourceLocation(meshFilename);
         // Load a Model from File
         Assimp::Importer loader;
         auto scene = loader.ReadFile(fullFilename,

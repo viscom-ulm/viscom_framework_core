@@ -10,12 +10,11 @@
 
  // ReSharper disable CppUnusedIncludeDirective
 #include <string>
+#include <vector>
 #include <glm/glm.hpp>
  // ReSharper restore CppUnusedIncludeDirective
 
 namespace viscom {
-
-    static const std::string resourceBasePath = "resources/";
 
     struct FWConfiguration
     {
@@ -27,6 +26,7 @@ namespace viscom {
         std::string sgctLocal_;
         bool sgctSlave_ = false;
         glm::vec2 virtualScreenSize_;
+        std::vector<std::string> resourceSearchPaths_;
     };
 
     FWConfiguration LoadConfiguration(const std::string& configFilename);
