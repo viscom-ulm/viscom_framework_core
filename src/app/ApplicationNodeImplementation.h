@@ -31,7 +31,7 @@ namespace viscom {
         virtual void DrawFrame(FrameBuffer& fbo) override;
         virtual void CleanUp() override;
 
-        virtual void KeyboardCallback(int key, int scancode, int action, int mods) override;
+        virtual bool KeyboardCallback(int key, int scancode, int action, int mods) override;
 
     private:
         /** Holds the shader program for drawing the background. */
