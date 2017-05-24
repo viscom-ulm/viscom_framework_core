@@ -9,7 +9,7 @@
 #pragma once
 
 #include "core/main.h"
-#include "sgct.h"
+#include "core/open_gl.h"
 
 namespace viscom {
 

@@ -9,14 +9,15 @@
 #pragma once
 
 #include "main.h"
-#include "sgct.h"
+#include "core/open_gl.h"
+#include <glm/gtc/quaternion.hpp>
 
 namespace viscom {
 
     class CameraHelper
     {
     public:
-        CameraHelper(sgct::Engine* engine);
+        CameraHelper();
 
         glm::vec3 GetUserPosition() const;
         const glm::vec3& GetPosition() const { return position_; }
@@ -28,9 +29,6 @@ namespace viscom {
         glm::mat4 GetCentralPerspectiveMatrix() const;
 
     private:
-        /** Holds the SGCT engine. */
-        sgct::Engine* engine_;
-
         /// Position of the camera.
         glm::vec3 position_;
         /// Orientation of the camera.

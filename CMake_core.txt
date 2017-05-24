@@ -35,16 +35,29 @@ elseif(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3 /EHsc /MP")
 endif()
 
-
 file(GLOB EXTERN_SOURCES_CORE
+    extern/fwcore/src_nosgct/glew/src/glew.c
     extern/fwcore/extern/imgui/imgui.cpp
     extern/fwcore/extern/imgui/imgui_draw.cpp
     extern/fwcore/extern/imgui/imgui_demo.cpp)
+
+if (${VISCOM_USE_SGCT})
+    set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/extern/fwcore/src_sgct/)
+else()
+    list(APPEND COMPILE_TIME_DEFS GLEW_STATIC)
+    list(APPEND EXTERN_SOURCES_CORE extern/fwcore/src_nosgct/glew/src/glew.c)
+    set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/extern/fwcore/src_nosgct/)
+endif()
+
+
 file(GLOB_RECURSE SHADER_FILES_CORE ${PROJECT_SOURCE_DIR}/extern/fwcore/resources/shader/*.*)
 file(GLOB_RECURSE SRC_FILES_CORE
     ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.h
     ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.cpp
-    ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.inl)
+    ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.inl
+    ${VISCOM_SGCT_WRAPPER_DIR}/core/*.h
+    ${VISCOM_SGCT_WRAPPER_DIR}/core/*.cpp
+    ${VISCOM_SGCT_WRAPPER_DIR}/core/*.inl)
 source_group("extern\\core" FILES ${EXTERN_SOURCES_CORE})
 source_group("shader\\core" FILES ${SHADER_FILES_CORE})
 
@@ -60,6 +73,8 @@ foreach(f ${SRC_FILES_CORE})
     file(RELATIVE_PATH SRCGR ${PROJECT_SOURCE_DIR}/extern/fwcore ${f})
     string(REGEX REPLACE "(.*)(/[^/]*)$" "\\1" SRCGR ${SRCGR})
     string(REPLACE / \\ SRCGR ${SRCGR})
+    string(REPLACE src_sgct src SRCGR ${SRCGR})
+    string(REPLACE src_nosgct src SRCGR ${SRCGR})
     source_group("${SRCGR}" FILES ${f})
 endforeach()
 
@@ -83,6 +98,7 @@ endif()
 list(APPEND CORE_INCLUDE_DIRS
     src
     extern/fwcore/src
+    ${VISCOM_SGCT_WRAPPER_DIR}
     extern/fwcore/extern/g3log/src
     ${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/g3log/include
     extern/fwcore/extern/imgui
