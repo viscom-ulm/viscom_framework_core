@@ -1,3 +1,12 @@
 [submodule "extern/g3log"]
 	path = extern/g3log
 	url = https://github.com/KjellKod/g3log.git
+[submodule "extern/stb"]
+	path = extern/stb
+	url = https://github.com/nothings/stb.git
+[submodule "extern/assimp"]
+	path = extern/assimp
+	url = https://github.com/assimp/assimp.git
+[submodule "extern/imgui"]
+	path = extern/imgui
+	url = https://github.com/ocornut/imgui.git

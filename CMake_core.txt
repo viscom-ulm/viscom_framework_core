@@ -9,7 +9,7 @@ add_subdirectory(extern/fwcore/extern/g3log)
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-add_subdirectory(extern/assimp)
+add_subdirectory(extern/fwcore/extern/assimp)
 
 set(VISCOM_CLIENTGUI ON CACHE BOOL "Use ImGui on clients.")
 set(VISCOM_SYNCINPUT ON CACHE BOOL "Synchronize input from master to clients.")
@@ -36,7 +36,10 @@ elseif(MSVC)
 endif()
 
 
-file(GLOB EXTERN_SOURCES_CORE extern/imgui/imgui.cpp extern/imgui/imgui_draw.cpp extern/imgui/imgui_demo.cpp)
+file(GLOB EXTERN_SOURCES_CORE
+	extern/fwcore/extern/imgui/imgui.cpp
+	extern/fwcore/extern/imgui/imgui_draw.cpp
+	extern/fwcore/extern/imgui/imgui_demo.cpp)
 file(GLOB_RECURSE SHADER_FILES_CORE ${PROJECT_SOURCE_DIR}/extern/fwcore/resources/shader/*.*)
 file(GLOB_RECURSE SRC_FILES_CORE
     ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.h
@@ -75,9 +78,9 @@ include_directories(${SGCT_INCLUDE_DIRECTORY}
     extern/fwcore/src
     /extern/fwcore/extern/g3log/src
 	${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/g3log/include
-    extern/imgui
-    extern/stb
-    extern/assimp/include)
+    extern/fwcore/extern/imgui
+    extern/fwcore/extern/stb
+    extern/fwcore/extern/assimp/include)
 
 list(APPEND CORE_LIBS ${SGCT_LIBS} ${OPENGL_LIBRARY} ws2_32 g3logger assimp)
 
