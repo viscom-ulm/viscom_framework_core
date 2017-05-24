@@ -80,7 +80,8 @@ include_directories(${SGCT_INCLUDE_DIRECTORY}
 	${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/g3log/include
     extern/fwcore/extern/imgui
     extern/fwcore/extern/stb
-    extern/fwcore/extern/assimp/include)
+    extern/fwcore/extern/assimp/include
+	${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/assimp/include)
 
 list(APPEND CORE_LIBS ${SGCT_LIBS} ${OPENGL_LIBRARY} ws2_32 g3logger assimp)
 
