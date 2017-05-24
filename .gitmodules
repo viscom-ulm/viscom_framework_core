@@ -14,3 +14,6 @@
 	path = extern/glm
 	url = https://github.com/g-truc/glm.git
 	branch = 0.9.7.1
+[submodule "extern/glfw"]
+	path = extern/glfw
+	url = https://github.com/glfw/glfw.git

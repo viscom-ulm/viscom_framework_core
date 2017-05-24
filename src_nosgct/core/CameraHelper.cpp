@@ -11,31 +11,26 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace viscom {
-    CameraHelper::CameraHelper()
+    CameraHelper::CameraHelper(float width, float height) :
+        projection_{ glm::perspectiveFov(60.0f, width, height, 1.0f, 100.0f) } // TODO: find better values. [5/24/2017 Sebastian Maisch]
     {
     }
 
     glm::vec3 CameraHelper::GetUserPosition() const
     {
-        return sgct::Engine::getDefaultUserPtr()->getPos();
+        return glm::vec3(0.0f);
     }
 
     glm::mat4 CameraHelper::GetViewPerspectiveMatrix() const
     {
-        //4. transform user back to original position
-        glm::mat4 result = glm::translate(glm::mat4(1.0f), sgct::Engine::getDefaultUserPtr()->getPos());
-        //3. apply view rotation
-        result *= glm::mat4_cast(glm::inverse(camera_orientation_));
-        //2. apply navigation translation
+        auto result = glm::mat4_cast(glm::inverse(camera_orientation_));
         result = glm::translate(result, -position_);
-        //1. transform user to coordinate system origin
-        result *= glm::translate(glm::mat4(1.0f), -sgct::Engine::getDefaultUserPtr()->getPos());
 
-        return engine_->getCurrentModelViewProjectionMatrix() * result;
+        return projection_ * result;
     }
 
     glm::mat4 CameraHelper::GetCentralPerspectiveMatrix() const
     {
-        return engine_->getWindowPtr(0)->getViewport(0)->getProjection(sgct_core::Frustum::MonoEye)->getProjectionMatrix();
+        return projection_;
     }
 }

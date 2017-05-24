@@ -16,6 +16,8 @@
 #include "core/CameraHelper.h"
 #include "core/gfx/FullscreenQuad.h"
 
+struct GLFWwindow;
+
 namespace viscom {
 
     class ApplicationNodeBase;
@@ -30,32 +32,28 @@ namespace viscom {
         ApplicationNodeInternal& operator=(ApplicationNodeInternal&&) = delete;
         virtual ~ApplicationNodeInternal();
 
-        void InitNode();
-        void Render() const;
+        void Render();
 
-        void BasePreWindow();
         void BaseInitOpenGL();
-        void BasePreSync();
         void PostSyncFunction();
-        void BaseClearBuffer();
         void BaseDrawFrame();
         void BaseDraw2D();
-        void BasePostDraw() const;
         void BaseCleanUp() const;
 
+        static void ErrorCallbackStatic(int error, const char* description);
+        static void BaseKeyboardCallbackStatic(GLFWwindow* window, int key, int scancode, int action, int mods);
+        static void BaseCharCallbackStatic(GLFWwindow* window, unsigned int character);
+        static void BaseMouseButtonCallbackStatic(GLFWwindow* window, int button, int action, int mods);
+        static void BaseMousePosCallbackStatic(GLFWwindow* window, double x, double y);
+        static void BaseMouseScrollCallbackStatic(GLFWwindow* window, double xoffset, double yoffset);
         void BaseKeyboardCallback(int key, int scancode, int action, int mods);
         void BaseCharCallback(unsigned int character, int mods);
         void BaseMouseButtonCallback(int button, int action);
         void BaseMousePosCallback(double x, double y);
         void BaseMouseScrollCallback(double xoffset, double yoffset);
 
-        static void BaseEncodeDataStatic();
-        static void BaseDecodeDataStatic();
-        void BaseEncodeData();
-        void BaseDecodeData();
-
         const FWConfiguration& GetConfig() const { return config_; }
-        FrameBuffer& GetFramebuffer(size_t windowId) { return framebuffers_[windowId]; }
+        FrameBuffer& GetFramebuffer(size_t windowId) { return backBuffer_; }
 
         const Viewport& GetViewportScreen(size_t windowId) const { return viewportScreen_[windowId]; }
         Viewport& GetViewportScreen(size_t windowId) { return viewportScreen_[windowId]; }
@@ -79,6 +77,10 @@ namespace viscom {
     private:
         /** Holds the applications configuration. */
         FWConfiguration config_;
+        /** Holds the GLFW window. */
+        GLFWwindow* window_;
+        /** Holds the backbuffer frame-buffer. */
+        FrameBuffer backBuffer_;
         /** Holds the application node implementation. */
         std::unique_ptr<ApplicationNodeBase> appNodeImpl_;
 
@@ -88,8 +90,6 @@ namespace viscom {
         std::vector<glm::ivec2> viewportQuadSize_;
         /** Holds the viewport scaling if one applies. */
         std::vector<glm::vec2> viewportScaling_;
-        /** Holds the frame buffer objects for each window. */
-        std::vector<FrameBuffer> framebuffers_;
 
         /** The camera helper class. */
         CameraHelper camHelper_;

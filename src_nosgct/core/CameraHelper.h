@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "main.h"
+#include "core/main.h"
 #include "core/open_gl.h"
 #include <glm/gtc/quaternion.hpp>
 
@@ -17,7 +17,7 @@ namespace viscom {
     class CameraHelper
     {
     public:
-        CameraHelper();
+        CameraHelper(float width, float height);
 
         glm::vec3 GetUserPosition() const;
         const glm::vec3& GetPosition() const { return position_; }
@@ -29,6 +29,8 @@ namespace viscom {
         glm::mat4 GetCentralPerspectiveMatrix() const;
 
     private:
+        /// Standard projection matrix.
+        glm::mat4 projection_;
         /// Position of the camera.
         glm::vec3 position_;
         /// Orientation of the camera.
