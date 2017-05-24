@@ -39,7 +39,8 @@ file(GLOB EXTERN_SOURCES_CORE extern/imgui/imgui.cpp extern/imgui/imgui_draw.cpp
 file(GLOB_RECURSE SHADER_FILES_CORE ${PROJECT_SOURCE_DIR}/extern/fwcore/resources/shader/*.*)
 file(GLOB_RECURSE SRC_FILES_CORE
     ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.h
-    ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.cpp)
+    ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.cpp
+    ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.inl)
 source_group("extern\\core" FILES ${EXTERN_SOURCES_CORE})
 source_group("shader\\core" FILES ${SHADER_FILES_CORE})
 
@@ -71,7 +72,7 @@ set(SGCT_LIBS
 include_directories(${SGCT_INCLUDE_DIRECTORY}
     src
     extern/fwcore/src
-    extern/g3log/src
+    ${g3logger_INCLUDE_DIRS}
     extern/imgui
     extern/stb
     extern/assimp/include)
