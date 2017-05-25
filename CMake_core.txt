@@ -108,14 +108,20 @@ if (${VISCOM_LOCAL_ONLY})
     list(APPEND COMPILE_TIME_DEFS VISCOM_LOCAL_ONLY)
 endif()
 
-if(TUIO_LIB)
+if(${TUIO_LIB})
     add_subdirectory(extern/fwcore/extern/tuio)
     list(APPEND COMPILE_TIME_DEFS WITH_TUIO)
     list(APPEND CORE_LIBS libTUIO)
     list(APPEND CORE_INCLUDE_DIRS extern/fwcore/extern/tuio/TUIO extern/fwcore/extern/tuio/oscpack)
-    file(GLOB TUIO_DLLS ${PROJECT_BINARY_DIR}extern/fwcore//extern/tuio/$<CONFIGURATION>/*.dll)
-    list(APPEND CORE_DLLS_TO_COPY ${TUIO_DLLS})
 else()
     list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/TuioInputWrapper.h")
     list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/TuioInputWrapper.cpp")
 endif()
+
+macro(copy_core_lib_dlls APP_NAME)
+    if (${TUIO_LIB})
+        add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+            ${PROJECT_BINARY_DIR}/extern/fwcore/extern/tuio/$<CONFIGURATION>/libTUIO$<$<CONFIG:Debug>:d>.dll ${PROJECT_BINARY_DIR})
+    endif()
+endmacro()
+
