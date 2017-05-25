@@ -20,6 +20,9 @@ set(VISCOM_LOCAL_ONLY ON CACHE BOOL "Only do a local build without calibration i
 set(VISCOM_CONFIG_NAME "single" CACHE STRING "Name/directory of the configuration files to be used.")
 set(VISCOM_VIRTUAL_SCREEN_X 1920 CACHE INTEGER "Virtual screen size in x direction.")
 set(VISCOM_VIRTUAL_SCREEN_Y 1080 CACHE INTEGER "Virtual screen size in y direction.")
+# This could be changed to "off" if the default target doesn't need the tuio library
+set(TUIO_LIB ON CACHE BOOL "Use TUIO input library")
+set(TUIO_PORT 3333 CACHE STRING "UDP Port for TUIO to listen on")
 
 # Build-flags.
 if(UNIX)
@@ -37,9 +40,9 @@ endif()
 
 
 file(GLOB EXTERN_SOURCES_CORE
-	extern/fwcore/extern/imgui/imgui.cpp
-	extern/fwcore/extern/imgui/imgui_draw.cpp
-	extern/fwcore/extern/imgui/imgui_demo.cpp)
+    extern/fwcore/extern/imgui/imgui.cpp
+    extern/fwcore/extern/imgui/imgui_draw.cpp
+    extern/fwcore/extern/imgui/imgui_demo.cpp)
 file(GLOB_RECURSE SHADER_FILES_CORE ${PROJECT_SOURCE_DIR}/extern/fwcore/resources/shader/*.*)
 file(GLOB_RECURSE SRC_FILES_CORE
     ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.h
@@ -77,11 +80,11 @@ include_directories(${SGCT_INCLUDE_DIRECTORY}
     src
     extern/fwcore/src
     /extern/fwcore/extern/g3log/src
-	${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/g3log/include
+    ${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/g3log/include
     extern/fwcore/extern/imgui
     extern/fwcore/extern/stb
     extern/fwcore/extern/assimp/include
-	${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/assimp/include)
+    ${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/assimp/include)
 
 list(APPEND CORE_LIBS ${SGCT_LIBS} ${OPENGL_LIBRARY} ws2_32 g3logger assimp)
 
@@ -103,4 +106,16 @@ endif()
 
 if (${VISCOM_LOCAL_ONLY})
     list(APPEND COMPILE_TIME_DEFS VISCOM_LOCAL_ONLY)
+endif()
+
+if(TUIO_LIB)
+    add_subdirectory(extern/fwcore/extern/tuio)
+    list(APPEND COMPILE_TIME_DEFS WITH_TUIO)
+    list(APPEND CORE_LIBS libTUIO)
+    list(APPEND CORE_INCLUDE_DIRS extern/fwcore/extern/tuio/TUIO extern/fwcore/extern/tuio/oscpack)
+    file(GLOB TUIO_DLLS ${PROJECT_BINARY_DIR}extern/fwcore//extern/tuio/$<CONFIGURATION>/*.dll)
+    list(APPEND CORE_DLLS_TO_COPY ${TUIO_DLLS})
+else()
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/TuioInputWrapper.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/TuioInputWrapper.cpp")
 endif()
