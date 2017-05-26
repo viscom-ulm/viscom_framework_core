@@ -361,9 +361,12 @@ namespace viscom {
     std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc) const
     {
         std::vector<FrameBuffer> result;
-        auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
-        for (const auto& fboSize : viewportQuadSize_) {
+        for (std::size_t i = 0; i < viewportScreen_.size(); ++i) {
+            const auto& fboSize = viewportQuadSize_[i];
             result.emplace_back(fboSize.x, fboSize.y, fboDesc);
+            LOG(DBUG) << "Offscreen FBO VP Pos: " << 0.0f << ", " << 0.0f;
+            LOG(DBUG) << "Offscreen FBO VP Size: " << GetViewportQuadSize(i).x << ", " << GetViewportQuadSize(i).y;
+            result.back().SetStandardViewport(0, 0, GetViewportQuadSize(i).x, GetViewportQuadSize(i).y);
         }
         return result;
     }

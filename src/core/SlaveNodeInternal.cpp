@@ -28,8 +28,6 @@ namespace viscom {
 
     void SlaveNodeInternal::InitOpenGL()
     {
-        ApplicationNodeImplementation::InitOpenGL();
-
         LOG(DBUG) << "Initializing calibration data.";
         // init shaders
         calibrationProgram_ = GetApplication()->GetGPUProgramManager().GetResource("calibrationRendering", std::initializer_list<std::string>{ "calibrationRendering.vert", "calibrationRendering.frag" });
@@ -92,6 +90,8 @@ namespace viscom {
 
             CreateProjectorFBO(i, fboSize);
 
+            LOG(DBUG) << "VP Pos: " << projectorViewport_[i].position_.x << ", " << projectorViewport_[i].position_.y;
+            LOG(DBUG) << "VP Size: " << GetViewportQuadSize(i).x << ", " << GetViewportQuadSize(i).y;
             sceneFBOs_[i].SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, GetViewportQuadSize(i).x, GetViewportQuadSize(i).y);
             GetApplication()->GetFramebuffer(i).SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, projectorViewport_[i].size_.x, projectorViewport_[i].size_.y);
 
@@ -157,6 +157,8 @@ namespace viscom {
         glBindVertexArray(0);
 
         LOG(DBUG) << "Calibration Initialized.";
+
+        ApplicationNodeImplementation::InitOpenGL();
     }
 
 
