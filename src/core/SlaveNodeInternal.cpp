@@ -30,6 +30,7 @@ namespace viscom {
     {
         ApplicationNodeImplementation::InitOpenGL();
 
+        LOG(DBUG) << "Initializing calibration data.";
         // init shaders
         calibrationProgram_ = GetApplication()->GetGPUProgramManager().GetResource("calibrationRendering", std::initializer_list<std::string>{ "calibrationRendering.vert", "calibrationRendering.frag" });
         calibrationUseAlphaTestLoc_ = calibrationProgram_->getUniformLocation("withAlphaTrans");
@@ -39,9 +40,11 @@ namespace viscom {
         calibrationSceneTexLoc_ = calibrationProgram_->getUniformLocation("tex");
         calibrationResolutionLoc_ = calibrationProgram_->getUniformLocation("resolution");
 
+        LOG(DBUG) << "Loading projector data.";
         tinyxml2::XMLDocument doc;
         OpenCVParserHelper::LoadXMLDocument("Projector data", GetConfig().projectorData_, doc);
 
+        LOG(DBUG) << "Initializing viewports.";
         auto slaveId = sgct_core::ClusterManager::instance()->getThisNodeId();
         auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
         projectorViewport_.resize(numWindows);
@@ -55,6 +58,7 @@ namespace viscom {
         glGenTextures(static_cast<GLsizei>(numWindows), colorLookUpTableTextures_.data());
 
         for (auto i = 0U; i < numWindows; ++i) {
+            LOG(DBUG) << "Initializing viewport: " << i;
             projectorViewport_[i] = GetViewportScreen(i);
             auto projectorSize = GetViewportScreen(i).size_;
 
@@ -139,6 +143,7 @@ namespace viscom {
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         }
 
+        LOG(DBUG) << "Creating VBOs.";
         glGenBuffers(1, &vboProjectorQuads_);
         glBindBuffer(GL_ARRAY_BUFFER, vboProjectorQuads_);
         glBufferData(GL_ARRAY_BUFFER, quadCoordsProjector_.size() * sizeof(CalbrationProjectorQuadVertex), quadCoordsProjector_.data(), GL_STATIC_DRAW);
@@ -150,6 +155,8 @@ namespace viscom {
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(CalbrationProjectorQuadVertex), reinterpret_cast<GLvoid*>(offsetof(CalbrationProjectorQuadVertex, texCoords_)));
         glBindVertexArray(0);
+
+        LOG(DBUG) << "Calibration Initialized.";
     }
 
 
