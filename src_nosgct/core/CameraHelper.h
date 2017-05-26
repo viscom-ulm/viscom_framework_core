@@ -21,19 +21,24 @@ namespace viscom {
 
         glm::vec3 GetUserPosition() const;
         const glm::vec3& GetPosition() const { return position_; }
-        const glm::quat& GetOrientation() const { return camera_orientation_; }
+        const glm::quat& GetOrientation() const { return cameraOrientation_; }
         void SetPosition(const glm::vec3& position) { position_ = position; }
-        void SetOrientation(const glm::quat& orientation) { camera_orientation_ = orientation; }
+        void SetOrientation(const glm::quat& orientation) { cameraOrientation_ = orientation; }
 
         glm::mat4 GetViewPerspectiveMatrix() const;
         glm::mat4 GetCentralPerspectiveMatrix() const;
 
     private:
-        /// Standard projection matrix.
-        glm::mat4 projection_;
-        /// Position of the camera.
+        /** Position of the camera. */
         glm::vec3 position_;
-        /// Orientation of the camera.
-        glm::quat camera_orientation_;
+        /** Orientation of the camera. */ 
+        glm::quat cameraOrientation_;
+
+        /** The user position. */
+        glm::vec3 userPosition_;
+        /** The user view matrix. */
+        glm::mat4 userView_;
+        /** Standard projection matrix. */
+        glm::mat4 projection_;
     };
 }

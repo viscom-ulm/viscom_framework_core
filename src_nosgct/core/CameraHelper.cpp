@@ -12,21 +12,29 @@
 
 namespace viscom {
     CameraHelper::CameraHelper(float width, float height) :
-        projection_{ glm::perspectiveFov(60.0f, width, height, 1.0f, 100.0f) } // TODO: find better values. [5/24/2017 Sebastian Maisch]
+        userPosition_{ 0.0f, 0.0f, 4.0f },
+        userView_{ glm::lookAt(userPosition_, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)) },
+        projection_{ glm::perspectiveFov(0.47345288188535046834209247867895f, 1.7156f, 0.965f, 0.1f, 100.0f) }
     {
     }
 
     glm::vec3 CameraHelper::GetUserPosition() const
     {
-        return glm::vec3(0.0f);
+        return userPosition_;
     }
 
     glm::mat4 CameraHelper::GetViewPerspectiveMatrix() const
     {
-        auto result = glm::mat4_cast(glm::inverse(camera_orientation_));
+        //4. transform user back to original position
+        glm::mat4 result = glm::translate(glm::mat4(1.0f), userPosition_);
+        //3. apply view rotation
+        result *= glm::mat4_cast(glm::inverse(cameraOrientation_));
+        //2. apply navigation translation
         result = glm::translate(result, -position_);
+        //1. transform user to coordinate system origin
+        result *= glm::translate(glm::mat4(1.0f), -userPosition_);
 
-        return projection_ * result;
+        return projection_ * userView_ * result;
     }
 
     glm::mat4 CameraHelper::GetCentralPerspectiveMatrix() const

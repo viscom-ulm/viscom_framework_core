@@ -8,16 +8,16 @@
 
 #pragma once
 
-#include "main.h"
+#include "core/main.h"
 #include "sgct.h"
 #ifdef VISCOM_SYNCINPUT
-#include "InputWrapper.h"
+#include "core/InputWrapper.h"
 #endif
 #include <mutex>
-#include "resources/GPUProgramManager.h"
-#include "resources/TextureManager.h"
-#include "resources/MeshManager.h"
-#include "gfx/FrameBuffer.h"
+#include "core/resources/GPUProgramManager.h"
+#include "core/resources/TextureManager.h"
+#include "core/resources/MeshManager.h"
+#include "core/gfx/FrameBuffer.h"
 #include "core/CameraHelper.h"
 #include "core/gfx/FullscreenQuad.h"
 

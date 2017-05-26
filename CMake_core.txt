@@ -36,7 +36,6 @@ elseif(MSVC)
 endif()
 
 file(GLOB EXTERN_SOURCES_CORE
-    extern/fwcore/src_nosgct/glew/src/glew.c
     extern/fwcore/extern/imgui/imgui.cpp
     extern/fwcore/extern/imgui/imgui_draw.cpp
     extern/fwcore/extern/imgui/imgui_demo.cpp)
