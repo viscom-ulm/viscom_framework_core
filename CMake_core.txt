@@ -1,3 +1,6 @@
+set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
+set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows.")
+
 set(G3_SHARED_LIB OFF CACHE BOOL "Build shared library." FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Force compiler to create static libs." FORCE)
 set(ADD_FATAL_EXAMPLE OFF CACHE BOOL "Fatal (fatal-crashes/contract) examples " FORCE)
@@ -20,19 +23,24 @@ set(VISCOM_USE_SGCT ON CACHE BOOL "Use SGCT for local builds.")
 set(VISCOM_CONFIG_NAME "single" CACHE STRING "Name/directory of the configuration files to be used.")
 set(VISCOM_VIRTUAL_SCREEN_X 1920 CACHE INTEGER "Virtual screen size in x direction.")
 set(VISCOM_VIRTUAL_SCREEN_Y 1080 CACHE INTEGER "Virtual screen size in y direction.")
+set(VISCOM_NEAR_PLANE_SIZE_X "1.7778" CACHE STRING "Size of the near plane in x direction.")
+set(VISCOM_NEAR_PLANE_SIZE_Y "1.0" CACHE STRING "Size of the near plane in y direction.")
+# This could be changed to "off" if the default target doesn't need the tuio library
+set(TUIO_LIB ON CACHE BOOL "Use TUIO input library")
+set(TUIO_PORT 3333 CACHE STRING "UDP Port for TUIO to listen on")
 
 # Build-flags.
 if(UNIX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -Wno-unused-function -Wno-unused-parameter -Wextra -Wpedantic -std=c++14")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++14")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -Wno-unused-function -Wno-unused-parameter -Wextra -Wpedantic -std=c++1z")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++1z")
 
   # add compiler-options for AppleClang to ignore linker warnings from assimp on macOS
   if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
     add_compile_options(-fvisibility=hidden -fvisibility-inlines-hidden)
   endif()
 elseif(MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3 /EHsc /MP")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3 /EHsc /MP /std:c++latest")
 endif()
 
 file(GLOB EXTERN_SOURCES_CORE
@@ -133,3 +141,18 @@ endif()
 if (${VISCOM_LOCAL_ONLY})
     list(APPEND COMPILE_TIME_DEFS VISCOM_LOCAL_ONLY)
 endif()
+
+if(${TUIO_LIB})
+    add_subdirectory(extern/fwcore/extern/tuio)
+    list(APPEND COMPILE_TIME_DEFS WITH_TUIO)
+    list(APPEND CORE_LIBS libTUIO)
+    list(APPEND CORE_INCLUDE_DIRS extern/fwcore/extern/tuio/TUIO extern/fwcore/extern/tuio/oscpack)
+endif()
+
+macro(copy_core_lib_dlls APP_NAME)
+    if (${TUIO_LIB})
+        add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different 
+            ${PROJECT_BINARY_DIR}/extern/fwcore/extern/tuio/$<CONFIGURATION>/libTUIO$<$<CONFIG:Debug>:d>.dll ${PROJECT_BINARY_DIR})
+    endif()
+endmacro()
+

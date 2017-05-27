@@ -29,6 +29,7 @@ namespace viscom {
     std::mutex ApplicationNodeInternal::instanceMutex_{ };
 
     ApplicationNodeInternal::ApplicationNodeInternal(FWConfiguration&& config, std::unique_ptr<sgct::Engine> engine) :
+        tuio::TuioInputWrapper{ config.tuioPort_ },
         config_( std::move(config) ),
         engine_{ std::move(engine) },
         camHelper_{ engine_.get() },
@@ -117,10 +118,19 @@ namespace viscom {
             window->getFinalFBODimensions(projectorSize.x, projectorSize.y);
             framebuffers_.emplace_back();
             framebuffers_.back().Resize(projectorSize.x, projectorSize.y);
-            viewportScreen_[wId].position_ = glm::ivec2(0);
-            viewportScreen_[wId].size_ = projectorSize;
+
+            glm::vec2 vpLocalLowerLeft = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::LowerLeft));
+            glm::vec2 vpLocalUpperLeft = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::UpperLeft));
+            glm::vec2 vpLocalUpperRight = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::UpperRight));
+            glm::vec2 vpLocalSize = vpLocalUpperRight - vpLocalLowerLeft;
+            glm::vec2 vpTotalSize = 2.0f * GetConfig().nearPlaneSize_;
+
+            glm::vec2 totalScreenSize = (vpTotalSize / vpLocalSize) * glm::vec2(projectorSize);
+
+            viewportScreen_[wId].position_ = ((vpLocalLowerLeft + GetConfig().nearPlaneSize_) / vpTotalSize) * totalScreenSize;
+            viewportScreen_[wId].size_ = glm::ivec2(totalScreenSize);
             viewportQuadSize_[wId] = projectorSize;
-            viewportScaling_[wId] = glm::vec2(projectorSize) / config_.virtualScreenSize_;
+            viewportScaling_[wId] = totalScreenSize / config_.virtualScreenSize_;
         }
 
 #ifdef VISCOM_CLIENTGUI
@@ -273,6 +283,12 @@ namespace viscom {
 #ifdef VISCOM_SYNCINPUT
             keyboardEvents_.emplace_back(key, scancode, action, mods);
 #endif
+
+#ifndef VISCOM_CLIENTGUI
+            ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
+            if (ImGui::GetIO().WantCaptureKeyboard) return;
+#endif
+
             appNodeImpl_->KeyboardCallback(key, scancode, action, mods);
         }
     }
@@ -283,6 +299,12 @@ namespace viscom {
 #ifdef VISCOM_SYNCINPUT
             charEvents_.emplace_back(character, mods);
 #endif
+
+#ifndef VISCOM_CLIENTGUI
+            ImGui_ImplGlfwGL3_CharCallback(character);
+            if (ImGui::GetIO().WantCaptureKeyboard) return;
+#endif
+
             appNodeImpl_->CharCallback(character, mods);
         }
     }
@@ -293,19 +315,30 @@ namespace viscom {
 #ifdef VISCOM_SYNCINPUT
             mouseButtonEvents_.emplace_back(button, action);
 #endif
+
+#ifndef VISCOM_CLIENTGUI
+            ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
+            if (ImGui::GetIO().WantCaptureMouse) return;
+#endif
+
             appNodeImpl_->MouseButtonCallback(button, action);
         }
     }
 
     void ApplicationNodeInternal::BaseMousePosCallback(double x, double y)
     {
-        x /= static_cast<double>(viewportScreen_[0].size_.x);
-        y /= static_cast<double>(viewportScreen_[0].size_.y);
         if (engine_->isMaster()) {
+            auto mousePos = ConvertInputCoordinates(x, y);
 #ifdef VISCOM_SYNCINPUT
-            mousePosEvents_.emplace_back(x, y);
+            mousePosEvents_.emplace_back(mousePos.x, mousePos.y);
 #endif
-            appNodeImpl_->MousePosCallback(x, y);
+
+#ifndef VISCOM_CLIENTGUI
+            ImGui_ImplGlfwGL3_MousePositionCallback(mousePos.x, mousePos.y);
+            if (ImGui::GetIO().WantCaptureMouse) return;
+#endif
+
+            appNodeImpl_->MousePosCallback(mousePos.x, mousePos.y);
         }
     }
 
@@ -315,10 +348,57 @@ namespace viscom {
 #ifdef VISCOM_SYNCINPUT
             mouseScrollEvents_.emplace_back(xoffset, yoffset);
 #endif
+
+#ifndef VISCOM_CLIENTGUI
+            ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
+            if (ImGui::GetIO().WantCaptureMouse) return;
+#endif
+
             appNodeImpl_->MouseScrollCallback(xoffset, yoffset);
         }
     }
     // ReSharper restore CppMemberFunctionMayBeConst
+
+    void ApplicationNodeInternal::addTuioCursor(TUIO::TuioCursor* tcur)
+    {
+        if (engine_->isMaster()) {
+#ifdef WITH_TUIO
+            tcur->update(tcur->getX(), tcur->getY());
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->AddTuioCursor(tcur);
+#endif
+        }
+    }
+
+    void ApplicationNodeInternal::updateTuioCursor(TUIO::TuioCursor* tcur)
+    {
+        if (engine_->isMaster()) {
+#ifdef WITH_TUIO
+            tcur->update(tcur->getX(), tcur->getY());
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->UpdateTuioCursor(tcur);
+#endif
+        }
+    }
+
+    void ApplicationNodeInternal::removeTuioCursor(TUIO::TuioCursor* tcur)
+    {
+        if (engine_->isMaster()) {
+#ifdef WITH_TUIO
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->RemoveTuioCursor(tcur);
+#endif
+        }
+    }
+
+    glm::dvec2 ApplicationNodeInternal::ConvertInputCoordinates(double x, double y)
+    {
+        glm::dvec2 result{ x, static_cast<double>(viewportScreen_[0].size_.y) - y };
+        result += viewportScreen_[0].position_;
+        result /= viewportScreen_[0].size_;
+        result.y = 1.0 - result.y;
+        return result;
+    }
 
     void ApplicationNodeInternal::BaseEncodeData()
     {
@@ -361,9 +441,12 @@ namespace viscom {
     std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc) const
     {
         std::vector<FrameBuffer> result;
-        auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
-        for (const auto& fboSize : viewportQuadSize_) {
+        for (std::size_t i = 0; i < viewportScreen_.size(); ++i) {
+            const auto& fboSize = viewportQuadSize_[i];
             result.emplace_back(fboSize.x, fboSize.y, fboDesc);
+            LOG(DBUG) << "Offscreen FBO VP Pos: " << 0.0f << ", " << 0.0f;
+            LOG(DBUG) << "Offscreen FBO VP Size: " << GetViewportQuadSize(i).x << ", " << GetViewportQuadSize(i).y;
+            result.back().SetStandardViewport(0, 0, GetViewportQuadSize(i).x, GetViewportQuadSize(i).y);
         }
         return result;
     }

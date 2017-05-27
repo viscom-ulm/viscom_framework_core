@@ -20,12 +20,13 @@
 #include "core/gfx/FrameBuffer.h"
 #include "core/CameraHelper.h"
 #include "core/gfx/FullscreenQuad.h"
+#include "core/TuioInputWrapper.h"
 
 namespace viscom {
 
     class ApplicationNodeBase;
 
-    class ApplicationNodeInternal
+    class ApplicationNodeInternal : public viscom::tuio::TuioInputWrapper
     {
     public:
         ApplicationNodeInternal(FWConfiguration&& config, std::unique_ptr<sgct::Engine> engine);
@@ -53,6 +54,10 @@ namespace viscom {
         void BaseMouseButtonCallback(int button, int action);
         void BaseMousePosCallback(double x, double y);
         void BaseMouseScrollCallback(double xoffset, double yoffset);
+
+        virtual void addTuioCursor(TUIO::TuioCursor *tcur) override;
+        virtual void updateTuioCursor(TUIO::TuioCursor *tcur) override;
+        virtual void removeTuioCursor(TUIO::TuioCursor *tcur) override;
 
         static void BaseEncodeDataStatic();
         static void BaseDecodeDataStatic();
@@ -83,6 +88,8 @@ namespace viscom {
         MeshManager& GetMeshManager() { return meshManager_; }
 
     private:
+        glm::dvec2 ConvertInputCoordinates(double x, double y);
+
         /** Holds a static pointer to an object to this class making it singleton in a way. */
         // TODO: This is only a workaround and should be fixed in the future. [12/5/2016 Sebastian Maisch]
         static ApplicationNodeInternal* instance_;
