@@ -362,26 +362,32 @@ namespace viscom {
     void ApplicationNodeInternal::addTuioCursor(TUIO::TuioCursor* tcur)
     {
         if (engine_->isMaster()) {
+#ifdef WITH_TUIO
             tcur->update(tcur->getX(), tcur->getY());
             // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
             appNodeImpl_->AddTuioCursor(tcur);
+#endif
         }
     }
 
     void ApplicationNodeInternal::updateTuioCursor(TUIO::TuioCursor* tcur)
     {
         if (engine_->isMaster()) {
+#ifdef WITH_TUIO
             tcur->update(tcur->getX(), tcur->getY());
             // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
             appNodeImpl_->UpdateTuioCursor(tcur);
+#endif
         }
     }
 
     void ApplicationNodeInternal::removeTuioCursor(TUIO::TuioCursor* tcur)
     {
         if (engine_->isMaster()) {
+#ifdef WITH_TUIO
             // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
             appNodeImpl_->RemoveTuioCursor(tcur);
+#endif
         }
     }
 
