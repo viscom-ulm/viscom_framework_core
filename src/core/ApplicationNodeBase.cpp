@@ -110,7 +110,23 @@ namespace viscom {
 #endif
         return false;
     }
+
     // ReSharper restore CppParameterNeverUsed
+
+    bool ApplicationNodeBase::AddTuioCursor(TUIO::TuioCursor* tcur)
+    {
+        return false;
+    }
+
+    bool ApplicationNodeBase::UpdateTuioCursor(TUIO::TuioCursor* tcur)
+    {
+        return false;
+    }
+
+    bool ApplicationNodeBase::RemoveTuioCursor(TUIO::TuioCursor* tcur)
+    {
+        return false;
+    }
 
     void ApplicationNodeBase::EncodeData()
     {

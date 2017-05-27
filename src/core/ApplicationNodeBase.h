@@ -62,6 +62,10 @@ namespace viscom {
         virtual bool MousePosCallback(double x, double y);
         virtual bool MouseScrollCallback(double xoffset, double yoffset);
 
+        virtual bool AddTuioCursor(TUIO::TuioCursor *tcur);
+        virtual bool UpdateTuioCursor(TUIO::TuioCursor *tcur);
+        virtual bool RemoveTuioCursor(TUIO::TuioCursor *tcur);
+
         virtual void EncodeData();
         virtual void DecodeData();
 
