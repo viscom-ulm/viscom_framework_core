@@ -15,6 +15,7 @@
 #include "core/gfx/FrameBuffer.h"
 #include "core/CameraHelper.h"
 #include "core/gfx/FullscreenQuad.h"
+#include "core/TuioInputWrapper.h"
 
 struct GLFWwindow;
 
@@ -22,7 +23,7 @@ namespace viscom {
 
     class ApplicationNodeBase;
 
-    class ApplicationNodeInternal
+    class ApplicationNodeInternal : public viscom::tuio::TuioInputWrapper
     {
     public:
         ApplicationNodeInternal(FWConfiguration&& config);
@@ -30,7 +31,7 @@ namespace viscom {
         ApplicationNodeInternal(ApplicationNodeInternal&&) = delete;
         ApplicationNodeInternal& operator=(const ApplicationNodeInternal&) = delete;
         ApplicationNodeInternal& operator=(ApplicationNodeInternal&&) = delete;
-        virtual ~ApplicationNodeInternal();
+        virtual ~ApplicationNodeInternal() override;
 
         void Render();
 
@@ -51,6 +52,10 @@ namespace viscom {
         void BaseMouseButtonCallback(int button, int action);
         void BaseMousePosCallback(double x, double y);
         void BaseMouseScrollCallback(double xoffset, double yoffset);
+
+        virtual void addTuioCursor(TUIO::TuioCursor *tcur) override;
+        virtual void updateTuioCursor(TUIO::TuioCursor *tcur) override;
+        virtual void removeTuioCursor(TUIO::TuioCursor *tcur) override;
 
         const FWConfiguration& GetConfig() const { return config_; }
         FrameBuffer& GetFramebuffer(size_t windowId) { return backBuffer_; }
@@ -75,6 +80,8 @@ namespace viscom {
         MeshManager& GetMeshManager() { return meshManager_; }
 
     private:
+        glm::dvec2 ConvertInputCoordinates(double x, double y);
+
         /** Holds the applications configuration. */
         FWConfiguration config_;
         /** Holds the GLFW window. */

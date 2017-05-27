@@ -50,11 +50,6 @@ namespace viscom {
 
     void ApplicationNodeBase::Draw2D(FrameBuffer& fbo)
     {
-        fbo.DrawToFBO([]() {
-#ifdef VISCOM_CLIENTGUI
-            ImGui::ShowTestWindow();
-#endif
-        });
     }
 
     void ApplicationNodeBase::PostDraw()

@@ -363,7 +363,6 @@ namespace viscom {
     {
         if (engine_->isMaster()) {
 #ifdef WITH_TUIO
-            tcur->update(tcur->getX(), tcur->getY());
             // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
             appNodeImpl_->AddTuioCursor(tcur);
 #endif
@@ -374,7 +373,6 @@ namespace viscom {
     {
         if (engine_->isMaster()) {
 #ifdef WITH_TUIO
-            tcur->update(tcur->getX(), tcur->getY());
             // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
             appNodeImpl_->UpdateTuioCursor(tcur);
 #endif

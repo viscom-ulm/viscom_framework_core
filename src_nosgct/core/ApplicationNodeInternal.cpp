@@ -23,6 +23,7 @@
 namespace viscom {
 
     ApplicationNodeInternal::ApplicationNodeInternal(FWConfiguration&& config) :
+        tuio::TuioInputWrapper{ config.tuioPort_ },
         config_{ std::move(config) },
         window_{ nullptr },
         camHelper_{ config_.virtualScreenSize_.x, config.virtualScreenSize_.y },
@@ -206,29 +207,78 @@ namespace viscom {
             return;
         }
 
+        ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
+        if (ImGui::GetIO().WantCaptureKeyboard) return;
+
         appNodeImpl_->KeyboardCallback(key, scancode, action, mods);
     }
 
     void ApplicationNodeInternal::BaseCharCallback(unsigned int character, int mods)
     {
+        ImGui_ImplGlfwGL3_CharCallback(character);
+        if (ImGui::GetIO().WantCaptureKeyboard) return;
+
         appNodeImpl_->CharCallback(character, mods);
     }
 
     void ApplicationNodeInternal::BaseMouseButtonCallback(int button, int action)
     {
+        ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
+        if (ImGui::GetIO().WantCaptureMouse) return;
+
         appNodeImpl_->MouseButtonCallback(button, action);
     }
 
     void ApplicationNodeInternal::BaseMousePosCallback(double x, double y)
     {
-        x /= static_cast<double>(viewportScreen_[0].size_.x);
-        y /= static_cast<double>(viewportScreen_[0].size_.y);
-        appNodeImpl_->MousePosCallback(x, y);
+        auto mousePos = ConvertInputCoordinates(x, y);
+
+        ImGui_ImplGlfwGL3_MousePositionCallback(mousePos.x, mousePos.y);
+        if (ImGui::GetIO().WantCaptureMouse) return;
+
+
+        appNodeImpl_->MousePosCallback(mousePos.x, mousePos.y);
     }
 
     void ApplicationNodeInternal::BaseMouseScrollCallback(double xoffset, double yoffset)
     {
+        ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
+        if (ImGui::GetIO().WantCaptureMouse) return;
+
         appNodeImpl_->MouseScrollCallback(xoffset, yoffset);
+    }
+
+    void ApplicationNodeInternal::addTuioCursor(TUIO::TuioCursor* tcur)
+    {
+#ifdef WITH_TUIO
+        // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+        appNodeImpl_->AddTuioCursor(tcur);
+#endif
+    }
+
+    void ApplicationNodeInternal::updateTuioCursor(TUIO::TuioCursor* tcur)
+    {
+#ifdef WITH_TUIO
+        // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+        appNodeImpl_->UpdateTuioCursor(tcur);
+#endif
+    }
+
+    void ApplicationNodeInternal::removeTuioCursor(TUIO::TuioCursor* tcur)
+    {
+#ifdef WITH_TUIO
+        // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+        appNodeImpl_->RemoveTuioCursor(tcur);
+#endif
+    }
+
+    glm::dvec2 ApplicationNodeInternal::ConvertInputCoordinates(double x, double y)
+    {
+        glm::dvec2 result{ x, static_cast<double>(viewportScreen_[0].size_.y) - y };
+        result += viewportScreen_[0].position_;
+        result /= viewportScreen_[0].size_;
+        result.y = 1.0 - result.y;
+        return result;
     }
 
     std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc) const

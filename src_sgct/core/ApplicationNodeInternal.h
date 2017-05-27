@@ -34,7 +34,7 @@ namespace viscom {
         ApplicationNodeInternal(ApplicationNodeInternal&&) = delete;
         ApplicationNodeInternal& operator=(const ApplicationNodeInternal&) = delete;
         ApplicationNodeInternal& operator=(ApplicationNodeInternal&&) = delete;
-        virtual ~ApplicationNodeInternal();
+        virtual ~ApplicationNodeInternal() override;
 
         void InitNode();
         void Render() const;

@@ -8,5 +8,10 @@
 
 #pragma once
 
+// Make sure this header is included before GLFW. [5/27/2017 Sebastian Maisch]
+#ifdef WITH_TUIO
+#include <TuioListener.h>
+#endif
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
