@@ -10,3 +10,6 @@
 [submodule "extern/imgui"]
 	path = extern/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "extern/tuio"]
+	path = extern/tuio
+	url = https://github.com/Ninjoon/TUIO11_CPP.git

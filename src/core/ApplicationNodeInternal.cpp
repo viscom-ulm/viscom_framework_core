@@ -29,6 +29,7 @@ namespace viscom {
     std::mutex ApplicationNodeInternal::instanceMutex_{ };
 
     ApplicationNodeInternal::ApplicationNodeInternal(FWConfiguration&& config, std::unique_ptr<sgct::Engine> engine) :
+        tuio::TuioInputWrapper{ config.tuioPort_ },
         config_( std::move(config) ),
         engine_{ std::move(engine) },
         camHelper_{ engine_.get() },
@@ -282,6 +283,12 @@ namespace viscom {
 #ifdef VISCOM_SYNCINPUT
             keyboardEvents_.emplace_back(key, scancode, action, mods);
 #endif
+
+#ifndef VISCOM_CLIENTGUI
+            ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
+            if (ImGui::GetIO().WantCaptureKeyboard) return;
+#endif
+
             appNodeImpl_->KeyboardCallback(key, scancode, action, mods);
         }
     }
@@ -292,6 +299,12 @@ namespace viscom {
 #ifdef VISCOM_SYNCINPUT
             charEvents_.emplace_back(character, mods);
 #endif
+
+#ifndef VISCOM_CLIENTGUI
+            ImGui_ImplGlfwGL3_CharCallback(character);
+            if (ImGui::GetIO().WantCaptureKeyboard) return;
+#endif
+
             appNodeImpl_->CharCallback(character, mods);
         }
     }
@@ -302,6 +315,12 @@ namespace viscom {
 #ifdef VISCOM_SYNCINPUT
             mouseButtonEvents_.emplace_back(button, action);
 #endif
+
+#ifndef VISCOM_CLIENTGUI
+            ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
+            if (ImGui::GetIO().WantCaptureMouse) return;
+#endif
+
             appNodeImpl_->MouseButtonCallback(button, action);
         }
     }
@@ -309,13 +328,16 @@ namespace viscom {
     void ApplicationNodeInternal::BaseMousePosCallback(double x, double y)
     {
         if (engine_->isMaster()) {
-            glm::dvec2 mousePos{ x, static_cast<double>(viewportScreen_[0].size_.y) - y };
-            mousePos += viewportScreen_[0].position_;
-            mousePos /= viewportScreen_[0].size_;
-            mousePos.y = 1.0 - mousePos.y;
+            auto mousePos = ConvertInputCoordinates(x, y);
 #ifdef VISCOM_SYNCINPUT
             mousePosEvents_.emplace_back(mousePos.x, mousePos.y);
 #endif
+
+#ifndef VISCOM_CLIENTGUI
+            ImGui_ImplGlfwGL3_MousePositionCallback(mousePos.x, mousePos.y);
+            if (ImGui::GetIO().WantCaptureMouse) return;
+#endif
+
             appNodeImpl_->MousePosCallback(mousePos.x, mousePos.y);
         }
     }
@@ -326,10 +348,57 @@ namespace viscom {
 #ifdef VISCOM_SYNCINPUT
             mouseScrollEvents_.emplace_back(xoffset, yoffset);
 #endif
+
+#ifndef VISCOM_CLIENTGUI
+            ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
+            if (ImGui::GetIO().WantCaptureMouse) return;
+#endif
+
             appNodeImpl_->MouseScrollCallback(xoffset, yoffset);
         }
     }
     // ReSharper restore CppMemberFunctionMayBeConst
+
+    void ApplicationNodeInternal::addTuioCursor(TUIO::TuioCursor* tcur)
+    {
+        if (engine_->isMaster()) {
+#ifdef WITH_TUIO
+            tcur->update(tcur->getX(), tcur->getY());
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->AddTuioCursor(tcur);
+#endif
+        }
+    }
+
+    void ApplicationNodeInternal::updateTuioCursor(TUIO::TuioCursor* tcur)
+    {
+        if (engine_->isMaster()) {
+#ifdef WITH_TUIO
+            tcur->update(tcur->getX(), tcur->getY());
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->UpdateTuioCursor(tcur);
+#endif
+        }
+    }
+
+    void ApplicationNodeInternal::removeTuioCursor(TUIO::TuioCursor* tcur)
+    {
+        if (engine_->isMaster()) {
+#ifdef WITH_TUIO
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->RemoveTuioCursor(tcur);
+#endif
+        }
+    }
+
+    glm::dvec2 ApplicationNodeInternal::ConvertInputCoordinates(double x, double y)
+    {
+        glm::dvec2 result{ x, static_cast<double>(viewportScreen_[0].size_.y) - y };
+        result += viewportScreen_[0].position_;
+        result /= viewportScreen_[0].size_;
+        result.y = 1.0 - result.y;
+        return result;
+    }
 
     void ApplicationNodeInternal::BaseEncodeData()
     {
