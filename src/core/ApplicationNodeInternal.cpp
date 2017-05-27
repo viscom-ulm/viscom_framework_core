@@ -117,10 +117,19 @@ namespace viscom {
             window->getFinalFBODimensions(projectorSize.x, projectorSize.y);
             framebuffers_.emplace_back();
             framebuffers_.back().Resize(projectorSize.x, projectorSize.y);
-            viewportScreen_[wId].position_ = glm::ivec2(0);
-            viewportScreen_[wId].size_ = projectorSize;
+
+            glm::vec2 vpLocalLowerLeft = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::LowerLeft));
+            glm::vec2 vpLocalUpperLeft = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::UpperLeft));
+            glm::vec2 vpLocalUpperRight = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::UpperRight));
+            glm::vec2 vpLocalSize = vpLocalUpperRight - vpLocalLowerLeft;
+            glm::vec2 vpTotalSize = 2.0f * GetConfig().nearPlaneSize_;
+
+            glm::vec2 totalScreenSize = (vpTotalSize / vpLocalSize) * glm::vec2(projectorSize);
+
+            viewportScreen_[wId].position_ = ((vpLocalLowerLeft + GetConfig().nearPlaneSize_) / vpTotalSize) * totalScreenSize;
+            viewportScreen_[wId].size_ = glm::ivec2(totalScreenSize);
             viewportQuadSize_[wId] = projectorSize;
-            viewportScaling_[wId] = glm::vec2(projectorSize) / config_.virtualScreenSize_;
+            viewportScaling_[wId] = totalScreenSize / config_.virtualScreenSize_;
         }
 
 #ifdef VISCOM_CLIENTGUI
@@ -299,13 +308,15 @@ namespace viscom {
 
     void ApplicationNodeInternal::BaseMousePosCallback(double x, double y)
     {
-        x /= static_cast<double>(viewportScreen_[0].size_.x);
-        y /= static_cast<double>(viewportScreen_[0].size_.y);
         if (engine_->isMaster()) {
+            glm::dvec2 mousePos{ x, static_cast<double>(viewportScreen_[0].size_.y) - y };
+            mousePos += viewportScreen_[0].position_;
+            mousePos /= viewportScreen_[0].size_;
+            mousePos.y = 1.0 - mousePos.y;
 #ifdef VISCOM_SYNCINPUT
-            mousePosEvents_.emplace_back(x, y);
+            mousePosEvents_.emplace_back(mousePos.x, mousePos.y);
 #endif
-            appNodeImpl_->MousePosCallback(x, y);
+            appNodeImpl_->MousePosCallback(mousePos.x, mousePos.y);
         }
     }
 
