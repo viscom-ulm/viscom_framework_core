@@ -9,39 +9,42 @@
 #pragma once
 #ifdef WITH_TUIO
 
-#include "TuioListener.h"
-#include "TuioClient.h"
-#include "UdpReceiver.h"
+#include <memory>
+#include <TuioListener.h>
 
-using namespace TUIO;
+namespace TUIO {
+    class TuioClient;
+    class OscReceiver;
+}
 
 namespace viscom {
     class MasterNode;
 }
 
-class TuioInputWrapper : public TuioListener {
+class TuioInputWrapper : public TUIO::TuioListener {
 
 public:
-	TuioInputWrapper(int port, viscom::MasterNode* node);
+    TuioInputWrapper(int port, viscom::MasterNode* node);
+    ~TuioInputWrapper();
 
-	void addTuioObject(TuioObject *tobj);
-	void updateTuioObject(TuioObject *tobj);
-	void removeTuioObject(TuioObject *tobj);
+    virtual void addTuioObject(TUIO::TuioObject *tobj) override;
+    virtual void updateTuioObject(TUIO::TuioObject *tobj) override;
+    virtual void removeTuioObject(TUIO::TuioObject *tobj) override;
 
-	void addTuioCursor(TuioCursor *tcur);
-	void updateTuioCursor(TuioCursor *tcur);
-	void removeTuioCursor(TuioCursor *tcur);
+    virtual void addTuioCursor(TUIO::TuioCursor *tcur) override;
+    virtual void updateTuioCursor(TUIO::TuioCursor *tcur) override;
+    virtual void removeTuioCursor(TUIO::TuioCursor *tcur) override;
 
-	void addTuioBlob(TuioBlob *tblb);
-	void updateTuioBlob(TuioBlob *tblb);
-	void removeTuioBlob(TuioBlob *tblb);
+    virtual void addTuioBlob(TUIO::TuioBlob *tblb) override;
+    virtual void updateTuioBlob(TUIO::TuioBlob *tblb) override;
+    virtual void removeTuioBlob(TUIO::TuioBlob *tblb) override;
 
-	void refresh(TuioTime frameTime);
+    virtual void refresh(TUIO::TuioTime frameTime) override;
 
 private:
     viscom::MasterNode* node_;
-	TuioClient* tuioClient_;
-	OscReceiver* receiver_;
+    std::unique_ptr<TUIO::TuioClient> tuioClient_;
+    std::unique_ptr<TUIO::OscReceiver> receiver_;
 };
 
 

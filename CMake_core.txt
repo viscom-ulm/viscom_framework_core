@@ -81,7 +81,7 @@ set(SGCT_LIBS
     optimized ${SGCT_RELEASE_LIBRARY}
 )
 
-include_directories(${SGCT_INCLUDE_DIRECTORY}
+list(APPEND CORE_INCLUDE_DIRS ${SGCT_INCLUDE_DIRECTORY}
     src
     extern/fwcore/src
     /extern/fwcore/extern/g3log/src
