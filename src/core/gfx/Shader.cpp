@@ -204,6 +204,7 @@ namespace viscom {
     {
         std::ifstream file(filename.c_str(), std::ifstream::in);
         if (!file) {
+            LOG(WARNING) << "Could not load shader file!";
             std::cerr << "Could not load shader file!";
             throw std::runtime_error("Could not load shader file!");
         }
@@ -217,6 +218,7 @@ namespace viscom {
         auto shaderText = content.str();
         auto shader = glCreateShader(type);
         if (shader == 0) {
+            LOG(WARNING) << "Could not create shader!";
             std::cerr << "Could not create shader!";
             throw std::runtime_error("Could not create shader!");
         }
@@ -234,6 +236,8 @@ namespace viscom {
             auto strInfoLog = new GLchar[infoLogLength + 1];
             glGetShaderInfoLog(shader, infoLogLength, nullptr, strInfoLog);
 
+            LOG(WARNING) << "Compile failure in " << strType << " shader (" << filename.c_str() << "): "
+                << std::endl << strInfoLog;
             std::cerr << "Compile failure in " << strType << " shader (" << filename.c_str() << "): "
                 << std::endl << strInfoLog;
             std::string infoLog = strInfoLog;

@@ -28,8 +28,7 @@ namespace viscom {
 
     void SlaveNodeInternal::InitOpenGL()
     {
-        ApplicationNodeImplementation::InitOpenGL();
-
+        LOG(DBUG) << "Initializing calibration data.";
         // init shaders
         calibrationProgram_ = GetApplication()->GetGPUProgramManager().GetResource("calibrationRendering", std::initializer_list<std::string>{ "calibrationRendering.vert", "calibrationRendering.frag" });
         calibrationUseAlphaTestLoc_ = calibrationProgram_->getUniformLocation("withAlphaTrans");
@@ -39,9 +38,11 @@ namespace viscom {
         calibrationSceneTexLoc_ = calibrationProgram_->getUniformLocation("tex");
         calibrationResolutionLoc_ = calibrationProgram_->getUniformLocation("resolution");
 
+        LOG(DBUG) << "Loading projector data.";
         tinyxml2::XMLDocument doc;
         OpenCVParserHelper::LoadXMLDocument("Projector data", GetConfig().projectorData_, doc);
 
+        LOG(DBUG) << "Initializing viewports.";
         auto slaveId = sgct_core::ClusterManager::instance()->getThisNodeId();
         auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
         projectorViewport_.resize(numWindows);
@@ -55,6 +56,7 @@ namespace viscom {
         glGenTextures(static_cast<GLsizei>(numWindows), colorLookUpTableTextures_.data());
 
         for (auto i = 0U; i < numWindows; ++i) {
+            LOG(DBUG) << "Initializing viewport: " << i;
             projectorViewport_[i] = GetViewportScreen(i);
             auto projectorSize = GetViewportScreen(i).size_;
 
@@ -79,7 +81,7 @@ namespace viscom {
 
 
             auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling));
-            glm::vec3 vpSize(1.7777777777777f, 1.0f, 1.0f);
+            glm::vec3 vpSize(GetConfig().nearPlaneSize_.x, GetConfig().nearPlaneSize_.y, 1.0f);
             auto totalScreenSize = (glm::vec2(fboSize) * 2.0f * vpSize.xy) / (viewport[2] - viewport[0]).xy;
             GetViewportScreen(i).position_ = glm::ivec2(glm::floor(((viewport[0] + vpSize) / (2.0f * vpSize)).xy * totalScreenSize));
             GetViewportScreen(i).size_ = glm::uvec2(glm::floor(totalScreenSize));
@@ -88,6 +90,8 @@ namespace viscom {
 
             CreateProjectorFBO(i, fboSize);
 
+            LOG(DBUG) << "VP Pos: " << projectorViewport_[i].position_.x << ", " << projectorViewport_[i].position_.y;
+            LOG(DBUG) << "VP Size: " << GetViewportQuadSize(i).x << ", " << GetViewportQuadSize(i).y;
             sceneFBOs_[i].SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, GetViewportQuadSize(i).x, GetViewportQuadSize(i).y);
             GetApplication()->GetFramebuffer(i).SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, projectorViewport_[i].size_.x, projectorViewport_[i].size_.y);
 
@@ -139,6 +143,7 @@ namespace viscom {
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         }
 
+        LOG(DBUG) << "Creating VBOs.";
         glGenBuffers(1, &vboProjectorQuads_);
         glBindBuffer(GL_ARRAY_BUFFER, vboProjectorQuads_);
         glBufferData(GL_ARRAY_BUFFER, quadCoordsProjector_.size() * sizeof(CalbrationProjectorQuadVertex), quadCoordsProjector_.data(), GL_STATIC_DRAW);
@@ -150,6 +155,10 @@ namespace viscom {
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(CalbrationProjectorQuadVertex), reinterpret_cast<GLvoid*>(offsetof(CalbrationProjectorQuadVertex, texCoords_)));
         glBindVertexArray(0);
+
+        LOG(DBUG) << "Calibration Initialized.";
+
+        ApplicationNodeImplementation::InitOpenGL();
     }
 
 

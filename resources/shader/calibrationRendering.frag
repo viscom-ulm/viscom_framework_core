@@ -76,7 +76,7 @@ void main()
     // float colG = texture(colorLookup, vec3(alphaCoord, colorTex.g * 256)).g;
     // float colB = texture(colorLookup, vec3(alphaCoord, colorTex.b * 256)).b;
     // vec4 correctedColor = vec4(colR, colG, colB, colorTex.a); // werte sind bereits durch 255 geteilt
-    correctedColor = colorTex;
+    vec4 correctedColor = colorTex;
     color = correctedColor;
     
     //color = mix(vec4(0, 0, 0, 1), correctedColor,  alphaOverlapValue); 
