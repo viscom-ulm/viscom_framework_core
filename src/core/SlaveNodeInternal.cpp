@@ -81,7 +81,7 @@ namespace viscom {
 
 
             auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling));
-            glm::vec3 vpSize(1.7777777777777f, 1.0f, 1.0f);
+            glm::vec3 vpSize(GetConfig().nearPlaneSize_.x, GetConfig().nearPlaneSize_.y, 1.0f);
             auto totalScreenSize = (glm::vec2(fboSize) * 2.0f * vpSize.xy) / (viewport[2] - viewport[0]).xy;
             GetViewportScreen(i).position_ = glm::ivec2(glm::floor(((viewport[0] + vpSize) / (2.0f * vpSize)).xy * totalScreenSize));
             GetViewportScreen(i).size_ = glm::uvec2(glm::floor(totalScreenSize));

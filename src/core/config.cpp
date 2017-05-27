@@ -36,6 +36,8 @@ namespace viscom {
             else if (str == "--slave") config.sgctSlave_ = true;
             else if (str == "VIRTUAL_SCREEN_X=") ifs >> config.virtualScreenSize_.x;
             else if (str == "VIRTUAL_SCREEN_Y=") ifs >> config.virtualScreenSize_.y;
+            else if (str == "NEAR_PLANE_SIZE_X=") ifs >> config.nearPlaneSize_.x;
+            else if (str == "NEAR_PLANE_SIZE_Y=") ifs >> config.nearPlaneSize_.y;
         }
         ifs.close();
 

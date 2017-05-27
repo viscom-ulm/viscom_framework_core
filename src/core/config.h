@@ -26,6 +26,7 @@ namespace viscom {
         std::string sgctLocal_;
         bool sgctSlave_ = false;
         glm::vec2 virtualScreenSize_;
+        glm::vec2 nearPlaneSize_;
         std::vector<std::string> resourceSearchPaths_;
     };
 
