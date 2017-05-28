@@ -8,8 +8,9 @@
 
 #pragma once
 
-#include "main.h"
-#include "sgct.h"
+#include "core/main.h"
+#include "core/open_gl.h"
+#include <glm/gtc/quaternion.hpp>
 
 namespace viscom {
 

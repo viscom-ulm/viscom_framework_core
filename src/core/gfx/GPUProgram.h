@@ -9,7 +9,7 @@
 #pragma once
 
 #include "core/resources/Resource.h"
-#include "sgct.h"
+#include "core/open_gl.h"
 #include "Shader.h"
 
 namespace viscom {

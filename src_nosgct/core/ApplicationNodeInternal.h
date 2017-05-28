@@ -8,19 +8,16 @@
 
 #pragma once
 
-#include "main.h"
-#include "sgct.h"
-#ifdef VISCOM_SYNCINPUT
-#include "InputWrapper.h"
-#endif
-#include <mutex>
-#include "resources/GPUProgramManager.h"
-#include "resources/TextureManager.h"
-#include "resources/MeshManager.h"
-#include "gfx/FrameBuffer.h"
+#include "core/main.h"
+#include "core/resources/GPUProgramManager.h"
+#include "core/resources/TextureManager.h"
+#include "core/resources/MeshManager.h"
+#include "core/gfx/FrameBuffer.h"
 #include "core/CameraHelper.h"
 #include "core/gfx/FullscreenQuad.h"
 #include "core/TuioInputWrapper.h"
+
+struct GLFWwindow;
 
 namespace viscom {
 
@@ -29,26 +26,27 @@ namespace viscom {
     class ApplicationNodeInternal : public viscom::tuio::TuioInputWrapper
     {
     public:
-        ApplicationNodeInternal(FWConfiguration&& config, std::unique_ptr<sgct::Engine> engine);
+        ApplicationNodeInternal(FWConfiguration&& config);
         ApplicationNodeInternal(const ApplicationNodeInternal&) = delete;
         ApplicationNodeInternal(ApplicationNodeInternal&&) = delete;
         ApplicationNodeInternal& operator=(const ApplicationNodeInternal&) = delete;
         ApplicationNodeInternal& operator=(ApplicationNodeInternal&&) = delete;
-        virtual ~ApplicationNodeInternal();
+        virtual ~ApplicationNodeInternal() override;
 
-        void InitNode();
-        void Render() const;
+        void Render();
 
-        void BasePreWindow();
         void BaseInitOpenGL();
-        void BasePreSync();
         void PostSyncFunction();
-        void BaseClearBuffer();
         void BaseDrawFrame();
         void BaseDraw2D();
-        void BasePostDraw() const;
         void BaseCleanUp() const;
 
+        static void ErrorCallbackStatic(int error, const char* description);
+        static void BaseKeyboardCallbackStatic(GLFWwindow* window, int key, int scancode, int action, int mods);
+        static void BaseCharCallbackStatic(GLFWwindow* window, unsigned int character);
+        static void BaseMouseButtonCallbackStatic(GLFWwindow* window, int button, int action, int mods);
+        static void BaseMousePosCallbackStatic(GLFWwindow* window, double x, double y);
+        static void BaseMouseScrollCallbackStatic(GLFWwindow* window, double xoffset, double yoffset);
         void BaseKeyboardCallback(int key, int scancode, int action, int mods);
         void BaseCharCallback(unsigned int character, int mods);
         void BaseMouseButtonCallback(int button, int action);
@@ -59,14 +57,8 @@ namespace viscom {
         virtual void updateTuioCursor(TUIO::TuioCursor *tcur) override;
         virtual void removeTuioCursor(TUIO::TuioCursor *tcur) override;
 
-        static void BaseEncodeDataStatic();
-        static void BaseDecodeDataStatic();
-        void BaseEncodeData();
-        void BaseDecodeData();
-
-        sgct::Engine* GetEngine() const { return engine_.get(); }
         const FWConfiguration& GetConfig() const { return config_; }
-        FrameBuffer& GetFramebuffer(size_t windowId) { return framebuffers_[windowId]; }
+        FrameBuffer& GetFramebuffer(size_t windowId) { return backBuffer_; }
 
         const Viewport& GetViewportScreen(size_t windowId) const { return viewportScreen_[windowId]; }
         Viewport& GetViewportScreen(size_t windowId) { return viewportScreen_[windowId]; }
@@ -90,18 +82,14 @@ namespace viscom {
     private:
         glm::dvec2 ConvertInputCoordinates(double x, double y);
 
-        /** Holds a static pointer to an object to this class making it singleton in a way. */
-        // TODO: This is only a workaround and should be fixed in the future. [12/5/2016 Sebastian Maisch]
-        static ApplicationNodeInternal* instance_;
-        /** Holds the mutex for the instance pointer. */
-        static std::mutex instanceMutex_;
-
         /** Holds the applications configuration. */
         FWConfiguration config_;
+        /** Holds the GLFW window. */
+        GLFWwindow* window_;
+        /** Holds the backbuffer frame-buffer. */
+        FrameBuffer backBuffer_;
         /** Holds the application node implementation. */
         std::unique_ptr<ApplicationNodeBase> appNodeImpl_;
-        /** Holds the SGCT engine. */
-        std::unique_ptr<sgct::Engine> engine_;
 
         /** Holds the viewport for rendering content to the total screen. */
         std::vector<Viewport> viewportScreen_;
@@ -109,14 +97,10 @@ namespace viscom {
         std::vector<glm::ivec2> viewportQuadSize_;
         /** Holds the viewport scaling if one applies. */
         std::vector<glm::vec2> viewportScaling_;
-        /** Holds the frame buffer objects for each window. */
-        std::vector<FrameBuffer> framebuffers_;
 
         /** The camera helper class. */
         CameraHelper camHelper_;
 
-        /** Holds the synchronized application time. */
-        sgct::SharedDouble currentTimeSynced_;
         /** Holds the current application time. */
         double currentTime_;
         /** Holds the time elapsed since the last frame. */
@@ -128,39 +112,5 @@ namespace viscom {
         TextureManager textureManager_;
         /** Holds the mesh manager. */
         MeshManager meshManager_;
-
-#ifdef VISCOM_SYNCINPUT
-        /** Holds the vector with keyboard events. */
-        std::vector<KeyboardEvent> keyboardEvents_;
-        /** Holds the synchronized vector with keyboard events. */
-        sgct::SharedVector<KeyboardEvent> keyboardEventsSynced_;
-        /** Holds the vector with character events. */
-        std::vector<CharEvent> charEvents_;
-        /** Holds the synchronized vector with character events. */
-        sgct::SharedVector<CharEvent> charEventsSynced_;
-        /** Holds the vector with mouse button events. */
-        std::vector<MouseButtonEvent> mouseButtonEvents_;
-        /** Holds the synchronized vector with mouse button events. */
-        sgct::SharedVector<MouseButtonEvent> mouseButtonEventsSynced_;
-        /** Holds the vector with mouse position events. */
-        std::vector<MousePosEvent> mousePosEvents_;
-        /** Holds the synchronized vector with mouse position events. */
-        sgct::SharedVector<MousePosEvent> mousePosEventsSynced_;
-        /** Holds the vector with mouse scroll events. */
-        std::vector<MouseScrollEvent> mouseScrollEvents_;
-        /** Holds the synchronized vector with mouse scroll events. */
-        sgct::SharedVector<MouseScrollEvent> mouseScrollEventsSynced_;
-#endif
-
-#ifndef VISCOM_LOCAL_ONLY
-    public:
-        unsigned int GetGlobalProjectorId(int nodeId, int windowId) const;
-
-    private:
-        void loadProperties();
-
-        /** Holds the start node used for slaves. */
-        unsigned int startNode_ = 0;
-#endif
     };
 }

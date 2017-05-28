@@ -10,13 +10,19 @@
 #include "imgui_impl_glfw_gl3.h"
 
 // GL3W/GLFW
-#include <sgct.h>
+#include "core/open_gl.h"
 #ifdef _WIN32
 #undef APIENTRY
-#define GLFW_EXPOSE_NATIVE_WIN32
-#define GLFW_EXPOSE_NATIVE_WGL
-#include <GL/glfw3native.h>
+  #define GLFW_EXPOSE_NATIVE_WIN32
+  #define GLFW_EXPOSE_NATIVE_WGL
+  #ifdef VISCOM_USE_SGCT
+    #include <GL/glfw3native.h>
+  #else
+    #include <GLFW/glfw3native.h>
+  #endif
 #endif
+
+#include <glm/glm.hpp>
 
 struct ImGuiUserDataExt
 {

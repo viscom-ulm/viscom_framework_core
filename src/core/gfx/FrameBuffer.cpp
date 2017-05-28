@@ -197,7 +197,11 @@ namespace viscom {
     void FrameBuffer::UseAsRenderTarget() const
     {
         if (isBackbuffer_) {
+#ifdef VISCOM_USE_SGCT
             sgct::Engine::instance()->getCurrentWindowPtr()->getFBOPtr()->bind();
+#else
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#endif
         } else {
             glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
             glDrawBuffers(static_cast<GLsizei>(drawBuffers_.size()), drawBuffers_.data());

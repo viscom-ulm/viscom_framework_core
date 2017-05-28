@@ -13,3 +13,10 @@
 [submodule "extern/tuio"]
 	path = extern/tuio
 	url = https://github.com/Ninjoon/TUIO11_CPP.git
+[submodule "extern/glm"]
+	path = extern/glm
+	url = https://github.com/g-truc/glm.git
+	branch = 0.9.7.1
+[submodule "extern/glfw"]
+	path = extern/glfw
+	url = https://github.com/glfw/glfw.git

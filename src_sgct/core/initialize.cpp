@@ -6,8 +6,8 @@
  * @brief  Implementation of functions needed to initialize the application.
  */
 
-#include "initialize.h"
-#include "main.h"
+#include "core/initialize.h"
+#include "core/main.h"
 #include "core/ApplicationNodeInternal.h"
 #include <sgct.h>
 
