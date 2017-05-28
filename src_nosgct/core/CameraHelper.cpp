@@ -14,7 +14,7 @@ namespace viscom {
     CameraHelper::CameraHelper(float width, float height) :
         userPosition_{ 0.0f, 0.0f, 4.0f },
         userView_{ glm::lookAt(userPosition_, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)) },
-        projection_{ glm::perspectiveFov(0.47345288188535046834209247867895f, 1.7156f, 0.965f, 0.1f, 100.0f) }
+        projection_{ glm::perspectiveFov(0.48995732625372830834416496242255f, 1.7778f, 1.0f, 0.1f, 100.0f) }
     {
     }
 

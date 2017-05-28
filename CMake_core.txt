@@ -55,6 +55,7 @@ else()
     option(GLFW_BUILD_DOCS OFF)
     option(GLFW_BUILD_EXAMPLES OFF)
     option(GLFW_BUILD_TESTS OFF)
+    option(GLFW_INSTALL OFF)
     add_subdirectory(extern/fwcore/extern/glfw)
 
     list(APPEND COMPILE_TIME_DEFS GLEW_STATIC)
