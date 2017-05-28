@@ -69,6 +69,15 @@ namespace viscom {
         virtual void EncodeData();
         virtual void DecodeData();
 
+        GPUProgramManager& GetGPUProgramManager() { return appNode_->GetGPUProgramManager(); }
+        TextureManager& GetTextureManager() { return appNode_->GetTextureManager(); }
+        MeshManager& GetMeshManager() { return appNode_->GetMeshManager(); }
+
+        CameraHelper* GetCamera() { return appNode_->GetCamera(); }
+        std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc) const { return appNode_->CreateOffscreenBuffers(fboDesc); }
+        const FrameBuffer* SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const { return appNode_->SelectOffscreenBuffer(offscreenBuffers); }
+        std::unique_ptr<FullscreenQuad> CreateFullscreenQuad(const std::string& fragmentShader) { return appNode_->CreateFullscreenQuad(fragmentShader); }
+
     protected:
         const FWConfiguration& GetConfig() const { return appNode_->GetConfig(); }
         ApplicationNodeInternal* GetApplication() const { return appNode_; }
@@ -82,15 +91,6 @@ namespace viscom {
 
         double GetCurrentAppTime() const { return appNode_->GetCurrentAppTime(); }
         double GetElapsedTime() const { return appNode_->GetElapsedTime(); }
-
-        GPUProgramManager& GetGPUProgramManager() { return appNode_->GetGPUProgramManager(); }
-        TextureManager& GetTextureManager() { return appNode_->GetTextureManager(); }
-        MeshManager& GetMeshManager() { return appNode_->GetMeshManager(); }
-
-        CameraHelper* GetCamera() { return appNode_->GetCamera(); }
-        std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc) const { return appNode_->CreateOffscreenBuffers(fboDesc); }
-        const FrameBuffer* SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const { return appNode_->SelectOffscreenBuffer(offscreenBuffers); }
-        std::unique_ptr<FullscreenQuad> CreateFullscreenQuad(const std::string& fragmentShader) { return appNode_->CreateFullscreenQuad(fragmentShader); }
 
     private:
         /** Holds the application node. */
