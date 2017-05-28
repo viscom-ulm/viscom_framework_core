@@ -17,7 +17,7 @@ namespace viscom {
     class CameraHelper
     {
     public:
-        CameraHelper(float width, float height);
+        CameraHelper(float width, float height, const glm::vec3& userPosition);
 
         glm::vec3 GetUserPosition() const;
         const glm::vec3& GetPosition() const { return position_; }

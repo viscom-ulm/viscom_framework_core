@@ -26,7 +26,7 @@ namespace viscom {
         tuio::TuioInputWrapper{ config.tuioPort_ },
         config_{ std::move(config) },
         window_{ nullptr },
-        camHelper_{ config_.virtualScreenSize_.x, config.virtualScreenSize_.y },
+        camHelper_{ config_.nearPlaneSize_.x, config.nearPlaneSize_.y, glm::vec3(0.0f, 0.0f, 4.0f) },
         currentTime_{ 0.0 },
         elapsedTime_{ 0.0 },
         gpuProgramManager_{ this },

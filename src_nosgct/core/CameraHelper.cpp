@@ -11,10 +11,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace viscom {
-    CameraHelper::CameraHelper(float width, float height) :
-        userPosition_{ 0.0f, 0.0f, 4.0f },
+    CameraHelper::CameraHelper(float width, float height, const glm::vec3& userPosition) :
+        userPosition_{ userPosition },
         userView_{ glm::lookAt(userPosition_, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)) },
-        projection_{ glm::perspectiveFov(0.48995732625372830834416496242255f, 1.7778f, 1.0f, 0.1f, 100.0f) }
+        projection_{ glm::perspectiveFov(2.0f * glm::atan(height, userPosition_.z), width, height, 0.1f, 100.0f) }
     {
     }
 
