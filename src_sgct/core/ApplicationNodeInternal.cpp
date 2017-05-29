@@ -14,7 +14,7 @@
 #include "core/imgui/imgui_impl_glfw_gl3.h"
 
 #ifndef VISCOM_LOCAL_ONLY
-#include "OpenCVParserHelper.h"
+#include "core/OpenCVParserHelper.h"
 #endif
 
 #ifdef VISCOM_CLIENTMOUSECURSOR
