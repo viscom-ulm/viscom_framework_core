@@ -42,8 +42,8 @@ namespace viscom {
      */
     void Camera::UpdateCamera(const ApplicationNodeBase*)
     {
-        auto camOrient = GetOrientation();
-        glm::quat camOrientStep = camArcball_.GetWorldRotation(GetOrientation());
+        auto camOrient = glm::inverse(GetOrientation());
+        glm::quat camOrientStep = camArcball_.GetWorldRotation(camOrient);
         camOrient = camOrientStep * camOrient;
         glm::mat3 matOrient{ glm::mat3_cast(camOrient) };
         auto camPos = radius_ * (matOrient * baseCamPos_);
