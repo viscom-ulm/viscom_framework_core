@@ -26,7 +26,7 @@ namespace viscom {
         //4. transform user back to original position
         glm::mat4 result = glm::translate(glm::mat4(1.0f), sgct::Engine::getDefaultUserPtr()->getPos());
         //3. apply view rotation
-        result *= glm::mat4_cast(glm::inverse(camera_orientation_));
+        result = glm::mat4_cast(camera_orientation_) * result;
         //2. apply navigation translation
         result = glm::translate(result, -position_);
         //1. transform user to coordinate system origin
