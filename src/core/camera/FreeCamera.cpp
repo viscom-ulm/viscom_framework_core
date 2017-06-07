@@ -31,10 +31,8 @@ namespace viscom {
      *  @param theCamPos the cameras initial position.
      */
     FreeCamera::FreeCamera(const glm::vec3& theCamPos, viscom::CameraHelper& cameraHelper) noexcept :
-        CameraBase(theCamPos, cameraHelper),
-        camOrient_{ glm::quat() }
+        CameraBase(theCamPos, cameraHelper)
     {
-        SetCameraOrientation(camOrient_);
         // glm::scale(camOrient_, glm::vec3(1.0f, -1.0f, 1.0f));
         // view_ = glm::lookAt(camPos_, camPos_ - glm::vec3(0.0f, 0.0f, 1.0f), camUp_);
     }
@@ -57,7 +55,7 @@ namespace viscom {
         glm::quat yawQuat = glm::angleAxis(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
 
 
-        camOrient_ = yawQuat * pitchQuat;
+        SetCameraOrientation(yawQuat * pitchQuat);
         return true;
     }
 
@@ -73,9 +71,8 @@ namespace viscom {
         if (sender->IsKeyPressed(GLFW_KEY_D)) camMove -= glm::vec3(0.04f, 0.0f, 0.0f);
         // TODO: More keys for y-movement? [1/13/2016 Sebastian Maisch]
 
-        auto camPos = GetPosition() + glm::vec3(glm::inverse(camOrient_) * glm::vec4(camMove, 1.0f));
+        auto camPos = GetPosition() + glm::vec3(glm::inverse(GetOrientation()) * glm::vec4(camMove, 1.0f));
 
         SetCameraPosition(camPos);
-        SetCameraOrientation(camOrient_);
     }
 }

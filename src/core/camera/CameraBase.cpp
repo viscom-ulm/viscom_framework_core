@@ -28,17 +28,21 @@ namespace viscom {
      *  @param theCamPos the cameras initial position.
      */
     CameraBase::CameraBase(const glm::vec3& theCamPos, viscom::CameraHelper& cameraHelper) noexcept :
-        camPos_{ theCamPos },
         cameraHelper_{ cameraHelper }
     {
-        cameraHelper_.SetPosition(camPos_);
+        cameraHelper_.SetPosition(theCamPos);
+        cameraHelper_.SetOrientation(glm::quat());
     }
 
     CameraBase::~CameraBase() = default;
 
+    void CameraBase::SetCameraOrientation(const glm::quat& orientation)
+    {
+        cameraHelper_.SetOrientation(orientation);
+    }
+
     void CameraBase::SetCameraPosition(const glm::vec3& position)
     {
-        camPos_ = position;
         cameraHelper_.SetPosition(position);
     }
 

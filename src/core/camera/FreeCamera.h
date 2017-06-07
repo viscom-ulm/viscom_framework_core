@@ -24,9 +24,5 @@ namespace viscom {
 
         virtual bool HandleMouse(int button, int action, float mouseWheelDelta, const ApplicationNodeBase* sender) override;
         virtual void UpdateCamera(const ApplicationNodeBase* sender) override;
-
-    private:
-        /** Holds the current camera orientation. */
-        glm::quat camOrient_;
     };
 }

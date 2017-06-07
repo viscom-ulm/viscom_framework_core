@@ -31,10 +31,8 @@ namespace viscom {
         CameraBase(theCamPos, cameraHelper),
         radius_{ 1.0f },
         baseCamPos_{ theCamPos },
-        camOrient_{ glm::quat() },
         camArcball_{ GLFW_MOUSE_BUTTON_1 }
     {
-        SetCameraOrientation(camOrient_);
     }
 
     Camera::~Camera() = default;
@@ -44,13 +42,14 @@ namespace viscom {
      */
     void Camera::UpdateCamera(const ApplicationNodeBase*)
     {
-        glm::quat camOrientStep = camArcball_.GetWorldRotation(camOrient_);
-        camOrient_ = camOrientStep * camOrient_;
-        glm::mat3 matOrient{ glm::mat3_cast(camOrient_) };
+        auto camOrient = GetOrientation();
+        glm::quat camOrientStep = camArcball_.GetWorldRotation(GetOrientation());
+        camOrient = camOrientStep * camOrient;
+        glm::mat3 matOrient{ glm::mat3_cast(camOrient) };
         auto camPos = radius_ * (matOrient * baseCamPos_);
 
         SetCameraPosition(camPos);
-        SetCameraOrientation(glm::inverse(camOrient_));
+        SetCameraOrientation(glm::inverse(camOrient));
     }
 
     /**

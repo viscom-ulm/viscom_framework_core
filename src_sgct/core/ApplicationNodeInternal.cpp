@@ -33,8 +33,6 @@ namespace viscom {
         config_( std::move(config) ),
         engine_{ std::move(engine) },
         camHelper_{ engine_.get() },
-        currentTimeSynced_{ 0.0 },
-        currentTime_{ 0.0 },
         elapsedTime_{ 0.0 },
         gpuProgramManager_{ this },
         textureManager_{ this },
@@ -177,7 +175,10 @@ namespace viscom {
             }
 #endif
 
-            currentTimeSynced_.setVal(sgct::Engine::getTime());
+            syncInfoLocal_.currentTime_ = sgct::Engine::getTime();
+            syncInfoLocal_.cameraPosition_ = camHelper_.GetPosition();
+            syncInfoLocal_.cameraOrientation_ = camHelper_.GetOrientation();
+            syncInfoSynced_.setVal(syncInfoLocal_);
         }
         appNodeImpl_->PreSync();
     }
@@ -214,12 +215,14 @@ namespace viscom {
         }
 #endif
 
-        auto lastTime = currentTime_;
-        currentTime_ = currentTimeSynced_.getVal();
+        auto lastTime = syncInfoLocal_.currentTime_;
+        syncInfoLocal_ = syncInfoSynced_.getVal();
         appNodeImpl_->UpdateSyncedInfo();
 
-        elapsedTime_ = currentTimeSynced_ - lastTime;
-        appNodeImpl_->UpdateFrame(currentTime_, elapsedTime_);
+        camHelper_.SetPosition(syncInfoLocal_.cameraPosition_);
+        camHelper_.SetOrientation(syncInfoLocal_.cameraOrientation_);
+        elapsedTime_ = syncInfoLocal_.currentTime_ - lastTime;
+        appNodeImpl_->UpdateFrame(syncInfoLocal_.currentTime_, elapsedTime_);
     }
 
     void ApplicationNodeInternal::BaseClearBuffer()
@@ -407,7 +410,7 @@ namespace viscom {
         sgct::SharedData::instance()->writeVector(&mousePosEventsSynced_);
         sgct::SharedData::instance()->writeVector(&mouseScrollEventsSynced_);
 #endif
-        sgct::SharedData::instance()->writeDouble(&currentTimeSynced_);
+        sgct::SharedData::instance()->writeObj(&syncInfoSynced_);
         appNodeImpl_->EncodeData();
     }
 
@@ -420,7 +423,7 @@ namespace viscom {
         sgct::SharedData::instance()->readVector(&mousePosEventsSynced_);
         sgct::SharedData::instance()->readVector(&mouseScrollEventsSynced_);
 #endif
-        sgct::SharedData::instance()->readDouble(&currentTimeSynced_);
+        sgct::SharedData::instance()->readObj(&syncInfoSynced_);
         appNodeImpl_->DecodeData();
     }
 

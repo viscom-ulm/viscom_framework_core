@@ -29,15 +29,15 @@ namespace viscom {
         /** Returns the cameras projection matrix. */
         glm::mat4 GetViewProjMatrix() const noexcept { return cameraHelper_.GetViewPerspectiveMatrix(); }
         /** Returns the cameras position. */
-        const glm::vec3& GetPosition() const noexcept { return camPos_; }
+        const glm::vec3& GetPosition() const noexcept { return cameraHelper_.GetPosition(); }
+        /** Returns the cameras orientation. */
+        const glm::quat& GetOrientation() const noexcept { return cameraHelper_.GetOrientation(); }
 
     protected:
-        void SetCameraOrientation(const glm::quat& orientation) { cameraHelper_.SetOrientation(orientation); }
+        void SetCameraOrientation(const glm::quat& orientation);
         void SetCameraPosition(const glm::vec3& position);
 
     private:
-        /** Holds the current camera position. */
-        glm::vec3 camPos_;
         /** Holds the framework camera helper. */
         viscom::CameraHelper& cameraHelper_;
     };

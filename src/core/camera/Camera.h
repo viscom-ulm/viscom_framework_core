@@ -32,8 +32,6 @@ namespace viscom {
         float radius_;
         /** Holds the current camera position. */
         glm::vec3 baseCamPos_;
-        /** Holds the current camera orientation. */
-        glm::quat camOrient_;
         /** Holds the arc-ball used for camera rotation. */
         Arcball camArcball_;
     };

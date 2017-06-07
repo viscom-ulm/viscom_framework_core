@@ -26,6 +26,12 @@ namespace viscom {
 
     class ApplicationNodeBase;
 
+    struct InternalSyncedInfo {
+        double currentTime_ = 0.0;
+        glm::vec3 cameraPosition_;
+        glm::quat cameraOrientation_;
+    };
+
     class ApplicationNodeInternal : public viscom::tuio::TuioInputWrapper
     {
     public:
@@ -75,7 +81,7 @@ namespace viscom {
         const glm::vec2& GetViewportScaling(size_t windowId) const { return viewportScaling_[windowId]; }
         glm::vec2& GetViewportScaling(size_t windowId) { return viewportScaling_[windowId]; }
 
-        double GetCurrentAppTime() const { return currentTime_; }
+        double GetCurrentAppTime() const { return syncInfoLocal_.currentTime_; }
         double GetElapsedTime() const { return elapsedTime_; }
 
         CameraHelper* GetCamera() { return &camHelper_; }
@@ -115,10 +121,11 @@ namespace viscom {
         /** The camera helper class. */
         CameraHelper camHelper_;
 
-        /** Holds the synchronized application time. */
-        sgct::SharedDouble currentTimeSynced_;
-        /** Holds the current application time. */
-        double currentTime_;
+        /** Holds the synchronized object (local). */
+        InternalSyncedInfo syncInfoLocal_;
+        /** Holds the synchronized object (synced). */
+        sgct::SharedObject<InternalSyncedInfo> syncInfoSynced_;
+
         /** Holds the time elapsed since the last frame. */
         double elapsedTime_;
 
