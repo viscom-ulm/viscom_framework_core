@@ -56,6 +56,14 @@ namespace viscom {
         virtual void PostDraw();
         virtual void CleanUp();
 
+        /** Returns the current mouse position. */
+        const glm::vec2& GetMousePosition() const noexcept { return mousePosition_; }
+        /** Return the current mouse position in normalized coordinates. */
+        const glm::vec3& GetMousePositionNormalized() const noexcept { return mousePositionNormalized_; }
+
+        bool IsMouseButtonPressed(int button) const noexcept;
+        bool IsKeyPressed(int key) const noexcept;
+
         virtual bool KeyboardCallback(int key, int scancode, int action, int mods);
         virtual bool CharCallback(unsigned int character, int mods);
         virtual bool MouseButtonCallback(int button, int action);
@@ -95,6 +103,14 @@ namespace viscom {
     private:
         /** Holds the application node. */
         ApplicationNodeInternal* appNode_;
+        /** Holds the current mouse position. */
+        glm::vec2 mousePosition_;
+        /** Holds the current normalized mouse position. */
+        glm::vec3 mousePositionNormalized_;
+        /** Holds the current keyboard state. */
+        std::vector<bool> keyPressedState_;
+        /** Holds the current mouse button state. */
+        std::vector<bool> mousePressedState_;
 
 #ifndef VISCOM_LOCAL_ONLY
     protected:
