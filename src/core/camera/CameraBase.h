@@ -24,20 +24,21 @@ namespace viscom {
         virtual ~CameraBase();
 
         virtual bool HandleMouse(int button, int action, float mouseWheelDelta, const ApplicationNodeBase* sender) = 0;
-        virtual void UpdateCamera(const ApplicationNodeBase* sender) = 0;
+        virtual void UpdateCamera(double elapsedTime, const ApplicationNodeBase* sender) = 0;
 
         /** Returns the cameras projection matrix. */
         glm::mat4 GetViewProjMatrix() const noexcept { return cameraHelper_.GetViewPerspectiveMatrix(); }
         /** Returns the cameras position. */
-        const glm::vec3& GetPosition() const noexcept { return cameraHelper_.GetPosition(); }
+        virtual glm::vec3 GetPosition() const noexcept { return cameraHelper_.GetPosition(); }
         /** Returns the cameras orientation. */
         const glm::quat& GetOrientation() const noexcept { return cameraHelper_.GetOrientation(); }
 
-    protected:
+    public:
         void SetCameraOrientation(const glm::quat& orientation);
-        void SetCameraPosition(const glm::vec3& position);
+        virtual void SetCameraPosition(const glm::vec3& position);
+        glm::vec3 GetUserPosition() const noexcept { return cameraHelper_.GetUserPosition(); }
 
-    private:
+    public:
         /** Holds the framework camera helper. */
         viscom::CameraHelper& cameraHelper_;
     };

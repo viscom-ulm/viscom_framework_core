@@ -23,9 +23,11 @@ namespace viscom {
         Arcball(int button) noexcept;
 
         bool HandleMouse(int button, int action, const ApplicationNodeBase* sender) noexcept;
-        glm::quat GetWorldRotation(const glm::quat& camPosOrientation) noexcept;
+        glm::quat GetWorldRotation(double elapsedTime, const glm::quat& camPosOrientation) noexcept;
 
     private:
+        glm::vec3 MousePositionToArcball(const glm::vec2& mousePosition) const;
+
         /** Holds the button to use. */
         const int button_;
         /** Holds whether the arc-ball is currently rotated. */

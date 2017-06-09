@@ -83,6 +83,8 @@ namespace viscom {
 
         assert(instance_ == nullptr);
         instance_ = this;
+        lastFrameTime_ = sgct::Engine::getTime();
+        syncInfoLocal_.currentTime_ = lastFrameTime_;
         sgct::SharedData::instance()->setEncodeFunction(BaseEncodeDataStatic);
         sgct::SharedData::instance()->setDecodeFunction(BaseDecodeDataStatic);
     }
@@ -100,6 +102,9 @@ namespace viscom {
 
     void ApplicationNodeInternal::BaseInitOpenGL()
     {
+        keyPressedState_.resize(GLFW_KEY_LAST, false);
+        mousePressedState_.resize(GLFW_MOUSE_BUTTON_LAST, false);
+
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
         glEnable(GL_CULL_FACE);
@@ -142,6 +147,8 @@ namespace viscom {
 
     void ApplicationNodeInternal::BasePreSync()
     {
+        lastFrameTime_ = syncInfoLocal_.currentTime_;
+
         if (engine_->isMaster()) {
 #ifdef VISCOM_SYNCINPUT
             {
@@ -215,13 +222,13 @@ namespace viscom {
         }
 #endif
 
-        auto lastTime = syncInfoLocal_.currentTime_;
+        // auto lastTime = syncInfoLocal_.currentTime_;
         syncInfoLocal_ = syncInfoSynced_.getVal();
         appNodeImpl_->UpdateSyncedInfo();
 
         camHelper_.SetPosition(syncInfoLocal_.cameraPosition_);
         camHelper_.SetOrientation(syncInfoLocal_.cameraOrientation_);
-        elapsedTime_ = syncInfoLocal_.currentTime_ - lastTime;
+        elapsedTime_ = syncInfoLocal_.currentTime_ - lastFrameTime_;
         appNodeImpl_->UpdateFrame(syncInfoLocal_.currentTime_, elapsedTime_);
     }
 
@@ -279,9 +286,21 @@ namespace viscom {
         appNodeImpl_->CleanUp();
     }
 
+    bool ApplicationNodeInternal::IsMouseButtonPressed(int button) const noexcept
+    {
+        return mousePressedState_[button];
+    }
+
+    bool ApplicationNodeInternal::IsKeyPressed(int key) const noexcept
+    {
+        return keyPressedState_[key];
+    }
+
     // ReSharper disable CppMemberFunctionMayBeConst
     void ApplicationNodeInternal::BaseKeyboardCallback(int key, int scancode, int action, int mods)
     {
+        keyPressedState_[key] = (action == GLFW_RELEASE) ? false : true;
+
         if (engine_->isMaster()) {
 #ifdef VISCOM_SYNCINPUT
             keyboardEvents_.emplace_back(key, scancode, action, mods);
@@ -314,6 +333,8 @@ namespace viscom {
 
     void ApplicationNodeInternal::BaseMouseButtonCallback(int button, int action)
     {
+        mousePressedState_[button] = (action == GLFW_RELEASE) ? false : true;
+
         if (engine_->isMaster()) {
 #ifdef VISCOM_SYNCINPUT
             mouseButtonEvents_.emplace_back(button, action);
@@ -330,8 +351,22 @@ namespace viscom {
 
     void ApplicationNodeInternal::BaseMousePosCallback(double x, double y)
     {
+        auto mousePos = glm::dvec2(x, y);
         if (engine_->isMaster()) {
-            auto mousePos = ConvertInputCoordinates(x, y);
+            mousePos = ConvertInputCoordinates(x, y);
+
+            /*auto mode = glfwGetInputMode(engine_->getWindowPtr(0)->getWindowHandle(), GLFW_CURSOR);
+            if (mode == GLFW_CURSOR_DISABLED) {
+                glfwSetCursorPos(engine_->getWindowPtr(0)->getWindowHandle(), 500, 500);
+                mousePos += mousePosition_;
+            }*/
+        }
+
+        mousePosition_ = glm::vec2(mousePos.x, mousePos.y);
+        mousePositionNormalized_.x = (2.0f * mousePosition_.x - 1.0f);
+        mousePositionNormalized_.y = -(2.0f * mousePosition_.y - 1.0f);
+
+        if (engine_->isMaster()) {
 #ifdef VISCOM_SYNCINPUT
             mousePosEvents_.emplace_back(mousePos.x, mousePos.y);
 #endif
@@ -389,6 +424,13 @@ namespace viscom {
             // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
             appNodeImpl_->RemoveTuioCursor(tcur);
 #endif
+        }
+    }
+
+    void ApplicationNodeInternal::SetCursorInputMode(int mode)
+    {
+        if (engine_->isMaster()) {
+            glfwSetInputMode(engine_->getWindowPtr(0)->getWindowHandle(), GLFW_CURSOR, mode);
         }
     }
 

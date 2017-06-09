@@ -23,6 +23,14 @@ namespace viscom {
         FreeCamera(const glm::vec3& camPos, viscom::CameraHelper& cameraHelper) noexcept;
 
         virtual bool HandleMouse(int button, int action, float mouseWheelDelta, const ApplicationNodeBase* sender) override;
-        virtual void UpdateCamera(const ApplicationNodeBase* sender) override;
+        virtual void UpdateCamera(double elapsedTime, const ApplicationNodeBase* sender) override;
+
+    private:
+        /** Holds the current pitch and yaw state. */
+        glm::vec2 currentPY_;
+        /** Holds the current mouse position. */
+        glm::vec2 currentMousePosition_;
+        /** Holds the flag for setting the previous mouse position. */
+        bool firstRun_;
     };
 }

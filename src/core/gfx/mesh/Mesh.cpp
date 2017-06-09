@@ -175,6 +175,13 @@ namespace viscom {
     {
         auto path = GetId().substr(0, GetId().find_last_of("/") + 1);
         auto texFilename = path + relFilename;
-        return std::move(node->GetTextureManager().GetResource(texFilename));
+        auto texture = std::move(node->GetTextureManager().GetResource(texFilename));
+
+        glBindTexture(GL_TEXTURE_2D, texture->getTextureId());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        return std::move(texture);
     }
 }

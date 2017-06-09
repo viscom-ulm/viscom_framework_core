@@ -1,12 +1,12 @@
 /**
- * @file   Camera.cpp
+ * @file   ArcballCamera.cpp
  * @author Sebastian Maisch <sebastian.maisch@uni-ulm.de>
  * @date   2017.06.07
  *
  * @brief  Implementation of an arcball camera.
  */
 
-#include "Camera.h"
+#include "ArcballCamera.h"
 
 #define GLM_SWIZZLE
 #include <core/open_gl.h>
@@ -20,30 +20,33 @@ namespace viscom {
 
     /**
      *  Constructor.
-     *  @param theFovY the field of view in y direction.
-     *  @param theAspectRatio the screens aspect ratio.
-     *  @param theScreenSize the screen size.
-     *  @param theNearZ the near z plane
-     *  @param theFarZ the far z plane
      *  @param theCamPos the cameras initial position.
+     *  @param cameraHelper the camera helper class.
      */
-    Camera::Camera(const glm::vec3& theCamPos, viscom::CameraHelper& cameraHelper) noexcept :
+    ArcballCamera::ArcballCamera(const glm::vec3& theCamPos, viscom::CameraHelper& cameraHelper) noexcept :
         CameraBase(theCamPos, cameraHelper),
         radius_{ 1.0f },
         baseCamPos_{ theCamPos },
+        mouseWheelDelta_{ 0.0f },
         camArcball_{ GLFW_MOUSE_BUTTON_1 }
     {
     }
 
-    Camera::~Camera() = default;
+    ArcballCamera::~ArcballCamera() = default;
 
     /**
      *  Updates the camera parameters using the internal arc-ball.
      */
-    void Camera::UpdateCamera(const ApplicationNodeBase*)
+    void ArcballCamera::UpdateCamera(double elapsedTime, const ApplicationNodeBase*)
     {
+        const double mouseWheelSpeed = 8.0;
+
+        radius_ -= static_cast<float>(mouseWheelDelta_ * mouseWheelSpeed * elapsedTime);
+        radius_ = glm::clamp(radius_, 0.01f, 20.0f);
+        mouseWheelDelta_ = 0.0f;
+
         auto camOrient = glm::inverse(GetOrientation());
-        glm::quat camOrientStep = camArcball_.GetWorldRotation(camOrient);
+        glm::quat camOrientStep = camArcball_.GetWorldRotation(elapsedTime, camOrient);
         camOrient = camOrientStep * camOrient;
         glm::mat3 matOrient{ glm::mat3_cast(camOrient) };
         auto camPos = radius_ * (matOrient * baseCamPos_);
@@ -58,16 +61,26 @@ namespace viscom {
      *  @param action the mouse buttons action.
      *  @param sender the application to supply normalized screen coordinates.
      */
-    bool Camera::HandleMouse(int button, int action, float mouseWheelDelta, const ApplicationNodeBase* sender)
+    bool ArcballCamera::HandleMouse(int button, int action, float mouseWheelDelta, const ApplicationNodeBase* sender)
     {
         bool handled = camArcball_.HandleMouse(button, action, sender);
 
         if (mouseWheelDelta != 0) {
-            radius_ -= mouseWheelDelta * 0.1f;
-            radius_ = glm::clamp(radius_, 0.01f, 20.0f);
+            mouseWheelDelta_ = mouseWheelDelta;
             handled = true;
         }
 
         return handled;
     }
+
+    void ArcballCamera::SetCameraPosition(const glm::vec3 & position)
+    {
+        CameraBase::SetCameraPosition(position - GetUserPosition());
+    }
+
+    glm::vec3 ArcballCamera::GetPosition() const noexcept
+    {
+        return CameraBase::GetPosition() + GetUserPosition();
+    }
+
 }

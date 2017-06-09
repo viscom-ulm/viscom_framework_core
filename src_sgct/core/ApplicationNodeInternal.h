@@ -55,6 +55,14 @@ namespace viscom {
         void BasePostDraw() const;
         void BaseCleanUp() const;
 
+        bool IsMouseButtonPressed(int button) const noexcept;
+        bool IsKeyPressed(int key) const noexcept;
+
+        /** Returns the current mouse position. */
+        const glm::vec2& GetMousePosition() const noexcept { return mousePosition_; }
+        /** Return the current mouse position in normalized coordinates. */
+        const glm::vec2& GetMousePositionNormalized() const noexcept { return mousePositionNormalized_; }
+
         void BaseKeyboardCallback(int key, int scancode, int action, int mods);
         void BaseCharCallback(unsigned int character, int mods);
         void BaseMouseButtonCallback(int button, int action);
@@ -64,6 +72,8 @@ namespace viscom {
         virtual void addTuioCursor(TUIO::TuioCursor *tcur) override;
         virtual void updateTuioCursor(TUIO::TuioCursor *tcur) override;
         virtual void removeTuioCursor(TUIO::TuioCursor *tcur) override;
+
+        void SetCursorInputMode(int mode);
 
         static void BaseEncodeDataStatic();
         static void BaseDecodeDataStatic();
@@ -126,6 +136,8 @@ namespace viscom {
         /** Holds the synchronized object (synced). */
         sgct::SharedObject<InternalSyncedInfo> syncInfoSynced_;
 
+        /** Holds the last frame time. */
+        double lastFrameTime_;
         /** Holds the time elapsed since the last frame. */
         double elapsedTime_;
 
@@ -135,6 +147,15 @@ namespace viscom {
         TextureManager textureManager_;
         /** Holds the mesh manager. */
         MeshManager meshManager_;
+
+        /** Holds the current mouse position. */
+        glm::vec2 mousePosition_;
+        /** Holds the current normalized mouse position. */
+        glm::vec2 mousePositionNormalized_;
+        /** Holds the current keyboard state. */
+        std::vector<bool> keyPressedState_;
+        /** Holds the current mouse button state. */
+        std::vector<bool> mousePressedState_;
 
 #ifdef VISCOM_SYNCINPUT
         /** Holds the vector with keyboard events. */
