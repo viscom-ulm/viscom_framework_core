@@ -42,7 +42,7 @@ namespace viscom {
         indices.resize(scene->mNumMeshes);
         for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
             maxUVChannels = glm::max(maxUVChannels, scene->mMeshes[i]->GetNumUVChannels());
-            maxColorChannels = glm::max(maxColorChannels, scene->mMeshes[i]->GetNumUVChannels());
+            maxColorChannels = glm::max(maxColorChannels, scene->mMeshes[i]->GetNumColorChannels());
             numVertices += scene->mMeshes[i]->mNumVertices;
             for (unsigned int fi = 0; fi < scene->mMeshes[i]->mNumFaces; ++fi) {
                 auto faceIndices = scene->mMeshes[i]->mFaces[fi].mNumIndices;
