@@ -184,11 +184,16 @@ namespace viscom {
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderBuffers_[i]);
         }
 
-        glDrawBuffers(static_cast<GLsizei>(drawBuffers_.size()), drawBuffers_.data());
+        if (drawBuffers_.size() < 1) {
+            glDrawBuffer(GL_NONE);
+            glReadBuffer(GL_NONE);
+        } else {
+            glDrawBuffers(static_cast<GLsizei>(drawBuffers_.size()), drawBuffers_.data());
 
-        auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-        if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
-            throw std::runtime_error("Could not create frame buffer.");
+            auto fboStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+            if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
+                throw std::runtime_error("Could not create frame buffer.");
+        }
     }
 
     /**
