@@ -54,6 +54,9 @@ namespace viscom {
         void BaseDraw2D();
         void BasePostDraw() const;
         void BaseCleanUp() const;
+        void BaseDataTransferCallback(void* receivedData, int receivedLength, int packageID, int clientID);
+        void BaseDataAcknowledgeCallback(int packageID, int clientID);
+        void BaseDataTransferStatusCallback(bool connected, int clientID);
 
         bool IsMouseButtonPressed(int button) const noexcept;
         bool IsKeyPressed(int key) const noexcept;

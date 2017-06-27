@@ -60,6 +60,21 @@ namespace viscom {
     {
     }
 
+    bool ApplicationNodeBase::DataTransferCallback(void * receivedData, int receivedLength, int packageID, int clientID)
+    {
+        return false;
+    }
+
+    bool ApplicationNodeBase::DataAcknowledgeCallback(int packageID, int clientID)
+    {
+        return false;
+    }
+
+    bool ApplicationNodeBase::DataTransferStatusCallback(bool connected, int clientID)
+    {
+        return false;
+    }
+
     // ReSharper disable CppParameterNeverUsed
     bool ApplicationNodeBase::KeyboardCallback(int key, int scancode, int action, int mods)
     {

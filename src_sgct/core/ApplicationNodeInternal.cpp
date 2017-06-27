@@ -49,7 +49,10 @@ namespace viscom {
         engine_->setDrawFunction([app = this]() { app->BaseDrawFrame(); });
         engine_->setDraw2DFunction([app = this]() { app->BaseDraw2D(); });
         engine_->setPostDrawFunction([app = this]() { app->BasePostDraw(); });
-        engine_->setCleanUpFunction([app = this](){ app->BaseCleanUp(); });
+        engine_->setCleanUpFunction([app = this]() { app->BaseCleanUp(); });
+        engine_->setDataTransferCallback([app = this](void* receivedData, int receivedLength, int packageID, int clientID) { app->BaseDataTransferCallback(receivedData, receivedLength, packageID, clientID); });
+        engine_->setDataAcknowledgeCallback([app = this](int packageID, int clientID) { app->BaseDataAcknowledgeCallback(packageID, clientID); });
+        engine_->setDataTransferStatusCallback([app = this](bool connected, int clientID) { app->BaseDataTransferStatusCallback(connected, clientID); });
 
         engine_->setKeyboardCallbackFunction([app = this](int key, int scancode, int action, int mods) { app->BaseKeyboardCallback(key, scancode, action, mods); });
         engine_->setCharCallbackFunction([app = this](unsigned int character, int mods) { app->BaseCharCallback(character, mods); });
@@ -63,10 +66,6 @@ namespace viscom {
         void setExternalControlCallback(sgct_cppxeleven::function<void(const char *, int)> fn); //arguments: const char * buffer, int buffer length
         void setExternalControlStatusCallback(sgct_cppxeleven::function<void(bool)> fn); //arguments: const bool & connected
         void setContextCreationCallback(sgct_cppxeleven::function<void(GLFWwindow*)> fn); //arguments: glfw window share
-
-        void setDataTransferCallback(sgct_cppxeleven::function<void(void *, int, int, int)> fn); //arguments: const char * buffer, int buffer length, int package id, int client
-        void setDataTransferStatusCallback(sgct_cppxeleven::function<void(bool, int)> fn); //arguments: const bool & connected, int client
-        void setDataAcknowledgeCallback(sgct_cppxeleven::function<void(int, int)> fn); //arguments: int package id, int client
         */
     }
 
@@ -395,6 +394,22 @@ namespace viscom {
             appNodeImpl_->MouseScrollCallback(xoffset, yoffset);
         }
     }
+
+    void ApplicationNodeInternal::BaseDataTransferCallback(void* receivedData, int receivedLength, int packageID, int clientID)
+    {
+        appNodeImpl_->DataTransferCallback(receivedData, receivedLength, packageID, clientID);
+    }
+
+    void ApplicationNodeInternal::BaseDataAcknowledgeCallback(int packageID, int clientID)
+    {
+        appNodeImpl_->DataAcknowledgeCallback(packageID, clientID);
+    }
+
+    void ApplicationNodeInternal::BaseDataTransferStatusCallback(bool connected, int clientID)
+    {
+        appNodeImpl_->DataTransferStatusCallback(connected, clientID);
+    }
+
     // ReSharper restore CppMemberFunctionMayBeConst
 
     void ApplicationNodeInternal::addTuioCursor(TUIO::TuioCursor* tcur)

@@ -56,6 +56,10 @@ namespace viscom {
         virtual void PostDraw();
         virtual void CleanUp();
 
+        virtual bool DataTransferCallback(void* receivedData, int receivedLength, int packageID, int clientID);
+        virtual bool DataAcknowledgeCallback(int packageID, int clientID);
+        virtual bool DataTransferStatusCallback(bool connected, int clientID);
+
         bool IsMouseButtonPressed(int button) const noexcept { return appNode_->IsMouseButtonPressed(button); }
         bool IsKeyPressed(int key) const noexcept { return appNode_->IsKeyPressed(key); }
 
