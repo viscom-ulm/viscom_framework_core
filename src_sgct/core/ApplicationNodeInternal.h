@@ -96,6 +96,7 @@ namespace viscom {
 
         double GetCurrentAppTime() const { return syncInfoLocal_.currentTime_; }
         double GetElapsedTime() const { return elapsedTime_; }
+        void Terminate() const;
 
         CameraHelper* GetCamera() { return &camHelper_; }
         std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc) const;

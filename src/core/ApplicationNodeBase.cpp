@@ -145,4 +145,9 @@ namespace viscom {
     void ApplicationNodeBase::DecodeData()
     {
     }
+
+    void ApplicationNodeBase::Terminate() const
+    {
+        appNode_->Terminate();
+    }
 }

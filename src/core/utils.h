@@ -9,16 +9,17 @@
 #pragma once
 
 #include <string>
+#include <future>
 
 namespace viscom {
 
     namespace utils {
 
         /**
-        *  Checks if a string end with another.
-        *  @param s the string to check.
-        *  @param e the ending to check for.
-        */
+         *  Checks if a string end with another.
+         *  @param s the string to check.
+         *  @param e the ending to check for.
+         */
         static bool endsWith(const std::string& s, const std::string& e) {
             if (s.length() >= e.length()) {
                 return (0 == s.compare(s.length() - e.length(), e.length(), e));
@@ -29,10 +30,10 @@ namespace viscom {
         }
 
         /**
-        *  Checks if a string starts with another.
-        *  @param s the string to check.
-        *  @param e the beginning to check for.
-        */
+         *  Checks if a string starts with another.
+         *  @param s the string to check.
+         *  @param e the beginning to check for.
+         */
         static bool beginsWith(const std::string& s, const std::string& b) {
             if (s.length() >= b.length()) {
                 return (0 == s.compare(0, b.length(), b));
@@ -50,6 +51,11 @@ namespace viscom {
             else {
                 return false;
             }
+        }
+
+        template<typename R>
+        bool is_ready(std::future<R> const& f) {
+            return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
         }
     }
 }

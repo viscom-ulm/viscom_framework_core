@@ -496,6 +496,11 @@ namespace viscom {
         if (instance_) instance_->BaseDecodeData();
     }
 
+    void ApplicationNodeInternal::Terminate() const
+    {
+        engine_->terminate();
+    }
+
     std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc) const
     {
         std::vector<FrameBuffer> result;
