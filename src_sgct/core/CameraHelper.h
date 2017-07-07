@@ -27,8 +27,11 @@ namespace viscom {
 
         glm::mat4 GetViewPerspectiveMatrix() const;
         glm::mat4 GetCentralPerspectiveMatrix() const;
+        glm::mat4 GetCentralViewPerspectiveMatrix() const;
 
     private:
+        glm::mat4 CalculateViewUpdate() const;
+
         /** Holds the SGCT engine. */
         sgct::Engine* engine_;
 

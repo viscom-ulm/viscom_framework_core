@@ -185,6 +185,8 @@ namespace viscom {
             syncInfoLocal_.cameraPosition_ = camHelper_.GetPosition();
             syncInfoLocal_.cameraOrientation_ = camHelper_.GetOrientation();
             syncInfoSynced_.setVal(syncInfoLocal_);
+
+            touchPickRaysSynced_.setVal(touchPickRays_);
         }
         appNodeImpl_->PreSync();
     }
@@ -223,10 +225,20 @@ namespace viscom {
 
         // auto lastTime = syncInfoLocal_.currentTime_;
         syncInfoLocal_ = syncInfoSynced_.getVal();
+        touchPickRays_ = touchPickRaysSynced_.getVal();
         appNodeImpl_->UpdateSyncedInfo();
 
         camHelper_.SetPosition(syncInfoLocal_.cameraPosition_);
         camHelper_.SetOrientation(syncInfoLocal_.cameraOrientation_);
+        pickMatrix_ = glm::mat4{ 0.0f };
+        pickMatrix_[0][0] = 2.0f;
+        pickMatrix_[3][0] = -1.0f;
+        pickMatrix_[1][1] = -2.0f;
+        pickMatrix_[3][1] = 1.0f;
+        pickMatrix_[3][2] = -1.0f;
+        pickMatrix_[3][3] = 1.0f;
+        pickMatrix_ = glm::inverse(camHelper_.GetCentralViewPerspectiveMatrix()) * pickMatrix_;
+
         elapsedTime_ = syncInfoLocal_.currentTime_ - lastFrameTime_;
         appNodeImpl_->UpdateFrame(syncInfoLocal_.currentTime_, elapsedTime_);
     }
@@ -263,9 +275,10 @@ namespace viscom {
         });
     }
 
-    void ApplicationNodeInternal::BasePostDraw() const
+    void ApplicationNodeInternal::BasePostDraw()
     {
         appNodeImpl_->PostDraw();
+        touchPickRays_.clear();
 #ifdef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_FinishAllFrames();
 #else
@@ -352,7 +365,7 @@ namespace viscom {
     {
         auto mousePos = glm::dvec2(x, y);
         if (engine_->isMaster()) {
-            mousePos = ConvertInputCoordinates(x, y);
+            mousePos = ConvertInputCoordinatesLocalToGlobal(mousePos);
 
             /*auto mode = glfwGetInputMode(engine_->getWindowPtr(0)->getWindowHandle(), GLFW_CURSOR);
             if (mode == GLFW_CURSOR_DISABLED) {
@@ -366,6 +379,7 @@ namespace viscom {
         mousePositionNormalized_.y = -(2.0f * mousePosition_.y - 1.0f);
 
         if (engine_->isMaster()) {
+            syncInfoLocal_.mousePickRay_ = HandlePickEvent(glm::dvec2(x, y));
 #ifdef VISCOM_SYNCINPUT
             mousePosEvents_.emplace_back(mousePos.x, mousePos.y);
 #endif
@@ -416,6 +430,8 @@ namespace viscom {
     {
         if (engine_->isMaster()) {
 #ifdef WITH_TUIO
+            auto tPoint = tcur->getPosition();
+            touchPickRays_.emplace_back(tcur->getCursorID(), HandlePickEvent(glm::dvec2(tPoint.getX(), tPoint.getY())));
             // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
             appNodeImpl_->AddTuioCursor(tcur);
 #endif
@@ -426,6 +442,8 @@ namespace viscom {
     {
         if (engine_->isMaster()) {
 #ifdef WITH_TUIO
+            auto tPoint = tcur->getPosition();
+            touchPickRays_.emplace_back(tcur->getCursorID(), HandlePickEvent(glm::dvec2(tPoint.getX(), tPoint.getY())));
             // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
             appNodeImpl_->UpdateTuioCursor(tcur);
 #endif
@@ -449,13 +467,28 @@ namespace viscom {
         }
     }
 
-    glm::dvec2 ApplicationNodeInternal::ConvertInputCoordinates(double x, double y)
+    glm::dvec2 ApplicationNodeInternal::ConvertInputCoordinatesLocalToGlobal(const glm::dvec2& p)
     {
-        glm::dvec2 result{ x, static_cast<double>(viewportScreen_[0].size_.y) - y };
+        glm::dvec2 result{ p.x, static_cast<double>(viewportScreen_[0].size_.y) - p.y };
         result += viewportScreen_[0].position_;
         result /= viewportScreen_[0].size_;
         result.y = 1.0 - result.y;
         return result;
+    }
+
+    glm::dvec2 ApplicationNodeInternal::ConvertInputCoordinatesGlobalToLocal(const glm::dvec2 & p)
+    {
+        glm::dvec2 result{ p.x, 1.0 - p.y };
+        result *= viewportScreen_[0].size_;
+        result -= viewportScreen_[0].position_;
+        result.y = static_cast<double>(viewportScreen_[0].size_.y) - p.y;
+        //...
+        return glm::dvec2();
+    }
+
+    glm::vec3 ApplicationNodeInternal::HandlePickEvent(const glm::dvec2 & p)
+    {
+        return glm::normalize(glm::vec3(pickMatrix_ * glm::vec4(p.x, p.y, 0.0f, 1.0f)));
     }
 
     void ApplicationNodeInternal::BaseEncodeData()
@@ -468,6 +501,7 @@ namespace viscom {
         sgct::SharedData::instance()->writeVector(&mouseScrollEventsSynced_);
 #endif
         sgct::SharedData::instance()->writeObj(&syncInfoSynced_);
+        sgct::SharedData::instance()->writeVector(&touchPickRaysSynced_);
         appNodeImpl_->EncodeData();
     }
 
@@ -481,6 +515,7 @@ namespace viscom {
         sgct::SharedData::instance()->readVector(&mouseScrollEventsSynced_);
 #endif
         sgct::SharedData::instance()->readObj(&syncInfoSynced_);
+        sgct::SharedData::instance()->readVector(&touchPickRaysSynced_);
         appNodeImpl_->DecodeData();
     }
 

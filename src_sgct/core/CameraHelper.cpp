@@ -23,6 +23,24 @@ namespace viscom {
 
     glm::mat4 CameraHelper::GetViewPerspectiveMatrix() const
     {
+        auto result = CalculateViewUpdate();
+        return engine_->getCurrentModelViewProjectionMatrix() * result;
+    }
+
+    glm::mat4 CameraHelper::GetCentralPerspectiveMatrix() const
+    {
+        return engine_->getWindowPtr(0)->getViewport(0)->getProjection(sgct_core::Frustum::MonoEye)->getProjectionMatrix();
+    }
+
+    glm::mat4 CameraHelper::GetCentralViewPerspectiveMatrix() const
+    {
+        auto result = CalculateViewUpdate();
+        return engine_->getWindowPtr(0)->getViewport(0)->getProjection(sgct_core::Frustum::MonoEye)->getViewProjectionMatrix()
+            * sgct_core::ClusterManager::instance()->getSceneTransform() * result;
+    }
+
+    glm::mat4 CameraHelper::CalculateViewUpdate() const
+    {
         //4. transform user back to original position
         glm::mat4 result = glm::translate(glm::mat4(1.0f), sgct::Engine::getDefaultUserPtr()->getPos());
         //3. apply view rotation
@@ -31,12 +49,6 @@ namespace viscom {
         result *= glm::translate(glm::mat4(1.0f), -position_);
         //1. transform user to coordinate system origin
         result *= glm::translate(glm::mat4(1.0f), -sgct::Engine::getDefaultUserPtr()->getPos());
-
-        return engine_->getCurrentModelViewProjectionMatrix() * result;
-    }
-
-    glm::mat4 CameraHelper::GetCentralPerspectiveMatrix() const
-    {
-        return engine_->getWindowPtr(0)->getViewport(0)->getProjection(sgct_core::Frustum::MonoEye)->getProjectionMatrix();
+        return result;
     }
 }

@@ -30,6 +30,7 @@ namespace viscom {
         double currentTime_ = 0.0;
         glm::vec3 cameraPosition_;
         glm::quat cameraOrientation_;
+        glm::vec3 mousePickRay_;
     };
 
     class ApplicationNodeInternal : public viscom::tuio::TuioInputWrapper
@@ -52,7 +53,7 @@ namespace viscom {
         void BaseClearBuffer();
         void BaseDrawFrame();
         void BaseDraw2D();
-        void BasePostDraw() const;
+        void BasePostDraw();
         void BaseCleanUp() const;
         void BaseDataTransferCallback(void* receivedData, int receivedLength, int packageID, int clientID);
         void BaseDataAcknowledgeCallback(int packageID, int clientID);
@@ -108,7 +109,9 @@ namespace viscom {
         MeshManager& GetMeshManager() { return meshManager_; }
 
     private:
-        glm::dvec2 ConvertInputCoordinates(double x, double y);
+        glm::dvec2 ConvertInputCoordinatesLocalToGlobal(const glm::dvec2& p);
+        glm::dvec2 ConvertInputCoordinatesGlobalToLocal(const glm::dvec2& p);
+        glm::vec3 HandlePickEvent(const glm::dvec2& p);
 
         /** Holds a static pointer to an object to this class making it singleton in a way. */
         // TODO: This is only a workaround and should be fixed in the future. [12/5/2016 Sebastian Maisch]
@@ -139,6 +142,10 @@ namespace viscom {
         InternalSyncedInfo syncInfoLocal_;
         /** Holds the synchronized object (synced). */
         sgct::SharedObject<InternalSyncedInfo> syncInfoSynced_;
+        /** Holds the synchronized touch ids and pick rays (local). */
+        std::vector<std::pair<int, glm::vec3>> touchPickRays_;
+        /** Holds the synchronized touch ids and pick rays (synced). */
+        sgct::SharedVector<std::pair<int, glm::vec3>> touchPickRaysSynced_;
 
         /** Holds the last frame time. */
         double lastFrameTime_;
@@ -160,6 +167,8 @@ namespace viscom {
         std::vector<bool> keyPressedState_;
         /** Holds the current mouse button state. */
         std::vector<bool> mousePressedState_;
+        /** Holds the matrix used for picking. */
+        glm::mat4 pickMatrix_;
 
 #ifdef VISCOM_SYNCINPUT
         /** Holds the vector with keyboard events. */
