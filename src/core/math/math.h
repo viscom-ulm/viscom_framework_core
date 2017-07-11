@@ -37,7 +37,7 @@ namespace viscom { namespace math {
      *  @return <code>true</code> if an intersection occurs.
      */
     template<typename real>
-    bool segmentsIntersect(const Seg2<real>& seg0, const Seg2<real>& seg1) {
+    bool segmentsIntersect(const Line2<real>& seg0, const Line2<real>& seg1) {
         // see http://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
 
         glm::tvec2<real, glm::highp> r = seg0[1] - seg0[0];

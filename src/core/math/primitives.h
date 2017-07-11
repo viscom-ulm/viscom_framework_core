@@ -16,8 +16,8 @@
 
 namespace viscom { namespace math {
 
-    template<typename real> using Seg2 = std::array<glm::tvec2<real, glm::highp>, 2>;
-    template<typename real> using Seg3 = std::array<glm::tvec3<real, glm::highp>, 2>;
+    template<typename real> using Line2 = std::array<glm::tvec2<real, glm::highp>, 2>;
+    template<typename real> using Line3 = std::array<glm::tvec3<real, glm::highp>, 2>;
 
     template<typename real> using Tri2 = std::array<glm::tvec2<real, glm::highp>, 3>;
     template<typename real> using Tri3 = std::array<glm::tvec3<real, glm::highp>, 3>;
