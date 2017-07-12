@@ -12,6 +12,7 @@
 #include "core/open_gl.h"
 #include <glm/gtc/quaternion.hpp>
 #include <glm/mat4x4.hpp>
+#include "core/math/primitives.h"
 
 namespace viscom {
 
@@ -31,6 +32,8 @@ namespace viscom {
         glm::mat4 GetViewPerspectiveMatrix() const;
         glm::mat4 GetCentralPerspectiveMatrix() const;
         glm::mat4 GetCentralViewPerspectiveMatrix() const;
+
+        math::Line3<float> GetPickRay(const glm::vec2& globalScreenCoords) const;
 
     private:
         glm::mat4 CalculateViewUpdate() const;
