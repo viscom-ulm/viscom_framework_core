@@ -11,6 +11,8 @@
 #include "core/main.h"
 #include "core/open_gl.h"
 #include <glm/gtc/quaternion.hpp>
+#include <glm/mat4x4.hpp>
+#include "core/math/primitives.h"
 
 namespace viscom {
 
@@ -22,13 +24,20 @@ namespace viscom {
         glm::vec3 GetUserPosition() const;
         const glm::vec3& GetPosition() const { return position_; }
         const glm::quat& GetOrientation() const { return cameraOrientation_; }
+        const glm::mat4& GetPickMatrix() const { return pickMatrix_; }
         void SetPosition(const glm::vec3& position) { position_ = position; }
         void SetOrientation(const glm::quat& orientation) { cameraOrientation_ = orientation; }
+        void SetPickMatrix(const glm::mat4& pickMatrix) { pickMatrix_ = pickMatrix; }
 
         glm::mat4 GetViewPerspectiveMatrix() const;
         glm::mat4 GetCentralPerspectiveMatrix() const;
+        glm::mat4 GetCentralViewPerspectiveMatrix() const;
+
+        math::Line3<float> GetPickRay(const glm::vec2& globalScreenCoords) const;
 
     private:
+        glm::mat4 CalculateViewUpdate() const;
+
         /** Position of the camera. */
         glm::vec3 position_;
         /** Orientation of the camera. */ 
@@ -40,5 +49,8 @@ namespace viscom {
         glm::mat4 userView_;
         /** Standard projection matrix. */
         glm::mat4 projection_;
+
+        /** The matrix used for picking global coordinates. */
+        glm::mat4 pickMatrix_;
     };
 }

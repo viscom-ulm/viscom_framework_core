@@ -41,6 +41,14 @@ namespace viscom {
         void BaseDraw2D();
         void BaseCleanUp() const;
 
+        bool IsMouseButtonPressed(int button) const noexcept;
+        bool IsKeyPressed(int key) const noexcept;
+
+        /** Returns the current mouse position. */
+        const glm::vec2& GetMousePosition() const noexcept { return mousePosition_; }
+        /** Return the current mouse position in normalized coordinates. */
+        const glm::vec2& GetMousePositionNormalized() const noexcept { return mousePositionNormalized_; }
+
         static void ErrorCallbackStatic(int error, const char* description);
         static void BaseKeyboardCallbackStatic(GLFWwindow* window, int key, int scancode, int action, int mods);
         static void BaseCharCallbackStatic(GLFWwindow* window, unsigned int character);
@@ -57,6 +65,8 @@ namespace viscom {
         virtual void updateTuioCursor(TUIO::TuioCursor *tcur) override;
         virtual void removeTuioCursor(TUIO::TuioCursor *tcur) override;
 
+        void SetCursorInputMode(int mode);
+
         const FWConfiguration& GetConfig() const { return config_; }
         FrameBuffer& GetFramebuffer(size_t windowId) { return backBuffer_; }
 
@@ -69,6 +79,7 @@ namespace viscom {
 
         double GetCurrentAppTime() const { return currentTime_; }
         double GetElapsedTime() const { return elapsedTime_; }
+        void Terminate() const;
 
         CameraHelper* GetCamera() { return &camHelper_; }
         std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc) const;
@@ -112,5 +123,10 @@ namespace viscom {
         TextureManager textureManager_;
         /** Holds the mesh manager. */
         MeshManager meshManager_;
+
+        /** Holds the current mouse position. */
+        glm::vec2 mousePosition_;
+        /** Holds the current normalized mouse position. */
+        glm::vec2 mousePositionNormalized_;
     };
 }

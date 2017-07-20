@@ -128,6 +128,20 @@ namespace viscom {
     {
         auto lastTime = currentTime_;
         currentTime_ = glfwGetTime();
+
+        glm::vec2 relProjectorPos = glm::vec2(viewportScreen_[0].position_) / glm::vec2(viewportScreen_[0].size_);
+        glm::vec2 relProjectorSize = 1.0f / (glm::vec2(viewportQuadSize_[0]) / glm::vec2(viewportScreen_[0].size_));
+
+        glm::mat4 pickMatrix = glm::mat4{ 0.0f };
+        pickMatrix[0][0] = 2.0f * relProjectorSize.x;
+        pickMatrix[1][1] = -2.0f * relProjectorSize.y;
+        pickMatrix[3][0] = (-2.0f * relProjectorPos.x * relProjectorSize.x) - 1.0f;
+        pickMatrix[3][1] = (-2.0f * relProjectorPos.y * relProjectorSize.y) + 1.0f;
+        pickMatrix[3][2] = 1.0f;
+        pickMatrix[3][3] = 1.0f;
+        pickMatrix = glm::inverse(camHelper_.GetCentralViewPerspectiveMatrix()) * pickMatrix;
+        camHelper_.SetPickMatrix(pickMatrix);
+
         appNodeImpl_->UpdateSyncedInfo();
 
         elapsedTime_ = currentTime_ - lastTime;
@@ -159,6 +173,16 @@ namespace viscom {
     {
         ImGui_ImplGlfwGL3_Shutdown();
         appNodeImpl_->CleanUp();
+    }
+
+    bool ApplicationNodeInternal::IsMouseButtonPressed(int button) const noexcept
+    {
+        return glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+    }
+
+    bool ApplicationNodeInternal::IsKeyPressed(int key) const noexcept
+    {
+        return glfwGetKey(window_, key) == GLFW_PRESS;
     }
 
     void ApplicationNodeInternal::ErrorCallbackStatic(int error, const char* description)
@@ -233,6 +257,10 @@ namespace viscom {
     {
         auto mousePos = ConvertInputCoordinates(x, y);
 
+        mousePosition_ = glm::vec2(mousePos.x, mousePos.y);
+        mousePositionNormalized_.x = (2.0f * mousePosition_.x - 1.0f);
+        mousePositionNormalized_.y = -(2.0f * mousePosition_.y - 1.0f);
+
         ImGui_ImplGlfwGL3_MousePositionCallback(mousePos.x, mousePos.y);
         if (ImGui::GetIO().WantCaptureMouse) return;
 
@@ -272,6 +300,11 @@ namespace viscom {
 #endif
     }
 
+    void ApplicationNodeInternal::SetCursorInputMode(int mode)
+    {
+        glfwSetInputMode(window_, GLFW_CURSOR, mode);
+    }
+
     glm::dvec2 ApplicationNodeInternal::ConvertInputCoordinates(double x, double y)
     {
         glm::dvec2 result{ x, static_cast<double>(viewportScreen_[0].size_.y) - y };
@@ -279,6 +312,11 @@ namespace viscom {
         result /= viewportScreen_[0].size_;
         result.y = 1.0 - result.y;
         return result;
+    }
+
+    void ApplicationNodeInternal::Terminate() const
+    {
+        glfwSetWindowShouldClose(window_, true);
     }
 
     std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc) const
