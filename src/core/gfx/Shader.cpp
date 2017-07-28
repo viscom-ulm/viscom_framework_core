@@ -6,9 +6,6 @@
  * @brief  Implementation of the shader helper class.
  */
 
-#pragma once
-
-
 #include "Shader.h"
 #include <fstream>
 #include <iostream>
