@@ -19,6 +19,12 @@
 
 namespace viscom {
 
+    inline glm::vec3 GetMaterialColor(aiMaterial* material, const char* pKey, unsigned int type, unsigned int idx) {
+        aiColor3D c;
+        material->Get(pKey, type, idx, c);
+        return glm::vec3{ c.r, c.g, c.b };
+    }
+
     /**
      * Constructor, creates a mesh from file.
      * @param meshFilename the filename of the mesh file.
@@ -70,9 +76,9 @@ namespace viscom {
         for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
             auto material = scene->mMaterials[i];
             auto& mat = materials_[i];
-            material->Get(AI_MATKEY_COLOR_AMBIENT, mat.ambient);
-            material->Get(AI_MATKEY_COLOR_DIFFUSE, mat.diffuse);
-            material->Get(AI_MATKEY_COLOR_SPECULAR, mat.specular);
+            mat.ambient = GetMaterialColor(material, AI_MATKEY_COLOR_AMBIENT);
+            mat.diffuse = GetMaterialColor(material, AI_MATKEY_COLOR_DIFFUSE);
+            mat.specular = GetMaterialColor(material, AI_MATKEY_COLOR_SPECULAR);
             material->Get(AI_MATKEY_OPACITY, mat.alpha);
             material->Get(AI_MATKEY_SHININESS, mat.specularExponent);
             material->Get(AI_MATKEY_REFRACTI, mat.refraction);
