@@ -42,8 +42,11 @@ namespace viscom {
     math::Line3<float> CameraHelper::GetPickRay(const glm::vec2& globalScreenCoords) const
     {
         math::Line3<float> result;
-        result[0] = GetUserPosition();
-        result[1] = result[0] + glm::normalize(glm::vec3(pickMatrix_ * glm::vec4(globalScreenCoords.x, globalScreenCoords.y, 0.0f, 1.0f)));
+        result[0] = GetPosition() + GetUserPosition();
+        auto pickResult = pickMatrix_ * glm::vec4(globalScreenCoords.x, globalScreenCoords.y, -1., 1.0f);
+        pickResult /= pickResult.w;
+
+        result[1] = glm::vec3(pickResult);
         return result;
     }
 

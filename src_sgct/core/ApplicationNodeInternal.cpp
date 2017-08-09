@@ -187,7 +187,7 @@ namespace viscom {
             glm::vec2 relProjectorPos = glm::vec2(viewportScreen_[0].position_) / glm::vec2(viewportScreen_[0].size_);
             glm::vec2 relProjectorSize = 1.0f / (glm::vec2(viewportQuadSize_[0]) / glm::vec2(viewportScreen_[0].size_));
 
-            syncInfoLocal_.pickMatrix_ = glm::mat4{ 0.0f };
+            syncInfoLocal_.pickMatrix_ = glm::mat4{ 1.0f };
             syncInfoLocal_.pickMatrix_[0][0] = 2.0f * relProjectorSize.x;
             syncInfoLocal_.pickMatrix_[1][1] = -2.0f * relProjectorSize.y;
             syncInfoLocal_.pickMatrix_[3][0] = (-2.0f * relProjectorPos.x * relProjectorSize.x) - 1.0f;
