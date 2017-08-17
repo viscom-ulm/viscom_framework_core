@@ -16,10 +16,8 @@
 namespace viscom {
 
     SlaveNodeInternal::SlaveNodeInternal(ApplicationNodeInternal* appNode) :
-        ApplicationNodeImplementation{ appNode },
-        useAlphaTransition_{ false }
+        ApplicationNodeImplementation{ appNode }
     {
-        loadProperties();
     }
 
 
@@ -31,12 +29,8 @@ namespace viscom {
         LOG(DBUG) << "Initializing calibration data.";
         // init shaders
         calibrationProgram_ = GetApplication()->GetGPUProgramManager().GetResource("calibrationRendering", std::initializer_list<std::string>{ "calibrationRendering.vert", "calibrationRendering.frag" });
-        calibrationUseAlphaTestLoc_ = calibrationProgram_->getUniformLocation("withAlphaTrans");
-        calibrationAlphaTexLoc_ = calibrationProgram_->getUniformLocation("alphaTrans");
-        calibrationAlphaOverlapTexLoc_ = calibrationProgram_->getUniformLocation("alphaOverlap");
-        calibrationColorLookupTexLoc_ = calibrationProgram_->getUniformLocation("colorLookup");
+        calibrationAlphaTexLoc_ = calibrationProgram_->getUniformLocation("alphaTex");
         calibrationSceneTexLoc_ = calibrationProgram_->getUniformLocation("tex");
-        calibrationResolutionLoc_ = calibrationProgram_->getUniformLocation("resolution");
 
         LOG(DBUG) << "Loading projector data.";
         tinyxml2::XMLDocument doc;
@@ -48,12 +42,8 @@ namespace viscom {
         projectorViewport_.resize(numWindows);
         sceneFBOs_.reserve(numWindows);
         alphaTextures_.resize(numWindows, 0);
-        if (useAlphaTransition_) alphaTransTextures_.resize(numWindows, 0);
-        colorLookUpTableTextures_.resize(numWindows, 0);
 
         glGenTextures(static_cast<GLsizei>(numWindows), alphaTextures_.data());
-        if (useAlphaTransition_) glGenTextures(static_cast<GLsizei>(numWindows), alphaTransTextures_.data());
-        glGenTextures(static_cast<GLsizei>(numWindows), colorLookUpTableTextures_.data());
 
         for (auto i = 0U; i < numWindows; ++i) {
             LOG(DBUG) << "Initializing viewport: " << i;
@@ -65,9 +55,7 @@ namespace viscom {
             auto quadTexCoordsName = "screenQuadTexCoords" + std::to_string(projectorNo);
             auto resolutionScalingName = "resolutionScaling" + std::to_string(projectorNo);
             auto viewportName = "viewport" + std::to_string(projectorNo);
-            auto texAlphaName = "texAlphaFile" + std::to_string(projectorNo);
-            auto texAlphaTransName = "texAlphaTransFile" + std::to_string(projectorNo);
-            auto colorLUTName = "colorLUTFile" + std::to_string(projectorNo);
+            auto texAlphaFilename = "alphaTexture" + std::to_string(projectorNo) + ".bin";
 
             auto screenQuadCoords = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadCornersName.c_str()));
             auto screenQuadTexCoords = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadTexCoordsName.c_str()));
@@ -95,47 +83,22 @@ namespace viscom {
             sceneFBOs_[i].SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, GetViewportQuadSize(i).x, GetViewportQuadSize(i).y);
             GetApplication()->GetFramebuffer(i).SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, projectorViewport_[i].size_.x, projectorViewport_[i].size_.y);
 
-            auto texAlphaFilename = GetConfig().baseDirectory_ + "data/" + GetConfig().viscomConfigName_ + "/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaName.c_str())->GetText();
-            auto texAlphaTransFilename = GetConfig().baseDirectory_ + "data/" + GetConfig().viscomConfigName_ + "/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(texAlphaTransName.c_str())->GetText();
-            auto colorLUTFilename = GetConfig().baseDirectory_ + "data/" + GetConfig().viscomConfigName_ + "/" + doc.FirstChildElement("opencv_storage")->FirstChildElement(colorLUTName.c_str())->GetText();
-
             {
                 std::ifstream texAlphaFile(texAlphaFilename, std::ios::binary);
-                std::vector<glm::vec4> texAlphaData(projectorSize.x * projectorSize.y);
-                texAlphaFile.read(reinterpret_cast<char*>(texAlphaData.data()), sizeof(glm::vec4) * texAlphaData.size());
+                glm::u32vec2 textureSize;
+                std::vector<float> texAlphaData(projectorSize.x * projectorSize.y);
+
+                texAlphaFile.read(reinterpret_cast<char*>(&textureSize), sizeof(textureSize));
+                assert(textureSize.x == projectorSize.x && textureSize.y == projectorSize.y);
+                texAlphaFile.read(reinterpret_cast<char*>(texAlphaData.data()), sizeof(float) * texAlphaData.size());
 
                 glBindTexture(GL_TEXTURE_2D, alphaTextures_[i]);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, projectorSize.x, projectorSize.y, 0, GL_RGBA, GL_FLOAT, texAlphaData.data());
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, projectorSize.x, projectorSize.y, 0, GL_RED, GL_FLOAT, texAlphaData.data());
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            }
-
-            if (useAlphaTransition_) {
-                std::ifstream texAlphaTransFile(texAlphaTransFilename, std::ios::binary);
-                std::vector<glm::vec4> texAlphaTransData(projectorSize.x * projectorSize.y);
-                texAlphaTransFile.read(reinterpret_cast<char*>(texAlphaTransData.data()), sizeof(glm::vec4) * texAlphaTransData.size());
-
-                glBindTexture(GL_TEXTURE_2D, alphaTransTextures_[i]);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, projectorSize.x, projectorSize.y, 0, GL_RGBA, GL_FLOAT, texAlphaTransData.data());
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            }
-
-            {
-                std::ifstream colorLUTFile(colorLUTFilename, std::ios::binary);
-                std::vector<glm::vec3> colorLUTData(colorCalibrationCellCount_ * colorCalibrationCellCount_ * colorCalibrationValueCount_);
-                colorLUTFile.read(reinterpret_cast<char*>(colorLUTData.data()), sizeof(glm::vec3) * colorLUTData.size());
-
-                glBindTexture(GL_TEXTURE_2D_ARRAY, colorLookUpTableTextures_[i]);
-                glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGB16F, colorCalibrationCellCount_, colorCalibrationCellCount_, colorCalibrationValueCount_, 0, GL_RGB, GL_FLOAT, colorLUTData.data());
-                glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             }
 
 
@@ -201,21 +164,11 @@ namespace viscom {
 
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, sceneFBOs_[windowId].GetTextures()[0]);
-                if (useAlphaTransition_) {
-                    glActiveTexture(GL_TEXTURE1);
-                    glBindTexture(GL_TEXTURE_2D, alphaTransTextures_[windowId]);
-                }
-                glActiveTexture(GL_TEXTURE2);
+                glActiveTexture(GL_TEXTURE1);
                 glBindTexture(GL_TEXTURE_2D, alphaTextures_[windowId]);
-                glActiveTexture(GL_TEXTURE3);
-                glBindTexture(GL_TEXTURE_2D_ARRAY, colorLookUpTableTextures_[windowId]);
 
                 glUniform1i(calibrationSceneTexLoc_, 0);
-                glUniform2f(calibrationResolutionLoc_, static_cast<float>(projectorViewport_[windowId].size_.x), static_cast<float>(projectorViewport_[windowId].size_.y));
-                glUniform1i(calibrationUseAlphaTestLoc_, useAlphaTransition_ ? 1 : 0);
-                if (useAlphaTransition_) glUniform1i(calibrationAlphaTexLoc_, 1);
-                glUniform1i(calibrationAlphaOverlapTexLoc_, 2);
-                glUniform1i(calibrationColorLookupTexLoc_, 3);
+                glUniform1i(calibrationAlphaTexLoc_, 1);
 
                 glBindVertexArray(vaoProjectorQuads_);
                 glDrawArrays(GL_TRIANGLE_FAN, 4 * windowId, 4);
@@ -244,17 +197,6 @@ namespace viscom {
     }
 
 
-    void SlaveNodeInternal::loadProperties()
-    {
-        tinyxml2::XMLDocument doc;
-        OpenCVParserHelper::LoadXMLDocument("Program properties", GetConfig().programProperties_, doc);
-
-        useAlphaTransition_ = OpenCVParserHelper::ParseText<bool>(doc.FirstChildElement("opencv_storage")->FirstChildElement("alphaTransition"));
-        colorCalibrationCellCount_ = OpenCVParserHelper::ParseText<unsigned int>(doc.FirstChildElement("opencv_storage")->FirstChildElement("ccCellCount"));
-        colorCalibrationValueCount_ = OpenCVParserHelper::ParseText<unsigned int>(doc.FirstChildElement("opencv_storage")->FirstChildElement("ccValueCount"));
-    }
-
-
     void SlaveNodeInternal::CleanUp()
     {
         if (vaoProjectorQuads_ != 0) glDeleteVertexArrays(0, &vaoProjectorQuads_);
@@ -264,10 +206,6 @@ namespace viscom {
 
         if (!alphaTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(alphaTextures_.size()), alphaTextures_.data());
         alphaTextures_.clear();
-        if (!alphaTransTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(alphaTransTextures_.size()), alphaTransTextures_.data());
-        alphaTransTextures_.clear();
-        if (!colorLookUpTableTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(colorLookUpTableTextures_.size()), colorLookUpTableTextures_.data());
-        colorLookUpTableTextures_.clear();
 
         ApplicationNodeImplementation::CleanUp();
     }

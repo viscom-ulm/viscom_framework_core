@@ -25,15 +25,7 @@ namespace viscom {
         void CleanUp() override;
 
     private:
-        void loadProperties();
         void CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize);
-
-        /** Holds whether to use alpha transition for blending. */
-        bool useAlphaTransition_;
-        /** Holds the cell count for color calibration. */
-        unsigned int colorCalibrationCellCount_;
-        /** Holds the value count for color calibration. */
-        unsigned int colorCalibrationValueCount_;
 
 
         /** Holds the viewport for rendering directly to the projector. */
@@ -45,17 +37,9 @@ namespace viscom {
         /** Holds the shader program for applying the calibration to a rendered scene. */
         std::shared_ptr<GPUProgram> calibrationProgram_;
         /** Holds the location of the use alpha test flag. */
-        GLint calibrationUseAlphaTestLoc_ = -1;
-        /** Holds the location of the use alpha test flag. */
         GLint calibrationAlphaTexLoc_ = -1;
         /** Holds the location of the use alpha test flag. */
-        GLint calibrationAlphaOverlapTexLoc_ = -1;
-        /** Holds the location of the use alpha test flag. */
-        GLint calibrationColorLookupTexLoc_ = -1;
-        /** Holds the location of the use alpha test flag. */
         GLint calibrationSceneTexLoc_ = -1;
-        /** Holds the location of the use alpha test flag. */
-        GLint calibrationResolutionLoc_ = -1;
 
         /** Holds the vertex buffer for the projector quads. */
         GLuint vboProjectorQuads_ = 0;
@@ -65,9 +49,5 @@ namespace viscom {
         std::vector<FrameBuffer> sceneFBOs_;
         /** Holds the alpha textures. */
         std::vector<GLuint> alphaTextures_;
-        /** Holds the alpha trans textures. */
-        std::vector<GLuint> alphaTransTextures_;
-        /** Holds the color lookup tables textures. */
-        std::vector<GLuint> colorLookUpTableTextures_;
     };
 }
