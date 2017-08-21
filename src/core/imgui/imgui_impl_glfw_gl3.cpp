@@ -396,7 +396,7 @@ void ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ive
     // double current_time =  glfwGetTime();
     // io.DeltaTime = g_Time > 0.0 ? (float)(current_time - g_Time) : (float)(1.0f/60.0f);
     // g_Time = current_time;
-    io.DeltaTime = static_cast<float>(deltaTime);
+    io.DeltaTime = glm::max(0.00000001f, static_cast<float>(deltaTime));
     g_Time = currentTime;
 
     // Setup inputs
