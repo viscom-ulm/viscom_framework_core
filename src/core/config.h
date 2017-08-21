@@ -18,6 +18,9 @@ namespace viscom {
 
     struct FWConfiguration
     {
+        static constexpr const char* CALIBRATION_WALL_COORDINATES_IMAGE = "WallCoordinatesImage";
+        static constexpr const char* CALIBRATION_WALL_COORDINATES_VIEWPLANE = "WallCoordinatesViewplane";
+        static constexpr const char* CALIBRATION_PROJECTOR_COORDINATES_IMAGE = "ProjectorCoordinatesImage";
         static constexpr const char* CALIBRATION_QUAD_CORNERS_NAME = "screenQuadCoords";
         static constexpr const char* CALIBRATION_QUAD_TEX_COORDS_NAME = "screenQuadTexCoords";
         static constexpr const char* CALIBRATION_QUAD_RESOLUTION_SCALING_NAME = "resolutionScaling";
