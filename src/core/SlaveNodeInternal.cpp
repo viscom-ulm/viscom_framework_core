@@ -51,11 +51,11 @@ namespace viscom {
             auto projectorSize = GetViewportScreen(i).size_;
 
             auto projectorNo = GetGlobalProjectorId(slaveId, i);
-            auto quadCornersName = "screenQuadCoords" + std::to_string(projectorNo);
-            auto quadTexCoordsName = "screenQuadTexCoords" + std::to_string(projectorNo);
-            auto resolutionScalingName = "resolutionScaling" + std::to_string(projectorNo);
-            auto viewportName = "viewport" + std::to_string(projectorNo);
-            auto texAlphaFilename = "alphaTexture" + std::to_string(projectorNo) + ".bin";
+            auto quadCornersName = FWConfiguration::CALIBRATION_QUAD_CORNERS_NAME + std::to_string(projectorNo);
+            auto quadTexCoordsName = FWConfiguration::CALIBRATION_QUAD_TEX_COORDS_NAME + std::to_string(projectorNo);
+            auto resolutionScalingName = FWConfiguration::CALIBRATION_QUAD_RESOLUTION_SCALING_NAME + std::to_string(projectorNo);
+            auto viewportName = FWConfiguration::CALIBRATION_VIEWPORT_NAME + std::to_string(projectorNo);
+            auto texAlphaFilename = FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo) + ".bin";
 
             auto screenQuadCoords = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadCornersName.c_str()));
             auto screenQuadTexCoords = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadTexCoordsName.c_str()));
@@ -63,9 +63,9 @@ namespace viscom {
             auto viewport = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(viewportName.c_str()));
             for (auto j = 0U; j < screenQuadCoords.size(); ++j) quadCoordsProjector_.emplace_back(screenQuadCoords[j], screenQuadTexCoords[j]);
 
-            GetEngine().SetProjectionPlaneCoordinate(i, 0, sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::LowerLeft, viewport[0]);
-            GetEngine().SetProjectionPlaneCoordinate(i, 0, sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperLeft, viewport[1]);
-            GetEngine().SetProjectionPlaneCoordinate(i, 0, sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperRight, viewport[2]);
+            GetEngine().SetProjectionPlaneCoordinate(i, 0, sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::LowerLeft, viewport[3]);
+            GetEngine().SetProjectionPlaneCoordinate(i, 0, sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperLeft, viewport[0]);
+            GetEngine().SetProjectionPlaneCoordinate(i, 0, sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperRight, viewport[1]);
 
 
             auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling));
