@@ -18,6 +18,12 @@ namespace viscom {
 
     struct FWConfiguration
     {
+        static constexpr const char* CALIBRATION_QUAD_CORNERS_NAME = "screenQuadCoords";
+        static constexpr const char* CALIBRATION_QUAD_TEX_COORDS_NAME = "screenQuadTexCoords";
+        static constexpr const char* CALIBRATION_QUAD_RESOLUTION_SCALING_NAME = "resolutionScaling";
+        static constexpr const char* CALIBRATION_VIEWPORT_NAME = "viewport";
+        static constexpr const char* CALIBRATION_ALPHA_TEXTURE_NAME = "alphaTexture";
+
         std::string baseDirectory_;
         std::string viscomConfigName_;
         std::string programProperties_;
