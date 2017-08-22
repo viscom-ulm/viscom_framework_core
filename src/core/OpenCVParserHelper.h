@@ -21,6 +21,7 @@ namespace viscom {
         template<typename T> static T ParseText(tinyxml2::XMLElement* element);
         template<typename T> static T Parse(tinyxml2::XMLElement* element);
 
+        static std::vector<float> ParseVectorf(tinyxml2::XMLElement* element);
         static std::vector<glm::vec2> ParseVector2f(tinyxml2::XMLElement* element);
         static std::vector<glm::vec3> ParseVector3f(tinyxml2::XMLElement* element);
 

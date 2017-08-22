@@ -12,6 +12,7 @@
 #include "core/OpenCVParserHelper.h"
 #include <fstream>
 #include <imgui.h>
+#include <experimental/filesystem>
 
 namespace viscom {
 
@@ -35,6 +36,8 @@ namespace viscom {
         LOG(DBUG) << "Loading projector data.";
         tinyxml2::XMLDocument doc;
         OpenCVParserHelper::LoadXMLDocument("Projector data", GetConfig().projectorData_, doc);
+        std::experimental::filesystem::path projectorDataPath(GetConfig().projectorData_);
+        auto alphaTexturePath = projectorDataPath.parent_path();
 
         LOG(DBUG) << "Initializing viewports.";
         auto slaveId = sgct_core::ClusterManager::instance()->getThisNodeId();
@@ -55,12 +58,15 @@ namespace viscom {
             auto quadTexCoordsName = FWConfiguration::CALIBRATION_QUAD_TEX_COORDS_NAME + std::to_string(projectorNo);
             auto resolutionScalingName = FWConfiguration::CALIBRATION_QUAD_RESOLUTION_SCALING_NAME + std::to_string(projectorNo);
             auto viewportName = FWConfiguration::CALIBRATION_VIEWPORT_NAME + std::to_string(projectorNo);
-            auto texAlphaFilename = FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo) + ".bin";
+            auto texAlphaFilename = alphaTexturePath.string() + "/" + FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo) + ".bin";
 
             auto screenQuadCoords = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadCornersName.c_str()));
             auto screenQuadTexCoords = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadTexCoordsName.c_str()));
-            auto resolutionScaling = OpenCVParserHelper::Parse2f(doc.FirstChildElement("opencv_storage")->FirstChildElement(resolutionScalingName.c_str()));
-            auto viewport = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(viewportName.c_str()));
+            auto resolutionScalingV = OpenCVParserHelper::ParseVectorf(doc.FirstChildElement("opencv_storage")->FirstChildElement(resolutionScalingName.c_str()));
+            glm::vec2 resolutionScaling(resolutionScalingV[0], resolutionScalingV[1]);
+            auto viewportv2 = OpenCVParserHelper::ParseVector2f(doc.FirstChildElement("opencv_storage")->FirstChildElement(viewportName.c_str()));
+            std::vector<glm::vec3> viewport;
+            for (const auto& v : viewportv2) viewport.emplace_back(v, 0.0f);
             for (auto j = 0U; j < screenQuadCoords.size(); ++j) quadCoordsProjector_.emplace_back(screenQuadCoords[j], screenQuadTexCoords[j]);
 
             GetEngine().SetProjectionPlaneCoordinate(i, 0, sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::LowerLeft, viewport[3]);
@@ -70,8 +76,8 @@ namespace viscom {
 
             auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling));
             glm::vec3 vpSize(GetConfig().nearPlaneSize_.x, GetConfig().nearPlaneSize_.y, 1.0f);
-            auto totalScreenSize = (glm::vec2(fboSize) * 2.0f * vpSize.xy) / (viewport[2] - viewport[0]).xy;
-            GetViewportScreen(i).position_ = glm::ivec2(glm::floor(((viewport[0] + vpSize) / (2.0f * vpSize)).xy * totalScreenSize));
+            auto totalScreenSize = (glm::vec2(fboSize) * 2.0f * vpSize.xy) / (viewport[1] - viewport[3]).xy;
+            GetViewportScreen(i).position_ = glm::ivec2(glm::floor(((viewport[3] + vpSize) / (2.0f * vpSize)).xy * totalScreenSize));
             GetViewportScreen(i).size_ = glm::uvec2(glm::floor(totalScreenSize));
             GetViewportQuadSize(i) = fboSize;
             GetViewportScaling(i) = totalScreenSize / GetConfig().virtualScreenSize_;

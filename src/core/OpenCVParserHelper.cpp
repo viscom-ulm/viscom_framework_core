@@ -26,6 +26,28 @@ namespace viscom {
         return result.substr(1, result.size() - 2);
     }
 
+    std::vector<float> OpenCVParserHelper::ParseVectorf(tinyxml2::XMLElement * element)
+    {
+        std::vector<float> result;
+
+        std::string typeId = element->Attribute("type_id");
+        if (typeId != "opencv-matrix") throw std::runtime_error("Not a OpenCV matrix.");
+
+        if (1 != Parse<int>(element->FirstChildElement("cols"))) throw std::runtime_error("Too many columns.");
+        std::string dtStr = element->FirstChildElement("dt")->GetText();
+        if ("f" != dtStr) throw std::runtime_error("Wrong type.");
+        auto rowsVal = element->FirstChildElement("rows");
+        result.resize(Parse<size_t>(element->FirstChildElement("rows")));
+
+        std::stringstream dataStream(element->FirstChildElement("data")->GetText());
+        float x;
+        size_t i = 0;
+        while (dataStream >> x) {
+            result[i++] = x;
+        }
+        return result;
+    }
+
     std::vector<glm::vec2> OpenCVParserHelper::ParseVector2f(tinyxml2::XMLElement* element)
     {
         std::vector<glm::vec2> result;

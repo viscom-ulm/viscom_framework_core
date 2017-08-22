@@ -127,7 +127,7 @@ namespace viscom {
             glm::vec2 vpLocalSize = vpLocalUpperRight - vpLocalLowerLeft;
             glm::vec2 vpTotalSize = 2.0f * GetConfig().nearPlaneSize_;
 
-            glm::vec2 totalScreenSize = (vpTotalSize / vpLocalSize) * glm::vec2(projectorSize);
+            glm::vec2 totalScreenSize = glm::ceil((vpTotalSize / vpLocalSize) * glm::vec2(projectorSize));
 
             viewportScreen_[wId].position_ = ((vpLocalLowerLeft + GetConfig().nearPlaneSize_) / vpTotalSize) * totalScreenSize;
             viewportScreen_[wId].size_ = glm::ivec2(totalScreenSize);
