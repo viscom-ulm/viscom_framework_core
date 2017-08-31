@@ -57,5 +57,16 @@ namespace viscom {
         bool is_ready(std::future<R> const& f) {
             return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
         }
+
+        static std::string trim(const std::string& str, const std::string& whitespace = " \t") {
+            const auto strBegin = str.find_first_not_of(whitespace);
+            if (strBegin == std::string::npos)
+                return ""; // no content
+
+            const auto strEnd = str.find_last_not_of(whitespace);
+            const auto strRange = strEnd - strBegin + 1;
+
+            return str.substr(strBegin, strRange);
+        }
     }
 }
