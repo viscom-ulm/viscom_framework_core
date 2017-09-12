@@ -15,12 +15,12 @@ set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 add_subdirectory(extern/fwcore/extern/assimp EXCLUDE_FROM_ALL)
 
-set(VISCOM_CLIENTGUI ON CACHE BOOL "Use ImGui on clients.")
-set(VISCOM_SYNCINPUT ON CACHE BOOL "Synchronize input from master to clients.")
-set(VISCOM_CLIENTMOUSECURSOR ON CACHE BOOL "Show the mouse cursor on clients.")
+set(VISCOM_CLIENTGUI OFF CACHE BOOL "Use ImGui on clients.")
+set(VISCOM_SYNCINPUT OFF CACHE BOOL "Synchronize input from master to clients.")
+set(VISCOM_CLIENTMOUSECURSOR OFF CACHE BOOL "Show the mouse cursor on clients.")
 set(VISCOM_APP_NAME "${APP_NAME}" CACHE STRING "Name of the application to be build.")
 set(VISCOM_LOCAL_ONLY ON CACHE BOOL "Only do a local build without calibration information.")
-set(VISCOM_USE_SGCT ON CACHE BOOL "Use SGCT for local builds.")
+set(VISCOM_USE_SGCT OFF CACHE BOOL "Use SGCT for local builds.")
 set(VISCOM_CONFIG_NAME "single" CACHE STRING "Name/directory of the configuration files to be used.")
 set(VISCOM_VIRTUAL_SCREEN_X 1920 CACHE INTEGER "Virtual screen size in x direction.")
 set(VISCOM_VIRTUAL_SCREEN_Y 1080 CACHE INTEGER "Virtual screen size in y direction.")
@@ -28,7 +28,7 @@ set(VISCOM_NEAR_PLANE_SIZE_X "1.7778" CACHE STRING "Size of the near plane in x 
 set(VISCOM_NEAR_PLANE_SIZE_Y "1.0" CACHE STRING "Size of the near plane in y direction.")
 set(VISCOM_INSTALL_BASE_PATH "D:/LabShare/cluster/apps/" CACHE PATH "Path to install the project to (should be the shared apps directory).")
 # This could be changed to "off" if the default target doesn't need the tuio library
-set(TUIO_LIB ON CACHE BOOL "Use TUIO input library")
+set(TUIO_LIB OFF CACHE BOOL "Use TUIO input library")
 set(TUIO_PORT 3333 CACHE STRING "UDP Port for TUIO to listen on")
 
 # Build-flags.
