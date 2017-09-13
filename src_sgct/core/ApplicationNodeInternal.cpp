@@ -89,8 +89,13 @@ namespace viscom {
             throw std::runtime_error("Failed to create SGCT engine.");
         }
 
-        assert(instance_ == nullptr);
-        instance_ = this;
+        {
+            std::lock_guard<std::mutex> lock{ instanceMutex_ };
+            assert(instance_ == nullptr);
+            instance_ = this;
+            initialized_ = true;
+        }
+
         lastFrameTime_ = sgct::Engine::getTime();
         syncInfoLocal_.currentTime_ = lastFrameTime_;
         sgct::SharedData::instance()->setEncodeFunction(BaseEncodeDataStatic);
@@ -106,6 +111,8 @@ namespace viscom {
     {
         if (engine_->isMaster()) appNodeImpl_ = std::make_unique<MasterNode>(this);
         else appNodeImpl_ = std::make_unique<SlaveNode>(this);
+
+        appNodeImpl_->PreWindow();
     }
 
     void ApplicationNodeInternal::BaseInitOpenGL()
@@ -296,7 +303,7 @@ namespace viscom {
 #endif
     }
 
-    void ApplicationNodeInternal::BaseCleanUp() const
+    void ApplicationNodeInternal::BaseCleanUp()
     {
         std::lock_guard<std::mutex> lock{ instanceMutex_ };
         instance_ = nullptr;
@@ -306,6 +313,7 @@ namespace viscom {
         if (GetEngine()->isMaster()) ImGui_ImplGlfwGL3_Shutdown();
 #endif
         appNodeImpl_->CleanUp();
+        initialized_ = false;
     }
 
     bool ApplicationNodeInternal::IsMouseButtonPressed(int button) const noexcept
@@ -321,6 +329,7 @@ namespace viscom {
     // ReSharper disable CppMemberFunctionMayBeConst
     void ApplicationNodeInternal::BaseKeyboardCallback(int key, int scancode, int action, int mods)
     {
+        if (!initialized_) return;
         keyPressedState_[key] = (action == GLFW_RELEASE) ? false : true;
 
         if (engine_->isMaster()) {
@@ -339,6 +348,7 @@ namespace viscom {
 
     void ApplicationNodeInternal::BaseCharCallback(unsigned int character, int mods)
     {
+        if (!initialized_) return;
         if (engine_->isMaster()) {
 #ifdef VISCOM_SYNCINPUT
             charEvents_.emplace_back(character, mods);
@@ -355,6 +365,7 @@ namespace viscom {
 
     void ApplicationNodeInternal::BaseMouseButtonCallback(int button, int action)
     {
+        if (!initialized_) return;
         mousePressedState_[button] = (action == GLFW_RELEASE) ? false : true;
 
         if (engine_->isMaster()) {
@@ -373,6 +384,7 @@ namespace viscom {
 
     void ApplicationNodeInternal::BaseMousePosCallback(double x, double y)
     {
+        if (!initialized_) return;
         auto mousePos = glm::dvec2(x, y);
         if (engine_->isMaster()) {
             mousePos = ConvertInputCoordinatesLocalToGlobal(mousePos);
@@ -404,6 +416,7 @@ namespace viscom {
 
     void ApplicationNodeInternal::BaseMouseScrollCallback(double xoffset, double yoffset)
     {
+        if (!initialized_) return;
         if (engine_->isMaster()) {
 #ifdef VISCOM_SYNCINPUT
             mouseScrollEvents_.emplace_back(xoffset, yoffset);
@@ -420,16 +433,19 @@ namespace viscom {
 
     void ApplicationNodeInternal::BaseDataTransferCallback(void* receivedData, int receivedLength, int packageID, int clientID)
     {
+        if (!initialized_) return;
         appNodeImpl_->DataTransferCallback(receivedData, receivedLength, packageID, clientID);
     }
 
     void ApplicationNodeInternal::BaseDataAcknowledgeCallback(int packageID, int clientID)
     {
+        if (!initialized_) return;
         appNodeImpl_->DataAcknowledgeCallback(packageID, clientID);
     }
 
     void ApplicationNodeInternal::BaseDataTransferStatusCallback(bool connected, int clientID)
     {
+        if (!initialized_) return;
         appNodeImpl_->DataTransferStatusCallback(connected, clientID);
     }
 
@@ -437,6 +453,7 @@ namespace viscom {
 
     void ApplicationNodeInternal::addTuioCursor(TUIO::TuioCursor* tcur)
     {
+        if (!initialized_) return;
         if (engine_->isMaster()) {
 #ifdef WITH_TUIO
             auto tPoint = tcur->getPosition();
@@ -448,6 +465,7 @@ namespace viscom {
 
     void ApplicationNodeInternal::updateTuioCursor(TUIO::TuioCursor* tcur)
     {
+        if (!initialized_) return;
         if (engine_->isMaster()) {
 #ifdef WITH_TUIO
             auto tPoint = tcur->getPosition();
@@ -459,6 +477,7 @@ namespace viscom {
 
     void ApplicationNodeInternal::removeTuioCursor(TUIO::TuioCursor* tcur)
     {
+        if (!initialized_) return;
         if (engine_->isMaster()) {
 #ifdef WITH_TUIO
             // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]

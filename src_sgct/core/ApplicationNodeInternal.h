@@ -54,7 +54,7 @@ namespace viscom {
         void BaseDrawFrame();
         void BaseDraw2D();
         void BasePostDraw();
-        void BaseCleanUp() const;
+        void BaseCleanUp();
         void BaseDataTransferCallback(void* receivedData, int receivedLength, int packageID, int clientID);
         void BaseDataAcknowledgeCallback(int packageID, int clientID);
         void BaseDataTransferStatusCallback(bool connected, int clientID);
@@ -116,6 +116,8 @@ namespace viscom {
         static ApplicationNodeInternal* instance_;
         /** Holds the mutex for the instance pointer. */
         static std::mutex instanceMutex_;
+        /** Holds the initialization state of this object. */
+        bool initialized_ = false;
 
         /** Holds the applications configuration. */
         FWConfiguration config_;
