@@ -27,6 +27,7 @@ set(VISCOM_VIRTUAL_SCREEN_Y 1080 CACHE INTEGER "Virtual screen size in y directi
 set(VISCOM_NEAR_PLANE_SIZE_X "1.7778" CACHE STRING "Size of the near plane in x direction.")
 set(VISCOM_NEAR_PLANE_SIZE_Y "1.0" CACHE STRING "Size of the near plane in y direction.")
 set(VISCOM_INSTALL_BASE_PATH "D:/LabShare/cluster/apps/" CACHE PATH "Path to install the project to (should be the shared apps directory).")
+set(VISCOM_OPENGL_PROFILE "3.3" CACHE STRING "OpenGL profile version to use.")
 # This could be changed to "off" if the default target doesn't need the tuio library
 set(TUIO_LIB ON CACHE BOOL "Use TUIO input library")
 set(TUIO_PORT 3333 CACHE STRING "UDP Port for TUIO to listen on")

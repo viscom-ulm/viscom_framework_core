@@ -74,7 +74,16 @@ namespace viscom {
 
     void ApplicationNodeInternal::InitNode()
     {
-        if (!engine_->init(sgct::Engine::OpenGL_3_3_Core_Profile))
+        sgct::Engine::RunMode rm = sgct::Engine::Default_Mode;
+        if (config_.openglProfile_ == "3.3") rm = sgct::Engine::OpenGL_3_3_Core_Profile;
+        else if (config_.openglProfile_ == "4.0") rm = sgct::Engine::OpenGL_4_0_Core_Profile;
+        else if (config_.openglProfile_ == "4.1") rm = sgct::Engine::OpenGL_4_1_Core_Profile;
+        else if (config_.openglProfile_ == "4.2") rm = sgct::Engine::OpenGL_4_2_Core_Profile;
+        else if (config_.openglProfile_ == "4.3") rm = sgct::Engine::OpenGL_4_3_Core_Profile;
+        else if (config_.openglProfile_ == "4.4") rm = sgct::Engine::OpenGL_4_4_Core_Profile;
+        else if (config_.openglProfile_ == "4.5") rm = sgct::Engine::OpenGL_4_5_Core_Profile;
+
+        if (!engine_->init(rm))
         {
             LOG(FATAL) << "Failed to create SGCT engine.";
             throw std::runtime_error("Failed to create SGCT engine.");

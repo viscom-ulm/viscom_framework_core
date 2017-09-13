@@ -39,6 +39,7 @@ namespace viscom {
             else if (str == "VIRTUAL_SCREEN_Y=") ifs >> config.virtualScreenSize_.y;
             else if (str == "NEAR_PLANE_SIZE_X=") ifs >> config.nearPlaneSize_.x;
             else if (str == "NEAR_PLANE_SIZE_Y=") ifs >> config.nearPlaneSize_.y;
+            else if (str == "OPENGL_PROFILE=") ifs >> config.openglProfile_;
         }
         ifs.close();
 

@@ -38,6 +38,7 @@ namespace viscom {
         glm::vec2 virtualScreenSize_;
         glm::vec2 nearPlaneSize_;
         std::vector<std::string> resourceSearchPaths_;
+        std::string openglProfile_;
     };
 
     FWConfiguration LoadConfiguration(const std::string& configFilename);
