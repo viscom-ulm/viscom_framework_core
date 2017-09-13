@@ -33,9 +33,18 @@ namespace viscom {
         textureManager_{ this },
         meshManager_{ this }
     {
+        std::pair<int, int> oglVer = std::make_pair(3, 3);
+        if (config_.openglProfile_ == "3.3") oglVer = std::make_pair(3, 3);
+        else if (config_.openglProfile_ == "4.0") oglVer = std::make_pair(4, 0);
+        else if (config_.openglProfile_ == "4.1") oglVer = std::make_pair(4, 1);
+        else if (config_.openglProfile_ == "4.2") oglVer = std::make_pair(4, 2);
+        else if (config_.openglProfile_ == "4.3") oglVer = std::make_pair(4, 3);
+        else if (config_.openglProfile_ == "4.4") oglVer = std::make_pair(4, 4);
+        else if (config_.openglProfile_ == "4.5") oglVer = std::make_pair(4, 5);
+
         glfwInit();
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, oglVer.first);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, oglVer.second);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 #ifdef _DEBUG
