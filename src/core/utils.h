@@ -58,15 +58,22 @@ namespace viscom {
             return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
         }
 
-        static std::string trim(const std::string& str, const std::string& whitespace = " \t") {
-            const auto strBegin = str.find_first_not_of(whitespace);
-            if (strBegin == std::string::npos)
-                return ""; // no content
+        /**
+         * Removes whitespaces on string beginning and end
+         * @param s the string from which to trim
+         * @param w the whitespace characters which should be removed (default: <space> and <tab>)
+         * @return
+         */
+        static std::string trim(const std::string& s, const std::string& w = " \t") {
+            const auto strBegin = s.find_first_not_of(w);
+            if (std::string::npos == strBegin) {
+                return ""; // empty string or just whitespaces.
+            }
 
-            const auto strEnd = str.find_last_not_of(whitespace);
+            const auto strEnd = s.find_last_not_of(w);
             const auto strRange = strEnd - strBegin + 1;
 
-            return str.substr(strBegin, strRange);
+            return s.substr(strBegin, strRange);
         }
     }
 }
