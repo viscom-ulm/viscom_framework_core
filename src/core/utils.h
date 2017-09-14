@@ -62,7 +62,7 @@ namespace viscom {
          * Removes whitespaces on string beginning and end
          * @param s the string from which to trim
          * @param w the whitespace characters which should be removed (default: <space> and <tab>)
-         * @return
+         * @return the string without whitespaces
          */
         static std::string trim(const std::string& s, const std::string& w = " \t") {
             const auto strBegin = s.find_first_not_of(w);
