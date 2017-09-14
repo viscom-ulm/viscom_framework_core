@@ -253,7 +253,7 @@ namespace viscom {
             LOG(WARNING) << L"Header inclusion depth limit reached! Cyclic header inclusion?";
             throw std::runtime_error("Header inclusion depth limit reached! Cyclic header inclusion? File " + filename);
         }
-        using namespace std::experimental;
+        namespace filesystem = std::experimental::filesystem;
         filesystem::path sdrFile{ filename };
         auto currentPath = sdrFile.parent_path().string() + "/";
         std::ifstream file(filename.c_str(), std::ifstream::in);
