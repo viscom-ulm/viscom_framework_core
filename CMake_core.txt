@@ -37,6 +37,8 @@ if(UNIX)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -Wno-unused-function -Wno-unused-parameter -Wextra -Wpedantic -std=c++1z")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++1z")
 
+  list(APPEND CORE_LIBS stdc++fs)
+
   # add compiler-options for AppleClang to ignore linker warnings from assimp on macOS
   if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
     add_compile_options(-fvisibility=hidden -fvisibility-inlines-hidden)
