@@ -11,6 +11,8 @@
 #include <iostream>
 #include <sstream>
 #include <iterator>
+#include <experimental/filesystem>
+#include <regex>
 #include "core/ApplicationNodeInternal.h"
 
 namespace viscom {
@@ -199,20 +201,12 @@ namespace viscom {
      */
     GLuint Shader::compileShader(const std::string& filename, GLenum type, const std::string& strType)
     {
-        std::ifstream file(filename.c_str(), std::ifstream::in);
-        if (!file) {
-            LOG(WARNING) << "Could not load shader file!";
-            std::cerr << "Could not load shader file!";
-            throw std::runtime_error("Could not load shader file!");
-        }
-        std::string line;
-        std::stringstream content;
-        while (file.good()) {
-            std::getline(file, line);
-            content << line << std::endl;
-        }
-        file.close();
-        auto shaderText = content.str();
+        unsigned int fileId{0};
+        static std::vector<std::string> defines{};
+        auto shaderText = LoadShaderFile(filename, defines, fileId, 0);
+        std::ofstream shader_out(filename + ".gen");
+        shader_out << shaderText;
+        shader_out.close();
         auto shader = glCreateShader(type);
         if (shader == 0) {
             LOG(WARNING) << "Could not create shader!";
@@ -244,4 +238,65 @@ namespace viscom {
         }
         return shader;
     }
+
+    /**
+     * Loads a shader from file and recursively adds all includes.
+     * taken from https://github.com/dasmysh/OGLFramework_uulm/blob/c4548e84d29bc16b53360f65227597530306c686/OGLFramework_uulm/gfx/glrenderer/Shader.cpp
+     * licensed under MIT by Sebastian Maisch
+     * @param filename the name of the file to load.
+     * @param defines the defines to add at the beginning.
+     * @param fileId the id of the current file.
+     */
+    std::string Shader::LoadShaderFile(const std::string& filename, const std::vector<std::string>& defines, unsigned int& fileId, unsigned int recursionDepth)
+    {
+        if (recursionDepth > 32) {
+            LOG(WARNING) << L"Header inclusion depth limit reached! Cyclic header inclusion?";
+            throw std::runtime_error("Header inclusion depth limit reached! Cyclic header inclusion? File " + filename);
+        }
+        namespace filesystem = std::experimental::filesystem;
+        filesystem::path sdrFile{ filename };
+        auto currentPath = sdrFile.parent_path().string() + "/";
+        std::ifstream file(filename.c_str(), std::ifstream::in);
+        std::string line;
+        std::stringstream content;
+        unsigned int lineCount = 1;
+        auto nextFileId = fileId + 1;
+
+        while (file.good()) {
+            std::getline(file, line);
+            auto trimedLine = line;
+            utils::trim(trimedLine);
+
+            static const std::regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
+            std::smatch matches;
+            if (std::regex_search(line, matches, re)) {
+                auto includeFile = currentPath + matches[1].str();
+                if (!filesystem::exists(includeFile)) {
+                    LOG(WARNING) << filename.c_str() << L"(" << lineCount << ") : fatal error: cannot open include file \""
+                               << includeFile.c_str() << "\".";
+                    throw std::runtime_error("Cannot open include file: " + includeFile);
+                }
+                content << "#line " << 1 << " " << nextFileId << std::endl;
+                content << LoadShaderFile(includeFile, std::vector<std::string>(), nextFileId, recursionDepth + 1);
+                content << "#line " << lineCount + 1 << " " << fileId << std::endl;
+            } else {
+                content << line << std::endl;
+            }
+
+            if (utils::beginsWith(trimedLine, "#version")) {
+                for (auto& def : defines) {
+                    auto trimedDefine = def;
+                    utils::trim(trimedDefine);
+                    content << "#define " << trimedDefine << std::endl;
+                }
+                content << "#line " << lineCount + 1 << " " << fileId << std::endl;
+            }
+            ++lineCount;
+        }
+
+        file.close();
+        fileId = nextFileId;
+        return content.str();
+    }
+
 }

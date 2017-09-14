@@ -66,6 +66,7 @@ namespace viscom {
         std::string strType_;
 
         static GLuint compileShader(const std::string& filename, GLenum type, const std::string& strType);
+        static std::string LoadShaderFile(const std::string &filename, const std::vector<std::string> &defines, unsigned int &fileId, unsigned int recursionDepth);
         void unload() noexcept;
     };
 }
