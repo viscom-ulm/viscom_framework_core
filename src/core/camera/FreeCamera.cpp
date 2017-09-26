@@ -26,11 +26,13 @@ namespace viscom {
      *  Constructor.
      *  @param theCamPos the cameras initial position.
      *  @param cameraHelper the camera helper class.
+     *  @param speed the initial speed of camera movement.
      */
-    FreeCamera::FreeCamera(const glm::vec3& theCamPos, viscom::CameraHelper& cameraHelper) noexcept :
+    FreeCamera::FreeCamera(const glm::vec3& theCamPos, viscom::CameraHelper& cameraHelper, double speed) noexcept :
         CameraBase(theCamPos, cameraHelper),
         currentPY_{ 0.0f, 0.0f },
         currentMousePosition_{ 0.0f, 0.0f },
+        moveSpeed_{speed},
         firstRun_{ true }
     {
     }
@@ -45,8 +47,6 @@ namespace viscom {
      */
     void FreeCamera::UpdateCamera(double elapsedTime, const ApplicationNodeBase* sender)
     {
-        const double moveSpeed = 30.0;
-
         glm::vec3 camMove{ 0.0f };
         if (sender->IsKeyPressed(GLFW_KEY_W)) camMove -= glm::vec3(0.0f, 0.0f, 1.0f);
         if (sender->IsKeyPressed(GLFW_KEY_A)) camMove -= glm::vec3(1.0f, 0.0f, 0.0f);
@@ -56,7 +56,7 @@ namespace viscom {
         if (sender->IsKeyPressed(GLFW_KEY_SPACE)) camMove += glm::vec3(0.0f, 1.0f, 0.0f);
 
         float moveLength = glm::length(camMove);
-        if (moveLength > glm::epsilon<float>()) camMove = (camMove / moveLength) * static_cast<float>(moveSpeed * elapsedTime);
+        if (moveLength > glm::epsilon<float>()) camMove = (camMove / moveLength) * static_cast<float>(moveSpeed_ * elapsedTime);
         auto camPos = GetPosition() + glm::inverse(GetOrientation()) * camMove;
         SetCameraPosition(camPos);
 
@@ -81,4 +81,22 @@ namespace viscom {
 
         SetCameraOrientation(newOrientation);
     }
+
+    /**
+     * Set the speed of camera movement.
+     */
+    void FreeCamera::SetMoveSpeed(double speed)
+    {
+        moveSpeed_ = speed;
+    }
+
+    /**
+     * Get the current speed of camera movement
+     * @return speed value
+     */
+    double FreeCamera::GetMoveSpeed()
+    {
+        return moveSpeed_;
+    }
+
 }
