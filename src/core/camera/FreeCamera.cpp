@@ -28,7 +28,7 @@ namespace viscom {
      *  @param cameraHelper the camera helper class.
      *  @param speed the initial speed of camera movement.
      */
-    FreeCamera::FreeCamera(const glm::vec3& theCamPos, viscom::CameraHelper& cameraHelper, double speed = 30.0) noexcept :
+    FreeCamera::FreeCamera(const glm::vec3& theCamPos, viscom::CameraHelper& cameraHelper, double speed) noexcept :
         CameraBase(theCamPos, cameraHelper),
         currentPY_{ 0.0f, 0.0f },
         currentMousePosition_{ 0.0f, 0.0f },
