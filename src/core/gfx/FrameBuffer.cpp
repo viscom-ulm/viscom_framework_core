@@ -7,11 +7,23 @@
  */
 
 #include "FrameBuffer.h"
+#include "core/open_gl.h"
 
 namespace viscom {
+
+    FrameBufferTextureDescriptor::FrameBufferTextureDescriptor(GLenum internalFormat) :
+        FrameBufferTextureDescriptor { internalFormat, GL_TEXTURE_2D }
+    {
+    }
+
+    FrameBufferTextureDescriptor::FrameBufferTextureDescriptor(GLenum internalFormat, GLenum texType) :
+        internalFormat_{ internalFormat }, texType_{ texType }
+    {
+    }
+
     /**
      * Constructor.
-     * Creates a FrameBuffer representing the backbuffer.
+     * Creates a FrameBuffer representing the back buffer.
      */
     FrameBuffer::FrameBuffer() :
         fbo_(0),
@@ -24,7 +36,7 @@ namespace viscom {
 
     /**
      * Constructor.
-     * Creates a new FrameBuffer with given width and height. It is initialized as backbuffer as default.
+     * Creates a new FrameBuffer with given width and height. It is initialized as back buffer as default.
      * @param fbWidth the frame buffers width
      * @param fbHeight the frame buffers height.
      * @param d the frame buffers description.

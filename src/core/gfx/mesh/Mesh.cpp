@@ -13,9 +13,7 @@
 #include "core/gfx/Material.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
-
-#undef max
-#undef min
+#include "core/open_gl.h"
 
 namespace viscom {
 

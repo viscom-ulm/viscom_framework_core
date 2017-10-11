@@ -12,9 +12,7 @@
 #include <stb_image.h>
 #include "core/ApplicationNodeInternal.h"
 #include "core/resources/ResourceManager.h"
-
-#undef min
-#undef max
+#include "core/open_gl.h"
 
 namespace viscom {
 

@@ -9,7 +9,7 @@
 #pragma once
 
 #include "core/main.h"
-#include "core/open_gl.h"
+#include "core/open_gl_fwd.h"
 
 namespace viscom {
 
@@ -26,8 +26,8 @@ namespace viscom {
     /** Describes a texture render target for frame buffers. */
     struct FrameBufferTextureDescriptor
     {
-        // ReSharper disable once CppNonExplicitConvertingConstructor
-        FrameBufferTextureDescriptor(GLenum internalFormat, GLenum texType = GL_TEXTURE_2D) : internalFormat_{ internalFormat }, texType_{ texType } {}
+        explicit FrameBufferTextureDescriptor(GLenum internalFormat);
+        FrameBufferTextureDescriptor(GLenum internalFormat, GLenum texType);
 
         /** The texture descriptor. */
         GLenum internalFormat_;

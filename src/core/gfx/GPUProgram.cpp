@@ -9,6 +9,8 @@
 #include "GPUProgram.h"
 #include <iostream>
 #include "core/ApplicationNodeInternal.h"
+#include "core/gfx/Shader.h"
+#include "core/open_gl.h"
 
 namespace viscom {
 

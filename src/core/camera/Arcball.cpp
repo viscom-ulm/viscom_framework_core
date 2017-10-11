@@ -13,9 +13,7 @@
 #include <limits>
 #include "core/ApplicationNodeBase.h"
 #include <iostream>
-
-#undef min
-#undef max
+#include <GLFW/glfw3.h>
 
 namespace viscom {
 

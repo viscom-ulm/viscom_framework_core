@@ -9,9 +9,9 @@
 #pragma once
 
 #include "core/main.h"
-#include "core/open_gl.h"
 #include "core/resources/Resource.h"
 #include "SubMesh.h"
+#include "core/open_gl_fwd.h"
 
 namespace viscom {
 

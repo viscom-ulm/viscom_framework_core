@@ -14,6 +14,7 @@
 #include <experimental/filesystem>
 #include <regex>
 #include "core/ApplicationNodeInternal.h"
+#include "core/open_gl.h"
 
 namespace viscom {
 
@@ -267,13 +268,13 @@ namespace viscom {
             auto trimedLine = line;
             utils::trim(trimedLine);
 
-            static const std::regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
+            static const std::regex re(R"(^[ ]*#[ ]*include[ ]+["<](.*)[">].*)");
             std::smatch matches;
             if (std::regex_search(line, matches, re)) {
                 auto includeFile = currentPath + matches[1].str();
                 if (!filesystem::exists(includeFile)) {
-                    LOG(WARNING) << filename.c_str() << L"(" << lineCount << ") : fatal error: cannot open include file \""
-                               << includeFile.c_str() << "\".";
+                    LOG(WARNING) << filename.c_str() << L"(" << lineCount << R"() : fatal error: cannot open include file ")"
+                               << includeFile.c_str() << R"(".)";
                     throw std::runtime_error("Cannot open include file: " + includeFile);
                 }
                 content << "#line " << 1 << " " << nextFileId << std::endl;

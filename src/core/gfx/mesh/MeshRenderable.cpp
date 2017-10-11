@@ -13,6 +13,7 @@
 #include "SubMesh.h"
 #include "core/gfx/Material.h"
 #include "core/gfx/Texture.h"
+#include "core/open_gl.h"
 
 namespace viscom {
 

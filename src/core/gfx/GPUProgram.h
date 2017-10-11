@@ -9,12 +9,12 @@
 #pragma once
 
 #include "core/resources/Resource.h"
-#include "core/open_gl.h"
-#include "Shader.h"
+#include "core/open_gl_fwd.h"
 
 namespace viscom {
 
     class ApplicationNodeInternal;
+    class Shader;
 
     /**
      * Complete GPU program with multiple Shader objects working together.
