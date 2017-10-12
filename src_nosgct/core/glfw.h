@@ -1,9 +1,9 @@
 /**
- * @file   open_gl.h
+ * @file   glfw.h
  * @author Sebastian Maisch <sebastian.maisch@uni-ulm.de>
  * @date   2017.05.24
  *
- * @brief  Include header for OpenGL headers in case SGCT is not used.
+ * @brief  Include header for GLFW headers in case SGCT is not used.
  */
 
 #pragma once
@@ -13,5 +13,4 @@
 #include <TuioListener.h>
 #endif
 
-#include <GL/glew.h>
 #include <GLFW/glfw3.h>
