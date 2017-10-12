@@ -9,7 +9,6 @@
 #pragma once
 
 #include "core/main.h"
-#include "sgct.h"
 #ifdef VISCOM_SYNCINPUT
 #include "core/InputWrapper.h"
 #endif
@@ -21,6 +20,7 @@
 #include "core/CameraHelper.h"
 #include "core/gfx/FullscreenQuad.h"
 #include "core/TuioInputWrapper.h"
+#include "sgct/SharedDataTypes.h"
 
 namespace viscom {
 

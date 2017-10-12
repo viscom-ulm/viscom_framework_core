@@ -9,7 +9,7 @@
 #include "ArcballCamera.h"
 
 #define GLM_SWIZZLE
-#include <core/open_gl.h>
+#include "core/glfw.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_inverse.hpp>

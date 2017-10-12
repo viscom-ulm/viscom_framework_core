@@ -9,10 +9,13 @@
 #pragma once
 
 #include "core/main.h"
-#include "core/open_gl.h"
 #include <glm/gtc/quaternion.hpp>
 #include <glm/mat4x4.hpp>
 #include "core/math/primitives.h"
+
+namespace sgct {
+    class Engine;
+}
 
 namespace viscom {
 

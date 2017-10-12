@@ -13,7 +13,7 @@
 #include <limits>
 #include "core/ApplicationNodeBase.h"
 #include <iostream>
-#include "core/open_gl.h"
+#include "core/glfw.h"
 
 namespace viscom {
 

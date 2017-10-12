@@ -9,6 +9,7 @@
 #include "CameraHelper.h"
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <sgct.h>
 
 namespace viscom {
     CameraHelper::CameraHelper(sgct::Engine * engine) :

@@ -8,4 +8,4 @@
 
 #pragma once
 
-#include <sgct.h>
+#include <gl/glfw3.h>
