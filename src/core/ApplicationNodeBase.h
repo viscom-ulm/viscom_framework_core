@@ -24,11 +24,9 @@ namespace viscom {
         SGCTEngineWrapper(sgct::Engine* engine) : engine_{ engine } {}
 
     private:
-        int GetCurrentWindowId() const { return engine_->getCurrentWindowPtr()->getId(); }
-        void UnbindCurrentWindowFBO() const { engine_->getCurrentWindowPtr()->getFBOPtr()->unBind(); }
-        void SetProjectionPlaneCoordinate(std::size_t windowIdx, std::size_t vpIndex, std::size_t corner, glm::vec3 coordinate) const {
-            engine_->getWindowPtr(windowIdx)->getViewport(vpIndex)->getProjectionPlane()->setCoordinate(corner, coordinate);
-        }
+        int GetCurrentWindowId() const;
+        void UnbindCurrentWindowFBO() const;
+        void SetProjectionPlaneCoordinate(std::size_t windowIdx, std::size_t vpIndex, std::size_t corner, glm::vec3 coordinate) const;
 
         /** Holds the SGCT engine. */
         sgct::Engine* engine_;
