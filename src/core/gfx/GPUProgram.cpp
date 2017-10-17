@@ -20,13 +20,29 @@ namespace viscom {
      * @param theShaderNames the filenames of all shaders to use in this program.
      */
     GPUProgram::GPUProgram(const std::string& theProgramName, ApplicationNodeInternal* node, std::initializer_list<std::string> theShaderNames) :
-        Resource(theProgramName, node),
-        programName_(theProgramName),
-        shaderNames_(theShaderNames),
-        program_(0)
+        GPUProgram{ theProgramName, node, theShaderNames }
+    {
+    }
+
+    /**
+     * Constructor.
+     * @param theProgramName the name of the program used to identify during logging.
+     * @param theShaderNames the filenames of all shaders to use in this program.
+     */
+    GPUProgram::GPUProgram(const std::string& theProgramName, ApplicationNodeInternal* node, std::vector<std::string> theShaderNames) :
+        GPUProgram{ theProgramName, node, theShaderNames, std::vector<std::string>{} }
+    {
+    }
+
+    GPUProgram::GPUProgram(const std::string& programName, ApplicationNodeInternal* node, std::vector<std::string> shaderNames, const std::vector<std::string>& defines) :
+        Resource(programName, node),
+        programName_(programName),
+        shaderNames_(shaderNames),
+        program_(0),
+        defines_{ defines }
     {
         for (const auto& shaderName : shaderNames_) {
-            shaders_.emplace_back(std::make_unique<Shader>(shaderName, node));
+            shaders_.emplace_back(std::make_unique<Shader>(shaderName, node, defines_));
         }
         program_ = linkNewProgram(programName_, shaders_, [](const std::unique_ptr<Shader>& shdr) noexcept { return shdr->getShaderId(); });
     }
@@ -40,7 +56,8 @@ namespace viscom {
         programName_(std::move(rhs.programName_)),
         shaderNames_(std::move(rhs.shaderNames_)),
         program_(std::move(rhs.program_)),
-        shaders_(std::move(rhs.shaders_))
+        shaders_(std::move(rhs.shaders_)),
+        defines_(std::move(rhs.defines_))
     {
         rhs.program_ = 0;
     }
@@ -61,6 +78,7 @@ namespace viscom {
             program_ = rhs.program_;
             rhs.program_ = 0;
             shaders_ = std::move(rhs.shaders_);
+            defines_ = std::move(rhs.defines_);
         }
         return *this;
     }
@@ -108,17 +126,17 @@ namespace viscom {
             GLint infoLogLength;
             glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-            std::vector<GLchar> strInfoLog(infoLogLength + 1);
+            std::string strInfoLog;
+            strInfoLog.resize(infoLogLength + 1);
             glGetProgramInfoLog(program, infoLogLength, nullptr, strInfoLog.data());
-            std::cerr << "Linker failure: " << strInfoLog.data();
-            std::string infoLog = strInfoLog.data();
+            std::cerr << "Linker failure: " << strInfoLog;
 
             for (const auto& shader : shaders) {
                 glDetachShader(program, shaderAccessor(shader));
             }
             glDeleteProgram(program);
 
-            throw shader_compiler_error(name, infoLog);
+            throw shader_compiler_error(name, strInfoLog);
         }
         for (const auto& shader : shaders) {
             glDetachShader(program, shaderAccessor(shader));
@@ -164,6 +182,11 @@ namespace viscom {
 
     std::vector<GLint> GPUProgram::getUniformLocations(const std::initializer_list<std::string>& names) const
     {
+        return GetUniformLocations(names);
+    }
+
+    std::vector<GLint> GPUProgram::GetUniformLocations(const std::vector<std::string>& names) const
+    {
         std::vector<GLint> result;
         result.reserve(names.size());
         for (const auto& name : names) {
@@ -178,6 +201,11 @@ namespace viscom {
     }
 
     std::vector<GLint> GPUProgram::getAttributeLocations(const std::initializer_list<std::string>& names) const
+    {
+        return getAttributeLocations(names);
+    }
+
+    std::vector<GLint> GPUProgram::GetAttributeLocations(const std::vector<std::string>& names) const
     {
         std::vector<GLint> result;
         result.reserve(names.size());

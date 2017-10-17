@@ -44,6 +44,7 @@ namespace viscom {
     {
     public:
         Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node);
+        Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node, const std::vector<std::string>& defines);
         Shader(const Shader& orig) = delete;
         Shader& operator=(const Shader&) = delete;
         Shader(Shader&& orig) noexcept;
@@ -64,8 +65,10 @@ namespace viscom {
         GLenum type_;
         /** Holds the shader type as a string. */
         std::string strType_;
+        /** Holds the defines used in the shader. */
+        std::vector<std::string> defines_;
 
-        static GLuint compileShader(const std::string& filename, GLenum type, const std::string& strType);
+        static GLuint compileShader(const std::string& filename, GLenum type, const std::string& strType, const std::vector<std::string>& defines);
         static std::string LoadShaderFile(const std::string &filename, const std::vector<std::string> &defines, unsigned int &fileId, unsigned int recursionDepth);
         void unload() noexcept;
     };
