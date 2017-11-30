@@ -27,7 +27,8 @@ namespace viscom {
         textureId_{ 0 },
         descriptor_{ 0, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE },
         width_{ 0 },
-        height_{ 0 }
+        height_{ 0 },
+        channels_{ 0 }
     {
         auto fullFilename = FindResourceLocation(texFilename);
 
@@ -47,6 +48,28 @@ namespace viscom {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
+    Texture::Texture(const TextureInfo info, const std::vector<float> img_data, ApplicationNodeInternal* node) :
+        Resource("", node), 
+        textureId_(0),
+        descriptor_{0, info.internalFormat_, info.format_, info.type_},
+        width_(info.width),
+        height_(info.height),
+        channels_(info.channels),
+        img_data_(img_data)
+    {
+        // Bind Texture and Set Filtering Levels
+        glGenTextures(1, &textureId_);
+        glBindTexture(GL_TEXTURE_2D, textureId_);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, &img_data_);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
     /**
      *  Move-constructor.
      *  @param rhs the object to copy.
@@ -56,7 +79,9 @@ namespace viscom {
         textureId_{ std::move(rhs.textureId_) },
         descriptor_{ std::move(rhs.descriptor_) },
         width_{ std::move(rhs.width_) },
-        height_{ std::move(rhs.height_) }
+        height_{ std::move(rhs.height_) },
+        channels_{ std::move(rhs.channels_) },
+        info_{ std::move(rhs.info_) }
     {
         rhs.textureId_ = 0;
     }
@@ -74,8 +99,11 @@ namespace viscom {
             *tRes = static_cast<Resource&&>(std::move(rhs));
             textureId_ = std::move(rhs.textureId_);
             descriptor_ = std::move(rhs.descriptor_);
+            info_ = std::move(rhs.info_);
             width_ = std::move(rhs.width_);
             height_ = std::move(rhs.height_);
+            channels_ = std::move(rhs.channels_);
+            info_ = std::move(rhs.info_);
             rhs.textureId_ = 0;
         }
         return *this;
@@ -93,32 +121,30 @@ namespace viscom {
 
     void Texture::LoadTextureLDR(const std::string& filename, bool useSRGB)
     {
-        auto imgWidth = 0, imgHeight = 0, imgChannels = 0;
-        auto image = stbi_load(filename.c_str(), &imgWidth, &imgHeight, &imgChannels, 0);
+        auto image = stbi_load(filename.c_str(), &width_, &height_, &channels_, 0);
         if (!image) {
             LOG(WARNING) << "Failed to load texture (" << filename << ").";
             throw resource_loading_error(filename, "Failed to load texture.");
         }
-
+        img_data_ = std::vector<float>(static_cast<float>(*image));
         descriptor_.type_ = GL_UNSIGNED_BYTE;
-        std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, imgChannels, useSRGB);
-        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, imgWidth, imgHeight, 0, descriptor_.format_, descriptor_.type_, image);
+        std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, channels_, useSRGB);
+        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, image);
 
         stbi_image_free(image);
     }
 
     void Texture::LoadTextureHDR(const std::string& filename)
     {
-        auto imgWidth = 0, imgHeight = 0, imgChannels = 0;
-        auto image = stbi_loadf(filename.c_str(), &imgWidth, &imgHeight, &imgChannels, 0);
+        auto image = stbi_loadf(filename.c_str(), &width_, &height_, &channels_, 0);
         if (!image) {
             LOG(WARNING) << "Failed to load texture (" << filename << ").";
             throw resource_loading_error(filename, "Failed to load texture.");
         }
-
+        img_data_ = std::vector<float>(*image);
         descriptor_.type_ = GL_FLOAT;
-        std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, imgChannels);
-        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, imgWidth, imgHeight, 0, descriptor_.format_, descriptor_.type_, image);
+        std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, channels_);
+        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, image);
 
         stbi_image_free(image);
     }
