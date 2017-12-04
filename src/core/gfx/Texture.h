@@ -62,7 +62,7 @@ namespace viscom {
     {
     public:
         Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool useSRGB = true);
-        Texture(const TextureInfo info, const std::vector<float> img_data, ApplicationNodeInternal* node);
+        Texture(const TextureInfo info, std::vector<unsigned char> img_data, ApplicationNodeInternal* node);
         Texture(const Texture&) = delete;
         Texture& operator=(const Texture&) = delete;
         Texture(Texture&&) noexcept;
@@ -75,6 +75,8 @@ namespace viscom {
         GLuint getTextureId() const noexcept { return textureId_; }
         TextureInfo getInfo() const { return TextureInfo(width_, height_, channels_, descriptor_.internalFormat_, descriptor_.format_, descriptor_.type_); }
         std::vector<float> getImageData() const { return img_data_; }
+        std::vector<unsigned char> getImageDataUC() const { return img_data_uc_; }
+        GLuint init();
 
     private:
         void LoadTextureLDR(const std::string& filename, bool useSRGB);
@@ -95,5 +97,6 @@ namespace viscom {
         int channels_;
         /** Holds image buffer for serialization */
         std::vector<float> img_data_;
+        std::vector<unsigned char> img_data_uc_;
     };
 }

@@ -48,16 +48,15 @@ namespace viscom {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    Texture::Texture(const TextureInfo info, const std::vector<float> img_data, ApplicationNodeInternal* node) :
+    Texture::Texture(const TextureInfo info, std::vector<unsigned char> img_data, ApplicationNodeInternal* node) :
         Resource("", node), 
         textureId_(0),
         descriptor_{0, info.internalFormat_, info.format_, info.type_},
         width_(info.width),
         height_(info.height),
         channels_(info.channels),
-        img_data_(img_data)
+        img_data_uc_(img_data)
     {
-        // Bind Texture and Set Filtering Levels
         glGenTextures(1, &textureId_);
         glBindTexture(GL_TEXTURE_2D, textureId_);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -65,8 +64,7 @@ namespace viscom {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, &img_data_);
-
+        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, img_data.data());
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
@@ -126,7 +124,8 @@ namespace viscom {
             LOG(WARNING) << "Failed to load texture (" << filename << ").";
             throw resource_loading_error(filename, "Failed to load texture.");
         }
-        img_data_ = std::vector<float>(static_cast<float>(*image));
+        const auto strsize = width_ * height_ * 3;
+        img_data_uc_ = std::vector<unsigned char>(image, image + strsize);
         descriptor_.type_ = GL_UNSIGNED_BYTE;
         std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, channels_, useSRGB);
         glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, image);
@@ -141,7 +140,8 @@ namespace viscom {
             LOG(WARNING) << "Failed to load texture (" << filename << ").";
             throw resource_loading_error(filename, "Failed to load texture.");
         }
-        img_data_ = std::vector<float>(*image);
+        const auto size = sizeof(image) / sizeof(image[0]);
+        img_data_ = std::vector<float>(image, image + size);
         descriptor_.type_ = GL_FLOAT;
         std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, channels_);
         glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, image);
