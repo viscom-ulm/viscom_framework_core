@@ -25,10 +25,7 @@ namespace viscom {
     Texture::Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool useSRGB) :
         Resource(texFilename, node),
         textureId_{ 0 },
-        descriptor_{ 0, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE },
-        width_{ 0 },
-        height_{ 0 },
-        channels_{ 0 }
+        descriptor_{ 0, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE , 0, 0, 0}
     {
         auto fullFilename = FindResourceLocation(texFilename);
 
@@ -48,13 +45,10 @@ namespace viscom {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    Texture::Texture(const TextureInfo info, std::vector<unsigned char> img_data, ApplicationNodeInternal* node) :
+    Texture::Texture(const TextureDescriptor des, unsigned char* img_data, ApplicationNodeInternal* node) :
         Resource("", node), 
         textureId_(0),
-        descriptor_{0, info.internalFormat_, info.format_, info.type_},
-        width_(info.width),
-        height_(info.height),
-        channels_(info.channels),
+        descriptor_{0, des.internalFormat_, des.format_, des.type_, des.width, des.height, des.channels},
         img_data_uc_(img_data)
     {
         glGenTextures(1, &textureId_);
@@ -64,7 +58,7 @@ namespace viscom {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, img_data.data());
+        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, descriptor_.width, descriptor_.height, 0, descriptor_.format_, descriptor_.type_, img_data);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
@@ -75,11 +69,7 @@ namespace viscom {
     Texture::Texture(Texture&& rhs) noexcept :
         Resource(std::move(rhs)),
         textureId_{ std::move(rhs.textureId_) },
-        descriptor_{ std::move(rhs.descriptor_) },
-        width_{ std::move(rhs.width_) },
-        height_{ std::move(rhs.height_) },
-        channels_{ std::move(rhs.channels_) },
-        info_{ std::move(rhs.info_) }
+        descriptor_{ std::move(rhs.descriptor_) }
     {
         rhs.textureId_ = 0;
     }
@@ -97,11 +87,6 @@ namespace viscom {
             *tRes = static_cast<Resource&&>(std::move(rhs));
             textureId_ = std::move(rhs.textureId_);
             descriptor_ = std::move(rhs.descriptor_);
-            info_ = std::move(rhs.info_);
-            width_ = std::move(rhs.width_);
-            height_ = std::move(rhs.height_);
-            channels_ = std::move(rhs.channels_);
-            info_ = std::move(rhs.info_);
             rhs.textureId_ = 0;
         }
         return *this;
@@ -119,32 +104,31 @@ namespace viscom {
 
     void Texture::LoadTextureLDR(const std::string& filename, bool useSRGB)
     {
-        auto image = stbi_load(filename.c_str(), &width_, &height_, &channels_, 0);
+        auto image = stbi_load(filename.c_str(), &descriptor_.width, &descriptor_.height, &descriptor_.channels, 0);
         if (!image) {
             LOG(WARNING) << "Failed to load texture (" << filename << ").";
             throw resource_loading_error(filename, "Failed to load texture.");
         }
-        const auto strsize = width_ * height_ * 3;
-        img_data_uc_ = std::vector<unsigned char>(image, image + strsize);
+        const auto size = descriptor_.width*descriptor_.height * 3;
+        img_data_uc_ = new unsigned char[size];
+        std::copy(image, image + size, img_data_uc_);
         descriptor_.type_ = GL_UNSIGNED_BYTE;
-        std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, channels_, useSRGB);
-        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, image);
+        std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, descriptor_.channels, useSRGB);
+        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, descriptor_.width, descriptor_.height, 0, descriptor_.format_, descriptor_.type_, image);
 
         stbi_image_free(image);
     }
 
     void Texture::LoadTextureHDR(const std::string& filename)
     {
-        auto image = stbi_loadf(filename.c_str(), &width_, &height_, &channels_, 0);
+        auto image = stbi_loadf(filename.c_str(), &descriptor_.width, &descriptor_.height, &descriptor_.channels, 0);
         if (!image) {
             LOG(WARNING) << "Failed to load texture (" << filename << ").";
             throw resource_loading_error(filename, "Failed to load texture.");
         }
-        const auto size = sizeof(image) / sizeof(image[0]);
-        img_data_ = std::vector<float>(image, image + size);
         descriptor_.type_ = GL_FLOAT;
-        std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, channels_);
-        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, image);
+        std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, descriptor_.channels);
+        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, descriptor_.width, descriptor_.height, 0, descriptor_.format_, descriptor_.type_, image);
 
         stbi_image_free(image);
     }

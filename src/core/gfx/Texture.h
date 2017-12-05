@@ -19,7 +19,13 @@ namespace viscom {
     /** Describes the format of a texture. */
     struct TextureDescriptor
     {
-        TextureDescriptor(unsigned int btsPP, GLint intFmt, GLenum fmt, GLenum tp) noexcept : bytesPP_(btsPP), internalFormat_(intFmt), format_(fmt), type_(tp) {};
+        TextureDescriptor(unsigned int btsPP, GLint intFmt, GLenum fmt, GLenum tp, int w, int h, int c) noexcept : bytesPP_(btsPP),
+                                                                                              internalFormat_(intFmt),
+                                                                                              format_(fmt), type_(tp),
+                                                                                              width(w), height(h),
+                                                                                              channels(c)
+        {
+        };
 
         /** Holds the bytes per pixel of the format. */
         unsigned int bytesPP_;
@@ -29,30 +35,12 @@ namespace viscom {
         GLenum format_;
         /** Holds the type. */
         GLenum type_;
-    };
-
-    struct TextureInfo
-    {
-        TextureInfo(): width(0), height(0), channels(0), internalFormat_(0), format_(0), type_(0)
-        {
-        }
-
-        TextureInfo(int w, int h, int c, GLint iF, GLenum f, GLenum t) : width(w), height(h), channels(c), internalFormat_(iF), format_(f), type_(t)
-        {
-        }
-
         /** image width. */
         int width;
         /** image height. */
         int height;
         /** image channels. */
         int channels;
-        /** Holds the internal format. */
-        GLint internalFormat_;
-        /** Holds the format. */
-        GLenum format_;
-        /** Holds the type. */
-        GLenum type_;
     };
 
     /**
@@ -62,7 +50,7 @@ namespace viscom {
     {
     public:
         Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool useSRGB = true);
-        Texture(const TextureInfo info, std::vector<unsigned char> img_data, ApplicationNodeInternal* node);
+        Texture(const TextureDescriptor info, unsigned char* img_data, ApplicationNodeInternal* node);
         Texture(const Texture&) = delete;
         Texture& operator=(const Texture&) = delete;
         Texture(Texture&&) noexcept;
@@ -70,13 +58,10 @@ namespace viscom {
         virtual ~Texture() noexcept override;
 
         /** Returns the size of the texture. */
-        glm::uvec2 getDimensions() const noexcept { return glm::uvec2(width_, height_); }
+        glm::uvec2 getDimensions() const noexcept { return glm::uvec2(descriptor_.width, descriptor_.height); }
         /** Returns the OpenGL texture id. */
         GLuint getTextureId() const noexcept { return textureId_; }
-        TextureInfo getInfo() const { return TextureInfo(width_, height_, channels_, descriptor_.internalFormat_, descriptor_.format_, descriptor_.type_); }
-        std::vector<float> getImageData() const { return img_data_; }
-        std::vector<unsigned char> getImageDataUC() const { return img_data_uc_; }
-        GLuint init();
+        unsigned char* getImageDataUC() const { return img_data_uc_; }
 
     private:
         void LoadTextureLDR(const std::string& filename, bool useSRGB);
@@ -87,16 +72,6 @@ namespace viscom {
         GLuint textureId_;
         /** Holds the texture descriptor. */
         TextureDescriptor descriptor_;
-        /** Holds info for serialization */
-        TextureInfo info_;
-        /** Holds the width. */
-        int width_;
-        /** Holds the height. */
-        int height_;
-        /** Holds the channels. */
-        int channels_;
-        /** Holds image buffer for serialization */
-        std::vector<float> img_data_;
-        std::vector<unsigned char> img_data_uc_;
+        unsigned char* img_data_uc_;
     };
 }
