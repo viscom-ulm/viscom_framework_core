@@ -41,6 +41,8 @@ namespace viscom {
         int height;
         /** image channels. */
         int channels;
+        /* returns length of data array*/
+        int length() const { return width * height * 3; }
     };
 
     /**
@@ -56,7 +58,7 @@ namespace viscom {
         Texture(Texture&&) noexcept;
         Texture& operator=(Texture&&) noexcept;
         virtual ~Texture() noexcept override;
-
+        TextureDescriptor getDescriptor() const { return descriptor_; }
         /** Returns the size of the texture. */
         glm::uvec2 getDimensions() const noexcept { return glm::uvec2(descriptor_.width, descriptor_.height); }
         /** Returns the OpenGL texture id. */
