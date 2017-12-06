@@ -45,20 +45,26 @@ namespace viscom {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    Texture::Texture(const TextureDescriptor des, unsigned char* img_data, ApplicationNodeInternal* node) :
-        Resource("", node), 
+    Texture::Texture(const std::string &texId, ApplicationNodeInternal* node, const TextureDescriptor des, unsigned char* imgData) :
+        Resource(texId, node), 
         textureId_(0),
         descriptor_{0, des.internalFormat_, des.format_, des.type_, des.width, des.height, des.channels},
-        img_data_uc_(img_data)
+        img_data_uc_(imgData)
     {
+        GLenum e = glGetError();
+        LOG(INFO) << "glGetError before starting to generate id: " << e;
         glGenTextures(1, &textureId_);
+        e = glGetError();
+        LOG(INFO) << "glGetError returned after glGenTextures(1, &textureId_): " << e;
         glBindTexture(GL_TEXTURE_2D, textureId_);
+        e = glGetError();
+        LOG(INFO) << "glGetError returned after glBindTexture(GL_TEXTURE_2D, textureId_): " << e;
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, descriptor_.width, descriptor_.height, 0, descriptor_.format_, descriptor_.type_, img_data);
+        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, descriptor_.width, descriptor_.height, 0, descriptor_.format_, descriptor_.type_, imgData);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 

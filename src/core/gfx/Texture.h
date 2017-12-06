@@ -52,7 +52,7 @@ namespace viscom {
     {
     public:
         Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool useSRGB = true);
-        Texture(const TextureDescriptor info, unsigned char* img_data, ApplicationNodeInternal* node);
+        Texture(const std::string& texId, ApplicationNodeInternal* node, const TextureDescriptor info, unsigned char* img_data);
         Texture(const Texture&) = delete;
         Texture& operator=(const Texture&) = delete;
         Texture(Texture&&) noexcept;
@@ -64,6 +64,7 @@ namespace viscom {
         /** Returns the OpenGL texture id. */
         GLuint getTextureId() const noexcept { return textureId_; }
         unsigned char* getImageDataUC() const { return img_data_uc_; }
+        GLuint init();
 
     private:
         void LoadTextureLDR(const std::string& filename, bool useSRGB);
