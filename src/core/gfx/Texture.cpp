@@ -48,17 +48,12 @@ namespace viscom {
     Texture::Texture(const std::string &texId, ApplicationNodeInternal* node, const TextureDescriptor des, unsigned char* imgData) :
         Resource(texId, node), 
         textureId_(0),
-        descriptor_{0, des.internalFormat_, des.format_, des.type_, des.width, des.height, des.channels},
-        img_data_uc_(imgData)
-    {
-        GLenum e = glGetError();
-        LOG(INFO) << "glGetError before starting to generate id: " << e;
+        descriptor_{0, des.internalFormat_, des.format_, des.type_, des.width, des.height, des.channels}
+	{
+		img_data_uc_ = new unsigned char[des.length()];
+		std::copy(imgData, imgData + des.length(), img_data_uc_);
         glGenTextures(1, &textureId_);
-        e = glGetError();
-        LOG(INFO) << "glGetError returned after glGenTextures(1, &textureId_): " << e;
         glBindTexture(GL_TEXTURE_2D, textureId_);
-        e = glGetError();
-        LOG(INFO) << "glGetError returned after glBindTexture(GL_TEXTURE_2D, textureId_): " << e;
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -66,6 +61,7 @@ namespace viscom {
 
         glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, descriptor_.width, descriptor_.height, 0, descriptor_.format_, descriptor_.type_, imgData);
         glBindTexture(GL_TEXTURE_2D, 0);
+		stbi_image_free(imgData);
     }
 
     /**
@@ -117,7 +113,7 @@ namespace viscom {
         }
         const auto size = descriptor_.width*descriptor_.height * 3;
         img_data_uc_ = new unsigned char[size];
-        std::copy(image, image + size, img_data_uc_);
+		std::copy(image, image + size, img_data_uc_);
         descriptor_.type_ = GL_UNSIGNED_BYTE;
         std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, descriptor_.channels, useSRGB);
         glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, descriptor_.width, descriptor_.height, 0, descriptor_.format_, descriptor_.type_, image);
