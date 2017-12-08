@@ -25,7 +25,8 @@ namespace viscom {
     Texture::Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool useSRGB) :
         Resource(texFilename, node),
         textureId_{ 0 },
-        descriptor_{ 0, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE , 0, 0, 0}
+        descriptor_{ 0, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE , 0, 0, 0},
+        img_data_(nullptr)
     {
         auto fullFilename = FindResourceLocation(texFilename);
 
@@ -45,13 +46,12 @@ namespace viscom {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    Texture::Texture(const std::string &texId, ApplicationNodeInternal* node, const TextureDescriptor des, unsigned char* imgData) :
-        Resource(texId, node), 
+    Texture::Texture(const std::string &texId, ApplicationNodeInternal* node, const TextureDescriptor des, std::vector<float> imgData) :
+        Resource(texId, node),
         textureId_(0),
-        descriptor_{0, des.internalFormat_, des.format_, des.type_, des.width, des.height, des.channels}
-	{
-		img_data_uc_ = new unsigned char[des.length()];
-		std::copy(imgData, imgData + des.length(), img_data_uc_);
+        descriptor_{0, des.internalFormat_, des.format_, des.type_, des.width, des.height, des.channels},
+        img_data_(imgData)
+    {
         glGenTextures(1, &textureId_);
         glBindTexture(GL_TEXTURE_2D, textureId_);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -59,9 +59,10 @@ namespace viscom {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, descriptor_.width, descriptor_.height, 0, descriptor_.format_, descriptor_.type_, imgData);
+        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, descriptor_.width, descriptor_.height, 0,
+                     descriptor_.format_, descriptor_.type_, imgData.data());
         glBindTexture(GL_TEXTURE_2D, 0);
-		stbi_image_free(imgData);
+        stbi_image_free(imgData.data());
     }
 
     /**
@@ -71,7 +72,8 @@ namespace viscom {
     Texture::Texture(Texture&& rhs) noexcept :
         Resource(std::move(rhs)),
         textureId_{ std::move(rhs.textureId_) },
-        descriptor_{ std::move(rhs.descriptor_) }
+        descriptor_{ std::move(rhs.descriptor_) },
+        img_data_{ std::move(rhs.img_data_) }
     {
         rhs.textureId_ = 0;
     }
@@ -89,6 +91,7 @@ namespace viscom {
             *tRes = static_cast<Resource&&>(std::move(rhs));
             textureId_ = std::move(rhs.textureId_);
             descriptor_ = std::move(rhs.descriptor_);
+            img_data_ = std::move(rhs.img_data_);
             rhs.textureId_ = 0;
         }
         return *this;
@@ -111,9 +114,9 @@ namespace viscom {
             LOG(WARNING) << "Failed to load texture (" << filename << ").";
             throw resource_loading_error(filename, "Failed to load texture.");
         }
-        const auto size = descriptor_.width*descriptor_.height * 3;
-        img_data_uc_ = new unsigned char[size];
-		std::copy(image, image + size, img_data_uc_);
+        const auto size = descriptor_.width*descriptor_.height * descriptor_.channels;
+        img_data_.resize(size);
+        std::copy(image, image + size, img_data_.data());
         descriptor_.type_ = GL_UNSIGNED_BYTE;
         std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, descriptor_.channels, useSRGB);
         glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, descriptor_.width, descriptor_.height, 0, descriptor_.format_, descriptor_.type_, image);
@@ -128,6 +131,9 @@ namespace viscom {
             LOG(WARNING) << "Failed to load texture (" << filename << ").";
             throw resource_loading_error(filename, "Failed to load texture.");
         }
+        const auto size = descriptor_.width*descriptor_.height * descriptor_.channels;
+        img_data_.resize(size);
+        std::copy(image, image + size, img_data_.data());
         descriptor_.type_ = GL_FLOAT;
         std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, descriptor_.channels);
         glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, descriptor_.width, descriptor_.height, 0, descriptor_.format_, descriptor_.type_, image);
