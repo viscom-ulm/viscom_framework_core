@@ -26,7 +26,7 @@ namespace viscom {
         Resource(texFilename, node),
         textureId_{ 0 },
         descriptor_{ 0, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE , 0, 0, 0},
-        img_data_(nullptr)
+        img_data_(0)
     {
         auto fullFilename = FindResourceLocation(texFilename);
 
