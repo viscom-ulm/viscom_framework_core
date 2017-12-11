@@ -49,6 +49,7 @@ namespace viscom {
 
     std::string Resource::FindResourceLocation(const std::string& localFilename, const ApplicationNodeInternal* appNode, const std::string& resourceId)
     {
+        if (utils::file_exists(localFilename)) return localFilename;
         for (const auto& dir : appNode->GetConfig().resourceSearchPaths_) {
             auto filename = dir + "/" + localFilename;
             if (utils::file_exists(filename)) return filename;
@@ -60,6 +61,7 @@ namespace viscom {
 
     bool Resource::IsResource(const std::string& localFilename, const ApplicationNodeInternal* appNode)
     {
+        if (utils::file_exists(localFilename)) return true;
         for (const auto& dir : appNode->GetConfig().resourceSearchPaths_) {
             const auto filename = dir + "/" + localFilename;
             if (utils::file_exists(filename)) return true;
