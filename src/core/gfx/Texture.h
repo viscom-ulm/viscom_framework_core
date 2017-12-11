@@ -15,7 +15,7 @@
 namespace viscom {
 
     class ApplicationNodeInternal;
-
+    typedef unsigned char cType;
     /** Describes the format of a texture. */
     struct TextureDescriptor
     {
@@ -54,7 +54,7 @@ namespace viscom {
     public:
         Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool useSRGB = true);
 		[[deprecated("This will be soon replaced.")]]
-    	Texture(const std::string& texId, ApplicationNodeInternal* node, const TextureDescriptor info, std::vector<float> img_data);
+    	Texture(const std::string& texId, ApplicationNodeInternal* node, const TextureDescriptor info, std::vector<cType> img_data);
         Texture(const Texture&) = delete;
         Texture& operator=(const Texture&) = delete;
         Texture(Texture&&) noexcept;
@@ -65,8 +65,8 @@ namespace viscom {
         glm::uvec2 getDimensions() const noexcept { return glm::uvec2(descriptor_.width, descriptor_.height); }
         /** Returns the OpenGL texture id. */
         GLuint getTextureId() const noexcept { return textureId_; }
-        std::vector<float> getImageData() const { return img_data_; }
-        float* data() { return img_data_.data(); }
+        std::vector<cType> getImageData() const { return img_data_; }
+        cType* data() { return img_data_.data(); }
 
     private:
         void LoadTextureLDR(const std::string& filename, bool useSRGB);
@@ -77,6 +77,6 @@ namespace viscom {
         GLuint textureId_;
         /** Holds the texture descriptor. */
         TextureDescriptor descriptor_;
-        std::vector<float> img_data_;
+        std::vector<cType> img_data_;
     };
 }

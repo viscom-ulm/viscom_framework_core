@@ -46,7 +46,7 @@ namespace viscom {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    Texture::Texture(const std::string &texId, ApplicationNodeInternal* node, const TextureDescriptor des, std::vector<float> imgData) :
+    Texture::Texture(const std::string &texId, ApplicationNodeInternal* node, const TextureDescriptor des, std::vector<cType> imgData) :
         Resource(texId, node),
         textureId_(0),
         descriptor_{0, des.internalFormat_, des.format_, des.type_, des.width, des.height, des.channels},
@@ -62,7 +62,6 @@ namespace viscom {
         glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, descriptor_.width, descriptor_.height, 0,
                      descriptor_.format_, descriptor_.type_, imgData.data());
         glBindTexture(GL_TEXTURE_2D, 0);
-        stbi_image_free(imgData.data());
     }
 
     /**
