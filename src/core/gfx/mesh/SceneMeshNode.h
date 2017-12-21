@@ -22,7 +22,7 @@ namespace viscom {
     class SceneMeshNode
     {
     public:
-        SceneMeshNode() : nodeName_(""), parent_(nullptr) { aabb_.minmax[0] = glm::vec3(std::numeric_limits<float>::infinity()); aabb_.minmax[1] = glm::vec3(-std::numeric_limits<float>::infinity()); }
+        SceneMeshNode() : nodeName_(), parent_(nullptr) { aabb_.minmax[0] = glm::vec3(std::numeric_limits<float>::infinity()); aabb_.minmax[1] = glm::vec3(-std::numeric_limits<float>::infinity()); }
         SceneMeshNode(aiNode* node, const SceneMeshNode* parent, const std::vector<SubMesh>& meshes);
         SceneMeshNode(const SceneMeshNode& rhs);
         SceneMeshNode& operator=(const SceneMeshNode& rhs);
@@ -32,10 +32,10 @@ namespace viscom {
 
         void GetBoundingBox(math::AABB3<float>& aabb, const glm::mat4& transform) const;
         glm::mat4 GetLocalTransform() const { return localTransform_; }
-        unsigned int GetNumNodes() const { return static_cast<unsigned int>(children_.size()); }
-        const SceneMeshNode* GetChild(unsigned int idx) const { return children_[idx].get(); }
-        unsigned int GetNumMeshes() const { return static_cast<unsigned int>(meshes_.size()); }
-        const SubMesh* GetMesh(unsigned int idx) const { return meshes_[idx]; }
+        std::size_t GetNumNodes() const { return children_.size(); }
+        const SceneMeshNode* GetChild(std::size_t idx) const { return children_[idx].get(); }
+        std::size_t GetNumMeshes() const { return meshes_.size(); }
+        const SubMesh* GetMesh(std::size_t idx) const { return meshes_[idx]; }
 
     private:
         /** The nodes name. */

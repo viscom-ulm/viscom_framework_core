@@ -43,35 +43,38 @@ namespace viscom {
 
         unsigned int maxUVChannels = 0, maxColorChannels = 0, numVertices = 0, numIndices = 0;
         std::vector<std::vector<unsigned int>> indices;
-        indices.resize(scene->mNumMeshes);
-        for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+        indices.resize(static_cast<size_t>(scene->mNumMeshes));
+        auto numMeshes = static_cast<std::size_t>(scene->mNumMeshes);
+        for (std::size_t i = 0; i < numMeshes; ++i) {
             maxUVChannels = glm::max(maxUVChannels, scene->mMeshes[i]->GetNumUVChannels());
             maxColorChannels = glm::max(maxColorChannels, scene->mMeshes[i]->GetNumColorChannels());
-            numVertices += scene->mMeshes[i]->mNumVertices;
-            for (unsigned int fi = 0; fi < scene->mMeshes[i]->mNumFaces; ++fi) {
+            numVertices += scene->mMeshes[i]->mNumVertices; //-V127
+            auto numFaces = static_cast<std::size_t>(scene->mMeshes[i]->mNumFaces);
+            for (std::size_t fi = 0; fi < numFaces; ++fi) {
                 auto faceIndices = scene->mMeshes[i]->mFaces[fi].mNumIndices;
                 // TODO: currently lines and points are ignored. [12/14/2016 Sebastian Maisch]
                 if (faceIndices == 3) {
                     indices[i].push_back(scene->mMeshes[i]->mFaces[fi].mIndices[0]);
                     indices[i].push_back(scene->mMeshes[i]->mFaces[fi].mIndices[1]);
                     indices[i].push_back(scene->mMeshes[i]->mFaces[fi].mIndices[2]);
-                    numIndices += faceIndices;
+                    numIndices += faceIndices; //-V127
                 }
             }
         }
 
-        vertices_.resize(numVertices);
-        normals_.resize(numVertices);
-        texCoords_.resize(maxUVChannels);
-        for (auto& texCoords : texCoords_) texCoords.resize(numVertices);
-        tangents_.resize(numVertices);
-        binormals_.resize(numVertices);
-        colors_.resize(maxColorChannels);
-        for (auto& colors : colors_) colors.resize(numVertices);
-        indices_.resize(numIndices);
-        materials_.resize(scene->mNumMaterials);
+        vertices_.resize(static_cast<std::size_t>(numVertices));
+        normals_.resize(static_cast<std::size_t>(numVertices));
+        texCoords_.resize(static_cast<std::size_t>(maxUVChannels));
+        for (auto& texCoords : texCoords_) texCoords.resize(static_cast<std::size_t>(numVertices));
+        tangents_.resize(static_cast<std::size_t>(numVertices));
+        binormals_.resize(static_cast<std::size_t>(numVertices));
+        colors_.resize(static_cast<std::size_t>(maxColorChannels));
+        for (auto& colors : colors_) colors.resize(static_cast<std::size_t>(numVertices));
+        indices_.resize(static_cast<std::size_t>(numIndices));
+        materials_.resize(static_cast<std::size_t>(scene->mNumMaterials));
 
-        for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
+        auto numMaterials = static_cast<std::size_t>(scene->mNumMaterials);
+        for (std::size_t i = 0; i < numMaterials; ++i) {
             auto material = scene->mMaterials[i];
             auto& mat = materials_[i];
             mat.ambient = GetMaterialColor(material, AI_MATKEY_COLOR_AMBIENT);
@@ -96,33 +99,33 @@ namespace viscom {
 
         unsigned int currentMeshIndexOffset = 0;
         unsigned int currentMeshVertexOffset = 0;
-        for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+        for (std::size_t i = 0; i < numMeshes; ++i) {
             auto mesh = scene->mMeshes[i];
 
             if (mesh->HasPositions()) {
-                std::copy(mesh->mVertices, &mesh->mVertices[mesh->mNumVertices], reinterpret_cast<aiVector3D*>(&vertices_[currentMeshVertexOffset]));
+                std::copy(mesh->mVertices, &mesh->mVertices[mesh->mNumVertices], reinterpret_cast<aiVector3D*>(&vertices_[currentMeshVertexOffset])); //-V108
             }
             if (mesh->HasNormals()) {
-                std::copy(mesh->mNormals, &mesh->mNormals[mesh->mNumVertices], reinterpret_cast<aiVector3D*>(&normals_[currentMeshVertexOffset]));
+                std::copy(mesh->mNormals, &mesh->mNormals[mesh->mNumVertices], reinterpret_cast<aiVector3D*>(&normals_[currentMeshVertexOffset])); //-V108
             }
             for (unsigned int ti = 0; ti < mesh->GetNumUVChannels(); ++ti) {
-                std::copy(mesh->mTextureCoords[ti], &mesh->mTextureCoords[ti][mesh->mNumVertices], reinterpret_cast<aiVector3D*>(&texCoords_[ti][currentMeshVertexOffset]));
+                std::copy(mesh->mTextureCoords[ti], &mesh->mTextureCoords[ti][mesh->mNumVertices], reinterpret_cast<aiVector3D*>(&texCoords_[ti][currentMeshVertexOffset])); //-V108
             }
             if (mesh->HasTangentsAndBitangents()) {
-                std::copy(mesh->mTangents, &mesh->mTangents[mesh->mNumVertices], reinterpret_cast<aiVector3D*>(&tangents_[currentMeshVertexOffset]));
-                std::copy(mesh->mBitangents, &mesh->mBitangents[mesh->mNumVertices], reinterpret_cast<aiVector3D*>(&binormals_[currentMeshVertexOffset]));
+                std::copy(mesh->mTangents, &mesh->mTangents[mesh->mNumVertices], reinterpret_cast<aiVector3D*>(&tangents_[currentMeshVertexOffset])); //-V108
+                std::copy(mesh->mBitangents, &mesh->mBitangents[mesh->mNumVertices], reinterpret_cast<aiVector3D*>(&binormals_[currentMeshVertexOffset])); //-V108
             }
             for (unsigned int ci = 0; ci < mesh->GetNumColorChannels(); ++ci) {
-                std::copy(mesh->mColors[ci], &mesh->mColors[ci][mesh->mNumVertices], reinterpret_cast<aiColor4D*>(&colors_[ci][currentMeshVertexOffset]));
+                std::copy(mesh->mColors[ci], &mesh->mColors[ci][mesh->mNumVertices], reinterpret_cast<aiColor4D*>(&colors_[ci][currentMeshVertexOffset])); //-V108
             }
 
-            std::transform(indices[i].begin(), indices[i].end(), &indices_[currentMeshIndexOffset], [currentMeshVertexOffset](unsigned int idx) { return idx + currentMeshVertexOffset; });
+            std::transform(indices[i].begin(), indices[i].end(), &indices_[currentMeshIndexOffset], [currentMeshVertexOffset](unsigned int idx) { return idx + currentMeshVertexOffset; }); //-V108
 
-            auto& material = materials_[mesh->mMaterialIndex];
+            auto& material = materials_[mesh->mMaterialIndex]; //-V108
 
             subMeshes_.emplace_back(this, mesh->mName.C_Str(), currentMeshIndexOffset, static_cast<unsigned int>(indices[i].size()), &material);
-            currentMeshVertexOffset += mesh->mNumVertices;
-            currentMeshIndexOffset += static_cast<unsigned int>(indices[i].size());
+            currentMeshVertexOffset += mesh->mNumVertices; //-V127
+            currentMeshIndexOffset += static_cast<unsigned int>(indices[i].size()); //-V127
         }
 
         rootNode_ = std::make_unique<SceneMeshNode>(scene->mRootNode, nullptr, subMeshes_);
@@ -177,7 +180,7 @@ namespace viscom {
 
     std::shared_ptr<const Texture> Mesh::loadTexture(const std::string& relFilename, ApplicationNodeInternal* node) const
     {
-        auto path = GetId().substr(0, GetId().find_last_of("/") + 1);
+        auto path = GetId().substr(0, GetId().find_last_of('/') + 1);
         auto texFilename = path + relFilename;
         auto texture = std::move(node->GetTextureManager().GetResource(texFilename));
 

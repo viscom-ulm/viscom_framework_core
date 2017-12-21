@@ -127,7 +127,7 @@ namespace viscom {
             glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
 
             std::string strInfoLog;
-            strInfoLog.resize(infoLogLength + 1);
+            strInfoLog.resize(static_cast<std::size_t>(infoLogLength + 1));
             glGetProgramInfoLog(program, infoLogLength, nullptr, strInfoLog.data());
             std::cerr << "Linker failure: " << strInfoLog;
 
@@ -151,10 +151,10 @@ namespace viscom {
     {
         std::vector<GLuint> newOGLShaders(shaderNames_.size(), 0);
 
-        for (unsigned int i = 0; i < shaderNames_.size(); ++i) {
+        for (std::size_t i = 0; i < shaderNames_.size(); ++i) {
             try {
                 newOGLShaders[i] = shaders_[i]->recompileShader();
-            } catch (shader_compiler_error compilerError) {
+            } catch (shader_compiler_error&) {
                 releaseShaders(newOGLShaders);
                 throw;
             }
@@ -163,13 +163,13 @@ namespace viscom {
         GLuint tempProgram = 0;
         try {
             tempProgram = linkNewProgram(programName_, newOGLShaders, [](GLuint shdr) noexcept { return shdr; });
-        } catch (shader_compiler_error compilerError) {
+        } catch (shader_compiler_error&) {
             releaseShaders(newOGLShaders);
             throw;
         }
 
         unload();
-        for (unsigned int i = 0; i < shaders_.size(); ++i) {
+        for (std::size_t i = 0; i < shaders_.size(); ++i) {
             shaders_[i]->resetShader(newOGLShaders[i]);
         }
         program_ = tempProgram;

@@ -158,7 +158,7 @@ namespace viscom {
         textures_.clear();
         textures_.resize(desc_.texDesc_.size(), 0);
         glGenTextures(static_cast<GLsizei>(textures_.size()), textures_.data());
-        for (auto i = 0U; i < textures_.size(); ++i) {
+        for (std::size_t i = 0; i < textures_.size(); ++i) {
             glBindTexture(desc_.texDesc_[i].texType_, textures_[i]);
             glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_BASE_LEVEL, 0);
             glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_MAX_LEVEL, 0);
@@ -188,7 +188,7 @@ namespace viscom {
         renderBuffers_.clear();
         renderBuffers_.resize(desc_.rbDesc_.size(), 0);
         glGenRenderbuffers(static_cast<GLsizei>(renderBuffers_.size()), renderBuffers_.data());
-        for (auto i = 0U; i < renderBuffers_.size(); ++i) {
+        for (std::size_t i = 0; i < renderBuffers_.size(); ++i) {
             glBindRenderbuffer(GL_RENDERBUFFER, renderBuffers_[i]);
             if (desc_.numSamples_ == 1) { glRenderbufferStorage(GL_RENDERBUFFER, desc_.rbDesc_[i].internalFormat_, width_, height_); }
             else { glRenderbufferStorageMultisample(GL_RENDERBUFFER, desc_.numSamples_, desc_.rbDesc_[i].internalFormat_, width_, height_); }
@@ -196,7 +196,7 @@ namespace viscom {
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderBuffers_[i]);
         }
 
-        if (drawBuffers_.size() < 1) {
+        if (drawBuffers_.empty()) {
             glDrawBuffer(GL_NONE);
             glReadBuffer(GL_NONE);
         } else {
@@ -231,11 +231,27 @@ namespace viscom {
     * Use this frame buffer object as target for rendering and select the draw buffers used.
     * @param drawBufferIndices the indices in the draw buffer to be used.
     */
-    void FrameBuffer::UseAsRenderTarget(const std::vector<unsigned int> drawBufferIndices) const
+    void FrameBuffer::UseAsRenderTarget(const std::vector<unsigned int>& drawBufferIndices) const
     {
         assert(!isBackbuffer_);
         std::vector<GLenum> drawBuffersReduced(drawBuffers_.size());
-        for (unsigned int i = 0; i < drawBufferIndices.size(); ++i) drawBuffersReduced[i] = drawBuffers_[drawBufferIndices[i]];
+        for (std::size_t i = 0; i < drawBufferIndices.size(); ++i) drawBuffersReduced[i] = drawBuffers_[drawBufferIndices[i]]; //-V108
+
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+        glDrawBuffers(static_cast<GLsizei>(drawBuffersReduced.size()), drawBuffersReduced.data());
+        glViewport(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
+        glScissor(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
+    }
+
+    /**
+     * Use this frame buffer object as target for rendering and select the draw buffers used.
+     * @param drawBufferIndices the indices in the draw buffer to be used.
+     */
+    void FrameBuffer::UseAsRenderTarget(const std::vector<std::size_t>& drawBufferIndices) const
+    {
+        assert(!isBackbuffer_);
+        std::vector<GLenum> drawBuffersReduced(drawBuffers_.size());
+        for (std::size_t i = 0; i < drawBufferIndices.size(); ++i) drawBuffersReduced[i] = drawBuffers_[drawBufferIndices[i]];
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
         glDrawBuffers(static_cast<GLsizei>(drawBuffersReduced.size()), drawBuffersReduced.data());
@@ -249,7 +265,13 @@ namespace viscom {
         drawFn();
     }
 
-    void FrameBuffer::DrawToFBO(const std::vector<unsigned>& drawBufferIndices, std::function<void()> drawFn) const
+    void FrameBuffer::DrawToFBO(const std::vector<unsigned int>& drawBufferIndices, std::function<void()> drawFn) const
+    {
+        UseAsRenderTarget(drawBufferIndices);
+        drawFn();
+    }
+
+    void FrameBuffer::DrawToFBO(const std::vector<std::size_t>& drawBufferIndices, std::function<void()> drawFn) const
     {
         UseAsRenderTarget(drawBufferIndices);
         drawFn();

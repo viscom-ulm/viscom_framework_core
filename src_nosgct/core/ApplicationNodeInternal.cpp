@@ -35,12 +35,12 @@ namespace viscom {
     {
         std::pair<int, int> oglVer = std::make_pair(3, 3);
         if (config_.openglProfile_ == "3.3") oglVer = std::make_pair(3, 3);
-        else if (config_.openglProfile_ == "4.0") oglVer = std::make_pair(4, 0);
-        else if (config_.openglProfile_ == "4.1") oglVer = std::make_pair(4, 1);
-        else if (config_.openglProfile_ == "4.2") oglVer = std::make_pair(4, 2);
-        else if (config_.openglProfile_ == "4.3") oglVer = std::make_pair(4, 3);
-        else if (config_.openglProfile_ == "4.4") oglVer = std::make_pair(4, 4);
-        else if (config_.openglProfile_ == "4.5") oglVer = std::make_pair(4, 5);
+        else if (config_.openglProfile_ == "4.0") oglVer = std::make_pair(4, 0); //-V112
+        else if (config_.openglProfile_ == "4.1") oglVer = std::make_pair(4, 1); //-V112
+        else if (config_.openglProfile_ == "4.2") oglVer = std::make_pair(4, 2); //-V112
+        else if (config_.openglProfile_ == "4.3") oglVer = std::make_pair(4, 3); //-V112
+        else if (config_.openglProfile_ == "4.4") oglVer = std::make_pair(4, 4); //-V112
+        else if (config_.openglProfile_ == "4.5") oglVer = std::make_pair(4, 5); //-V112
 
         glfwInit();
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, oglVer.first);
@@ -144,7 +144,7 @@ namespace viscom {
         glm::vec2 relProjectorPos = glm::vec2(viewportScreen_[0].position_) / glm::vec2(viewportScreen_[0].size_);
         glm::vec2 relProjectorSize = 1.0f / (glm::vec2(viewportQuadSize_[0]) / glm::vec2(viewportScreen_[0].size_));
 
-        glm::mat4 pickMatrix = glm::mat4{ 0.0f };
+        glm::mat4 pickMatrix = glm::mat4{ 1.0f };
         pickMatrix[0][0] = 2.0f * relProjectorSize.x;
         pickMatrix[1][1] = -2.0f * relProjectorSize.y;
         pickMatrix[3][0] = (-2.0f * relProjectorPos.x * relProjectorSize.x) - 1.0f;
@@ -153,6 +153,15 @@ namespace viscom {
         pickMatrix[3][3] = 1.0f;
         pickMatrix = glm::inverse(camHelper_.GetCentralViewPerspectiveMatrix()) * pickMatrix;
         camHelper_.SetPickMatrix(pickMatrix);
+
+        glm::mat4 glbToLcMatrix = glm::mat4{ 1.0f };
+        // TODO: find correct local matrix:
+        // xlocal = xglobal*(xPixelSizeQuad / xRelSizeQuad) - ((xRelPosQuad*xPixelSizeQuad) / xRelSizeQuad)
+        glbToLcMatrix[0][0] = relProjectorSize.x;
+        glbToLcMatrix[1][1] = relProjectorSize.y;
+        glbToLcMatrix[3][0] = (-2.0f * relProjectorPos.x * relProjectorSize.x) - 1.0f;
+        glbToLcMatrix[3][1] = (-2.0f * relProjectorPos.y * relProjectorSize.y) + 1.0f;
+
 
         appNodeImpl_->UpdateSyncedInfo();
 
@@ -239,7 +248,7 @@ namespace viscom {
     void ApplicationNodeInternal::BaseKeyboardCallback(int key, int scancode, int action, int mods)
     {
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window_, true);
+            glfwSetWindowShouldClose(window_, 1);
             return;
         }
 
@@ -328,7 +337,7 @@ namespace viscom {
 
     void ApplicationNodeInternal::Terminate() const
     {
-        glfwSetWindowShouldClose(window_, true);
+        glfwSetWindowShouldClose(window_, 1);
     }
 
     std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc) const

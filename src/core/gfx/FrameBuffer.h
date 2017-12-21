@@ -79,10 +79,14 @@ namespace viscom {
         ~FrameBuffer();
 
         void UseAsRenderTarget() const;
-        void UseAsRenderTarget(const std::vector<unsigned int> drawBufferIndices) const;
+        [[deprecated("Use the version with size_t indices instead.")]]
+        void UseAsRenderTarget(const std::vector<unsigned int>& drawBufferIndices) const;
+        void UseAsRenderTarget(const std::vector<std::size_t>& drawBufferIndices) const;
 
         void DrawToFBO(std::function<void()> drawFn) const;
+        [[deprecated("Use the version with size_t indices instead.")]]
         void DrawToFBO(const std::vector<unsigned int>& drawBufferIndices, std::function<void()> drawFn) const;
+        void DrawToFBO(const std::vector<std::size_t>& drawBufferIndices, std::function<void()> drawFn) const;
 
         void Resize(unsigned int fbWidth, unsigned int fbHeight);
         const std::vector<GLuint>& GetTextures() const { return textures_; }

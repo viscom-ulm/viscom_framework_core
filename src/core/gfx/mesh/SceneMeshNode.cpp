@@ -32,8 +32,10 @@ namespace viscom {
     {
         aabb_.minmax[0] = glm::vec3(std::numeric_limits<float>::infinity()); aabb_.minmax[1] = glm::vec3(-std::numeric_limits<float>::infinity());
         CopyAiMatrixToGLM(node->mTransformation, localTransform_);
-        for (unsigned int i = 0; i < node->mNumMeshes; ++i) meshes_.push_back(&meshes[i]);
-        for (unsigned int i = 0; i < node->mNumChildren; ++i) children_.push_back(std::make_unique<SceneMeshNode>(node->mChildren[i], this, meshes));
+        std::size_t numMeshes = static_cast<std::size_t>(node->mNumMeshes);
+        std::size_t numChildren = static_cast<std::size_t>(node->mNumChildren);
+        for (std::size_t i = 0; i < numMeshes; ++i) meshes_.push_back(&meshes[i]);
+        for (std::size_t i = 0; i < numChildren; ++i) children_.push_back(std::make_unique<SceneMeshNode>(node->mChildren[i], this, meshes));
 
         for (const auto& mesh : meshes_) {
             auto meshAABB = math::transformAABB(mesh->GetLocalAABB(), localTransform_);
@@ -57,7 +59,7 @@ namespace viscom {
         parent_(rhs.parent_)
     {
         children_.resize(rhs.children_.size());
-        for (auto i = 0; i < children_.size(); ++i) children_[i] = std::make_unique<SceneMeshNode>(*rhs.children_[i]);
+        for (std::size_t i = 0; i < children_.size(); ++i) children_[i] = std::make_unique<SceneMeshNode>(*rhs.children_[i]);
     }
 
     SceneMeshNode::SceneMeshNode(SceneMeshNode&& rhs) noexcept :

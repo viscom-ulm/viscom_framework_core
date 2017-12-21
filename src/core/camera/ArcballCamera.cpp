@@ -65,7 +65,7 @@ namespace viscom {
     {
         bool handled = camArcball_.HandleMouse(button, action, sender);
 
-        if (mouseWheelDelta != 0) {
+        if (mouseWheelDelta != 0) { //-V550
             mouseWheelDelta_ = mouseWheelDelta;
             handled = true;
         }

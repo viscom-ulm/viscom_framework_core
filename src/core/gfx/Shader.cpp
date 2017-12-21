@@ -18,6 +18,8 @@
 
 namespace viscom {
 
+    constexpr unsigned int MAX_INCLUDE_RECURSION_DEPTH = 32; //-V112
+
     /**
      * Constructor.
      * @param shader the name of the shader the error occurred in
@@ -237,7 +239,7 @@ namespace viscom {
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
 
             std::string strInfoLog;
-            strInfoLog.resize(infoLogLength + 1);
+            strInfoLog.resize(static_cast<std::size_t>(infoLogLength + 1));
             glGetShaderInfoLog(shader, infoLogLength, nullptr, strInfoLog.data());
 
             LOG(WARNING) << "Compile failure in " << strType << " shader (" << filename.c_str() << "): "
@@ -260,7 +262,7 @@ namespace viscom {
      */
     std::string Shader::LoadShaderFile(const std::string& filename, const std::vector<std::string>& defines, unsigned int& fileId, unsigned int recursionDepth)
     {
-        if (recursionDepth > 32) {
+        if (recursionDepth > MAX_INCLUDE_RECURSION_DEPTH) {
             LOG(WARNING) << L"Header inclusion depth limit reached! Cyclic header inclusion?";
             throw std::runtime_error("Header inclusion depth limit reached! Cyclic header inclusion? File " + filename);
         }
