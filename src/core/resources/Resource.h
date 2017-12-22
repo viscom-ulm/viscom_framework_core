@@ -26,7 +26,6 @@ namespace viscom {
 
         const std::string& GetId() const { return id_; }
         static std::string FindResourceLocation(const std::string& localFilename, const ApplicationNodeInternal* appNode, const std::string& resourceId = "_no_resource_");
-        static bool IsResource(const std::string& localFilename, const ApplicationNodeInternal* appNode);
 
     protected:
         const ApplicationNodeInternal* GetAppNode() const { return appNode_; }

@@ -7,6 +7,7 @@
 // https://github.com/ocornut/imgui
 
 #include <glm/fwd.hpp>
+#include <imgui.h>
 
 struct GLFWwindow;
 
