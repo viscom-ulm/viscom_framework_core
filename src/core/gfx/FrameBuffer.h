@@ -10,6 +10,7 @@
 
 #include "core/main.h"
 #include "core/open_gl_fwd.h"
+#include "core/utils/function_view.h"
 
 namespace viscom {
 
@@ -83,10 +84,10 @@ namespace viscom {
         void UseAsRenderTarget(const std::vector<unsigned int>& drawBufferIndices) const;
         void UseAsRenderTarget(const std::vector<std::size_t>& drawBufferIndices) const;
 
-        void DrawToFBO(std::function<void()> drawFn) const;
+        inline void DrawToFBO(viscom::function_view<void()> drawFn) const;
         [[deprecated("Use the version with size_t indices instead.")]]
         void DrawToFBO(const std::vector<unsigned int>& drawBufferIndices, std::function<void()> drawFn) const;
-        void DrawToFBO(const std::vector<std::size_t>& drawBufferIndices, std::function<void()> drawFn) const;
+        inline void DrawToFBO(const std::vector<std::size_t>& drawBufferIndices, viscom::function_view<void()> drawFn) const;
 
         void Resize(unsigned int fbWidth, unsigned int fbHeight);
         const std::vector<GLuint>& GetTextures() const { return textures_; }
@@ -120,4 +121,16 @@ namespace viscom {
         /** holds the frame buffers height. */
         unsigned int height_;
     };
+
+    inline void viscom::FrameBuffer::DrawToFBO(viscom::function_view<void()> drawFn) const
+    {
+        UseAsRenderTarget();
+        drawFn();
+    }
+
+    inline void viscom::FrameBuffer::DrawToFBO(const std::vector<std::size_t>& drawBufferIndices, viscom::function_view<void()> drawFn) const
+    {
+        UseAsRenderTarget(drawBufferIndices);
+        drawFn();
+    }
 }

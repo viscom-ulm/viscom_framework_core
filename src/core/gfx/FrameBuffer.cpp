@@ -259,19 +259,7 @@ namespace viscom {
         glScissor(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
     }
 
-    void FrameBuffer::DrawToFBO(std::function<void()> drawFn) const
-    {
-        UseAsRenderTarget();
-        drawFn();
-    }
-
     void FrameBuffer::DrawToFBO(const std::vector<unsigned int>& drawBufferIndices, std::function<void()> drawFn) const
-    {
-        UseAsRenderTarget(drawBufferIndices);
-        drawFn();
-    }
-
-    void FrameBuffer::DrawToFBO(const std::vector<std::size_t>& drawBufferIndices, std::function<void()> drawFn) const
     {
         UseAsRenderTarget(drawBufferIndices);
         drawFn();
