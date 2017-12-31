@@ -22,6 +22,14 @@ namespace viscom {
         return sgct::Engine::getDefaultUserPtr()->getPos();
     }
 
+    void CameraHelper::SetLocalCoordMatrix(std::size_t windowID, const glm::mat4& localCoordMatrix)
+    {
+        if (windowID >= localCoordsMatrices_.size()) {
+            localCoordsMatrices_.resize(windowID + 1, glm::mat4());
+        }
+        localCoordsMatrices_[windowID] = localCoordMatrix;
+    }
+
     glm::mat4 CameraHelper::GetViewPerspectiveMatrix() const
     {
         auto result = CalculateViewUpdate();

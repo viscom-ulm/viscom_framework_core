@@ -14,7 +14,7 @@ namespace viscom {
 
     FullscreenQuad::FullscreenQuad(const std::string& fragmentProgram, ApplicationNodeInternal* appNode) :
         dummyVAO_{ 0 },
-        gpuProgram_{ appNode->GetGPUProgramManager().GetResource("fullScreenQuad_" + fragmentProgram, std::initializer_list<std::string>{ "fullScreenQuad.vert", fragmentProgram }) }
+        gpuProgram_{ appNode->GetGPUProgramManager().GetResource("fullScreenQuad_" + fragmentProgram, std::vector<std::string>{ "fullScreenQuad.vert", fragmentProgram }) }
     {
         glGenVertexArrays(1, &dummyVAO_);
     }

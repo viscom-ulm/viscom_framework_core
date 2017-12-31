@@ -20,7 +20,7 @@ namespace viscom {
      * @param theShaderNames the filenames of all shaders to use in this program.
      */
     GPUProgram::GPUProgram(const std::string& theProgramName, ApplicationNodeInternal* node, std::initializer_list<std::string> theShaderNames) :
-        GPUProgram{ theProgramName, node, theShaderNames }
+        GPUProgram{ theProgramName, node, theShaderNames, std::vector<std::string>() }
     {
     }
 
@@ -195,14 +195,14 @@ namespace viscom {
         return result;
     }
 
-    GLint GPUProgram::getAttributeLocation(const std::string & name) const
+    GLint GPUProgram::getAttributeLocation(const std::string& name) const
     {
         return glGetAttribLocation(program_, name.c_str());
     }
 
     std::vector<GLint> GPUProgram::getAttributeLocations(const std::initializer_list<std::string>& names) const
     {
-        return getAttributeLocations(names);
+        return GetAttributeLocations(names);
     }
 
     std::vector<GLint> GPUProgram::GetAttributeLocations(const std::vector<std::string>& names) const

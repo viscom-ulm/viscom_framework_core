@@ -131,7 +131,7 @@ namespace viscom {
         viewportQuadSize_.resize(numWindows, glm::ivec2(0));
         viewportScaling_.resize(numWindows, glm::vec2(1.0f));
 
-        for (size_t wId = 0; wId < numWindows; ++wId) {
+        for (std::size_t wId = 0; wId < numWindows; ++wId) {
             glm::ivec2 projectorSize;
             auto window = GetEngine()->getWindowPtr(wId);
             window->getFinalFBODimensions(projectorSize.x, projectorSize.y);
@@ -150,6 +150,18 @@ namespace viscom {
             viewportScreen_[wId].size_ = glm::ivec2(totalScreenSize);
             viewportQuadSize_[wId] = projectorSize;
             viewportScaling_[wId] = totalScreenSize / config_.virtualScreenSize_;
+
+			glm::vec2 relPosScale = 1.0f / glm::vec2(viewportQuadSize_[wId]);
+			glm::vec2 scaledRelPos = (glm::vec2(viewportScreen_[wId].position_) / glm::vec2(viewportScreen_[wId].size_)) * relPosScale;
+			
+			glm::mat4 glbToLcMatrix = glm::mat4{ 1.0f };
+			// correct local matrix:
+			// xlocal = xglobal*(xPixelSizeQuad / xRelSizeQuad) - ((xRelPosQuad*xPixelSizeQuad) / xRelSizeQuad)
+			glbToLcMatrix[0][0] = relPosScale.x;
+			glbToLcMatrix[1][1] = relPosScale.y;
+			glbToLcMatrix[3][0] = scaledRelPos.x;
+			glbToLcMatrix[3][1] = scaledRelPos.y;
+			camHelper_.SetLocalCoordMatrix(wId, glbToLcMatrix);
         }
 
 #ifdef VISCOM_CLIENTGUI
@@ -201,8 +213,9 @@ namespace viscom {
             syncInfoLocal_.cameraPosition_ = camHelper_.GetPosition();
             syncInfoLocal_.cameraOrientation_ = camHelper_.GetOrientation();
 
-            glm::vec2 relProjectorPos = glm::vec2(viewportScreen_[0].position_) / glm::vec2(viewportScreen_[0].size_);
-            glm::vec2 relProjectorSize = 1.0f / (glm::vec2(viewportQuadSize_[0]) / glm::vec2(viewportScreen_[0].size_));
+			glm::vec2 relProjectorPos = glm::vec2(viewportScreen_[0].position_) / glm::vec2(viewportScreen_[0].size_);
+			glm::vec2 relQuadSize = glm::vec2(viewportQuadSize_[0]) / glm::vec2(viewportScreen_[0].size_);
+			glm::vec2 relProjectorSize = 1.0f / relQuadSize;
 
             syncInfoLocal_.pickMatrix_ = glm::mat4{ 1.0f };
             syncInfoLocal_.pickMatrix_[0][0] = 2.0f * relProjectorSize.x;

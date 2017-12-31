@@ -131,6 +131,18 @@ namespace viscom {
         viewportQuadSize_[0] = projectorSize;
         viewportScaling_[0] = glm::vec2(projectorSize) / config_.virtualScreenSize_;
 
+        glm::vec2 relPosScale = 1.0f / glm::vec2(viewportQuadSize_[0]);
+        glm::vec2 scaledRelPos = (glm::vec2(viewportScreen_[0].position_) / glm::vec2(viewportScreen_[0].size_)) * relPosScale;
+
+        glm::mat4 glbToLcMatrix = glm::mat4{ 1.0f };
+        // correct local matrix:
+        // xlocal = xglobal*(xPixelSizeQuad / xRelSizeQuad) - ((xRelPosQuad*xPixelSizeQuad) / xRelSizeQuad)
+        glbToLcMatrix[0][0] = relPosScale.x;
+        glbToLcMatrix[1][1] = relPosScale.y;
+        glbToLcMatrix[3][0] = scaledRelPos.x;
+        glbToLcMatrix[3][1] = scaledRelPos.y;
+        camHelper_.SetLocalCoordMatrix(0, glbToLcMatrix);
+
         ImGui_ImplGlfwGL3_Init(window_, false);
 
         appNodeImpl_->InitOpenGL();
@@ -142,7 +154,8 @@ namespace viscom {
         currentTime_ = glfwGetTime();
 
         glm::vec2 relProjectorPos = glm::vec2(viewportScreen_[0].position_) / glm::vec2(viewportScreen_[0].size_);
-        glm::vec2 relProjectorSize = 1.0f / (glm::vec2(viewportQuadSize_[0]) / glm::vec2(viewportScreen_[0].size_));
+        glm::vec2 relQuadSize = glm::vec2(viewportQuadSize_[0]) / glm::vec2(viewportScreen_[0].size_);
+        glm::vec2 relProjectorSize = 1.0f / relQuadSize;
 
         glm::mat4 pickMatrix = glm::mat4{ 1.0f };
         pickMatrix[0][0] = 2.0f * relProjectorSize.x;
@@ -153,15 +166,6 @@ namespace viscom {
         pickMatrix[3][3] = 1.0f;
         pickMatrix = glm::inverse(camHelper_.GetCentralViewPerspectiveMatrix()) * pickMatrix;
         camHelper_.SetPickMatrix(pickMatrix);
-
-        glm::mat4 glbToLcMatrix = glm::mat4{ 1.0f };
-        // TODO: find correct local matrix:
-        // xlocal = xglobal*(xPixelSizeQuad / xRelSizeQuad) - ((xRelPosQuad*xPixelSizeQuad) / xRelSizeQuad)
-        glbToLcMatrix[0][0] = relProjectorSize.x;
-        glbToLcMatrix[1][1] = relProjectorSize.y;
-        glbToLcMatrix[3][0] = (-2.0f * relProjectorPos.x * relProjectorSize.x) - 1.0f;
-        glbToLcMatrix[3][1] = (-2.0f * relProjectorPos.y * relProjectorSize.y) + 1.0f;
-
 
         appNodeImpl_->UpdateSyncedInfo();
 

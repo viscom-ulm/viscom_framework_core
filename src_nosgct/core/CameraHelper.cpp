@@ -28,6 +28,11 @@ namespace viscom {
         return userPosition_;
     }
 
+    void CameraHelper::SetLocalCoordMatrix(std::size_t windowID, const glm::mat4& localCoordMatrix)
+    {
+        localCoordsMatrix_ = localCoordMatrix;
+    }
+
     glm::mat4 CameraHelper::GetViewPerspectiveMatrix() const
     {
         auto result = CalculateViewUpdate();
@@ -59,8 +64,8 @@ namespace viscom {
     glm::vec3 CameraHelper::GetPickPosition(const glm::vec2& globalScreenCoords) const
     {
         // to local screen coordinates.
-        glm::vec4 screenCoords{x, y, z, 1.0};
-        glm::ivec2 iScreenCoords;
+        glm::vec4 screenCoords = localCoordsMatrix_ * glm::vec4{globalScreenCoords, 0.0f, 1.0};
+        glm::ivec2 iScreenCoords(screenCoords.x, screenCoords.y);
         glReadPixels(iScreenCoords.x, iScreenCoords.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &screenCoords.z);
         screenCoords = glm::vec4((glm::vec3(screenCoords) * 2.0f) - 1.0f, screenCoords.w);
         LOG(INFO) << "Picked position: (" << screenCoords.x << ", " << screenCoords.y << ", " << screenCoords.z << ")";

@@ -31,6 +31,7 @@ namespace viscom {
         void SetPosition(const glm::vec3& position) { position_ = position; }
         void SetOrientation(const glm::quat& orientation) { camera_orientation_ = orientation; }
         void SetPickMatrix(const glm::mat4& pickMatrix) { pickMatrix_ = pickMatrix; }
+        void SetLocalCoordMatrix(std::size_t windowID, const glm::mat4& localCoordMatrix);
 
         glm::mat4 GetViewPerspectiveMatrix() const;
         glm::mat4 GetCentralPerspectiveMatrix() const;
