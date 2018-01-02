@@ -1,4 +1,5 @@
 set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
+set(CMAKE_DEBUGSLAVE_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows.")
 
 set(G3_SHARED_LIB OFF CACHE BOOL "Build shared library." FORCE)
@@ -159,8 +160,8 @@ endif()
 macro(copy_core_lib_dlls APP_NAME)
     if (${TUIO_LIB})
         add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-            ${PROJECT_BINARY_DIR}/extern/fwcore/extern/tuio/$<CONFIGURATION>/libTUIO$<$<CONFIG:Debug>:d>.dll ${PROJECT_BINARY_DIR})
-        install(FILES ${PROJECT_BINARY_DIR}/extern/fwcore/extern/tuio/$<CONFIGURATION>/libTUIO$<$<CONFIG:Debug>:d>.dll DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
+            ${PROJECT_BINARY_DIR}/extern/fwcore/extern/tuio/$<CONFIGURATION>/libTUIO$<$<OR:$<CONFIG:Debug>,$<CONFIG:DebugSlave>>:d>.dll ${PROJECT_BINARY_DIR})
+        install(FILES ${PROJECT_BINARY_DIR}/extern/fwcore/extern/tuio/$<CONFIGURATION>/libTUIO$<$<OR:$<CONFIG:Debug>,$<CONFIG:DebugSlave>>:d>.dll DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
     endif()
 endmacro()
 
