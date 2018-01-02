@@ -54,7 +54,8 @@ namespace viscom {
     private:
         void LoadTextureLDR(const std::string& filename, bool useSRGB);
         void LoadTextureHDR(const std::string& filename);
-        std::tuple<unsigned int, int, int> FindFormat(const std::string& filename, int imgChannels, bool useSRGB = false) const;
+        std::tuple<unsigned int, int, int> FindFormatLDR(const std::string& filename, int imgChannels, bool useSRGB = false) const;
+        std::tuple<unsigned int, int, int> FindFormatHDR(const std::string& filename, int imgChannels) const;
 
         /** Holds the OpenGL texture id. */
         GLuint textureId_;
