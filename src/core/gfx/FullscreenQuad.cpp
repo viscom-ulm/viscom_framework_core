@@ -8,28 +8,40 @@
 
 #include "FullscreenQuad.h"
 #include "core/ApplicationNodeInternal.h"
+#include "core/ApplicationNodeBase.h"
 #include "core/open_gl.h"
 
 namespace viscom {
 
-    FullscreenQuad::FullscreenQuad(const std::string& fragmentProgram, ApplicationNodeInternal* appNode) :
-        dummyVAO_{ 0 },
-        gpuProgram_{ appNode->GetGPUProgramManager().GetResource("fullScreenQuad_" + fragmentProgram, std::vector<std::string>{ "fullScreenQuad.vert", fragmentProgram }) }
+    StaticFullscreenQuad::StaticFullscreenQuad() :
+        dummyVAO_{ 0 }
     {
         glGenVertexArrays(1, &dummyVAO_);
     }
 
-    FullscreenQuad::~FullscreenQuad()
+    StaticFullscreenQuad::~StaticFullscreenQuad()
     {
         if (dummyVAO_ != 0) glDeleteVertexArrays(1, &dummyVAO_);
         dummyVAO_ = 0;
     }
 
+    FullscreenQuad::FullscreenQuad(const std::string& fragmentProgram, ApplicationNodeInternal* appNode) :
+        gpuProgram_{ appNode->GetGPUProgramManager().GetResource("fullScreenQuad_" + fragmentProgram, std::vector<std::string>{ "fullScreenQuad.vert", fragmentProgram }) }
+    {
+    }
+
+    FullscreenQuad::FullscreenQuad(const std::string& fragmentProgram, ApplicationNodeBase* appNode) :
+        gpuProgram_{ appNode->GetGPUProgramManager().GetResource("fullScreenQuad_" + fragmentProgram, std::vector<std::string>{ "fullScreenQuad.vert", fragmentProgram }) }
+    {
+    }
+
+    FullscreenQuad::~FullscreenQuad() = default;
+
     void FullscreenQuad::Draw() const
     {
         glDisable(GL_DEPTH_TEST);
         glDepthMask(GL_FALSE);
-        glBindVertexArray(dummyVAO_);
+        glBindVertexArray(staticQuad_.dummyVAO_);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
         glDepthMask(GL_TRUE);
