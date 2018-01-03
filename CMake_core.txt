@@ -159,9 +159,8 @@ endif()
 
 macro(copy_core_lib_dlls APP_NAME)
     if (${TUIO_LIB})
-        add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-            ${PROJECT_BINARY_DIR}/extern/fwcore/extern/tuio/$<CONFIGURATION>/libTUIO$<$<OR:$<CONFIG:Debug>,$<CONFIG:DebugSlave>>:d>.dll ${PROJECT_BINARY_DIR})
-        install(FILES ${PROJECT_BINARY_DIR}/extern/fwcore/extern/tuio/$<CONFIGURATION>/libTUIO$<$<OR:$<CONFIG:Debug>,$<CONFIG:DebugSlave>>:d>.dll DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
+        add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:libTUIO> ${PROJECT_BINARY_DIR})
+        install(FILES $<TARGET_FILE:libTUIO> DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
     endif()
 endmacro()
 

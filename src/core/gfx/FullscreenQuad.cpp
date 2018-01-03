@@ -7,11 +7,13 @@
  */
 
 #include "FullscreenQuad.h"
-#include "core/ApplicationNodeInternal.h"
 #include "core/ApplicationNodeBase.h"
+#include "core/ApplicationNodeInternal.h"
 #include "core/open_gl.h"
 
 namespace viscom {
+
+    StaticFullscreenQuad FullscreenQuad::staticQuad_;
 
     StaticFullscreenQuad::StaticFullscreenQuad() :
         dummyVAO_{ 0 }
