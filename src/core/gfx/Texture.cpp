@@ -23,7 +23,7 @@ namespace viscom {
     Texture::Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool useSRGB) :
         Resource(texFilename, node),
         textureId_{ 0 },
-        descriptor_{ 0, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE },
+        descriptor_{ 3, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE },
         width_{ 0 },
         height_{ 0 }
     {
@@ -98,8 +98,10 @@ namespace viscom {
             throw resource_loading_error(filename, "Failed to load texture.");
         }
 
+        width_ = imgWidth;
+        height_ = imgHeight;
         descriptor_.type_ = GL_UNSIGNED_BYTE;
-        std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, imgChannels, useSRGB);
+        std::tie(descriptor_.bytesPP_, descriptor_.internalFormat_, descriptor_.format_) = FindFormatLDR(filename, imgChannels, useSRGB);
         glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, imgWidth, imgHeight, 0, descriptor_.format_, descriptor_.type_, image);
 
         stbi_image_free(image);
@@ -114,26 +116,46 @@ namespace viscom {
             throw resource_loading_error(filename, "Failed to load texture.");
         }
 
+        width_ = imgWidth;
+        height_ = imgHeight;
         descriptor_.type_ = GL_FLOAT;
-        std::tie(descriptor_.internalFormat_, descriptor_.format_) = FindFormat(filename, imgChannels);
+        std::tie(descriptor_.bytesPP_, descriptor_.internalFormat_, descriptor_.format_) = FindFormatHDR(filename, imgChannels);
         glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, imgWidth, imgHeight, 0, descriptor_.format_, descriptor_.type_, image);
 
         stbi_image_free(image);
     }
 
-    std::tuple<int, int> Texture::FindFormat(const std::string& filename, int imgChannels, bool useSRGB) const
+    std::tuple<unsigned int, int, int> Texture::FindFormatLDR(const std::string& filename, int imgChannels, bool useSRGB) const
     {
+        auto bytesPP = 4U;
         auto internalFmt = GL_RGBA8;
         auto fmt = GL_RGBA;
         switch (imgChannels) {
-        case 1: internalFmt = GL_R8; fmt = GL_RED; break;
-        case 2: internalFmt = GL_RG8; fmt = GL_RG; break;
-        case 3: internalFmt = useSRGB ? GL_SRGB8 : GL_RGB8; fmt = GL_RGB; break;
-        case 4: internalFmt = useSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8; fmt = GL_RGBA; break;
+        case 1: bytesPP = 1U; internalFmt = GL_R8; fmt = GL_RED; break;
+        case 2: bytesPP = 2U; internalFmt = GL_RG8; fmt = GL_RG; break;
+        case 3: bytesPP = 3U; internalFmt = useSRGB ? GL_SRGB8 : GL_RGB8; fmt = GL_RGB; break;
+        case 4: bytesPP = 4U; internalFmt = useSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8; fmt = GL_RGBA; break;
         default:
             LOG(WARNING) << L"Invalid number of texture channels (" << imgChannels << ").";
             throw resource_loading_error(filename, "Invalid number of texture channels.");
         }
-        return std::make_tuple(internalFmt, fmt);
+        return std::make_tuple(bytesPP, internalFmt, fmt);
+    }
+
+    std::tuple<unsigned int, int, int> Texture::FindFormatHDR(const std::string& filename, int imgChannels) const
+    {
+        auto bytesPP = 16U;
+        auto internalFmt = GL_RGBA32F;
+        auto fmt = GL_RGBA;
+        switch (imgChannels) {
+        case 1: bytesPP = 4U; internalFmt = GL_R32F; fmt = GL_RED; break;
+        case 2: bytesPP = 8U; internalFmt = GL_RG32F; fmt = GL_RG; break;
+        case 3: bytesPP = 12U; internalFmt = GL_RGB32F; fmt = GL_RGB; break;
+        case 4: bytesPP = 16U; internalFmt = GL_RGBA32F; fmt = GL_RGBA; break;
+        default:
+            LOG(WARNING) << L"Invalid number of texture channels (" << imgChannels << ").";
+            throw resource_loading_error(filename, "Invalid number of texture channels.");
+        }
+        return std::make_tuple(bytesPP, internalFmt, fmt);
     }
 }

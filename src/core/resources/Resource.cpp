@@ -51,6 +51,7 @@ namespace viscom {
     {
         for (const auto& dir : appNode->GetConfig().resourceSearchPaths_) {
             auto filename = dir + "/" + localFilename;
+            if (dir.empty()) filename = localFilename;
             if (utils::file_exists(filename)) return filename;
         }
 
