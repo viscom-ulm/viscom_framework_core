@@ -7,8 +7,8 @@
  */
 
 #include "CameraHelper.h"
-#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <sgct.h>
 
 namespace viscom {
@@ -28,6 +28,11 @@ namespace viscom {
             localCoordsMatrices_.resize(windowID + 1, glm::mat4());
         }
         localCoordsMatrices_[windowID] = localCoordMatrix;
+    }
+
+    const glm::mat4& CameraHelper::GetPerspectiveMatrix() const
+    {
+        return engine_->getCurrentProjectionMatrix();
     }
 
     glm::mat4 CameraHelper::GetViewPerspectiveMatrix() const
@@ -57,6 +62,35 @@ namespace viscom {
 
         result[1] = glm::vec3(pickResult);
         return result;
+    }
+
+    glm::vec3 CameraHelper::GetPickPosition(const glm::vec2& globalScreenCoords) const
+    {
+        // to local screen coordinates.
+        glm::vec4 screenCoords = localCoordsMatrices_[engine_->getCurrentWindowPtr()->getId()] * glm::vec4{ globalScreenCoords, 0.0f, 1.0 };
+        glm::ivec2 iScreenCoords(screenCoords.x, screenCoords.y);
+        glReadPixels(iScreenCoords.x, iScreenCoords.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &screenCoords.z);
+        screenCoords = glm::vec4((glm::vec3(screenCoords) * 2.0f) - 1.0f, screenCoords.w);
+        LOG(INFO) << "Picked position: (" << screenCoords.x << ", " << screenCoords.y << ", " << screenCoords.z << ")";
+        auto viewProjInv = glm::inverse(GetViewPerspectiveMatrix());
+
+        auto postProjPos = viewProjInv * screenCoords;
+        return glm::vec3(postProjPos) / postProjPos.w;
+    }
+
+    float CameraHelper::GetNearPlane() const
+    {
+        return engine_->getNearClippingPlane();
+    }
+
+    float CameraHelper::GetFarPlane() const
+    {
+        return engine_->getFarClippingPlane();
+    }
+
+    void CameraHelper::SetNearFarPlane(float nearPlane, float farPlane)
+    {
+        engine_->setNearAndFarClippingPlanes(nearPlane, farPlane);
     }
 
     glm::mat4 CameraHelper::CalculateViewUpdate() const

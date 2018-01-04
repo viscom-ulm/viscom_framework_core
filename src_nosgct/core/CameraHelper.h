@@ -9,9 +9,9 @@
 #pragma once
 
 #include "core/main.h"
+#include "core/math/primitives.h"
 #include <glm/gtc/quaternion.hpp>
 #include <glm/mat4x4.hpp>
-#include "core/math/primitives.h"
 
 namespace viscom {
 
@@ -29,7 +29,11 @@ namespace viscom {
         void SetPickMatrix(const glm::mat4& pickMatrix) { pickMatrix_ = pickMatrix; }
         void SetLocalCoordMatrix(std::size_t windowID, const glm::mat4& localCoordMatrix);
 
+        /** Get camera matrices (eye dependent). */
+        const glm::mat4& GetPerspectiveMatrix() const { return projection_; }
         glm::mat4 GetViewPerspectiveMatrix() const;
+
+        /** Get camera matrices (eye independent). */
         glm::mat4 GetCentralPerspectiveMatrix() const;
         glm::mat4 GetCentralViewPerspectiveMatrix() const;
 
