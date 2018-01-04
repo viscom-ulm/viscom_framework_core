@@ -33,6 +33,8 @@ namespace viscom {
     public:
         FullscreenQuad(const std::string& fragmentProgram, ApplicationNodeInternal* appNode);
         FullscreenQuad(const std::string& fragmentProgram, ApplicationNodeBase* appNode);
+        FullscreenQuad(const std::string& shaderName, const std::string& fragmentProgram,
+            const std::vector<std::string>& defines, ApplicationNodeBase* appNode);
         ~FullscreenQuad();
 
         void Draw() const;

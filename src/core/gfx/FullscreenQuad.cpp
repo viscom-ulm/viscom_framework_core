@@ -37,6 +37,12 @@ namespace viscom {
     {
     }
 
+    FullscreenQuad::FullscreenQuad(const std::string& shaderName, const std::string& fragmentProgram,
+        const std::vector<std::string>& defines, ApplicationNodeBase* appNode) :
+        gpuProgram_{ appNode->GetGPUProgramManager().GetResource("fullScreenQuad_" + shaderName, std::vector<std::string>{ "fullScreenQuad.vert", fragmentProgram }, defines) }
+    {
+    }
+
     FullscreenQuad::~FullscreenQuad() = default;
 
     void FullscreenQuad::Draw() const
