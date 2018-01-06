@@ -18,11 +18,15 @@ namespace viscom {
 
     class StaticFullscreenQuad
     {
+    public:
+
     private:
         friend class FullscreenQuad;
 
         StaticFullscreenQuad();
         ~StaticFullscreenQuad();
+
+        void Initialize();
 
         /** The dummy vertex array object needed for rendering. */
         GLuint dummyVAO_;
@@ -36,6 +40,8 @@ namespace viscom {
         FullscreenQuad(const std::string& shaderName, const std::string& fragmentProgram,
             const std::vector<std::string>& defines, ApplicationNodeBase* appNode);
         ~FullscreenQuad();
+
+        static void InitializeStatic();
 
         void Draw() const;
         const GPUProgram* GetGPUProgram() const { return gpuProgram_.get(); }

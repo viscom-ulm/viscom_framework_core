@@ -145,6 +145,7 @@ namespace viscom {
 
         ImGui_ImplGlfwGL3_Init(window_, false);
 
+        FullscreenQuad::InitializeStatic();
         appNodeImpl_->InitOpenGL();
     }
 

@@ -298,8 +298,7 @@ namespace viscom {
 
         while (file.good()) {
             std::getline(file, line);
-            auto trimedLine = line;
-            utils::trim(trimedLine);
+            auto trimedLine = utils::trim(line);
 
             static const std::regex re(R"(^[ ]*#[ ]*include[ ]+["<](.*)[">].*)");
             std::smatch matches;
@@ -318,9 +317,8 @@ namespace viscom {
             }
 
             if (utils::beginsWith(trimedLine, "#version")) {
-                for (auto& def : defines) {
-                    auto trimedDefine = def;
-                    utils::trim(trimedDefine);
+                for (const auto& def : defines) {
+                    auto trimedDefine = utils::trim(def);
                     content << "#define " << trimedDefine << std::endl;
                 }
                 content << "#line " << lineCount + 1 << " " << fileId << std::endl;

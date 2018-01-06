@@ -15,10 +15,14 @@ namespace viscom {
 
     StaticFullscreenQuad FullscreenQuad::staticQuad_;
 
+    void StaticFullscreenQuad::Initialize()
+    {
+        glGenVertexArrays(1, &dummyVAO_);
+    }
+
     StaticFullscreenQuad::StaticFullscreenQuad() :
         dummyVAO_{ 0 }
     {
-        glGenVertexArrays(1, &dummyVAO_);
     }
 
     StaticFullscreenQuad::~StaticFullscreenQuad()
@@ -44,6 +48,11 @@ namespace viscom {
     }
 
     FullscreenQuad::~FullscreenQuad() = default;
+
+    void FullscreenQuad::InitializeStatic()
+    {
+        staticQuad_.Initialize();
+    }
 
     void FullscreenQuad::Draw() const
     {
