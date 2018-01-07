@@ -5,4 +5,4 @@ srcold/
 data/old/
 **/*Precompute*.???
 data/*/*.dat
-resources/shader/*.gen
+resources/shader/**/*.gen
