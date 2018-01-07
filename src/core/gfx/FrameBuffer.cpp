@@ -164,6 +164,9 @@ namespace viscom {
             glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_MAX_LEVEL, 0);
             glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
             GLenum fmt = GL_RGBA;
             GLenum tp = GL_FLOAT;
@@ -214,6 +217,8 @@ namespace viscom {
             if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
                 throw std::runtime_error("Could not create frame buffer.");
         }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     /**
