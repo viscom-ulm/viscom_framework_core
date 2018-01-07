@@ -86,7 +86,7 @@ namespace viscom {
         MeshManager& GetMeshManager() { return appNode_->GetMeshManager(); }
 
         CameraHelper* GetCamera() { return appNode_->GetCamera(); }
-        std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc) const { return appNode_->CreateOffscreenBuffers(fboDesc); }
+        std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc, int sizeDivisor = 1) const { return appNode_->CreateOffscreenBuffers(fboDesc, sizeDivisor); }
         const FrameBuffer* SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const { return appNode_->SelectOffscreenBuffer(offscreenBuffers); }
         std::unique_ptr<FullscreenQuad> CreateFullscreenQuad(const std::string& fragmentShader) { return appNode_->CreateFullscreenQuad(fragmentShader); }
 

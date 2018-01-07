@@ -345,10 +345,10 @@ namespace viscom {
         glfwSetWindowShouldClose(window_, 1);
     }
 
-    std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc) const
+    std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc, int sizeDivisor) const
     {
         std::vector<FrameBuffer> result;
-        glm::ivec2 fboSize(config_.virtualScreenSize_.x, config_.virtualScreenSize_.y);
+        glm::ivec2 fboSize(config_.virtualScreenSize_.x / sizeDivisor, config_.virtualScreenSize_.y / sizeDivisor);
         result.emplace_back(fboSize.x, fboSize.y, fboDesc);
         return result;
     }

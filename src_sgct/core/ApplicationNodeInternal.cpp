@@ -559,15 +559,15 @@ namespace viscom {
         engine_->terminate();
     }
 
-    std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc) const
+    std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc, int sizeDivisor = 1) const
     {
         std::vector<FrameBuffer> result;
         for (std::size_t i = 0; i < viewportScreen_.size(); ++i) {
-            const auto& fboSize = viewportQuadSize_[i];
+            const auto& fboSize = viewportQuadSize_[i] / sizeDivisor;
             result.emplace_back(fboSize.x, fboSize.y, fboDesc);
             LOG(DBUG) << "Offscreen FBO VP Pos: " << 0.0f << ", " << 0.0f;
-            LOG(DBUG) << "Offscreen FBO VP Size: " << GetViewportQuadSize(i).x << ", " << GetViewportQuadSize(i).y;
-            result.back().SetStandardViewport(0, 0, GetViewportQuadSize(i).x, GetViewportQuadSize(i).y);
+            LOG(DBUG) << "Offscreen FBO VP Size: " << fboSize.x << ", " << fboSize.y;
+            result.back().SetStandardViewport(0, 0, fboSize.x, fboSize.x.y);
         }
         return result;
     }

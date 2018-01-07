@@ -101,6 +101,7 @@ namespace viscom {
 
     private:
         static unsigned int findAttachment(GLenum internalFormat, unsigned int& colorAtt, std::vector<GLenum> &drawBuffers);
+        static bool isDepthStencil(GLenum internalFormat);
 
         /** holds the frame buffers OpenGL name. */
         GLuint fbo_;

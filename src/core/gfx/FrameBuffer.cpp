@@ -164,12 +164,19 @@ namespace viscom {
             glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_MAX_LEVEL, 0);
             glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+            GLenum fmt = GL_RGBA;
+            GLenum tp = GL_FLOAT;
+            if (isDepthStencil(desc_.texDesc_[i].internalFormat_)) {
+                fmt = GL_DEPTH_COMPONENT; tp = GL_UNSIGNED_BYTE;
+            }
+
             if (desc_.texDesc_[i].texType_ == GL_TEXTURE_CUBE_MAP) {
                 for (auto i = 0; i < 6; ++i) {
                     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, desc_.texDesc_[i].internalFormat_, width_, height_, 0, GL_RGBA, GL_FLOAT, nullptr);
                 }
             } else {
-                if (desc_.numSamples_ == 1) { glTexImage2D(desc_.texDesc_[i].texType_, 0, desc_.texDesc_[i].internalFormat_, width_, height_, 0, GL_RGBA, GL_FLOAT, nullptr); }
+                if (desc_.numSamples_ == 1) { glTexImage2D(desc_.texDesc_[i].texType_, 0, desc_.texDesc_[i].internalFormat_, width_, height_, 0, fmt, tp, nullptr); }
                 else { glTexImage2DMultisample(desc_.texDesc_[i].texType_, desc_.numSamples_, desc_.texDesc_[i].internalFormat_, width_, height_, GL_TRUE); }
             }
 
@@ -178,7 +185,8 @@ namespace viscom {
                     auto attachment = findAttachment(desc_.texDesc_[i].internalFormat_, colorAtt, drawBuffers_);
                     glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, textures_[i], 0);
                 }
-            } else {
+            }
+            else {
                 auto attachment = findAttachment(desc_.texDesc_[i].internalFormat_, colorAtt, drawBuffers_);
                 glFramebufferTexture(GL_FRAMEBUFFER, attachment, textures_[i], 0);
             }
@@ -295,6 +303,30 @@ namespace viscom {
             break;
         }
         return attachment;
+    }
+
+    bool FrameBuffer::isDepthStencil(GLenum internalFormat)
+    {
+        switch (internalFormat)
+        {
+        case GL_DEPTH_STENCIL:
+        case GL_DEPTH24_STENCIL8:
+        case GL_DEPTH32F_STENCIL8:
+        case GL_DEPTH_COMPONENT:
+        case GL_DEPTH_COMPONENT16:
+        case GL_DEPTH_COMPONENT32:
+        case GL_DEPTH_COMPONENT24:
+        case GL_DEPTH_COMPONENT32F:
+        case GL_STENCIL_INDEX:
+        case GL_STENCIL_INDEX1:
+        case GL_STENCIL_INDEX4:
+        case GL_STENCIL_INDEX8:
+        case GL_STENCIL_INDEX16:
+            return true;
+        default:
+            return false;
+        }
+        return false;
     }
 
 }
