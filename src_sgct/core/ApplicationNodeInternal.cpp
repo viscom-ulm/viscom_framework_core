@@ -170,6 +170,7 @@ namespace viscom {
         if (GetEngine()->isMaster()) ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && CLIENTMOUSE);
 #endif
 
+        FullscreenQuad::InitializeStatic();
         appNodeImpl_->InitOpenGL();
     }
 
