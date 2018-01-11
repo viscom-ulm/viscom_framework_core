@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "core/camera/CameraBase.h"
 #include "core/CameraHelper.h"
 #include "core/camera/Arcball.h"
+#include "core/camera/CameraBase.h"
 #include <glm/gtc/quaternion.hpp>
 
 namespace viscom {
@@ -32,8 +32,6 @@ namespace viscom {
     private:
         virtual void SetCameraPosition(const glm::vec3& position) override;
 
-        /** Holds the radius of the arcball. */
-        float radius_;
         /** Holds the current camera position. */
         glm::vec3 baseCamPos_;
         /** Holds the mouse wheel delta. */

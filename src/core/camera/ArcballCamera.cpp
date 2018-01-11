@@ -10,11 +10,11 @@
 
 #define GLM_SWIZZLE
 #include <core/open_gl.h>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_access.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 namespace viscom {
 
@@ -25,8 +25,7 @@ namespace viscom {
      */
     ArcballCamera::ArcballCamera(const glm::vec3& theCamPos, viscom::CameraHelper& cameraHelper) noexcept :
         CameraBase(theCamPos, cameraHelper),
-        radius_{ 1.0f },
-        baseCamPos_{ theCamPos },
+        baseCamPos_{ glm::normalize(theCamPos) },
         mouseWheelDelta_{ 0.0f },
         camArcball_{ GLFW_MOUSE_BUTTON_1 }
     {
@@ -41,15 +40,16 @@ namespace viscom {
     {
         const double mouseWheelSpeed = 8.0;
 
-        radius_ -= static_cast<float>(mouseWheelDelta_ * mouseWheelSpeed * elapsedTime);
-        radius_ = glm::clamp(radius_, 0.01f, 20.0f);
+        float radius = glm::length(GetPosition());
+        radius -= static_cast<float>(mouseWheelDelta_ * mouseWheelSpeed * elapsedTime);
+        radius = glm::clamp(radius, 0.01f, 20.0f);
         mouseWheelDelta_ = 0.0f;
 
         auto camOrient = glm::inverse(GetOrientation());
         glm::quat camOrientStep = camArcball_.GetWorldRotation(elapsedTime, camOrient);
         camOrient = camOrientStep * camOrient;
         glm::mat3 matOrient{ glm::mat3_cast(camOrient) };
-        auto camPos = radius_ * (matOrient * baseCamPos_);
+        auto camPos = radius * (matOrient * baseCamPos_);
 
         SetCameraPosition(camPos);
         SetCameraOrientation(glm::inverse(camOrient));
