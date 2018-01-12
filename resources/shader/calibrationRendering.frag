@@ -21,6 +21,6 @@ void main()
     
     alpha = vec4(vec3(pow(alpha.r, gamma)), 1.0f);
 
-    color = vec4(colorTexture * alpha);
+    color = vec4(colorTexture.rgb * alpha.rgb, 1.0f);
 }
 
