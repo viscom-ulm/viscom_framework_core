@@ -106,7 +106,7 @@ namespace viscom::math {
     template<typename real, int N, typename V>
     inline const V& AABB<real, N, V>::GetMax() const
     {
-        return minmax_[1]
+        return minmax_[1];
     }
 
     template<typename real, int N, typename V>
@@ -142,26 +142,27 @@ namespace viscom::math {
         minmax_[1] += offset;
     }
 
-    template<typename real, int N, typename V>
+    template<typename real, int N, typename V, int I>
     struct AABBInternal {
-        template<int I>
         static void permuteMultiply(std::vector<V>& result, const glm::tmat4x4<real, glm::highp>& mat, const glm::tvec4<real, glm::highp>& v, const AABB<real, N, V>& aabb)
         {
             auto v0 = v;
             v0[I] = aabb.minmax_[0][I];
             auto v1 = v;
             v1[I] = aabb.minmax_[1][I];
-            permuteMultiply<I + 1>(result, mat, v0, aabb);
-            permuteMultiply<I + 1>(result, mat, v1, aabb);
+            AABBInternal<real, N, V, I - 1>::permuteMultiply(result, mat, v0, aabb);
+            AABBInternal<real, N, V, I - 1>::permuteMultiply(result, mat, v1, aabb);
         }
+    };
 
-        template<>
-        static void permuteMultiply<N - 1>(std::vector<V>& result, const glm::tmat4x4<real, glm::highp>& mat, const glm::tvec4<real, glm::highp>& v, const AABB<real, N, V>& aabb)
+    template<typename real, int N, typename V>
+    struct AABBInternal<real, N, V, 0> {
+        static void permuteMultiply(std::vector<V>& result, const glm::tmat4x4<real, glm::highp>& mat, const glm::tvec4<real, glm::highp>& v, const AABB<real, N, V>& aabb)
         {
             auto v0 = v;
-            v0[N - 1] = aabb.minmax_[0][N - 1];
+            v0[0] = aabb.minmax_[0][0];
             auto v1 = v;
-            v1[N - 1] = aabb.minmax_[1][N - 1];
+            v1[0] = aabb.minmax_[1][0];
             result.emplace_back(mat * v0);
             result.emplace_back(mat * v1);
         }
@@ -172,7 +173,7 @@ namespace viscom::math {
     {
 
         std::vector<V> newCorners;
-        AABBInternal<real, N, V>::permuteMultiply<0>(newCorners, mat, glm::tvec4<real, glm::highp>{1.0f}, *this);
+        AABBInternal<real, N, V, N - 1>::permuteMultiply(newCorners, mat, glm::tvec4<real, glm::highp>{1.0f}, *this);
 
         FromPoints(newCorners);
     }
@@ -207,7 +208,7 @@ namespace viscom::math {
     inline bool AABB<real, N, V>::IsIntersecting(const AABB& other) const
     {
         bool result = true;
-        for (std::size_t i = 0 i < N; ++i) result && = minmax_[0][i] <= other.minmax_[1][i] && minmax_[1][i] >= other.minmax_[0][i];
+        for (glm::length_t i = 0; i < N; ++i) result = result && minmax_[0][i] <= other.minmax_[1][i] && minmax_[1][i] >= other.minmax_[0][i];
         return result;
     }
 
@@ -228,10 +229,6 @@ namespace viscom::math {
 
         for (const auto& point : points) AddPoint(point);
     }
-
-    // template<typename real> struct AABB3 {
-    //     std::array<glm::tvec3<real, glm::highp>, 2> minmax;
-    // };
 
 
     template<typename real> using AABB2 = AABB<real, 2, glm::tvec2<real, glm::highp>>;
