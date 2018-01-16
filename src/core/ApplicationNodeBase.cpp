@@ -7,10 +7,9 @@
  */
 
 #include "ApplicationNodeBase.h"
-#include <imgui.h>
-#include "core/gfx/mesh/MeshRenderable.h"
 #include "core/imgui/imgui_impl_glfw_gl3.h"
 #include "core/open_gl.h"
+#include <imgui.h>
 
 namespace viscom {
 
