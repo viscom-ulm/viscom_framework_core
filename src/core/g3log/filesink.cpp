@@ -56,7 +56,7 @@ namespace vku {
         exit_msg.append(g3::localtime_formatted(now, g3::internal::time_formatted));
         filestream() << exit_msg << std::flush;
 
-        exit_msg.append({ "\nLog file at: [" }).append(_log_file_with_path).append({ "]\n\n" });
+        exit_msg.append("\nLog file at: [").append(_log_file_with_path).append("]\n\n");
         std::cerr << exit_msg << std::flush;
     }
 
