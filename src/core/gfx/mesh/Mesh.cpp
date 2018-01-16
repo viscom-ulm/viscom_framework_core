@@ -52,7 +52,7 @@ namespace viscom {
     }
 
     /** Destructor. */
-    Mesh::~Mesh()
+    Mesh::~Mesh() noexcept
     {
         if (indexBuffer_ != 0) glDeleteBuffers(1, &indexBuffer_);
         indexBuffer_ = 0;

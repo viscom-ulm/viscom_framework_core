@@ -6,7 +6,7 @@
  * @brief  Implementation of a mesh renderable class.
  */
 
-#include "MeshRenderable.h"
+
 #include "SceneMeshNode.h"
 #include "SubMesh.h"
 #include "core/gfx/Material.h"
@@ -14,6 +14,8 @@
 #include "core/open_gl.h"
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include "MeshRenderable.h"
 
 namespace viscom {
 

@@ -34,7 +34,7 @@ namespace viscom {
     }
 
     /** Default destructor. */
-    SubMesh::~SubMesh() = default;
+    SubMesh::~SubMesh() noexcept = default;
 
     /** Default copy constructor. */
     SubMesh::SubMesh(const SubMesh&) = default;
