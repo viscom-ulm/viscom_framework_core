@@ -27,7 +27,7 @@ namespace viscom {
         void SetPosition(const glm::vec3& position) { position_ = position; }
         void SetOrientation(const glm::quat& orientation) { cameraOrientation_ = orientation; }
         void SetPickMatrix(const glm::mat4& pickMatrix) { pickMatrix_ = pickMatrix; }
-        void SetLocalCoordMatrix(std::size_t windowID, const glm::mat4& localCoordMatrix);
+        void SetLocalCoordMatrix(std::size_t windowID, const glm::mat4& localCoordMatrix, const glm::vec2& localScreenSize);
 
         /** Get camera matrices (eye dependent). */
         const glm::mat4& GetPerspectiveMatrix() const { return projection_; }
@@ -62,7 +62,7 @@ namespace viscom {
         /** The matrix used for picking global coordinates. */
         glm::mat4 pickMatrix_;
         /** The matrix to calculate local coordinates from global ones. */
-        glm::mat4 localCoordsMatrix_;
+        std::pair<glm::mat4, glm::vec2> localCoordsMatrix_;
 
         /** The camera view plane width. */
         float width_;

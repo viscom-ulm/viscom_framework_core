@@ -136,12 +136,12 @@ namespace viscom {
 
         glm::mat4 glbToLcMatrix = glm::mat4{ 1.0f };
         // correct local matrix:
-        // xlocal = xglobal*(xPixelSizeQuad / xRelSizeQuad) - ((xRelPosQuad*xPixelSizeQuad) / xRelSizeQuad)
-        glbToLcMatrix[0][0] = relPosScale.x;
-        glbToLcMatrix[1][1] = relPosScale.y;
-        glbToLcMatrix[3][0] = scaledRelPos.x;
-        glbToLcMatrix[3][1] = scaledRelPos.y;
-        camHelper_.SetLocalCoordMatrix(0, glbToLcMatrix);
+        // xlocal = xglobal*totalScreenSize - viewportScreen_[wId].position_
+        glbToLcMatrix[0][0] = projectorSize.x;
+        glbToLcMatrix[1][1] = projectorSize.y;
+        glbToLcMatrix[3][0] = -static_cast<float>(viewportScreen_[0].position_.x);
+        glbToLcMatrix[3][1] = -static_cast<float>(viewportScreen_[0].position_.y);
+        camHelper_.SetLocalCoordMatrix(0, glbToLcMatrix, glm::vec2(projectorSize));
 
         ImGui_ImplGlfwGL3_Init(window_, false);
 
