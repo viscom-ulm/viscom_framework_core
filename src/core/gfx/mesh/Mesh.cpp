@@ -58,7 +58,7 @@ namespace viscom {
         indexBuffer_ = 0;
     }
 
-    void Mesh::CreateNewMesh(const std::string & filename, const std::string & binFilename, ApplicationNodeInternal * node)
+    void Mesh::CreateNewMesh(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node)
     {
         auto fullFilename = FindResourceLocation(filename);
         // Load a Model from File
@@ -238,6 +238,8 @@ namespace viscom {
         GenerateBoneBoundingBoxes();
 
         globalInverse_ = glm::inverse(rootNode_->GetLocalTransform());
+
+        Save(binFilename);
     }
 
     std::shared_ptr<const Texture> Mesh::LoadTexture(const std::string& relFilename, ApplicationNodeInternal* node) const
@@ -263,7 +265,7 @@ namespace viscom {
         return std::move(texture);
     }
 
-    void Mesh::Save(const std::string & filename) const
+    void Mesh::Save(const std::string& filename) const
     {
 #ifndef __APPLE_CC__
         std::ofstream ofs(filename, std::ios::out | std::ios::binary);
@@ -272,7 +274,7 @@ namespace viscom {
 #endif
     }
 
-    void Mesh::Write(std::ostream & ofs) const
+    void Mesh::Write(std::ostream& ofs) const
     {
         serializeHelper::writeV(ofs, vertices_);
         serializeHelper::writeV(ofs, normals_);
@@ -313,7 +315,6 @@ namespace viscom {
     bool Mesh::Load(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node)
     {
 #ifndef __APPLE_CC__
-        std::vector<std::string> params;
         if (std::experimental::filesystem::exists(binFilename)) {
             if (!VersionableSerializerType::checkFileDate(filename, binFilename)) return false;
 

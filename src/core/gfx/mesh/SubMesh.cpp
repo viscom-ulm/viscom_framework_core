@@ -66,8 +66,7 @@ namespace viscom {
             serializeHelper::read(ifs, objectName_);
             serializeHelper::read(ifs, indexOffset_);
             serializeHelper::read(ifs, numIndices_);
-            serializeHelper::read(ifs, aabb_.minmax_[0]);
-            serializeHelper::read(ifs, aabb_.minmax_[1]);
+            serializeHelper::read(ifs, aabb_);
             serializeHelper::read(ifs, materialIndex_);
             return true;
         }

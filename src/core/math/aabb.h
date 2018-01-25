@@ -42,7 +42,7 @@ namespace viscom::math {
         void AddPoint(const V&);
 
         /** Contains the minimum and maximum points of the box. */
-        std::array<V, N> minmax_;
+        std::array<V, 2> minmax_;
 
     private:
         void FromPoints(const std::vector<V>&);
