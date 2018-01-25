@@ -82,7 +82,7 @@ namespace viscom {
         void Terminate() const;
 
         CameraHelper* GetCamera() { return &camHelper_; }
-        std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc) const;
+        std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc, int sizeDivisor = 1) const;
         const FrameBuffer* SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const;
         std::unique_ptr<FullscreenQuad> CreateFullscreenQuad(const std::string& fragmentShader);
 

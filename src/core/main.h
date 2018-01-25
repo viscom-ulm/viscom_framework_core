@@ -18,5 +18,5 @@
 // ReSharper restore CppUnusedIncludeDirective
 
 #include <core/config.h>
-#include <core/utils.h>
+#include <core/utils/utils.h>
 

@@ -108,8 +108,9 @@ namespace viscom { namespace math {
      *  @param p the point.
      */
     template<typename real> bool pointInAABB3Test(const AABB3<real>& b, const glm::tvec3<real, glm::highp>& p) {
-        return (p.x >= b.minmax[0].x && p.y >= b.minmax[0].y && p.z >= b.minmax[0].z
-            && p.x <= b.minmax[1].x && p.y <= b.minmax[1].y && p.z <= b.minmax[1].z);
+        auto& bmin = b.minmax[0]; auto& bmax = b.minmax[1];
+        return (p.x >= bmin.x && p.y >= bmin.y && p.z >= bmin.z
+            && p.x <= bmax.x && p.y <= bmax.y && p.z <= bmax.z);
     }
 
     /**
@@ -159,14 +160,16 @@ namespace viscom { namespace math {
      *  @param b the box.
      */
     template<typename real> bool AABBInFrustumTest(const Frustum<real>& f, const AABB3<real>& b) {
+        auto& bmax = b.minmax[1];
         for (unsigned int i = 0; i < 6; ++i) {
+            auto& plane = f.planes[i];
             glm::vec3 p{ b.minmax[0] };
-            if (f.planes[i].x >= 0) p.x = b.minmax[1].x;
-            if (f.planes[i].y >= 0) p.y = b.minmax[1].y;
-            if (f.planes[i].z >= 0) p.z = b.minmax[1].z;
+            if (plane.x >= 0) p.x = bmax.x;
+            if (plane.y >= 0) p.y = bmax.y;
+            if (plane.z >= 0) p.z = bmax.z;
 
             // is the positive vertex outside?
-            if ((glm::dot(glm::vec3(f.planes[i]), p) + f.planes[i].w) < 0) return false;
+            if ((glm::dot(glm::vec3(plane), p) + plane.w) < 0) return false;
         }
         return true;
     }

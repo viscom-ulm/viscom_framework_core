@@ -35,9 +35,9 @@ set(TUIO_PORT 3333 CACHE STRING "UDP Port for TUIO to listen on")
 
 # Build-flags.
 if(UNIX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -Wno-unused-function -Wno-unused-parameter -Wextra -Wpedantic -std=c++1z")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++1z")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -Wno-unused-function -Wno-unused-parameter -Wextra -Wpedantic")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
   # add compiler-options for AppleClang to ignore linker warnings from assimp on macOS
   if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
@@ -46,7 +46,7 @@ if(UNIX)
     list(APPEND CORE_LIBS stdc++fs)
   endif()
 elseif(MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3 /EHsc /MP /std:c++latest")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3 /EHsc /MP")
 endif()
 
 file(GLOB EXTERN_SOURCES_CORE
@@ -131,7 +131,7 @@ list(APPEND CORE_INCLUDE_DIRS
 list(APPEND CORE_LIBS g3logger assimp)
 
 if(MSVC)
-    list(APPEND COMPILE_TIME_DEFS _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS NOMINMAX)
+    list(APPEND COMPILE_TIME_DEFS _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN NOMINMAX)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${APP_NAME})
 endif()
 
@@ -159,9 +159,8 @@ endif()
 
 macro(copy_core_lib_dlls APP_NAME)
     if (${TUIO_LIB})
-        add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different 
-            ${PROJECT_BINARY_DIR}/extern/fwcore/extern/tuio/$<CONFIGURATION>/libTUIO$<$<OR:$<CONFIG:Debug>,$<CONFIG:DebugSlave>>:d>.dll ${PROJECT_BINARY_DIR})
-        install(FILES ${PROJECT_BINARY_DIR}/extern/fwcore/extern/tuio/$<CONFIGURATION>/libTUIO$<$<OR:$<CONFIG:Debug>,$<CONFIG:DebugSlave>>:d>.dll DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
+        add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:libTUIO> ${PROJECT_BINARY_DIR})
+        install(FILES $<TARGET_FILE:libTUIO> DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
     endif()
 endmacro()
 

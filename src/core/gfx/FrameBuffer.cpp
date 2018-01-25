@@ -7,11 +7,23 @@
  */
 
 #include "FrameBuffer.h"
+#include "core/open_gl.h"
 
 namespace viscom {
+
+    FrameBufferTextureDescriptor::FrameBufferTextureDescriptor(GLenum internalFormat) :
+        FrameBufferTextureDescriptor { internalFormat, GL_TEXTURE_2D }
+    {
+    }
+
+    FrameBufferTextureDescriptor::FrameBufferTextureDescriptor(GLenum internalFormat, GLenum texType) :
+        internalFormat_{ internalFormat }, texType_{ texType }
+    {
+    }
+
     /**
      * Constructor.
-     * Creates a FrameBuffer representing the backbuffer.
+     * Creates a FrameBuffer representing the back buffer.
      */
     FrameBuffer::FrameBuffer() :
         fbo_(0),
@@ -24,7 +36,7 @@ namespace viscom {
 
     /**
      * Constructor.
-     * Creates a new FrameBuffer with given width and height. It is initialized as backbuffer as default.
+     * Creates a new FrameBuffer with given width and height. It is initialized as back buffer as default.
      * @param fbWidth the frame buffers width
      * @param fbHeight the frame buffers height.
      * @param d the frame buffers description.
@@ -146,18 +158,28 @@ namespace viscom {
         textures_.clear();
         textures_.resize(desc_.texDesc_.size(), 0);
         glGenTextures(static_cast<GLsizei>(textures_.size()), textures_.data());
-        for (auto i = 0U; i < textures_.size(); ++i) {
+        for (std::size_t i = 0; i < textures_.size(); ++i) {
             glBindTexture(desc_.texDesc_[i].texType_, textures_[i]);
             glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_BASE_LEVEL, 0);
             glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_MAX_LEVEL, 0);
             glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(desc_.texDesc_[i].texType_, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+            GLenum fmt = GL_RGBA;
+            GLenum tp = GL_FLOAT;
+            if (isDepthStencil(desc_.texDesc_[i].internalFormat_)) {
+                fmt = GL_DEPTH_COMPONENT; tp = GL_UNSIGNED_BYTE;
+            }
+
             if (desc_.texDesc_[i].texType_ == GL_TEXTURE_CUBE_MAP) {
                 for (auto i = 0; i < 6; ++i) {
                     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, desc_.texDesc_[i].internalFormat_, width_, height_, 0, GL_RGBA, GL_FLOAT, nullptr);
                 }
             } else {
-                if (desc_.numSamples_ == 1) { glTexImage2D(desc_.texDesc_[i].texType_, 0, desc_.texDesc_[i].internalFormat_, width_, height_, 0, GL_RGBA, GL_FLOAT, nullptr); }
+                if (desc_.numSamples_ == 1) { glTexImage2D(desc_.texDesc_[i].texType_, 0, desc_.texDesc_[i].internalFormat_, width_, height_, 0, fmt, tp, nullptr); }
                 else { glTexImage2DMultisample(desc_.texDesc_[i].texType_, desc_.numSamples_, desc_.texDesc_[i].internalFormat_, width_, height_, GL_TRUE); }
             }
 
@@ -166,7 +188,8 @@ namespace viscom {
                     auto attachment = findAttachment(desc_.texDesc_[i].internalFormat_, colorAtt, drawBuffers_);
                     glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, textures_[i], 0);
                 }
-            } else {
+            }
+            else {
                 auto attachment = findAttachment(desc_.texDesc_[i].internalFormat_, colorAtt, drawBuffers_);
                 glFramebufferTexture(GL_FRAMEBUFFER, attachment, textures_[i], 0);
             }
@@ -176,7 +199,7 @@ namespace viscom {
         renderBuffers_.clear();
         renderBuffers_.resize(desc_.rbDesc_.size(), 0);
         glGenRenderbuffers(static_cast<GLsizei>(renderBuffers_.size()), renderBuffers_.data());
-        for (auto i = 0U; i < renderBuffers_.size(); ++i) {
+        for (std::size_t i = 0; i < renderBuffers_.size(); ++i) {
             glBindRenderbuffer(GL_RENDERBUFFER, renderBuffers_[i]);
             if (desc_.numSamples_ == 1) { glRenderbufferStorage(GL_RENDERBUFFER, desc_.rbDesc_[i].internalFormat_, width_, height_); }
             else { glRenderbufferStorageMultisample(GL_RENDERBUFFER, desc_.numSamples_, desc_.rbDesc_[i].internalFormat_, width_, height_); }
@@ -184,7 +207,7 @@ namespace viscom {
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderBuffers_[i]);
         }
 
-        if (drawBuffers_.size() < 1) {
+        if (drawBuffers_.empty()) {
             glDrawBuffer(GL_NONE);
             glReadBuffer(GL_NONE);
         } else {
@@ -194,6 +217,8 @@ namespace viscom {
             if (fboStatus != GL_FRAMEBUFFER_COMPLETE)
                 throw std::runtime_error("Could not create frame buffer.");
         }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     /**
@@ -219,11 +244,11 @@ namespace viscom {
     * Use this frame buffer object as target for rendering and select the draw buffers used.
     * @param drawBufferIndices the indices in the draw buffer to be used.
     */
-    void FrameBuffer::UseAsRenderTarget(const std::vector<unsigned int> drawBufferIndices) const
+    void FrameBuffer::UseAsRenderTarget(const std::vector<unsigned int>& drawBufferIndices) const
     {
         assert(!isBackbuffer_);
         std::vector<GLenum> drawBuffersReduced(drawBuffers_.size());
-        for (unsigned int i = 0; i < drawBufferIndices.size(); ++i) drawBuffersReduced[i] = drawBuffers_[drawBufferIndices[i]];
+        for (std::size_t i = 0; i < drawBufferIndices.size(); ++i) drawBuffersReduced[i] = drawBuffers_[drawBufferIndices[i]]; //-V108
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
         glDrawBuffers(static_cast<GLsizei>(drawBuffersReduced.size()), drawBuffersReduced.data());
@@ -231,13 +256,23 @@ namespace viscom {
         glScissor(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
     }
 
-    void FrameBuffer::DrawToFBO(std::function<void()> drawFn) const
+    /**
+     * Use this frame buffer object as target for rendering and select the draw buffers used.
+     * @param drawBufferIndices the indices in the draw buffer to be used.
+     */
+    void FrameBuffer::UseAsRenderTarget(const std::vector<std::size_t>& drawBufferIndices) const
     {
-        UseAsRenderTarget();
-        drawFn();
+        assert(!isBackbuffer_);
+        std::vector<GLenum> drawBuffersReduced(drawBuffers_.size());
+        for (std::size_t i = 0; i < drawBufferIndices.size(); ++i) drawBuffersReduced[i] = drawBuffers_[drawBufferIndices[i]];
+
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
+        glDrawBuffers(static_cast<GLsizei>(drawBuffersReduced.size()), drawBuffersReduced.data());
+        glViewport(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
+        glScissor(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
     }
 
-    void FrameBuffer::DrawToFBO(const std::vector<unsigned>& drawBufferIndices, std::function<void()> drawFn) const
+    void FrameBuffer::DrawToFBO(const std::vector<unsigned int>& drawBufferIndices, std::function<void()> drawFn) const
     {
         UseAsRenderTarget(drawBufferIndices);
         drawFn();
@@ -273,6 +308,30 @@ namespace viscom {
             break;
         }
         return attachment;
+    }
+
+    bool FrameBuffer::isDepthStencil(GLenum internalFormat)
+    {
+        switch (internalFormat)
+        {
+        case GL_DEPTH_STENCIL:
+        case GL_DEPTH24_STENCIL8:
+        case GL_DEPTH32F_STENCIL8:
+        case GL_DEPTH_COMPONENT:
+        case GL_DEPTH_COMPONENT16:
+        case GL_DEPTH_COMPONENT32:
+        case GL_DEPTH_COMPONENT24:
+        case GL_DEPTH_COMPONENT32F:
+        case GL_STENCIL_INDEX:
+        case GL_STENCIL_INDEX1:
+        case GL_STENCIL_INDEX4:
+        case GL_STENCIL_INDEX8:
+        case GL_STENCIL_INDEX16:
+            return true;
+        default:
+            return false;
+        }
+        return false;
     }
 
 }

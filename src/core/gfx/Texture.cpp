@@ -9,9 +9,10 @@
 #include "Texture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 #include "core/ApplicationNodeInternal.h"
 #include "core/resources/ResourceManager.h"
-#include <stb_image.h>
+#include "core/open_gl.h"
 
 namespace viscom {
 

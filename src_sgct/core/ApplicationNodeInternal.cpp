@@ -7,11 +7,12 @@
  */
 
 #include "ApplicationNodeInternal.h"
-#include "external/tinyxml2.h"
 #include "app/MasterNode.h"
 #include "app/SlaveNode.h"
-#include <imgui.h>
 #include "core/imgui/imgui_impl_glfw_gl3.h"
+#include "external/tinyxml2.h"
+#include <imgui.h>
+#include <sgct.h>
 
 #ifndef VISCOM_LOCAL_ONLY
 #include "core/OpenCVParserHelper.h"
@@ -130,7 +131,7 @@ namespace viscom {
         viewportQuadSize_.resize(numWindows, glm::ivec2(0));
         viewportScaling_.resize(numWindows, glm::vec2(1.0f));
 
-        for (size_t wId = 0; wId < numWindows; ++wId) {
+        for (std::size_t wId = 0; wId < numWindows; ++wId) {
             glm::ivec2 projectorSize;
             auto window = GetEngine()->getWindowPtr(wId);
             window->getFinalFBODimensions(projectorSize.x, projectorSize.y);
@@ -149,6 +150,19 @@ namespace viscom {
             viewportScreen_[wId].size_ = glm::ivec2(totalScreenSize);
             viewportQuadSize_[wId] = projectorSize;
             viewportScaling_[wId] = totalScreenSize / config_.virtualScreenSize_;
+
+            glm::vec2 relPosScale = 1.0f / glm::vec2(viewportQuadSize_[wId]);
+            glm::vec2 scaledRelPos = (glm::vec2(viewportScreen_[wId].position_) / glm::vec2(viewportScreen_[wId].size_)) * relPosScale;
+            
+            glm::mat4 glbToLcMatrix = glm::mat4{ 1.0f };
+            // correct local matrix:
+            // xlocal = xglobal*totalScreenSize - viewportScreen_[wId].position_
+            // xlocal = xglobal*(xPixelSizeQuad / xRelSizeQuad) - ((xRelPosQuad*xPixelSizeQuad) / xRelSizeQuad)
+            glbToLcMatrix[0][0] = totalScreenSize.x;
+            glbToLcMatrix[1][1] = totalScreenSize.y;
+            glbToLcMatrix[3][0] = -static_cast<float>(viewportScreen_[wId].position_.x);
+            glbToLcMatrix[3][1] = -static_cast<float>(viewportScreen_[wId].position_.y);
+            camHelper_.SetLocalCoordMatrix(wId, glbToLcMatrix, glm::vec2(projectorSize));
         }
 
 #ifdef VISCOM_CLIENTGUI
@@ -157,6 +171,7 @@ namespace viscom {
         if (GetEngine()->isMaster()) ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && CLIENTMOUSE);
 #endif
 
+        FullscreenQuad::InitializeStatic();
         appNodeImpl_->InitOpenGL();
     }
 
@@ -201,7 +216,8 @@ namespace viscom {
             syncInfoLocal_.cameraOrientation_ = camHelper_.GetOrientation();
 
             glm::vec2 relProjectorPos = glm::vec2(viewportScreen_[0].position_) / glm::vec2(viewportScreen_[0].size_);
-            glm::vec2 relProjectorSize = 1.0f / (glm::vec2(viewportQuadSize_[0]) / glm::vec2(viewportScreen_[0].size_));
+            glm::vec2 relQuadSize = glm::vec2(viewportQuadSize_[0]) / glm::vec2(viewportScreen_[0].size_);
+            glm::vec2 relProjectorSize = 1.0f / relQuadSize;
 
             syncInfoLocal_.pickMatrix_ = glm::mat4{ 1.0f };
             syncInfoLocal_.pickMatrix_[0][0] = 2.0f * relProjectorSize.x;
@@ -545,15 +561,15 @@ namespace viscom {
         engine_->terminate();
     }
 
-    std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc) const
+    std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc, int sizeDivisor) const
     {
         std::vector<FrameBuffer> result;
         for (std::size_t i = 0; i < viewportScreen_.size(); ++i) {
-            const auto& fboSize = viewportQuadSize_[i];
+            const auto& fboSize = viewportQuadSize_[i] / sizeDivisor;
             result.emplace_back(fboSize.x, fboSize.y, fboDesc);
             LOG(DBUG) << "Offscreen FBO VP Pos: " << 0.0f << ", " << 0.0f;
-            LOG(DBUG) << "Offscreen FBO VP Size: " << GetViewportQuadSize(i).x << ", " << GetViewportQuadSize(i).y;
-            result.back().SetStandardViewport(0, 0, GetViewportQuadSize(i).x, GetViewportQuadSize(i).y);
+            LOG(DBUG) << "Offscreen FBO VP Size: " << fboSize.x << ", " << fboSize.y;
+            result.back().SetStandardViewport(0, 0, fboSize.x, fboSize.y);
         }
         return result;
     }

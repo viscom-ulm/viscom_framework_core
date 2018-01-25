@@ -8,7 +8,7 @@
 
 #include "Resource.h"
 #include "core/ApplicationNodeInternal.h"
-#include "core/utils.h"
+#include "core/utils/utils.h"
 
 namespace viscom {
     /**

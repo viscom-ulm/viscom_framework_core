@@ -9,7 +9,8 @@
 #pragma once
 
 #include "core/main.h"
-#include "core/open_gl.h"
+#include "core/open_gl_fwd.h"
+#include "core/utils/function_view.h"
 
 namespace viscom {
 
@@ -26,8 +27,8 @@ namespace viscom {
     /** Describes a texture render target for frame buffers. */
     struct FrameBufferTextureDescriptor
     {
-        // ReSharper disable once CppNonExplicitConvertingConstructor
-        FrameBufferTextureDescriptor(GLenum internalFormat, GLenum texType = GL_TEXTURE_2D) : internalFormat_{ internalFormat }, texType_{ texType } {}
+        explicit FrameBufferTextureDescriptor(GLenum internalFormat);
+        FrameBufferTextureDescriptor(GLenum internalFormat, GLenum texType);
 
         /** The texture descriptor. */
         GLenum internalFormat_;
@@ -79,10 +80,14 @@ namespace viscom {
         ~FrameBuffer();
 
         void UseAsRenderTarget() const;
-        void UseAsRenderTarget(const std::vector<unsigned int> drawBufferIndices) const;
+        [[deprecated("Use the version with size_t indices instead.")]]
+        void UseAsRenderTarget(const std::vector<unsigned int>& drawBufferIndices) const;
+        void UseAsRenderTarget(const std::vector<std::size_t>& drawBufferIndices) const;
 
-        void DrawToFBO(std::function<void()> drawFn) const;
+        inline void DrawToFBO(viscom::function_view<void()> drawFn) const;
+        [[deprecated("Use the version with size_t indices instead.")]]
         void DrawToFBO(const std::vector<unsigned int>& drawBufferIndices, std::function<void()> drawFn) const;
+        inline void DrawToFBO(const std::vector<std::size_t>& drawBufferIndices, viscom::function_view<void()> drawFn) const;
 
         void Resize(unsigned int fbWidth, unsigned int fbHeight);
         const std::vector<GLuint>& GetTextures() const { return textures_; }
@@ -96,6 +101,7 @@ namespace viscom {
 
     private:
         static unsigned int findAttachment(GLenum internalFormat, unsigned int& colorAtt, std::vector<GLenum> &drawBuffers);
+        static bool isDepthStencil(GLenum internalFormat);
 
         /** holds the frame buffers OpenGL name. */
         GLuint fbo_;
@@ -116,4 +122,16 @@ namespace viscom {
         /** holds the frame buffers height. */
         unsigned int height_;
     };
+
+    inline void viscom::FrameBuffer::DrawToFBO(viscom::function_view<void()> drawFn) const
+    {
+        UseAsRenderTarget();
+        drawFn();
+    }
+
+    inline void viscom::FrameBuffer::DrawToFBO(const std::vector<std::size_t>& drawBufferIndices, viscom::function_view<void()> drawFn) const
+    {
+        UseAsRenderTarget(drawBufferIndices);
+        drawFn();
+    }
 }

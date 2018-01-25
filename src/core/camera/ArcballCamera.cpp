@@ -9,7 +9,7 @@
 #include "ArcballCamera.h"
 
 #define GLM_SWIZZLE
-#include <core/open_gl.h>
+#include "core/glfw.h"
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -65,7 +65,7 @@ namespace viscom {
     {
         bool handled = camArcball_.HandleMouse(button, action, sender);
 
-        if (mouseWheelDelta != 0) {
+        if (mouseWheelDelta != 0) { //-V550
             mouseWheelDelta_ = mouseWheelDelta;
             handled = true;
         }

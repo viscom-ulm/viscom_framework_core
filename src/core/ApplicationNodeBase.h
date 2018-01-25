@@ -24,11 +24,9 @@ namespace viscom {
         SGCTEngineWrapper(sgct::Engine* engine) : engine_{ engine } {}
 
     private:
-        int GetCurrentWindowId() const { return engine_->getCurrentWindowPtr()->getId(); }
-        void UnbindCurrentWindowFBO() const { engine_->getCurrentWindowPtr()->getFBOPtr()->unBind(); }
-        void SetProjectionPlaneCoordinate(std::size_t windowIdx, std::size_t vpIndex, std::size_t corner, glm::vec3 coordinate) const {
-            engine_->getWindowPtr(windowIdx)->getViewport(vpIndex)->getProjectionPlane()->setCoordinate(corner, coordinate);
-        }
+        int GetCurrentWindowId() const;
+        void UnbindCurrentWindowFBO() const;
+        void SetProjectionPlaneCoordinate(std::size_t windowIdx, std::size_t vpIndex, std::size_t corner, glm::vec3 coordinate) const;
 
         /** Holds the SGCT engine. */
         sgct::Engine* engine_;
@@ -88,7 +86,7 @@ namespace viscom {
         MeshManager& GetMeshManager() { return appNode_->GetMeshManager(); }
 
         CameraHelper* GetCamera() { return appNode_->GetCamera(); }
-        std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc) const { return appNode_->CreateOffscreenBuffers(fboDesc); }
+        std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc, int sizeDivisor = 1) const { return appNode_->CreateOffscreenBuffers(fboDesc, sizeDivisor); }
         const FrameBuffer* SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const { return appNode_->SelectOffscreenBuffer(offscreenBuffers); }
         std::unique_ptr<FullscreenQuad> CreateFullscreenQuad(const std::string& fragmentShader) { return appNode_->CreateFullscreenQuad(fragmentShader); }
 

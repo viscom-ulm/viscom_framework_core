@@ -16,8 +16,11 @@
 #endif
 #include "core/ApplicationNodeInternal.h"
 #include <regex>
+#include "core/open_gl.h"
 
 namespace viscom {
+
+    constexpr unsigned int MAX_INCLUDE_RECURSION_DEPTH = 32; //-V112
 
     /**
      * Constructor.
@@ -100,28 +103,38 @@ namespace viscom {
      * @param shaderFilename the shader file name
      */
     Shader::Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node) :
+        Shader{ shaderFilename, node, std::vector<std::string>{} }
+    {
+    }
+
+    Shader::Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node, const std::vector<std::string>& defines) :
         filename_{ Resource::FindResourceLocation("shader/" + shaderFilename, node) },
         shader_{ 0 },
         type_{ GL_VERTEX_SHADER },
-        strType_{ "vertex" }
+        strType_{ "vertex" },
+        defines_{ defines }
     {
         if (utils::endsWith(shaderFilename, ".frag")) {
             type_ = GL_FRAGMENT_SHADER;
             strType_ = "fragment";
-        } else if (utils::endsWith(shaderFilename, ".geom")) {
+        }
+        else if (utils::endsWith(shaderFilename, ".geom")) {
             type_ = GL_GEOMETRY_SHADER;
             strType_ = "geometry";
-        } else if (utils::endsWith(shaderFilename, ".tesc")) {
+        }
+        else if (utils::endsWith(shaderFilename, ".tesc")) {
             type_ = GL_TESS_CONTROL_SHADER;
             strType_ = "tessellation control";
-        } else if (utils::endsWith(shaderFilename, ".tese")) {
+        }
+        else if (utils::endsWith(shaderFilename, ".tese")) {
             type_ = GL_TESS_EVALUATION_SHADER;
             strType_ = "tessellation evaluation";
-        } else if (utils::endsWith(shaderFilename, ".comp")) {
+        }
+        else if (utils::endsWith(shaderFilename, ".comp")) {
             type_ = GL_COMPUTE_SHADER;
             strType_ = "compute";
         }
-        shader_ = compileShader(filename_, type_, strType_);
+        shader_ = compileShader(filename_, type_, strType_, defines_);
     }
 
     /**
@@ -132,7 +145,8 @@ namespace viscom {
         filename_{ std::move(rhs.filename_) },
         shader_{ std::move(rhs.shader_) },
         type_{ std::move(rhs.type_) },
-        strType_{ std::move(rhs.strType_) }
+        strType_{ std::move(rhs.strType_) },
+        defines_{ std::move(rhs.defines_) }
     {
         rhs.shader_ = 0;
     }
@@ -151,6 +165,7 @@ namespace viscom {
             rhs.shader_ = 0;
             type_ = std::move(rhs.type_);
             strType_ = std::move(rhs.strType_);
+            defines_ = std::move(rhs.defines_);
         }
         return *this;
     }
@@ -191,7 +206,7 @@ namespace viscom {
      */
     GLuint Shader::recompileShader() const
     {
-        return compileShader(filename_, type_, strType_);
+        return compileShader(filename_, type_, strType_, defines_);
     }
 
     /**
@@ -201,7 +216,7 @@ namespace viscom {
      * @param strType the shader type as string
      * @return the compiled shader if successful
      */
-    GLuint Shader::compileShader(const std::string& filename, GLenum type, const std::string& strType)
+    GLuint Shader::compileShader(const std::string& filename, GLenum type, const std::string& strType, const std::vector<std::string>& defines)
     {
 #ifdef __APPLE_CC__
         std::ifstream file(filename.c_str(), std::ifstream::in);
@@ -220,7 +235,6 @@ namespace viscom {
         auto shaderText = content.str();
 #else
         unsigned int fileId{0};
-        static std::vector<std::string> defines{};
         auto shaderText = LoadShaderFile(filename, defines, fileId, 0);
         std::ofstream shader_out(filename + ".gen");
         shader_out << shaderText;
@@ -244,17 +258,16 @@ namespace viscom {
             GLint infoLogLength;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-            auto strInfoLog = new GLchar[infoLogLength + 1];
-            glGetShaderInfoLog(shader, infoLogLength, nullptr, strInfoLog);
+            std::string strInfoLog;
+            strInfoLog.resize(static_cast<std::size_t>(infoLogLength + 1));
+            glGetShaderInfoLog(shader, infoLogLength, nullptr, strInfoLog.data());
 
             LOG(WARNING) << "Compile failure in " << strType << " shader (" << filename.c_str() << "): "
                 << std::endl << strInfoLog;
             std::cerr << "Compile failure in " << strType << " shader (" << filename.c_str() << "): "
                 << std::endl << strInfoLog;
-            std::string infoLog = strInfoLog;
-            delete[] strInfoLog;
             glDeleteShader(shader);
-            throw shader_compiler_error(filename, infoLog);
+            throw shader_compiler_error(filename, strInfoLog);
         }
         return shader;
     }
@@ -270,7 +283,7 @@ namespace viscom {
      */
     std::string Shader::LoadShaderFile(const std::string& filename, const std::vector<std::string>& defines, unsigned int& fileId, unsigned int recursionDepth)
     {
-        if (recursionDepth > 32) {
+        if (recursionDepth > MAX_INCLUDE_RECURSION_DEPTH) {
             LOG(WARNING) << L"Header inclusion depth limit reached! Cyclic header inclusion?";
             throw std::runtime_error("Header inclusion depth limit reached! Cyclic header inclusion? File " + filename);
         }
@@ -285,16 +298,15 @@ namespace viscom {
 
         while (file.good()) {
             std::getline(file, line);
-            auto trimedLine = line;
-            utils::trim(trimedLine);
+            auto trimedLine = utils::trim(line);
 
-            static const std::regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
+            static const std::regex re(R"(^[ ]*#[ ]*include[ ]+["<](.*)[">].*)");
             std::smatch matches;
             if (std::regex_search(line, matches, re)) {
                 auto includeFile = currentPath + matches[1].str();
                 if (!filesystem::exists(includeFile)) {
-                    LOG(WARNING) << filename.c_str() << L"(" << lineCount << ") : fatal error: cannot open include file \""
-                               << includeFile.c_str() << "\".";
+                    LOG(WARNING) << filename.c_str() << L"(" << lineCount << R"() : fatal error: cannot open include file ")"
+                               << includeFile.c_str() << R"(".)";
                     throw std::runtime_error("Cannot open include file: " + includeFile);
                 }
                 content << "#line " << 1 << " " << nextFileId << std::endl;
@@ -305,9 +317,8 @@ namespace viscom {
             }
 
             if (utils::beginsWith(trimedLine, "#version")) {
-                for (auto& def : defines) {
-                    auto trimedDefine = def;
-                    utils::trim(trimedDefine);
+                for (const auto& def : defines) {
+                    auto trimedDefine = utils::trim(def);
                     content << "#define " << trimedDefine << std::endl;
                 }
                 content << "#line " << lineCount + 1 << " " << fileId << std::endl;

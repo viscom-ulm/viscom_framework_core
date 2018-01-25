@@ -9,10 +9,9 @@
 #pragma once
 
 #include "core/main.h"
-#include "core/open_gl.h"
+#include "core/math/primitives.h"
 #include <glm/gtc/quaternion.hpp>
 #include <glm/mat4x4.hpp>
-#include "core/math/primitives.h"
 
 namespace viscom {
 
@@ -28,12 +27,22 @@ namespace viscom {
         void SetPosition(const glm::vec3& position) { position_ = position; }
         void SetOrientation(const glm::quat& orientation) { cameraOrientation_ = orientation; }
         void SetPickMatrix(const glm::mat4& pickMatrix) { pickMatrix_ = pickMatrix; }
+        void SetLocalCoordMatrix(std::size_t windowID, const glm::mat4& localCoordMatrix, const glm::vec2& localScreenSize);
 
+        /** Get camera matrices (eye dependent). */
+        const glm::mat4& GetPerspectiveMatrix() const { return projection_; }
         glm::mat4 GetViewPerspectiveMatrix() const;
+
+        /** Get camera matrices (eye independent). */
         glm::mat4 GetCentralPerspectiveMatrix() const;
         glm::mat4 GetCentralViewPerspectiveMatrix() const;
 
         math::Line3<float> GetPickRay(const glm::vec2& globalScreenCoords) const;
+        glm::vec3 GetPickPosition(const glm::vec2& globalScreenCoords) const;
+
+        float GetNearPlane() const { return nearPlane_; }
+        float GetFarPlane() const { return farPlane_; }
+        void SetNearFarPlane(float near, float far);
 
     private:
         glm::mat4 CalculateViewUpdate() const;
@@ -52,5 +61,16 @@ namespace viscom {
 
         /** The matrix used for picking global coordinates. */
         glm::mat4 pickMatrix_;
+        /** The matrix to calculate local coordinates from global ones. */
+        std::pair<glm::mat4, glm::vec2> localCoordsMatrix_;
+
+        /** The camera view plane width. */
+        float width_;
+        /** The camera view plane height. */
+        float height_;
+        /** The cameras near plane. */
+        float nearPlane_;
+        /** The cameras far plane. */
+        float farPlane_;
     };
 }

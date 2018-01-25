@@ -11,7 +11,7 @@
 #include "app/SlaveNode.h"
 #include <imgui.h>
 #include "core/imgui/imgui_impl_glfw_gl3.h"
-#include <GLFW/glfw3.h>
+#include "core/open_gl.h"
 #include <iostream>
 
 #ifdef VISCOM_CLIENTMOUSECURSOR
@@ -35,12 +35,12 @@ namespace viscom {
     {
         std::pair<int, int> oglVer = std::make_pair(3, 3);
         if (config_.openglProfile_ == "3.3") oglVer = std::make_pair(3, 3);
-        else if (config_.openglProfile_ == "4.0") oglVer = std::make_pair(4, 0);
-        else if (config_.openglProfile_ == "4.1") oglVer = std::make_pair(4, 1);
-        else if (config_.openglProfile_ == "4.2") oglVer = std::make_pair(4, 2);
-        else if (config_.openglProfile_ == "4.3") oglVer = std::make_pair(4, 3);
-        else if (config_.openglProfile_ == "4.4") oglVer = std::make_pair(4, 4);
-        else if (config_.openglProfile_ == "4.5") oglVer = std::make_pair(4, 5);
+        else if (config_.openglProfile_ == "4.0") oglVer = std::make_pair(4, 0); //-V112
+        else if (config_.openglProfile_ == "4.1") oglVer = std::make_pair(4, 1); //-V112
+        else if (config_.openglProfile_ == "4.2") oglVer = std::make_pair(4, 2); //-V112
+        else if (config_.openglProfile_ == "4.3") oglVer = std::make_pair(4, 3); //-V112
+        else if (config_.openglProfile_ == "4.4") oglVer = std::make_pair(4, 4); //-V112
+        else if (config_.openglProfile_ == "4.5") oglVer = std::make_pair(4, 5); //-V112
 
         glfwInit();
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, oglVer.first);
@@ -131,8 +131,21 @@ namespace viscom {
         viewportQuadSize_[0] = projectorSize;
         viewportScaling_[0] = glm::vec2(projectorSize) / config_.virtualScreenSize_;
 
+        glm::vec2 relPosScale = 1.0f / glm::vec2(viewportQuadSize_[0]);
+        glm::vec2 scaledRelPos = (glm::vec2(viewportScreen_[0].position_) / glm::vec2(viewportScreen_[0].size_)) * relPosScale;
+
+        glm::mat4 glbToLcMatrix = glm::mat4{ 1.0f };
+        // correct local matrix:
+        // xlocal = xglobal*totalScreenSize - viewportScreen_[wId].position_
+        glbToLcMatrix[0][0] = projectorSize.x;
+        glbToLcMatrix[1][1] = projectorSize.y;
+        glbToLcMatrix[3][0] = -static_cast<float>(viewportScreen_[0].position_.x);
+        glbToLcMatrix[3][1] = -static_cast<float>(viewportScreen_[0].position_.y);
+        camHelper_.SetLocalCoordMatrix(0, glbToLcMatrix, glm::vec2(projectorSize));
+
         ImGui_ImplGlfwGL3_Init(window_, false);
 
+        FullscreenQuad::InitializeStatic();
         appNodeImpl_->InitOpenGL();
     }
 
@@ -142,9 +155,10 @@ namespace viscom {
         currentTime_ = glfwGetTime();
 
         glm::vec2 relProjectorPos = glm::vec2(viewportScreen_[0].position_) / glm::vec2(viewportScreen_[0].size_);
-        glm::vec2 relProjectorSize = 1.0f / (glm::vec2(viewportQuadSize_[0]) / glm::vec2(viewportScreen_[0].size_));
+        glm::vec2 relQuadSize = glm::vec2(viewportQuadSize_[0]) / glm::vec2(viewportScreen_[0].size_);
+        glm::vec2 relProjectorSize = 1.0f / relQuadSize;
 
-        glm::mat4 pickMatrix = glm::mat4{ 0.0f };
+        glm::mat4 pickMatrix = glm::mat4{ 1.0f };
         pickMatrix[0][0] = 2.0f * relProjectorSize.x;
         pickMatrix[1][1] = -2.0f * relProjectorSize.y;
         pickMatrix[3][0] = (-2.0f * relProjectorPos.x * relProjectorSize.x) - 1.0f;
@@ -239,7 +253,7 @@ namespace viscom {
     void ApplicationNodeInternal::BaseKeyboardCallback(int key, int scancode, int action, int mods)
     {
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-            glfwSetWindowShouldClose(window_, true);
+            glfwSetWindowShouldClose(window_, 1);
             return;
         }
 
@@ -328,13 +342,13 @@ namespace viscom {
 
     void ApplicationNodeInternal::Terminate() const
     {
-        glfwSetWindowShouldClose(window_, true);
+        glfwSetWindowShouldClose(window_, 1);
     }
 
-    std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc) const
+    std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc, int sizeDivisor) const
     {
         std::vector<FrameBuffer> result;
-        glm::ivec2 fboSize(config_.virtualScreenSize_.x, config_.virtualScreenSize_.y);
+        glm::ivec2 fboSize(config_.virtualScreenSize_.x / sizeDivisor, config_.virtualScreenSize_.y / sizeDivisor);
         result.emplace_back(fboSize.x, fboSize.y, fboDesc);
         return result;
     }

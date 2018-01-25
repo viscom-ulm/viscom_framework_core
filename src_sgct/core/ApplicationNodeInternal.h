@@ -9,7 +9,6 @@
 #pragma once
 
 #include "core/main.h"
-#include "sgct.h"
 #ifdef VISCOM_SYNCINPUT
 #include "core/InputWrapper.h"
 #endif
@@ -21,6 +20,7 @@
 #include "core/CameraHelper.h"
 #include "core/gfx/FullscreenQuad.h"
 #include "core/TuioInputWrapper.h"
+#include "sgct/SharedDataTypes.h"
 
 namespace viscom {
 
@@ -100,7 +100,7 @@ namespace viscom {
         void Terminate() const;
 
         CameraHelper* GetCamera() { return &camHelper_; }
-        std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc) const;
+        std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc, int sizeDivisor = 1) const;
         const FrameBuffer* SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const;
         std::unique_ptr<FullscreenQuad> CreateFullscreenQuad(const std::string& fragmentShader);
 

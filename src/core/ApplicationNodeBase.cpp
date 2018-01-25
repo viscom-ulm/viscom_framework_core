@@ -7,11 +7,30 @@
  */
 
 #include "ApplicationNodeBase.h"
-#include <imgui.h>
-#include "core/gfx/mesh/MeshRenderable.h"
 #include "core/imgui/imgui_impl_glfw_gl3.h"
+#include "core/open_gl.h"
+#include <imgui.h>
 
 namespace viscom {
+
+#ifndef VISCOM_LOCAL_ONLY
+
+        int SGCTEngineWrapper::GetCurrentWindowId() const
+        {
+            return engine_->getCurrentWindowPtr()->getId();
+        }
+
+        void SGCTEngineWrapper::UnbindCurrentWindowFBO() const
+        {
+            engine_->getCurrentWindowPtr()->getFBOPtr()->unBind();
+        }
+
+        void SGCTEngineWrapper::SetProjectionPlaneCoordinate(std::size_t windowIdx, std::size_t vpIndex, std::size_t corner, glm::vec3 coordinate) const
+        {
+            engine_->getWindowPtr(windowIdx)->getViewport(vpIndex)->getProjectionPlane()->setCoordinate(corner, coordinate);
+        }
+
+#endif
 
     ApplicationNodeBase::ApplicationNodeBase(ApplicationNodeInternal* appNode) :
         appNode_{ appNode }

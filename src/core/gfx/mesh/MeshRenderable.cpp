@@ -6,13 +6,16 @@
  * @brief  Implementation of a mesh renderable class.
  */
 
-#include "MeshRenderable.h"
-#include <glm/gtc/matrix_inverse.hpp>
-#include <glm/gtc/type_ptr.hpp>
+
 #include "SceneMeshNode.h"
 #include "SubMesh.h"
 #include "core/gfx/Material.h"
 #include "core/gfx/Texture.h"
+#include "core/open_gl.h"
+#include <glm/gtc/matrix_inverse.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "MeshRenderable.h"
 
 namespace viscom {
 
@@ -91,8 +94,11 @@ namespace viscom {
     void MeshRenderable::DrawNode(const glm::mat4& modelMatrix, const SceneMeshNode* node, bool overrideBump) const
     {
         auto localMatrix = node->GetLocalTransform() * modelMatrix;
-        for (unsigned int i = 0; i < node->GetNumMeshes(); ++i) DrawSubMesh(localMatrix, node->GetMesh(i), overrideBump);
-        for (unsigned int i = 0; i < node->GetNumNodes(); ++i) DrawNode(localMatrix, node->GetChild(i), overrideBump);
+        for (std::size_t i = 0; i < node->GetNumberOfSubMeshes(); ++i) {
+            const auto* submesh = &mesh_->GetSubMeshes()[node->GetSubMeshID(i)];
+            DrawSubMesh(localMatrix, submesh, overrideBump);
+        }
+        for (std::size_t i = 0; i < node->GetNumberOfNodes(); ++i) DrawNode(localMatrix, node->GetChild(i), overrideBump);
     }
 
     void MeshRenderable::DrawSubMesh(const glm::mat4& modelMatrix, const SubMesh* subMesh, bool overrideBump) const
@@ -100,19 +106,21 @@ namespace viscom {
         glUniformMatrix4fv(uniformLocations_[0], 1, GL_FALSE, glm::value_ptr(modelMatrix));
         glUniformMatrix3fv(uniformLocations_[1], 1, GL_FALSE, glm::value_ptr(glm::inverseTranspose(glm::mat3(modelMatrix))));
 
-        if (subMesh->GetMaterial()->diffuseTex && uniformLocations_.size() > 2) {
+        auto mat = mesh_->GetMaterial(subMesh->GetMaterialIndex());
+        auto matTex = mesh_->GetMaterialTexture(subMesh->GetMaterialIndex());
+        if (matTex->diffuseTex && uniformLocations_.size() > 2) {
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, subMesh->GetMaterial()->diffuseTex->getTextureId());
+            glBindTexture(GL_TEXTURE_2D, matTex->diffuseTex->getTextureId());
             glUniform1i(uniformLocations_[2], 0);
         }
-        if (subMesh->GetMaterial()->bumpTex && uniformLocations_.size() > 3) {
+        if (matTex->bumpTex && uniformLocations_.size() > 3) {
             glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, subMesh->GetMaterial()->bumpTex->getTextureId());
+            glBindTexture(GL_TEXTURE_2D, matTex->bumpTex->getTextureId());
             glUniform1i(uniformLocations_[3], 1);
-            if (!overrideBump) glUniform1f(uniformLocations_[4], subMesh->GetMaterial()->bumpMultiplier);
+            if (!overrideBump) glUniform1f(uniformLocations_[4], mat->bumpMultiplier);
         }
 
         glDrawElements(GL_TRIANGLES, subMesh->GetNumberOfIndices(), GL_UNSIGNED_INT,
-            (static_cast<char*> (nullptr)) + (subMesh->GetIndexOffset() * sizeof(unsigned int)));
+            (static_cast<char*> (nullptr)) + (static_cast<std::size_t>(subMesh->GetIndexOffset()) * sizeof(unsigned int)));
     }
 }

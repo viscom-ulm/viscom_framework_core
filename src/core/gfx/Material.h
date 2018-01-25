@@ -28,11 +28,15 @@ namespace viscom {
         float specularExponent;
         /** Holds the materials index of refraction. */
         float refraction;
+        /** Holds the materials bump multiplier. */
+        float bumpMultiplier;
+    };
+
+    struct MaterialTextures final
+    {
         /** Holds the materials diffuse texture. */
         std::shared_ptr<const Texture> diffuseTex;
         /** Holds the materials bump texture. */
         std::shared_ptr<const Texture> bumpTex;
-        /** Holds the materials bump multiplier. */
-        float bumpMultiplier;
     };
 }

@@ -8,13 +8,14 @@
 
 #pragma once
 
+#include "aabb.h"
 #include <array>
 #include <glm/glm.hpp>
 
 #undef near
 #undef far
 
-namespace viscom { namespace math {
+namespace viscom::math {
 
     template<typename real> using Line2 = std::array<glm::tvec2<real, glm::highp>, 2>;
     template<typename real> using Line3 = std::array<glm::tvec3<real, glm::highp>, 2>;
@@ -38,12 +39,4 @@ namespace viscom { namespace math {
         glm::tvec4<real, glm::highp>& far() { return planes[5]; }
         const glm::tvec4<real, glm::highp>& far() const { return planes[5]; }
     };
-
-    template<typename real> struct AABB2 {
-        std::array<glm::tvec2<real, glm::highp>, 2> minmax;
-    };
-
-    template<typename real> struct AABB3 {
-        std::array<glm::tvec3<real, glm::highp>, 2> minmax;
-    };
-}}
+}
