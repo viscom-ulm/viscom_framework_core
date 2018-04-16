@@ -137,8 +137,8 @@ namespace viscom {
         glm::mat4 glbToLcMatrix = glm::mat4{ 1.0f };
         // correct local matrix:
         // xlocal = xglobal*totalScreenSize - viewportScreen_[wId].position_
-        glbToLcMatrix[0][0] = projectorSize.x;
-        glbToLcMatrix[1][1] = projectorSize.y;
+        glbToLcMatrix[0][0] = static_cast<float>(projectorSize.x);
+        glbToLcMatrix[1][1] = static_cast<float>(projectorSize.y);
         glbToLcMatrix[3][0] = -static_cast<float>(viewportScreen_[0].position_.x);
         glbToLcMatrix[3][1] = -static_cast<float>(viewportScreen_[0].position_.y);
         camHelper_.SetLocalCoordMatrix(0, glbToLcMatrix, glm::vec2(projectorSize));
