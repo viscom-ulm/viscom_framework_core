@@ -22,13 +22,13 @@ namespace viscom {
     };
 
     template <class T>
-    struct is_callable<T, void, void_t<std::result_of_t<T>>> : std::true_type
+    struct is_callable<T, void, void_t<std::invoke_result_t<T>>> : std::true_type
     {
     };
 
     template <class T, class R>
-    struct is_callable<T, R, void_t<std::result_of_t<T>>>
-        : std::is_convertible<std::result_of_t<T>, R>
+    struct is_callable<T, R, void_t<std::invoke_result_t<T>>>
+        : std::is_convertible<std::invoke_result_t<T>, R>
     {
     };
 
