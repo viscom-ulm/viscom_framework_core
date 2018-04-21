@@ -166,9 +166,17 @@ namespace viscom {
         }
 
 #ifdef VISCOM_CLIENTGUI
+        // Setup ImGui binding
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
         ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && CLIENTMOUSE);
 #else
-        if (GetEngine()->isMaster()) ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && CLIENTMOUSE);
+        if (GetEngine()->isMaster()) {
+            // Setup ImGui binding
+            ImGui::CreateContext();
+            ImGuiIO& io = ImGui::GetIO(); (void)io;
+            ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && CLIENTMOUSE);
+        }
 #endif
 
         FullscreenQuad::InitializeStatic();
@@ -305,7 +313,10 @@ namespace viscom {
 
         fbo.DrawToFBO([this]() {
             // ImGui::Render for slaves is called in SlaveNodeInternal...
-            if (engine_->isMaster()) ImGui::Render();
+            if (engine_->isMaster()) {
+                ImGui::Render();
+                ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+            }
         });
     }
 
@@ -325,8 +336,12 @@ namespace viscom {
         instance_ = nullptr;
 #ifdef VISCOM_CLIENTGUI
         ImGui_ImplGlfwGL3_Shutdown();
+        ImGui::DestroyContext();
 #else
-        if (GetEngine()->isMaster()) ImGui_ImplGlfwGL3_Shutdown();
+        if (GetEngine()->isMaster()) {
+            ImGui_ImplGlfwGL3_Shutdown();
+            ImGui::DestroyContext();
+        }
 #endif
         appNodeImpl_->CleanUp();
         initialized_ = false;

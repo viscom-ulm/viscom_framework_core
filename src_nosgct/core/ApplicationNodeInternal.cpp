@@ -143,6 +143,9 @@ namespace viscom {
         glbToLcMatrix[3][1] = -static_cast<float>(viewportScreen_[0].position_.y);
         camHelper_.SetLocalCoordMatrix(0, glbToLcMatrix, glm::vec2(projectorSize));
 
+        // Setup ImGui binding
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
         ImGui_ImplGlfwGL3_Init(window_, false);
 
         FullscreenQuad::InitializeStatic();
@@ -192,12 +195,14 @@ namespace viscom {
 
         backBuffer_.DrawToFBO([this]() {
             ImGui::Render();
+            ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
         });
     }
 
     void ApplicationNodeInternal::BaseCleanUp() const
     {
         ImGui_ImplGlfwGL3_Shutdown();
+        ImGui::DestroyContext();
         appNodeImpl_->CleanUp();
     }
 
