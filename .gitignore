@@ -9,3 +9,4 @@ resources/shader/**/*.gen
 resources/**/*.viscombin
 
 !resources/**/*.obj
+extern/openvr/samples/*

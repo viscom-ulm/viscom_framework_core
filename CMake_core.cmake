@@ -33,6 +33,8 @@ set(VISCOM_OPENGL_PROFILE "3.3" CACHE STRING "OpenGL profile version to use.")
 set(TUIO_LIB ON CACHE BOOL "Use TUIO input library")
 set(TUIO_PORT 3333 CACHE STRING "UDP Port for TUIO to listen on")
 
+add_subdirectory(extern/fwcore/extern/openvr EXCLUDE_FROM_ALL)
+
 # Build-flags.
 if(UNIX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -126,9 +128,11 @@ list(APPEND CORE_INCLUDE_DIRS
     extern/fwcore/extern/imgui
     extern/fwcore/extern/stb
     extern/fwcore/extern/assimp/include
+	extern/fwcore/extern/openvr/include
+	${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/openvr/include
     ${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/assimp/include)
 
-list(APPEND CORE_LIBS g3logger assimp)
+list(APPEND CORE_LIBS g3logger assimp openvr)
 
 if(MSVC)
     list(APPEND COMPILE_TIME_DEFS _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN NOMINMAX)
