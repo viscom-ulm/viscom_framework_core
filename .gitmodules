@@ -20,3 +20,6 @@
 [submodule "extern/glfw"]
 	path = extern/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "extern/openvr"]
+	path = extern/openvr
+	url = https://github.com/ValveSoftware/openvr
