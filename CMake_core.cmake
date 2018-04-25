@@ -29,6 +29,8 @@ set(VISCOM_NEAR_PLANE_SIZE_X "1.7778" CACHE STRING "Size of the near plane in x 
 set(VISCOM_NEAR_PLANE_SIZE_Y "1.0" CACHE STRING "Size of the near plane in y direction.")
 set(VISCOM_INSTALL_BASE_PATH "D:/LabShare/cluster/apps/" CACHE PATH "Path to install the project to (should be the shared apps directory).")
 set(VISCOM_OPENGL_PROFILE "3.3" CACHE STRING "OpenGL profile version to use.")
+
+set(OPENVR_LIB ON CACHE BOOL "Use Openvr")
 # This could be changed to "off" if the default target doesn't need the tuio library
 set(TUIO_LIB ON CACHE BOOL "Use TUIO input library")
 set(TUIO_PORT 3333 CACHE STRING "UDP Port for TUIO to listen on")
@@ -130,6 +132,24 @@ list(APPEND CORE_INCLUDE_DIRS
 
 list(APPEND CORE_LIBS g3logger assimp)
 
+if(${OPENVR_LIB})
+    add_subdirectory(extern/fwcore/extern/openvr EXCLUDE_FROM_ALL)
+    list(APPEND CORE_INCLUDE_DIRS
+        extern/fwcore/extern/openvr/headers)
+    find_library(OPENVR_LIBRARIES
+        NAMES
+        openvr_api
+        PATHS
+        extern/fwcore/extern/openvr/bin/win64
+        extern/fwcore/extern/openvr/lib/win64
+        NO_DEFAULT_PATH
+        NO_CMAKE_FIND_ROOT_PATH
+     )
+    list(APPEND CORE_LIBS ${OPENVR_LIBRARIES})
+    list(APPEND ExternalSharedLibraries ${PROJECT_SOURCE_DIR}/extern/fwcore/extern/openvr/bin/win64/openvr_api.dll)
+    file(COPY ${ExternalSharedLibraries} DESTINATION ${CMAKE_CURRENT_BINARY_DIR} NO_SOURCE_PERMISSIONS)
+endif()    
+    
 if(MSVC)
     list(APPEND COMPILE_TIME_DEFS _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN NOMINMAX)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${APP_NAME})
