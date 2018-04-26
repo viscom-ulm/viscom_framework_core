@@ -20,3 +20,9 @@
 #include <core/config.h>
 #include <core/utils/utils.h>
 
+#ifdef VISCOM_USE_TUIO
+constexpr bool USE_TUIO = true;
+#else
+constexpr bool USE_TUIO = false;
+#endif
+

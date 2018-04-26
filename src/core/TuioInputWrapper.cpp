@@ -8,7 +8,7 @@
 
 #include "TuioInputWrapper.h"
 
-#if WITH_TUIO
+#if VISCOM_USE_TUIO
 #include <TuioClient.h>
 #include <UdpReceiver.h>
 #endif

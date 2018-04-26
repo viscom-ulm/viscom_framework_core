@@ -8,14 +8,12 @@
 
 #pragma once
 
-#ifdef WITH_TUIO
+#include "main.h"
+
+#ifdef VISCOM_USE_TUIO
 #include <memory>
 #include <TuioListener.h>
 
-namespace TUIO {
-    class TuioClient;
-    class OscReceiver;
-}
 #else
 
 namespace TUIO {
@@ -26,6 +24,11 @@ namespace TUIO {
 }
 
 #endif
+
+namespace TUIO {
+    class TuioClient;
+    class OscReceiver;
+}
 
 namespace viscom::tuio {
 
