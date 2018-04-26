@@ -133,7 +133,6 @@ list(APPEND CORE_INCLUDE_DIRS
 list(APPEND CORE_LIBS g3logger assimp)
 
 if(${OPENVR_LIB})
-    add_subdirectory(extern/fwcore/extern/openvr EXCLUDE_FROM_ALL)
     list(APPEND CORE_INCLUDE_DIRS
         extern/fwcore/extern/openvr/headers)
     find_library(OPENVR_LIBRARIES
@@ -146,8 +145,8 @@ if(${OPENVR_LIB})
         NO_CMAKE_FIND_ROOT_PATH
      )
     list(APPEND CORE_LIBS ${OPENVR_LIBRARIES})
-    list(APPEND ExternalSharedLibraries ${PROJECT_SOURCE_DIR}/extern/fwcore/extern/openvr/bin/win64/openvr_api.dll)
-    file(COPY ${ExternalSharedLibraries} DESTINATION ${CMAKE_CURRENT_BINARY_DIR} NO_SOURCE_PERMISSIONS)
+    #list(APPEND ExternalSharedLibraries ${PROJECT_SOURCE_DIR}/extern/fwcore/extern/openvr/bin/win64/openvr_api.dll)
+    #file(COPY ${ExternalSharedLibraries} DESTINATION ${CMAKE_CURRENT_BINARY_DIR} NO_SOURCE_PERMISSIONS)
 endif()    
     
 if(MSVC)
@@ -181,6 +180,10 @@ macro(copy_core_lib_dlls APP_NAME)
     if (${TUIO_LIB})
         add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:libTUIO> ${PROJECT_BINARY_DIR})
         install(FILES $<TARGET_FILE:libTUIO> DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
+    endif()
+    if(${OPENVR_LIB})
+        add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECT_SOURCE_DIR}/extern/fwcore/extern/openvr/bin/win64/openvr_api.dll ${PROJECT_BINARY_DIR})
+        install(FILES ${PROJECT_SOURCE_DIR}/extern/fwcore/extern/openvr/bin/win64/openvr_api.dll DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
     endif()
 endmacro()
 
