@@ -486,11 +486,11 @@ namespace viscom {
     {
         if (!initialized_) return;
         if (engine_->isMaster()) {
-#ifdef WITH_TUIO
-            auto tPoint = tcur->getPosition();
-            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-            appNodeImpl_->AddTuioCursor(tcur);
-#endif
+            if constexpr (USE_TUIO) {
+                auto tPoint = tcur->getPosition();
+                // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+                appNodeImpl_->AddTuioCursor(tcur);
+            }
         }
     }
 
@@ -498,11 +498,11 @@ namespace viscom {
     {
         if (!initialized_) return;
         if (engine_->isMaster()) {
-#ifdef WITH_TUIO
-            auto tPoint = tcur->getPosition();
-            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-            appNodeImpl_->UpdateTuioCursor(tcur);
-#endif
+            if constexpr (USE_TUIO) {
+                auto tPoint = tcur->getPosition();
+                // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+                appNodeImpl_->UpdateTuioCursor(tcur);
+            }
         }
     }
 
@@ -510,10 +510,10 @@ namespace viscom {
     {
         if (!initialized_) return;
         if (engine_->isMaster()) {
-#ifdef WITH_TUIO
-            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-            appNodeImpl_->RemoveTuioCursor(tcur);
-#endif
+            if constexpr (USE_TUIO) {
+                // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+                appNodeImpl_->RemoveTuioCursor(tcur);
+            }
         }
     }
 

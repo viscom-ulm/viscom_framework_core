@@ -309,26 +309,26 @@ namespace viscom {
 
     void ApplicationNodeInternal::addTuioCursor(TUIO::TuioCursor* tcur)
     {
-#ifdef WITH_TUIO
-        // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-        appNodeImpl_->AddTuioCursor(tcur);
-#endif
+        if constexpr (USE_TUIO) {
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->AddTuioCursor(tcur);
+        }
     }
 
     void ApplicationNodeInternal::updateTuioCursor(TUIO::TuioCursor* tcur)
     {
-#ifdef WITH_TUIO
-        // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-        appNodeImpl_->UpdateTuioCursor(tcur);
-#endif
+        if constexpr (USE_TUIO) {
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->UpdateTuioCursor(tcur);
+        }
     }
 
     void ApplicationNodeInternal::removeTuioCursor(TUIO::TuioCursor* tcur)
     {
-#ifdef WITH_TUIO
-        // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-        appNodeImpl_->RemoveTuioCursor(tcur);
-#endif
+        if constexpr (USE_TUIO) {
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->RemoveTuioCursor(tcur);
+        }
     }
 
     void ApplicationNodeInternal::SetCursorInputMode(int mode)
