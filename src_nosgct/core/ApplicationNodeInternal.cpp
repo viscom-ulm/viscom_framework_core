@@ -14,12 +14,6 @@
 #include "core/open_gl.h"
 #include <iostream>
 
-#ifdef VISCOM_CLIENTMOUSECURSOR
-#define CLIENTMOUSE true
-#else
-#define CLIENTMOUSE false
-#endif
-
 namespace viscom {
 
     ApplicationNodeInternal::ApplicationNodeInternal(FWConfiguration&& config) :

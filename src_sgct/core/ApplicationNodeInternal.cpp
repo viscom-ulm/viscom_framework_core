@@ -18,12 +18,6 @@
 #include "core/OpenCVParserHelper.h"
 #endif
 
-#ifdef VISCOM_CLIENTMOUSECURSOR
-#define CLIENTMOUSE true
-#else
-#define CLIENTMOUSE false
-#endif
-
 namespace viscom {
 
     ApplicationNodeInternal* ApplicationNodeInternal::instance_{ nullptr };
@@ -166,9 +160,9 @@ namespace viscom {
         }
 
 #ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && CLIENTMOUSE);
+        ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && SHOW_CLIENT_MOUSE_CURSOR);
 #else
-        if (GetEngine()->isMaster()) ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && CLIENTMOUSE);
+        if (GetEngine()->isMaster()) ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && SHOW_CLIENT_MOUSE_CURSOR);
 #endif
 
         FullscreenQuad::InitializeStatic();

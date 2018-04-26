@@ -20,9 +20,28 @@
 #include <core/config.h>
 #include <core/utils/utils.h>
 
-#ifdef VISCOM_USE_TUIO
-constexpr bool USE_TUIO = true;
+namespace viscom {
+#ifdef _DEBUG
+    constexpr bool DEBUG_MODE = true;
 #else
-constexpr bool USE_TUIO = false;
+    constexpr bool DEBUG_MODE = false;
 #endif
 
+#ifdef VISCOM_USE_TUIO
+    constexpr bool USE_TUIO = true;
+#else
+    constexpr bool USE_TUIO = false;
+#endif
+
+#ifdef VISCOM_CLIENTMOUSECURSOR
+    constexpr bool SHOW_CLIENT_MOUSE_CURSOR = true;
+#else
+    constexpr bool SHOW_CLIENT_MOUSE_CURSOR = false;
+#endif
+
+#ifdef VISCOM_CLIENTGUI
+    constexpr bool SHOW_CLIENT_GUI = true;
+#else
+    constexpr bool SHOW_CLIENT_GUI = false;
+#endif
+}
