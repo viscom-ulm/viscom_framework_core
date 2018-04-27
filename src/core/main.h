@@ -44,4 +44,10 @@ namespace viscom {
 #else
     constexpr bool SHOW_CLIENT_GUI = false;
 #endif
+
+#ifdef VISCOM_CLIENTGUI
+    constexpr bool SHOW_CLIENT_GUI = true;
+#else
+    constexpr bool SHOW_CLIENT_GUI = false;
+#endif
 }
