@@ -18,7 +18,7 @@ namespace viscom::tuio {
 
     TuioInputWrapper::TuioInputWrapper(int port)
     {
-#if WITH_TUIO
+#if VISCOM_USE_TUIO
         receiver_ = std::make_unique<TUIO::UdpReceiver>(port);
 
         tuioClient_ = std::make_unique<TUIO::TuioClient>(receiver_.get());
@@ -30,13 +30,13 @@ namespace viscom::tuio {
 
     TuioInputWrapper::~TuioInputWrapper()
     {
-#if WITH_TUIO
+#if VISCOM_USE_TUIO
         tuioClient_->disconnect();
 #endif
     }
 
 
-#if WITH_TUIO
+#if VISCOM_USE_TUIO
     void TuioInputWrapper::addTuioCursor(TUIO::TuioCursor *tcur)
     {
         std::cout << "add    cur  " << tcur->getCursorID() << " (" << tcur->getSessionID() << "/" << tcur->getTuioSourceID() << ") " << tcur->getX() << " " << tcur->getY() << std::endl;

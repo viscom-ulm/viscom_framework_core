@@ -32,7 +32,7 @@ namespace TUIO {
 
 namespace viscom::tuio {
 
-#ifdef WITH_TUIO
+#ifdef VISCOM_USE_TUIO
 
     class TuioInputWrapper : public TUIO::TuioListener
     {

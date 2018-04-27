@@ -18,12 +18,6 @@
 #include "core/OpenCVParserHelper.h"
 #endif
 
-#ifdef VISCOM_CLIENTMOUSECURSOR
-#define CLIENTMOUSE true
-#else
-#define CLIENTMOUSE false
-#endif
-
 namespace viscom {
 
     ApplicationNodeInternal* ApplicationNodeInternal::instance_{ nullptr };
@@ -165,19 +159,17 @@ namespace viscom {
             camHelper_.SetLocalCoordMatrix(wId, glbToLcMatrix, glm::vec2(projectorSize));
         }
 
-#ifdef VISCOM_CLIENTGUI
-        // Setup ImGui binding
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-        ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && CLIENTMOUSE);
-#else
-        if (GetEngine()->isMaster()) {
+        if constexpr (SHOW_CLIENT_GUI) {
             // Setup ImGui binding
             ImGui::CreateContext();
             ImGuiIO& io = ImGui::GetIO(); (void)io;
-            ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && CLIENTMOUSE);
+            ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && SHOW_CLIENT_MOUSE_CURSOR);
+        } else if (GetEngine()->isMaster()) {
+                // Setup ImGui binding
+                ImGui::CreateContext();
+                ImGuiIO& io = ImGui::GetIO(); (void)io;
+                ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && SHOW_CLIENT_MOUSE_CURSOR);
         }
-#endif
 
         FullscreenQuad::InitializeStatic();
         appNodeImpl_->InitOpenGL();
@@ -303,11 +295,9 @@ namespace viscom {
     {
         auto window = GetEngine()->getCurrentWindowPtr();
 
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(window->getId()).position_, GetViewportScreen(window->getId()).size_, GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
-#else
-        if (engine_->isMaster()) ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(window->getId()).position_, GetViewportScreen(window->getId()).size_, GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
-#endif
+        if constexpr (SHOW_CLIENT_GUI) ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(window->getId()).position_, GetViewportScreen(window->getId()).size_, GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
+        else if (engine_->isMaster()) ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(window->getId()).position_, GetViewportScreen(window->getId()).size_, GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
+
         auto& fbo = framebuffers_[GetEngine()->getCurrentWindowIndex()];
         appNodeImpl_->Draw2D(fbo);
 
@@ -323,26 +313,22 @@ namespace viscom {
     void ApplicationNodeInternal::BasePostDraw()
     {
         appNodeImpl_->PostDraw();
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_FinishAllFrames();
-#else
-        if (engine_->isMaster()) ImGui_ImplGlfwGL3_FinishAllFrames();
-#endif
+        if constexpr (SHOW_CLIENT_GUI) ImGui_ImplGlfwGL3_FinishAllFrames();
+        else if (engine_->isMaster()) ImGui_ImplGlfwGL3_FinishAllFrames();
     }
 
     void ApplicationNodeInternal::BaseCleanUp()
     {
         std::lock_guard<std::mutex> lock{ instanceMutex_ };
         instance_ = nullptr;
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_Shutdown();
-        ImGui::DestroyContext();
-#else
-        if (GetEngine()->isMaster()) {
+
+        if constexpr (SHOW_CLIENT_GUI) {
+            ImGui_ImplGlfwGL3_Shutdown();
+            ImGui::DestroyContext();
+        } else if (GetEngine()->isMaster()) {
             ImGui_ImplGlfwGL3_Shutdown();
             ImGui::DestroyContext();
         }
-#endif
         appNodeImpl_->CleanUp();
         initialized_ = false;
     }
@@ -368,10 +354,10 @@ namespace viscom {
             keyboardEvents_.emplace_back(key, scancode, action, mods);
 #endif
 
-#ifndef VISCOM_CLIENTGUI
-            ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
-            if (ImGui::GetIO().WantCaptureKeyboard) return;
-#endif
+            if constexpr (!SHOW_CLIENT_GUI) {
+                ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
+                if (ImGui::GetIO().WantCaptureKeyboard) return;
+            }
 
             appNodeImpl_->KeyboardCallback(key, scancode, action, mods);
         }
@@ -385,10 +371,10 @@ namespace viscom {
             charEvents_.emplace_back(character, mods);
 #endif
 
-#ifndef VISCOM_CLIENTGUI
-            ImGui_ImplGlfwGL3_CharCallback(character);
-            if (ImGui::GetIO().WantCaptureKeyboard) return;
-#endif
+            if constexpr (!SHOW_CLIENT_GUI) {
+                ImGui_ImplGlfwGL3_CharCallback(character);
+                if (ImGui::GetIO().WantCaptureKeyboard) return;
+            }
 
             appNodeImpl_->CharCallback(character, mods);
         }
@@ -404,10 +390,10 @@ namespace viscom {
             mouseButtonEvents_.emplace_back(button, action);
 #endif
 
-#ifndef VISCOM_CLIENTGUI
-            ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
-            if (ImGui::GetIO().WantCaptureMouse) return;
-#endif
+            if constexpr (!SHOW_CLIENT_GUI) {
+                ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
+                if (ImGui::GetIO().WantCaptureMouse) return;
+            }
 
             appNodeImpl_->MouseButtonCallback(button, action);
         }
@@ -436,10 +422,10 @@ namespace viscom {
             mousePosEvents_.emplace_back(mousePos.x, mousePos.y);
 #endif
 
-#ifndef VISCOM_CLIENTGUI
-            ImGui_ImplGlfwGL3_MousePositionCallback(mousePos.x, mousePos.y);
-            if (ImGui::GetIO().WantCaptureMouse) return;
-#endif
+            if constexpr (!SHOW_CLIENT_GUI) {
+                ImGui_ImplGlfwGL3_MousePositionCallback(mousePos.x, mousePos.y);
+                if (ImGui::GetIO().WantCaptureMouse) return;
+            }
 
             appNodeImpl_->MousePosCallback(mousePos.x, mousePos.y);
         }
@@ -453,10 +439,10 @@ namespace viscom {
             mouseScrollEvents_.emplace_back(xoffset, yoffset);
 #endif
 
-#ifndef VISCOM_CLIENTGUI
-            ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
-            if (ImGui::GetIO().WantCaptureMouse) return;
-#endif
+            if constexpr (!SHOW_CLIENT_GUI) {
+                ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
+                if (ImGui::GetIO().WantCaptureMouse) return;
+            }
 
             appNodeImpl_->MouseScrollCallback(xoffset, yoffset);
         }
@@ -486,11 +472,11 @@ namespace viscom {
     {
         if (!initialized_) return;
         if (engine_->isMaster()) {
-            if constexpr (USE_TUIO) {
-                auto tPoint = tcur->getPosition();
-                // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-                appNodeImpl_->AddTuioCursor(tcur);
-            }
+#ifdef VISCOM_USE_TUIO
+            auto tPoint = tcur->getPosition();
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->AddTuioCursor(tcur);
+#endif
         }
     }
 
@@ -498,11 +484,11 @@ namespace viscom {
     {
         if (!initialized_) return;
         if (engine_->isMaster()) {
-            if constexpr (USE_TUIO) {
-                auto tPoint = tcur->getPosition();
-                // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-                appNodeImpl_->UpdateTuioCursor(tcur);
-            }
+#ifdef VISCOM_USE_TUIO
+            auto tPoint = tcur->getPosition();
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->UpdateTuioCursor(tcur);
+#endif
         }
     }
 
@@ -510,10 +496,10 @@ namespace viscom {
     {
         if (!initialized_) return;
         if (engine_->isMaster()) {
-            if constexpr (USE_TUIO) {
-                // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-                appNodeImpl_->RemoveTuioCursor(tcur);
-            }
+#ifdef VISCOM_USE_TUIO
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->RemoveTuioCursor(tcur);
+#endif
         }
     }
 

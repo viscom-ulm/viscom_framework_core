@@ -14,12 +14,6 @@
 #include "core/open_gl.h"
 #include <iostream>
 
-#ifdef VISCOM_CLIENTMOUSECURSOR
-#define CLIENTMOUSE true
-#else
-#define CLIENTMOUSE false
-#endif
-
 namespace viscom {
 
     ApplicationNodeInternal::ApplicationNodeInternal(FWConfiguration&& config) :
@@ -47,9 +41,7 @@ namespace viscom {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, oglVer.second);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-#ifdef _DEBUG
-        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-#endif
+        if constexpr (DEBUG_MODE) glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
         glfwSetErrorCallback(ApplicationNodeInternal::ErrorCallbackStatic);
