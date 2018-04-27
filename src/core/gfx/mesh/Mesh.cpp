@@ -34,7 +34,7 @@ namespace viscom {
      * @param meshFilename the filename of the mesh file.
      */
     Mesh::Mesh(const std::string& meshFilename, ApplicationNodeInternal* node) :
-        Resource(meshFilename, node),
+        Resource(meshFilename, ResourceTransferType::MeshTransfer, node),
         filename_{ meshFilename },
         indexBuffer_(0)
     {

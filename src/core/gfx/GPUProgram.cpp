@@ -35,7 +35,7 @@ namespace viscom {
     }
 
     GPUProgram::GPUProgram(const std::string& programName, ApplicationNodeInternal* node, std::vector<std::string> shaderNames, const std::vector<std::string>& defines) :
-        Resource(programName, node),
+        Resource(programName, ResourceTransferType::GPUProgramTransfer, node),
         programName_(programName),
         shaderNames_(shaderNames),
         program_(0),

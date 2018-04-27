@@ -84,6 +84,11 @@ namespace viscom {
         void BaseEncodeData();
         void BaseDecodeData();
 
+        void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex);
+
+        void TransferResource(std::string_view name, const void* data, std::size_t length, ResourceTransferType type);
+        void TransferReleaseResource(std::string_view name, ResourceTransferType type);
+
         sgct::Engine* GetEngine() const { return engine_.get(); }
         const FWConfiguration& GetConfig() const { return config_; }
         FrameBuffer& GetFramebuffer(size_t windowId) { return framebuffers_[windowId]; }
@@ -110,6 +115,8 @@ namespace viscom {
 
     private:
         glm::dvec2 ConvertInputCoordinatesLocalToGlobal(const glm::dvec2& p);
+        void ReleaseSynchronizedResource(ResourceTransferType type, std::string_view name);
+        void CreateSynchronizedResource(ResourceTransferType type, const void* data, std::size_t length);
 
         /** Holds a static pointer to an object to this class making it singleton in a way. */
         // TODO: This is only a workaround and should be fixed in the future. [12/5/2016 Sebastian Maisch]

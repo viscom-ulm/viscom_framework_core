@@ -79,12 +79,12 @@ namespace viscom {
     {
     }
 
-    bool ApplicationNodeBase::DataTransferCallback(void * receivedData, int receivedLength, int packageID, int clientID)
+    bool ApplicationNodeBase::DataTransferCallback(void * receivedData, int receivedLength, std::uint16_t packageID, int clientID)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::DataAcknowledgeCallback(int packageID, int clientID)
+    bool ApplicationNodeBase::DataAcknowledgeCallback(std::uint16_t packageID, int clientID)
     {
         return false;
     }

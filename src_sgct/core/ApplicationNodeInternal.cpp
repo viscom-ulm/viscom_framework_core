@@ -20,6 +20,25 @@
 
 namespace viscom {
 
+    enum class InternalTransferType : std::uint8_t {
+        ResourceTransfer,
+        ResourceReleaseTransfer
+    };
+
+    void memcpyfaster(void* dest, const void* src, std::size_t size) {
+        std::size_t offset = 0;
+        std::size_t stride = 4096;
+
+        while (offset < size)
+        {
+            if ((size - offset) < stride)
+                stride = size - offset;
+
+            memcpy(reinterpret_cast<char*>(dest) + offset, reinterpret_cast<const char*>(src) + offset, stride);
+            offset += stride;
+        }
+    }
+
     ApplicationNodeInternal* ApplicationNodeInternal::instance_{ nullptr };
     std::mutex ApplicationNodeInternal::instanceMutex_{ };
 
@@ -434,13 +453,38 @@ namespace viscom {
     void ApplicationNodeInternal::BaseDataTransferCallback(void* receivedData, int receivedLength, int packageID, int clientID)
     {
         if (!initialized_) return;
-        appNodeImpl_->DataTransferCallback(receivedData, receivedLength, packageID, clientID);
+        auto splitID = reinterpret_cast<std::uint16_t*>(&packageID);
+
+        if (splitID[0] == -1) appNodeImpl_->DataTransferCallback(receivedData, receivedLength, splitID[1], clientID);
+        auto internalID = reinterpret_cast<std::uint8_t*>(&splitID[0]);
+        switch (static_cast<InternalTransferType>(internalID[0])) {
+        case InternalTransferType::ResourceTransfer:
+            break;
+        case InternalTransferType::ResourceReleaseTransfer:
+            ReleaseSynchronizedResource(static_cast<ResourceTransferType>(internalID[1]), std::string_view(reinterpret_cast<char*>(receivedData), receivedLength));
+            break;
+        default:
+            LOG(WARNING) << "Unknown InternalTransferType: " << internalID[0];
+            break;
+        }
     }
 
     void ApplicationNodeInternal::BaseDataAcknowledgeCallback(int packageID, int clientID)
     {
         if (!initialized_) return;
-        appNodeImpl_->DataAcknowledgeCallback(packageID, clientID);
+        auto splitID = reinterpret_cast<std::uint16_t*>(&packageID);
+
+        if (splitID[0] == -1) appNodeImpl_->DataAcknowledgeCallback(splitID[1], clientID);
+        auto internalID = reinterpret_cast<std::uint8_t*>(&splitID[0]);
+        switch (static_cast<InternalTransferType>(internalID[0])) {
+        case InternalTransferType::ResourceTransfer:
+            break;
+        case InternalTransferType::ResourceReleaseTransfer:
+            break;
+        default:
+            LOG(WARNING) << "Unknown InternalTransferType: " << internalID[0];
+            break;
+        }
     }
 
     void ApplicationNodeInternal::BaseDataTransferStatusCallback(bool connected, int clientID)
@@ -528,6 +572,42 @@ namespace viscom {
         appNodeImpl_->DecodeData();
     }
 
+    void ApplicationNodeInternal::TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex)
+    {
+        int completePackageId = 0;
+        auto splitId = reinterpret_cast<std::uint16_t*>(&completePackageId);
+        splitId[0] = -1;
+        splitId[1] = packageId;
+        engine_->transferDataToNode(data, static_cast<int>(length), completePackageId, nodeIndex);
+    }
+
+    void ApplicationNodeInternal::TransferResource(std::string_view name, const void* data, std::size_t length, ResourceTransferType type)
+    {
+        if (engine_->isMaster()) {
+            int completePackageId = 0;
+            auto splitId = reinterpret_cast<std::uint8_t*>(&completePackageId);
+            splitId[0] = static_cast<std::uint8_t>(InternalTransferType::ResourceTransfer);
+            splitId[1] = static_cast<std::uint8_t>(type);
+
+            std::vector<std::uint8_t> transferedData(sizeof(std::size_t) + name.length() + length);
+            *reinterpret_cast<std::size_t*>(&transferedData[0]) = name.length();
+            memcpy(&transferedData[0] + sizeof(std::size_t), name.data(), name.length());
+            memcpyfaster(&transferedData[0] + sizeof(std::size_t) + name.length(), data, length);
+            engine_->transferDataBetweenNodes(transferedData.data(), static_cast<int>(transferedData.size()), completePackageId);
+        }
+    }
+
+    void ApplicationNodeInternal::TransferReleaseResource(std::string_view name, ResourceTransferType type)
+    {
+        if (engine_->isMaster()) {
+            int completePackageId = 0;
+            auto splitId = reinterpret_cast<std::uint8_t*>(&completePackageId);
+            splitId[0] = static_cast<std::uint8_t>(InternalTransferType::ResourceReleaseTransfer);
+            splitId[1] = static_cast<std::uint8_t>(type);
+            engine_->transferDataBetweenNodes(name.data(), static_cast<int>(name.length()), completePackageId);
+        }
+    }
+
     void ApplicationNodeInternal::BaseEncodeDataStatic()
     {
         std::lock_guard<std::mutex> lock{ instanceMutex_ };
@@ -566,6 +646,29 @@ namespace viscom {
     std::unique_ptr<FullscreenQuad> ApplicationNodeInternal::CreateFullscreenQuad(const std::string& fragmentShader)
     {
         return std::make_unique<FullscreenQuad>(fragmentShader, this);
+    }
+
+    void ApplicationNodeInternal::ReleaseSynchronizedResource(ResourceTransferType type, std::string_view name)
+    {
+        switch (type) {
+        case ResourceTransferType::GPUProgramTransfer:
+            gpuProgramManager_.ReleaseSharedResource(name);
+            break;
+        case ResourceTransferType::MeshTransfer:
+            meshManager_.ReleaseSharedResource(name);
+            break;
+        case ResourceTransferType::TextureTransfer:
+            textureManager_.ReleaseSharedResource(name);
+            break;
+        default:
+            LOG(WARNING) << "Unknown ResourceTransferType: " << static_cast<std::uint8_t>(type);
+            break;
+        }
+    }
+
+    void ApplicationNodeInternal::CreateSynchronizedResource(ResourceTransferType type, const void* data, std::size_t length)
+    {
+        // TODO: implement. [4/27/2018 Sebastian Maisch]
     }
 
 #ifndef VISCOM_LOCAL_ONLY

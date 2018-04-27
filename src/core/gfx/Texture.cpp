@@ -21,7 +21,7 @@ namespace viscom {
      * @param texFilename the filename of the texture file.
      */
     Texture::Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool useSRGB) :
-        Resource(texFilename, node),
+        Resource(texFilename, ResourceTransferType::TextureTransfer, node),
         textureId_{ 0 },
         descriptor_{ 3, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE },
         width_{ 0 },

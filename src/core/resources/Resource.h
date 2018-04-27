@@ -17,7 +17,7 @@ namespace viscom {
     class Resource
     {
     public:
-        Resource(const std::string& resourceId, ApplicationNodeInternal* appNode);
+        Resource(const std::string& resourceId, ResourceTransferType type, ApplicationNodeInternal* appNode, bool synchronize = false);
         Resource(const Resource&);
         Resource& operator=(const Resource&);
         Resource(Resource&&) noexcept;
@@ -39,7 +39,11 @@ namespace viscom {
     private:
         /** Holds the resources id. */
         std::string id_;
+        /** Holds the resources type. */
+        ResourceTransferType type_;
         /** Holds the application object for dependencies. */
         ApplicationNodeInternal* appNode_;
+        /** Is this resource synchronized. */
+        bool synchronized_;
     };
 }

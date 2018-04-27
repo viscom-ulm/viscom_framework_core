@@ -10,14 +10,20 @@
 #include "core/ApplicationNodeInternal.h"
 #include "core/utils/utils.h"
 
+#ifdef VISCOM_USE_SGCT
+#include <sgct.h>
+#endif
+
 namespace viscom {
     /**
      * Constructor.
      * @param resourceId the resource id to use
      */
-    Resource::Resource(const std::string& resourceId, ApplicationNodeInternal* appNode) :
+    Resource::Resource(const std::string& resourceId, ResourceTransferType type, ApplicationNodeInternal* appNode, bool synchronize) :
         id_{ resourceId },
-        appNode_{ appNode }
+        type_{ type },
+        appNode_{ appNode },
+        synchronized_{ synchronize }
     {
     }
 
@@ -30,7 +36,9 @@ namespace viscom {
     /** Move constructor. */
     Resource::Resource(Resource&& orig) noexcept :
         id_{ std::move(orig.id_) },
-        appNode_{ orig.appNode_ }
+        type_{ std::move(orig.type_) },
+        appNode_{ orig.appNode_ },
+        synchronized_{ orig.synchronized_ }
     {
     }
 
@@ -40,12 +48,17 @@ namespace viscom {
         if (this != &orig) {
             this->~Resource();
             id_ = std::move(orig.id_);
+            type_ = std::move(orig.type_);
             appNode_ = orig.appNode_;
+            synchronized_ = orig.synchronized_;
         }
         return *this;
     }
 
-    Resource::~Resource() = default;
+    Resource::~Resource()
+    {
+        if (synchronized_) appNode_->TransferReleaseResource(id_, type_);
+    }
 
     std::string Resource::FindResourceLocation(const std::string& localFilename, const ApplicationNodeInternal* appNode, const std::string& resourceId)
     {

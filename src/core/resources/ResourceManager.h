@@ -37,6 +37,8 @@ namespace viscom {
         using ResourceType = rType;
         /** The resource map type. */
         using ResourceMap = std::unordered_map<std::string, std::weak_ptr<rType>>;
+        /** The synchronized resource map type. */
+        using SyncedResourceMap = std::unordered_map<std::string, std::shared_ptr<rType>>;
         /** The type of this base class. */
         using ResourceManagerBase = ResourceManager<rType>;
 
@@ -83,6 +85,7 @@ namespace viscom {
         template<typename... Args>
         std::shared_ptr<ResourceType> GetResource(const std::string& resId, Args&&... args)
         {
+            std::lock_guard<std::mutex> accessLock{ mtx_ };
             std::weak_ptr<ResourceType> wpResource;
             try {
                 wpResource = resources_.at(resId);
@@ -107,8 +110,17 @@ namespace viscom {
          */
         bool HasResource(const std::string& resId) const
         {
+            std::lock_guard<std::mutex> accessLock{ mtx_ };
             auto rit = resources_.find(resId);
             return (rit != resources_.end()) && !rit->expired();
+        }
+
+        /** Releases a shared resource (it is not deleted if the shared pointers to it are used elsewhere). */
+        void ReleaseSharedResource(std::string_view resId)
+        {
+            std::lock_guard<std::mutex> accessLock{ mtx_ };
+            auto rit = syncedResources_.find(std::string(resId));
+            if (rit != syncedResources_.end()) syncedResources_.erase(rit);
         }
 
 
@@ -142,5 +154,9 @@ namespace viscom {
         ResourceMap resources_;
         /** Holds the application base. */
         ApplicationNodeInternal* appNode_;
+        /** Holds a map of synchronized resources (to make sure they are not deleted). */
+        SyncedResourceMap syncedResources_;
+        /** Holds a mutex to the manager. */
+        std::mutex mtx_;
     };
 }

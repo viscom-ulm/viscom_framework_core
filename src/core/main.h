@@ -21,6 +21,7 @@
 #include <core/utils/utils.h>
 
 namespace viscom {
+
 #ifdef _DEBUG
     constexpr bool DEBUG_MODE = true;
 #else
@@ -31,6 +32,12 @@ namespace viscom {
     constexpr bool USE_TUIO = true;
 #else
     constexpr bool USE_TUIO = false;
+#endif
+
+#ifdef VISCOM_USE_SGCT
+    constexpr bool USE_SGCT = true;
+#else
+    constexpr bool USE_SGCT = false;
 #endif
 
 #ifdef VISCOM_CLIENTMOUSECURSOR
@@ -50,4 +57,11 @@ namespace viscom {
 #else
     constexpr bool SYNCHRONIZE_INPUT = false;
 #endif
+
+
+    enum class ResourceTransferType : std::uint8_t {
+        TextureTransfer,
+        MeshTransfer,
+        GPUProgramTransfer
+};
 }
