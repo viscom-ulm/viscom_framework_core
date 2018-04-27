@@ -75,5 +75,19 @@ namespace viscom {
 
             return s.substr(strBegin, strRange);
         }
+
+        static void memcpyfaster(void* dest, const void* src, std::size_t size) {
+            std::size_t offset = 0;
+            std::size_t stride = 4096;
+
+            while (offset < size)
+            {
+                if ((size - offset) < stride)
+                    stride = size - offset;
+
+                memcpy(reinterpret_cast<char*>(dest) + offset, reinterpret_cast<const char*>(src) + offset, stride);
+                offset += stride;
+            }
+        }
     }
 }

@@ -11,6 +11,7 @@
 #include "app/SlaveNode.h"
 #include "core/imgui/imgui_impl_glfw_gl3.h"
 #include "external/tinyxml2.h"
+#include "core/utils/utils.h"
 #include <imgui.h>
 #include <sgct.h>
 
@@ -24,20 +25,6 @@ namespace viscom {
         ResourceTransfer,
         ResourceReleaseTransfer
     };
-
-    void memcpyfaster(void* dest, const void* src, std::size_t size) {
-        std::size_t offset = 0;
-        std::size_t stride = 4096;
-
-        while (offset < size)
-        {
-            if ((size - offset) < stride)
-                stride = size - offset;
-
-            memcpy(reinterpret_cast<char*>(dest) + offset, reinterpret_cast<const char*>(src) + offset, stride);
-            offset += stride;
-        }
-    }
 
     ApplicationNodeInternal* ApplicationNodeInternal::instance_{ nullptr };
     std::mutex ApplicationNodeInternal::instanceMutex_{ };
@@ -592,7 +579,7 @@ namespace viscom {
             std::vector<std::uint8_t> transferedData(sizeof(std::size_t) + name.length() + length);
             *reinterpret_cast<std::size_t*>(&transferedData[0]) = name.length();
             memcpy(&transferedData[0] + sizeof(std::size_t), name.data(), name.length());
-            memcpyfaster(&transferedData[0] + sizeof(std::size_t) + name.length(), data, length);
+            utils::memcpyfaster(&transferedData[0] + sizeof(std::size_t) + name.length(), data, length);
             engine_->transferDataBetweenNodes(transferedData.data(), static_cast<int>(transferedData.size()), completePackageId);
         }
     }
@@ -652,13 +639,13 @@ namespace viscom {
     {
         switch (type) {
         case ResourceTransferType::GPUProgramTransfer:
-            gpuProgramManager_.ReleaseSharedResource(name);
+            gpuProgramManager_.ReleaseSharedResource(std::string(name));
             break;
         case ResourceTransferType::MeshTransfer:
-            meshManager_.ReleaseSharedResource(name);
+            meshManager_.ReleaseSharedResource(std::string(name));
             break;
         case ResourceTransferType::TextureTransfer:
-            textureManager_.ReleaseSharedResource(name);
+            textureManager_.ReleaseSharedResource(std::string(name));
             break;
         default:
             LOG(WARNING) << "Unknown ResourceTransferType: " << static_cast<std::uint8_t>(type);

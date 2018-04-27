@@ -9,6 +9,7 @@
 #pragma once
 
 #include "core/main.h"
+#include <optional>
 
 namespace viscom {
 
@@ -25,9 +26,13 @@ namespace viscom {
         virtual ~Resource();
 
         const std::string& GetId() const { return id_; }
-        virtual void Load() = 0;
-        virtual void Reload() = 0;
-        virtual void Unload() = 0;
+
+        // resource loading:
+        // - with valid parameters: non-synced or synced on master
+        // - without valid parameters: synced on slave
+        // - from memory: synced on slave
+        virtual void Load(std::optional<std::vector<std::uint8_t>>& data) = 0;
+        virtual void LoadFromMemory(const void* data, std::size_t size) = 0;
 
         static std::string FindResourceLocation(const std::string& localFilename, const ApplicationNodeInternal* appNode, const std::string& resourceId = "_no_resource_");
 
@@ -45,5 +50,21 @@ namespace viscom {
         ApplicationNodeInternal* appNode_;
         /** Is this resource synchronized. */
         bool synchronized_;
+    };
+
+    template<typename RType>
+    struct NetworkSharePolicy {
+        void LoadResource(RType& resource);
+        void ReloadResource(RType& resource);
+        void DeleteResource(RType& resource);
+        // if on master:
+        // - load resource locally
+        // - transfer memory representation to slaves
+
+        // if on slave:
+        // - initialize id
+        // - add id to list of uninitialized resources
+
+        // if new resource comes in .. create...
     };
 }

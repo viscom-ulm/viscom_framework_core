@@ -23,18 +23,17 @@ namespace viscom {
     {
     public:
         [[deprecated("Use the vector version instead.")]]
-        GPUProgram(const std::string& programName, ApplicationNodeInternal* node, std::initializer_list<std::string> shaderNames);
-        GPUProgram(const std::string& programName, ApplicationNodeInternal* node, std::vector<std::string> shaderNames);
-        GPUProgram(const std::string& programName, ApplicationNodeInternal* node, std::vector<std::string> shaderNames, const std::vector<std::string>& defines);
+        GPUProgram(const std::string& programName, ApplicationNodeInternal* node, bool synchronize, std::initializer_list<std::string> shaderNames);
+        GPUProgram(const std::string& programName, ApplicationNodeInternal* node, bool synchronize, std::vector<std::string> shaderNames);
+        GPUProgram(const std::string& programName, ApplicationNodeInternal* node, bool synchronize, std::vector<std::string> shaderNames, const std::vector<std::string>& defines);
         GPUProgram(const GPUProgram& orig) = delete;
         GPUProgram& operator=(const GPUProgram&) = delete;
         GPUProgram(GPUProgram&&) noexcept;
         GPUProgram& operator=(GPUProgram&&) noexcept;
         virtual ~GPUProgram() noexcept override;
 
-        virtual void Load() override;
-        virtual void Reload() override;
-        virtual void Unload() override;
+        virtual void Load(std::optional<std::vector<std::uint8_t>>& data) override;
+        virtual void LoadFromMemory(const void* data, std::size_t size) override;
 
         [[deprecated("Use 'Reload' instead.")]]
         void recompileProgram();

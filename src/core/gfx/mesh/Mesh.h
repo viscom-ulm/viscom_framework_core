@@ -34,16 +34,15 @@ namespace viscom {
     class Mesh final : public Resource
     {
     public:
-        Mesh(const std::string& meshFilename, ApplicationNodeInternal* node);
+        Mesh(const std::string& meshFilename, ApplicationNodeInternal* node, bool synchronize = false);
         Mesh(const Mesh&) = delete;
         Mesh& operator=(const Mesh&) = delete;
         Mesh(Mesh&&) noexcept = delete;
         Mesh& operator=(Mesh&&) noexcept = delete;
         virtual ~Mesh() noexcept override;
 
-        virtual void Load() override;
-        virtual void Reload() override;
-        virtual void Unload() override;
+        virtual void Load(std::optional<std::vector<std::uint8_t>>& data) override;
+        virtual void LoadFromMemory(const void* data, std::size_t size) override;
 
         /**
          *  Accessor to the meshes sub-meshes. This can be used to render more complicated meshes (with multiple sets

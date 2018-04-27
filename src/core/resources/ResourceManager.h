@@ -10,6 +10,7 @@
 
 #include "core/main.h"
 #include <unordered_map>
+#include <optional>
 
 namespace viscom {
     class ApplicationNodeInternal;
@@ -86,21 +87,9 @@ namespace viscom {
         std::shared_ptr<ResourceType> GetResource(const std::string& resId, Args&&... args)
         {
             std::lock_guard<std::mutex> accessLock{ mtx_ };
-            std::weak_ptr<ResourceType> wpResource;
-            try {
-                wpResource = resources_.at(resId);
-            }
-            catch (std::out_of_range&) {
-                LOG(INFO) << "No resource with id \"" << resId << "\" found. Creating new one.";
-            }
-            if (wpResource.expired()) {
-                std::shared_ptr<ResourceType> spResource(nullptr);
-                LoadResource(resId, spResource, std::forward<Args>(args)...);
-                wpResource = spResource;
-                resources_.insert(std::move(std::make_pair(resId, wpResource)));
-                return std::move(spResource);
-            }
-            return wpResource.lock();
+            auto resPtr = GetResourceInternal(resId, false, std::forward<Args>(args)...);
+            resPtr->Load(std::optional<std::vector<std::uint8_t>>());
+            return resPtr;
         }
 
         /**
@@ -116,20 +105,54 @@ namespace viscom {
         }
 
         /** Releases a shared resource (it is not deleted if the shared pointers to it are used elsewhere). */
-        void ReleaseSharedResource(std::string_view resId)
+        void ReleaseSharedResource(const std::string& resId)
         {
-            std::lock_guard<std::mutex> accessLock{ mtx_ };
-            auto rit = syncedResources_.find(std::string(resId));
+            std::lock_guard<std::mutex> accessLock{ syncMtx_ };
+            auto rit = syncedResources_.find(resId);
             if (rit != syncedResources_.end()) syncedResources_.erase(rit);
+        }
+
+        void CreateSharedResource(const std::string& resId)
+        {
+            std::lock_guard<std::mutex> accessLock{ syncMtx_ };
+            std::lock_guard<std::mutex> accessLock{ mtx_ };
+
+            auto rit = syncedResources_.find(resId);
+            if (rit != syncedResources_.end()) {
+                //- reload existing.
+            }
+
+            auto res = GetResourceInternal(resId, true, );
+            syncedResources_[resId] = res;
         }
 
 
     protected:
         template<typename... Args>
-        void LoadResource(const std::string& resId, std::shared_ptr<ResourceType>& spResource, Args&&... args)
+        std::shared_ptr<ResourceType> GetResourceInternal(const std::string& resId, bool synchronized, Args&&... args)
+        {
+            std::weak_ptr<ResourceType> wpResource;
+            try {
+                wpResource = resources_.at(resId);
+            }
+            catch (std::out_of_range&) {
+                LOG(INFO) << "No resource with id \"" << resId << "\" found. Creating new one.";
+            }
+            if (wpResource.expired()) {
+                std::shared_ptr<ResourceType> spResource(nullptr);
+                LoadResource(resId, synchronized, spResource, std::forward<Args>(args)...);
+                wpResource = spResource;
+                resources_.insert(std::move(std::make_pair(resId, wpResource)));
+                return std::move(spResource);
+            }
+            return wpResource.lock();
+        }
+
+        template<typename... Args>
+        void LoadResource(const std::string& resId, bool synchronized, std::shared_ptr<ResourceType>& spResource, Args&&... args)
         {
             try {
-                spResource = std::make_shared<rType>(resId, appNode_, std::forward<Args>(args)...);
+                spResource = std::make_shared<rType>(resId, appNode_, synchronized, std::forward<Args>(args)...);
             }
             catch (const resource_loading_error& loadingError) {
                 LOG(INFO) << "Error while loading resource \"" << resId << "\"." << std::endl
@@ -156,7 +179,9 @@ namespace viscom {
         ApplicationNodeInternal* appNode_;
         /** Holds a map of synchronized resources (to make sure they are not deleted). */
         SyncedResourceMap syncedResources_;
-        /** Holds a mutex to the manager. */
+        /** Holds a mutex to the resources. */
         std::mutex mtx_;
+        /** Holds a mutex to the synced resources. */
+        std::mutex syncMtx_;
     };
 }

@@ -33,8 +33,8 @@ namespace viscom {
      * Constructor, creates a mesh from file.
      * @param meshFilename the filename of the mesh file.
      */
-    Mesh::Mesh(const std::string& meshFilename, ApplicationNodeInternal* node) :
-        Resource(meshFilename, ResourceTransferType::MeshTransfer, node),
+    Mesh::Mesh(const std::string& meshFilename, ApplicationNodeInternal* node, bool synchronize) :
+        Resource(meshFilename, ResourceTransferType::MeshTransfer, node, synchronize),
         filename_{ meshFilename },
         indexBuffer_(0)
     {
@@ -44,10 +44,11 @@ namespace viscom {
     /** Destructor. */
     Mesh::~Mesh() noexcept
     {
-        Unload();
+        if (indexBuffer_ != 0) glDeleteBuffers(1, &indexBuffer_);
+        indexBuffer_ = 0;
     }
 
-    void Mesh::Load()
+    void Mesh::Load(std::optional<std::vector<std::uint8_t>>& data)
     {
         auto filename = FindResourceLocation(GetId());
         auto binFilename = filename + ".viscombin";
@@ -60,18 +61,13 @@ namespace viscom {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer_);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_.size() * sizeof(unsigned int), indices_.data(), GL_STATIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        if (data.has_value()) {
+        }
     }
 
-    void Mesh::Reload()
+    void Mesh::LoadFromMemory(const void * data, std::size_t size)
     {
-        Unload();
-        Load();
-    }
-
-    void Mesh::Unload()
-    {
-        if (indexBuffer_ != 0) glDeleteBuffers(1, &indexBuffer_);
-        indexBuffer_ = 0;
     }
 
     void Mesh::CreateNewMesh(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node)
