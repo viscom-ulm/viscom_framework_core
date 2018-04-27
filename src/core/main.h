@@ -45,9 +45,9 @@ namespace viscom {
     constexpr bool SHOW_CLIENT_GUI = false;
 #endif
 
-#ifdef VISCOM_CLIENTGUI
-    constexpr bool SHOW_CLIENT_GUI = true;
+#ifdef VISCOM_SYNCINPUT
+    constexpr bool SYNCHRONIZE_INPUT = true;
 #else
-    constexpr bool SHOW_CLIENT_GUI = false;
+    constexpr bool SYNCHRONIZE_INPUT = false;
 #endif
 }
