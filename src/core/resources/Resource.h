@@ -25,6 +25,10 @@ namespace viscom {
         virtual ~Resource();
 
         const std::string& GetId() const { return id_; }
+        virtual void Load() = 0;
+        virtual void Reload() = 0;
+        virtual void Unload() = 0;
+
         static std::string FindResourceLocation(const std::string& localFilename, const ApplicationNodeInternal* appNode, const std::string& resourceId = "_no_resource_");
 
     protected:

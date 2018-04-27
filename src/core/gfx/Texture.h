@@ -44,6 +44,10 @@ namespace viscom {
         Texture& operator=(Texture&&) noexcept;
         virtual ~Texture() noexcept override;
 
+        virtual void Load() override;
+        virtual void Reload() override;
+        virtual void Unload() override;
+
         /** Returns the size of the texture. */
         glm::uvec2 getDimensions() const noexcept { return glm::uvec2(width_, height_); }
         /** Returns the OpenGL texture id. */
@@ -66,5 +70,7 @@ namespace viscom {
         unsigned int width_;
         /** Holds the height. */
         unsigned int height_;
+        /** Is this an sRGB texture. */
+        bool sRGB_;
     };
 }

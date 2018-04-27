@@ -30,7 +30,7 @@ namespace viscom {
     {
         LOG(DBUG) << "Initializing calibration data.";
         // init shaders
-        calibrationProgram_ = GetApplication()->GetGPUProgramManager().GetResource("calibrationRendering", std::initializer_list<std::string>{ "calibrationRendering.vert", "calibrationRendering.frag" });
+        calibrationProgram_ = GetApplication()->GetGPUProgramManager().GetResource("calibrationRendering", std::vector<std::string>{ "calibrationRendering.vert", "calibrationRendering.frag" });
         calibrationAlphaTexLoc_ = calibrationProgram_->getUniformLocation("alphaTex");
         calibrationSceneTexLoc_ = calibrationProgram_->getUniformLocation("tex");
 

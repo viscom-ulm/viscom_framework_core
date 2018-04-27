@@ -41,7 +41,7 @@ namespace viscom {
     void GPUProgramManager::RecompileAll()
     {
         for (auto& program : resources_) {
-            if (!program.second.expired()) program.second.lock()->recompileProgram();
+            if (!program.second.expired()) program.second.lock()->Reload();
         }
     }
 }

@@ -38,10 +38,21 @@ namespace viscom {
         filename_{ meshFilename },
         indexBuffer_(0)
     {
-        auto filename = FindResourceLocation(meshFilename);
+        Load();
+    }
+
+    /** Destructor. */
+    Mesh::~Mesh() noexcept
+    {
+        Unload();
+    }
+
+    void Mesh::Load()
+    {
+        auto filename = FindResourceLocation(GetId());
         auto binFilename = filename + ".viscombin";
 
-        if (!Load(filename, binFilename, node)) CreateNewMesh(filename, binFilename, node);
+        if (!Load(filename, binFilename, GetAppNode())) CreateNewMesh(filename, binFilename, GetAppNode());
 
         rootNode_->FlattenNodeTree(nodes_);
 
@@ -51,8 +62,13 @@ namespace viscom {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    /** Destructor. */
-    Mesh::~Mesh() noexcept
+    void Mesh::Reload()
+    {
+        Unload();
+        Load();
+    }
+
+    void Mesh::Unload()
     {
         if (indexBuffer_ != 0) glDeleteBuffers(1, &indexBuffer_);
         indexBuffer_ = 0;

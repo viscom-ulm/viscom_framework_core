@@ -41,6 +41,10 @@ namespace viscom {
         Mesh& operator=(Mesh&&) noexcept = delete;
         virtual ~Mesh() noexcept override;
 
+        virtual void Load() override;
+        virtual void Reload() override;
+        virtual void Unload() override;
+
         /**
          *  Accessor to the meshes sub-meshes. This can be used to render more complicated meshes (with multiple sets
          *  of texture coordinates).

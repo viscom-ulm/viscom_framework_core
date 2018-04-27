@@ -25,24 +25,10 @@ namespace viscom {
         textureId_{ 0 },
         descriptor_{ 3, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE },
         width_{ 0 },
-        height_{ 0 }
+        height_{ 0 },
+        sRGB_{ useSRGB }
     {
-        auto fullFilename = FindResourceLocation(texFilename);
-
-        stbi_set_flip_vertically_on_load(1);
-
-        // Bind Texture and Set Filtering Levels
-        glGenTextures(1, &textureId_);
-        glBindTexture(GL_TEXTURE_2D, textureId_);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        if (stbi_is_hdr(fullFilename.c_str()) != 0) LoadTextureHDR(fullFilename);
-        else LoadTextureLDR(fullFilename, useSRGB);
-
-        glBindTexture(GL_TEXTURE_2D, 0);
+        Load();
     }
 
     /**
@@ -54,7 +40,8 @@ namespace viscom {
         textureId_{ std::move(rhs.textureId_) },
         descriptor_{ std::move(rhs.descriptor_) },
         width_{ std::move(rhs.width_) },
-        height_{ std::move(rhs.height_) }
+        height_{ std::move(rhs.height_) },
+        sRGB_{ std::move(rhs.sRGB_) }
     {
         rhs.textureId_ = 0;
     }
@@ -74,6 +61,7 @@ namespace viscom {
             descriptor_ = std::move(rhs.descriptor_);
             width_ = std::move(rhs.width_);
             height_ = std::move(rhs.height_);
+            sRGB_ = std::move(rhs.sRGB_);
             rhs.textureId_ = 0;
         }
         return *this;
@@ -81,6 +69,37 @@ namespace viscom {
 
     /** Destructor. */
     Texture::~Texture() noexcept
+    {
+        Unload();
+    }
+
+    void Texture::Load()
+    {
+        auto fullFilename = FindResourceLocation(GetId());
+
+        stbi_set_flip_vertically_on_load(1);
+
+        // Bind Texture and Set Filtering Levels
+        glGenTextures(1, &textureId_);
+        glBindTexture(GL_TEXTURE_2D, textureId_);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        if (stbi_is_hdr(fullFilename.c_str()) != 0) LoadTextureHDR(fullFilename);
+        else LoadTextureLDR(fullFilename, sRGB_);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    void Texture::Reload()
+    {
+        Unload();
+        Load();
+    }
+
+    void Texture::Unload()
     {
         if (textureId_ != 0) {
             glBindTexture(GL_TEXTURE_2D, 0);

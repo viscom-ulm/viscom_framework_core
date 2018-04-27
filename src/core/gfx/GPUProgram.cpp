@@ -41,10 +41,7 @@ namespace viscom {
         program_(0),
         defines_{ defines }
     {
-        for (const auto& shaderName : shaderNames_) {
-            shaders_.emplace_back(std::make_unique<Shader>(shaderName, node, defines_));
-        }
-        program_ = linkNewProgram(programName_, shaders_, [](const std::unique_ptr<Shader>& shdr) noexcept { return shdr->getShaderId(); });
+        Load();
     }
 
     /**
@@ -86,15 +83,7 @@ namespace viscom {
     /** Destructor. */
     GPUProgram::~GPUProgram() noexcept
     {
-        unload();
-    }
-
-    void GPUProgram::unload() noexcept
-    {
-        if (this->program_ != 0) {
-            glDeleteProgram(this->program_);
-            this->program_ = 0;
-        }
+        Unload();
     }
 
     // ReSharper disable CppDoxygenUnresolvedReference
@@ -149,30 +138,7 @@ namespace viscom {
      */
     void GPUProgram::recompileProgram()
     {
-        std::vector<GLuint> newOGLShaders(shaderNames_.size(), 0);
-
-        for (std::size_t i = 0; i < shaderNames_.size(); ++i) {
-            try {
-                newOGLShaders[i] = shaders_[i]->recompileShader();
-            } catch (shader_compiler_error&) {
-                releaseShaders(newOGLShaders);
-                throw;
-            }
-        }
-
-        GLuint tempProgram = 0;
-        try {
-            tempProgram = linkNewProgram(programName_, newOGLShaders, [](GLuint shdr) noexcept { return shdr; });
-        } catch (shader_compiler_error&) {
-            releaseShaders(newOGLShaders);
-            throw;
-        }
-
-        unload();
-        for (std::size_t i = 0; i < shaders_.size(); ++i) {
-            shaders_[i]->resetShader(newOGLShaders[i]);
-        }
-        program_ = tempProgram;
+        Reload();
     }
 
     GLint GPUProgram::getUniformLocation(const std::string& name) const
@@ -219,6 +185,52 @@ namespace viscom {
     {
         for (auto shader : shaders) {
             if (shader != 0) glDeleteShader(shader);
+        }
+    }
+
+    void GPUProgram::Load()
+    {
+        for (const auto& shaderName : shaderNames_) {
+            shaders_.emplace_back(std::make_unique<Shader>(shaderName, GetAppNode(), defines_));
+        }
+        program_ = linkNewProgram(programName_, shaders_, [](const std::unique_ptr<Shader>& shdr) noexcept { return shdr->getShaderId(); });
+    }
+
+    void GPUProgram::Reload()
+    {
+        std::vector<GLuint> newOGLShaders(shaderNames_.size(), 0);
+
+        for (std::size_t i = 0; i < shaderNames_.size(); ++i) {
+            try {
+                newOGLShaders[i] = shaders_[i]->recompileShader();
+            }
+            catch (shader_compiler_error&) {
+                releaseShaders(newOGLShaders);
+                throw;
+            }
+        }
+
+        GLuint tempProgram = 0;
+        try {
+            tempProgram = linkNewProgram(programName_, newOGLShaders, [](GLuint shdr) noexcept { return shdr; });
+        }
+        catch (shader_compiler_error&) {
+            releaseShaders(newOGLShaders);
+            throw;
+        }
+
+        Unload();
+        for (std::size_t i = 0; i < shaders_.size(); ++i) {
+            shaders_[i]->resetShader(newOGLShaders[i]);
+        }
+        program_ = tempProgram;
+    }
+
+    void GPUProgram::Unload()
+    {
+        if (this->program_ != 0) {
+            glDeleteProgram(this->program_);
+            this->program_ = 0;
         }
     }
 }

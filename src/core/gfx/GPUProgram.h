@@ -32,6 +32,11 @@ namespace viscom {
         GPUProgram& operator=(GPUProgram&&) noexcept;
         virtual ~GPUProgram() noexcept override;
 
+        virtual void Load() override;
+        virtual void Reload() override;
+        virtual void Unload() override;
+
+        [[deprecated("Use 'Reload' instead.")]]
         void recompileProgram();
         /** Returns the OpenGL program id. */
         GLuint getProgramId() const noexcept { return program_; }
@@ -63,7 +68,6 @@ namespace viscom {
         /** Holds the defines used in the program. */
         std::vector<std::string> defines_;
 
-        void unload() noexcept;
         template<typename T, typename SHAcc> static GLuint linkNewProgram(const std::string& name,
             const std::vector<T>& shaders, SHAcc shaderAccessor);
         static void releaseShaders(const std::vector<GLuint>& shaders) noexcept;
