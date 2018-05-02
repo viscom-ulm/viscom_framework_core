@@ -114,6 +114,7 @@ namespace viscom {
 
         void CreateSharedResource(const std::string& resId)
         {
+            // TODO: implement correctly. [5/2/2018 Sebastian Maisch]
             std::lock_guard<std::mutex> accessLock{ syncMtx_ };
             std::lock_guard<std::mutex> accessLock{ mtx_ };
 

@@ -82,7 +82,8 @@ namespace viscom {
         using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'M', 'E', 'S', 1000>;
 
         std::shared_ptr<const Texture> LoadTexture(const std::string& relFilename, ApplicationNodeInternal* node) const;
-        void CreateNewMesh(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node);
+        void LoadAssimpMeshFromFile(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node);
+        void LoadAssimpMesh(const aiScene* scene, ApplicationNodeInternal* node);
         void Save(const std::string& filename) const;
         void Write(std::ostream& ofs) const;
         bool Load(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node);

@@ -29,6 +29,10 @@ namespace viscom {
         return glm::vec3{ c.r, c.g, c.b };
     }
 
+    constexpr unsigned int ASSIMP_FLAGS = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_JoinIdenticalVertices
+        | aiProcess_Triangulate | aiProcess_LimitBoneWeights | aiProcess_ImproveCacheLocality
+        | aiProcess_RemoveRedundantMaterials | aiProcess_FlipUVs | aiProcess_CalcTangentSpace;
+
     /**
      * Constructor, creates a mesh from file.
      * @param meshFilename the filename of the mesh file.
@@ -38,7 +42,6 @@ namespace viscom {
         filename_{ meshFilename },
         indexBuffer_(0)
     {
-        Load();
     }
 
     /** Destructor. */
@@ -53,7 +56,7 @@ namespace viscom {
         auto filename = FindResourceLocation(GetId());
         auto binFilename = filename + ".viscombin";
 
-        if (!Load(filename, binFilename, GetAppNode())) CreateNewMesh(filename, binFilename, GetAppNode());
+        if (!Load(filename, binFilename, GetAppNode())) LoadAssimpMeshFromFile(filename, binFilename, GetAppNode());
 
         rootNode_->FlattenNodeTree(nodes_);
 
@@ -63,24 +66,53 @@ namespace viscom {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         if (data.has_value()) {
+            data->clear();
+            LOG(WARNING) << "Sending memory versions of meshes will most probably not work. Do not use this!!!";
+            auto hint = filename.substr(filename.find_last_of(".") + 1);
+            auto hintSize = hint.size() * sizeof(std::remove_reference_t<decltype(hint)>::value_type);
+            std::ifstream meshFile(filename, std::ios::binary | std::ios::ate);
+            std::size_t meshFileSize = meshFile.tellg();
+            data->resize(sizeof(std::size_t) + hintSize + meshFileSize);
+
+            reinterpret_cast<std::size_t*>(data->data())[0] = hint.size();
+            auto dataptr = data->data() + sizeof(std::size_t);
+            memcpy(dataptr, hint.data(), hintSize);
+            dataptr += hintSize;
+
+            meshFile.seekg(0);
+            meshFile.read(reinterpret_cast<char*>(dataptr), meshFileSize);
         }
     }
 
-    void Mesh::LoadFromMemory(const void * data, std::size_t size)
+    void Mesh::LoadFromMemory(const void* data, std::size_t size)
     {
+        LOG(WARNING) << "Loading meshes from memory will most probably not work. Do not use this!!!";
+
+        auto hintSize = reinterpret_cast<const std::size_t*>(data);
+        std::string hint;
+        hint.resize(hintSize[0]);
+        memcpy(hint.data(), &hintSize[1], hintSize[0]);
+        auto meshData = reinterpret_cast<const std::uint8_t*>(data) + sizeof(std::size_t) + hintSize[0] * sizeof(char);
+        auto meshSize = size - (sizeof(std::size_t) + hintSize[0] * sizeof(char));
+        Assimp::Importer loader;
+        auto scene = loader.ReadFileFromMemory(meshData, meshSize, ASSIMP_FLAGS, hint.c_str());
+
+        LoadAssimpMesh(scene, GetAppNode());
     }
 
-    void Mesh::CreateNewMesh(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node)
+    void Mesh::LoadAssimpMeshFromFile(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node)
     {
         auto fullFilename = FindResourceLocation(filename);
         // Load a Model from File
         Assimp::Importer loader;
-        auto scene = loader.ReadFile(fullFilename,
-            aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_JoinIdenticalVertices
-            | aiProcess_Triangulate | aiProcess_LimitBoneWeights | aiProcess_ImproveCacheLocality
-            | aiProcess_RemoveRedundantMaterials | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+        auto scene = loader.ReadFile(fullFilename, ASSIMP_FLAGS);
 
+        LoadAssimpMesh(scene, node);
+        Save(binFilename);
+    }
 
+    void Mesh::LoadAssimpMesh(const aiScene * scene, ApplicationNodeInternal * node)
+    {
         unsigned int maxUVChannels = 0, maxColorChannels = 0, numVertices = 0, numIndices = 0;
         std::vector<std::vector<unsigned int>> indices;
         indices.resize(static_cast<size_t>(scene->mNumMeshes));
@@ -133,7 +165,8 @@ namespace viscom {
             if (AI_SUCCESS == material->Get(AI_MATKEY_TEXTURE(aiTextureType_HEIGHT, 0), bumpTexPath)) {
                 matTex.bumpTex = LoadTexture(bumpTexPath.C_Str(), node);
                 material->Get(AI_MATKEY_TEXBLEND(aiTextureType_HEIGHT, 0), mat.bumpMultiplier);
-            } else if (AI_SUCCESS == material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0), bumpTexPath)) {
+            }
+            else if (AI_SUCCESS == material->Get(AI_MATKEY_TEXTURE(aiTextureType_NORMALS, 0), bumpTexPath)) {
                 matTex.bumpTex = LoadTexture(diffuseTexPath.C_Str(), node);
                 material->Get(AI_MATKEY_TEXBLEND(aiTextureType_NORMALS, 0), mat.bumpMultiplier);
             }
@@ -191,7 +224,8 @@ namespace viscom {
                             indexOfCurrentBone, aiBone->mWeights[w].mWeight);
                     }
                 }
-            } else {
+            }
+            else {
                 for (std::size_t i = 0; i < mesh->mNumVertices; ++i) {
                     boneWeights[currentMeshVertexOffset + i].emplace_back(std::make_pair(0, 0.0f));
                 }
@@ -250,8 +284,6 @@ namespace viscom {
         GenerateBoneBoundingBoxes();
 
         globalInverse_ = glm::inverse(rootNode_->GetLocalTransform());
-
-        Save(binFilename);
     }
 
     std::shared_ptr<const Texture> Mesh::LoadTexture(const std::string& relFilename, ApplicationNodeInternal* node) const

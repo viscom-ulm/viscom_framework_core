@@ -45,6 +45,7 @@ namespace viscom {
     public:
         Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node);
         Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node, const std::vector<std::string>& defines);
+        Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node, const std::string& shader);
         Shader(const Shader& orig) = delete;
         Shader& operator=(const Shader&) = delete;
         Shader(Shader&& orig) noexcept;
@@ -53,8 +54,8 @@ namespace viscom {
 
         /** Returns the OpenGL id of the shader. */
         GLuint getShaderId() const noexcept { return shader_; }
-        void resetShader(GLuint newShader);
-        GLuint recompileShader() const;
+        /** Returns the shaders source code (defines and includes added). */
+        const std::string& GetSource() const { return generatedSource_; }
 
     private:
         /** Holds the shader file name. */
@@ -67,9 +68,11 @@ namespace viscom {
         std::string strType_;
         /** Holds the defines used in the shader. */
         std::vector<std::string> defines_;
+        /** Holds the shaders source code. */
+        std::string generatedSource_;
 
-        static GLuint compileShader(const std::string& filename, GLenum type, const std::string& strType, const std::vector<std::string>& defines);
-        static std::string LoadShaderFile(const std::string &filename, const std::vector<std::string> &defines, unsigned int &fileId, unsigned int recursionDepth);
-        void unload() noexcept;
+        static std::string LoadShaderFile(const std::string &filename, const std::vector<std::string> &defines, const ApplicationNodeInternal* node);
+        static std::string LoadShaderFileRecursive(const std::string &filename, const std::vector<std::string> &defines, unsigned int &fileId, unsigned int recursionDepth);
+        static GLuint CompileShader(const std::string& filename, const std::string& shader, GLenum type, const std::string& strType);
     };
 }

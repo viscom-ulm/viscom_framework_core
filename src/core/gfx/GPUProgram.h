@@ -10,6 +10,7 @@
 
 #include "core/resources/Resource.h"
 #include "core/open_gl_fwd.h"
+#include "core/utils/function_view.h"
 
 namespace viscom {
 
@@ -34,8 +35,9 @@ namespace viscom {
 
         virtual void Load(std::optional<std::vector<std::uint8_t>>& data) override;
         virtual void LoadFromMemory(const void* data, std::size_t size) override;
+        // void Reload();
 
-        [[deprecated("Use 'Reload' instead.")]]
+        [[deprecated("Use 'Load' (without optional parameter) instead.")]]
         void recompileProgram();
         /** Returns the OpenGL program id. */
         GLuint getProgramId() const noexcept { return program_; }
@@ -69,6 +71,6 @@ namespace viscom {
 
         template<typename T, typename SHAcc> static GLuint linkNewProgram(const std::string& name,
             const std::vector<T>& shaders, SHAcc shaderAccessor);
-        static void releaseShaders(const std::vector<GLuint>& shaders) noexcept;
+        void LoadProgram(viscom::function_view<std::unique_ptr<Shader>(const std::string&, const ApplicationNodeInternal*)> createShader);
     };
 }

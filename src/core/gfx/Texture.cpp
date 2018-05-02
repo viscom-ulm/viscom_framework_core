@@ -98,6 +98,7 @@ namespace viscom {
         glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, image.first);
 
         if (data.has_value()) {
+            data->clear();
             data->resize(sizeof(TextureDescriptor) + 2 * sizeof(unsigned int) + sizeof(bool) + image.second);
             auto dataptr = data->data();
             memcpy(dataptr, &descriptor_, sizeof(TextureDescriptor));
