@@ -27,37 +27,32 @@ namespace viscom {
     {
     }
 
-    /** Default copy constructor. */
-    Resource::Resource(const Resource&) = default;
-
-    /** Default assignment operator. */
-    Resource& Resource::operator=(const Resource&) = default;
-
-    /** Move constructor. */
-    Resource::Resource(Resource&& orig) noexcept :
-        id_{ std::move(orig.id_) },
-        type_{ std::move(orig.type_) },
-        appNode_{ orig.appNode_ },
-        synchronized_{ orig.synchronized_ }
-    {
-    }
-
-    /** Move assignment operator. */
-    Resource& Resource::operator=(Resource&& orig) noexcept
-    {
-        if (this != &orig) {
-            this->~Resource();
-            id_ = std::move(orig.id_);
-            type_ = std::move(orig.type_);
-            appNode_ = orig.appNode_;
-            synchronized_ = orig.synchronized_;
-        }
-        return *this;
-    }
-
     Resource::~Resource()
     {
         if (synchronized_) appNode_->TransferReleaseResource(id_, type_);
+    }
+
+    void Resource::LoadResource()
+    {
+        if (synchronized_) {
+            if (appNode_->IsMaster()) {
+                std::vector<std::uint8_t> data;
+                Load(std::optional<std::vector<std::uint8_t>>(data));
+                appNode_->TransferResource(id_, data.data(), data.size(), type_);
+                loaded_ = true;
+            }
+            else if (!loaded_) appNode_->WaitForResource(id_, type_);
+        }
+        else {
+            Load(std::optional<std::vector<std::uint8_t>>());
+            loaded_ = true;
+        }
+    }
+
+    void Resource::LoadResource(const void* data, std::size_t size)
+    {
+        LoadFromMemory(data, size);
+        loaded_ = true;
     }
 
     std::string Resource::FindResourceLocation(const std::string& localFilename, const ApplicationNodeInternal* appNode, const std::string& resourceId)

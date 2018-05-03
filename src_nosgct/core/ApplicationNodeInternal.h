@@ -65,6 +65,14 @@ namespace viscom {
         virtual void updateTuioCursor(TUIO::TuioCursor *tcur) override;
         virtual void removeTuioCursor(TUIO::TuioCursor *tcur) override;
 
+        void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex);
+
+        void TransferResource(std::string_view name, const void* data, std::size_t length, ResourceTransferType type);
+        void TransferReleaseResource(std::string_view name, ResourceTransferType type);
+        void WaitForResource(const std::string& name, ResourceTransferType type);
+
+        bool IsMaster() const { return true; }
+
         void SetCursorInputMode(int mode);
 
         const FWConfiguration& GetConfig() const { return config_; }

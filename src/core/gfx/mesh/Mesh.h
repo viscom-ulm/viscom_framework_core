@@ -41,8 +41,7 @@ namespace viscom {
         Mesh& operator=(Mesh&&) noexcept = delete;
         virtual ~Mesh() noexcept override;
 
-        virtual void Load(std::optional<std::vector<std::uint8_t>>& data) override;
-        virtual void LoadFromMemory(const void* data, std::size_t size) override;
+        void Initialize();
 
         /**
          *  Accessor to the meshes sub-meshes. This can be used to render more complicated meshes (with multiple sets
@@ -77,6 +76,10 @@ namespace viscom {
         std::size_t GetNumberOfBones() const noexcept { return inverseBindPoseMatrices_.size(); }
 
         glm::mat4 GetGlobalInverse() const { return globalInverse_; }
+
+    protected:
+        virtual void Load(std::optional<std::vector<std::uint8_t>>& data) override;
+        virtual void LoadFromMemory(const void* data, std::size_t size) override;
 
     private:
         using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'M', 'E', 'S', 1000>;

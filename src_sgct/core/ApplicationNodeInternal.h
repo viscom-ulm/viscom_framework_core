@@ -88,6 +88,9 @@ namespace viscom {
 
         void TransferResource(std::string_view name, const void* data, std::size_t length, ResourceTransferType type);
         void TransferReleaseResource(std::string_view name, ResourceTransferType type);
+        void WaitForResource(const std::string& name, ResourceTransferType type);
+
+        bool IsMaster() const;
 
         sgct::Engine* GetEngine() const { return engine_.get(); }
         const FWConfiguration& GetConfig() const { return config_; }
@@ -170,6 +173,8 @@ namespace viscom {
         std::vector<bool> keyPressedState_;
         /** Holds the current mouse button state. */
         std::vector<bool> mousePressedState_;
+        /** Is the application currently halted. */
+        bool applicationHalted_ = false;
 
 #ifdef VISCOM_SYNCINPUT
         /** Holds the vector with keyboard events. */

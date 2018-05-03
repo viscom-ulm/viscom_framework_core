@@ -51,6 +51,11 @@ namespace viscom {
         indexBuffer_ = 0;
     }
 
+    void Mesh::Initialize()
+    {
+        InitializeFinished();
+    }
+
     void Mesh::Load(std::optional<std::vector<std::uint8_t>>& data)
     {
         auto filename = FindResourceLocation(GetId());

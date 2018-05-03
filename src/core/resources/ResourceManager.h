@@ -88,9 +88,36 @@ namespace viscom {
         {
             std::lock_guard<std::mutex> accessLock{ mtx_ };
             auto resPtr = GetResourceInternal(resId, false, std::forward<Args>(args)...);
-            resPtr->Load(std::optional<std::vector<std::uint8_t>>());
+            resPtr->LoadResource();
             return resPtr;
         }
+
+
+        /**
+         * Gets a synchronized resource from the manager.
+         * @param resId the resources id
+         * @return the resource as a shared pointer
+         */
+        template<typename... Args>
+        std::shared_ptr<ResourceType> GetSynchronizedResource(const std::string& resId, Args&&... args)
+        {
+            if constexpr (!USE_SGCT) return GetResource(resId, std::forward<Args>(args)...);
+
+            std::lock_guard<std::mutex> syncAccessLock{ syncMtx_ };
+            std::lock_guard<std::mutex> accessLock{ mtx_ };
+
+            auto rit = syncedResources_.find(resId);
+            if (rit != syncedResources_.end()) {
+                if (!rit->second->IsInitialized()) rit->second->Initialize(std::forward<Args>(args)...);
+            }
+            else {
+                auto resPtr = GetResourceInternal(resId, true, std::forward<Args>(args)...);
+                resPtr->LoadResource();
+                syncedResources_[resId] = resPtr;
+                return resPtr;
+            }
+        }
+
 
         /**
          * Checks if the resource manager contains this resource.
@@ -112,19 +139,35 @@ namespace viscom {
             if (rit != syncedResources_.end()) syncedResources_.erase(rit);
         }
 
-        void CreateSharedResource(const std::string& resId)
+        template<typename... Args>
+        void CreateSharedResource(const std::string& resId, const void* data, std::size_t size, Args&&... args)
         {
-            // TODO: implement correctly. [5/2/2018 Sebastian Maisch]
-            std::lock_guard<std::mutex> accessLock{ syncMtx_ };
             std::lock_guard<std::mutex> accessLock{ mtx_ };
 
             auto rit = syncedResources_.find(resId);
             if (rit != syncedResources_.end()) {
-                //- reload existing.
+                rit->second->LoadResource(data, size);
             }
+            else {
+                auto res = GetResourceInternal(resId, true, std::forward<Args>(args)...);
+                res->LoadResource(data, size);
+                syncedResources_[resId] = res;
+            }
+        }
 
-            auto res = GetResourceInternal(resId, true, );
-            syncedResources_[resId] = res;
+        void WaitForResource(const std::string& resId)
+        {
+            std::lock_guard<std::mutex> syncAccessLock{ syncMtx_ };
+            waitedResources_.push_back(syncedResources_[resId]);
+        }
+
+        bool ProcessResourceWaitList()
+        {
+            std::vector<std::shared_ptr<ResourceType>> newWaitedResources;
+            for (const auto& waitedResource : waitedResources_) if (!waitedResource->IsLoaded()) newWaitedResources.push_back(waitedResource);
+
+            waitedResources_ = std::move(newWaitedResources);
+            return !waitedResources_.empty();
         }
 
 
@@ -153,7 +196,8 @@ namespace viscom {
         void LoadResource(const std::string& resId, bool synchronized, std::shared_ptr<ResourceType>& spResource, Args&&... args)
         {
             try {
-                spResource = std::make_shared<rType>(resId, appNode_, synchronized, std::forward<Args>(args)...);
+                spResource = std::make_shared<rType>(resId, appNode_, synchronized);
+                spResource->Initialize(std::forward<Args>(args)...);
             }
             catch (const resource_loading_error& loadingError) {
                 LOG(INFO) << "Error while loading resource \"" << resId << "\"." << std::endl
@@ -180,6 +224,8 @@ namespace viscom {
         ApplicationNodeInternal* appNode_;
         /** Holds a map of synchronized resources (to make sure they are not deleted). */
         SyncedResourceMap syncedResources_;
+        /** Holds a list of resources to wait for. */
+        std::vector<std::shared_ptr<rType>> waitedResources_;
         /** Holds a mutex to the resources. */
         std::mutex mtx_;
         /** Holds a mutex to the synced resources. */

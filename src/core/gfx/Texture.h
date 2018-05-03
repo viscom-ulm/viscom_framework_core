@@ -37,15 +37,14 @@ namespace viscom {
     class Texture final : public Resource
     {
     public:
-        Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool synchronize = false, bool useSRGB = true);
+        Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool synchronize = false);
         Texture(const Texture&) = delete;
         Texture& operator=(const Texture&) = delete;
-        Texture(Texture&&) noexcept;
-        Texture& operator=(Texture&&) noexcept;
+        Texture(Texture&&) noexcept = delete;
+        Texture& operator=(Texture&&) noexcept = delete;
         virtual ~Texture() noexcept override;
 
-        virtual void Load(std::optional<std::vector<std::uint8_t>>& data) override;
-        virtual void LoadFromMemory(const void* data, std::size_t size) override;
+        void Initialize(bool useSRGB = true);
 
         /** Returns the size of the texture. */
         glm::uvec2 getDimensions() const noexcept { return glm::uvec2(width_, height_); }
@@ -53,6 +52,10 @@ namespace viscom {
         GLuint getTextureId() const noexcept { return textureId_; }
         /** Returns the texture descriptor. */
         const TextureDescriptor& getDescriptor() const { return descriptor_; }
+
+    protected:
+        virtual void Load(std::optional<std::vector<std::uint8_t>>& data) override;
+        virtual void LoadFromMemory(const void* data, std::size_t size) override;
 
     private:
         std::pair<void*, std::size_t> LoadImageLDR(const std::string& filename, bool useSRGB);

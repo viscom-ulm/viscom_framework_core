@@ -18,66 +18,31 @@ namespace viscom {
     /**
      * Constructor.
      * @param theProgramName the name of the program used to identify during logging.
-     * @param theShaderNames the filenames of all shaders to use in this program.
      */
-    GPUProgram::GPUProgram(const std::string& theProgramName, ApplicationNodeInternal* node, bool synchronize, std::initializer_list<std::string> theShaderNames) :
-        GPUProgram{ theProgramName, node, synchronize, theShaderNames, std::vector<std::string>() }
+    GPUProgram::GPUProgram(const std::string& theProgramName, ApplicationNodeInternal* node, bool synchronize) :
+        Resource(theProgramName, ResourceTransferType::GPUProgramTransfer, node, synchronize),
+        programName_(theProgramName),
+        program_(0)
     {
     }
 
-    /**
-     * Constructor.
-     * @param theProgramName the name of the program used to identify during logging.
-     * @param theShaderNames the filenames of all shaders to use in this program.
-     */
-    GPUProgram::GPUProgram(const std::string& theProgramName, ApplicationNodeInternal* node, bool synchronize, std::vector<std::string> theShaderNames) :
-        GPUProgram{ theProgramName, node, synchronize, theShaderNames, std::vector<std::string>{} }
+    void GPUProgram::Initialize(std::initializer_list<std::string> shaderNames)
     {
+        shaderNames_ = std::vector<std::string>(shaderNames);
+        InitializeFinished();
     }
 
-    GPUProgram::GPUProgram(const std::string& programName, ApplicationNodeInternal* node, bool synchronize, std::vector<std::string> shaderNames, const std::vector<std::string>& defines) :
-        Resource(programName, ResourceTransferType::GPUProgramTransfer, node, synchronize),
-        programName_(programName),
-        shaderNames_(shaderNames),
-        program_(0),
-        defines_{ defines }
+    void GPUProgram::Initialize(std::vector<std::string> shaderNames)
     {
+        shaderNames_ = shaderNames;
+        InitializeFinished();
     }
 
-    /**
-     * Move-constructor.
-     * @param rhs the object to move.
-     */
-    GPUProgram::GPUProgram(GPUProgram&& rhs) noexcept :
-        Resource(std::move(rhs)),
-        programName_(std::move(rhs.programName_)),
-        shaderNames_(std::move(rhs.shaderNames_)),
-        program_(std::move(rhs.program_)),
-        shaders_(std::move(rhs.shaders_)),
-        defines_(std::move(rhs.defines_))
+    void GPUProgram::Initialize(std::vector<std::string> shaderNames, const std::vector<std::string>& defines)
     {
-        rhs.program_ = 0;
-    }
-
-    /**
-     * Move-assignment operator.
-     * @param rhs the object to move.
-     * @return reference to this object.
-     */
-    GPUProgram& GPUProgram::operator =(GPUProgram&& rhs) noexcept
-    {
-        if (this != &rhs) {
-            this->~GPUProgram();
-            Resource* tRes = this;
-            *tRes = static_cast<Resource&&>(std::move(rhs));
-            programName_ = std::move(rhs.programName_);
-            shaderNames_ = std::move(rhs.shaderNames_);
-            program_ = rhs.program_;
-            rhs.program_ = 0;
-            shaders_ = std::move(rhs.shaders_);
-            defines_ = std::move(rhs.defines_);
-        }
-        return *this;
+        shaderNames_ = shaderNames;
+        defines_ = defines;
+        InitializeFinished();
     }
 
     /** Destructor. */

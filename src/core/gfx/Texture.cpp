@@ -20,13 +20,13 @@ namespace viscom {
      * Constructor, creates a texture from file.
      * @param texFilename the filename of the texture file.
      */
-    Texture::Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool synchronize, bool useSRGB) :
+    Texture::Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool synchronize) :
         Resource(texFilename, ResourceTransferType::TextureTransfer, node, synchronize),
         textureId_{ 0 },
         descriptor_{ 3, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE },
         width_{ 0 },
         height_{ 0 },
-        sRGB_{ useSRGB }
+        sRGB_{ true }
     {
         // Bind Texture and Set Filtering Levels
         glGenTextures(1, &textureId_);
@@ -38,42 +38,6 @@ namespace viscom {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    /**
-     *  Move-constructor.
-     *  @param rhs the object to copy.
-     */
-    Texture::Texture(Texture&& rhs) noexcept :
-        Resource(std::move(rhs)),
-        textureId_{ std::move(rhs.textureId_) },
-        descriptor_{ std::move(rhs.descriptor_) },
-        width_{ std::move(rhs.width_) },
-        height_{ std::move(rhs.height_) },
-        sRGB_{ std::move(rhs.sRGB_) }
-    {
-        rhs.textureId_ = 0;
-    }
-
-    /**
-     *  Move-assignment operator.
-     *  @param rhs the object to assign.
-     *  @return reference to this object.
-     */
-    Texture& Texture::operator=(Texture&& rhs) noexcept
-    {
-        if (this != &rhs) {
-            this->~Texture();
-            Resource* tRes = this;
-            *tRes = static_cast<Resource&&>(std::move(rhs));
-            textureId_ = std::move(rhs.textureId_);
-            descriptor_ = std::move(rhs.descriptor_);
-            width_ = std::move(rhs.width_);
-            height_ = std::move(rhs.height_);
-            sRGB_ = std::move(rhs.sRGB_);
-            rhs.textureId_ = 0;
-        }
-        return *this;
-    }
-
     /** Destructor. */
     Texture::~Texture() noexcept
     {
@@ -82,6 +46,12 @@ namespace viscom {
             glDeleteTextures(1, &textureId_);
             textureId_ = 0;
         }
+    }
+
+    void Texture::Initialize(bool useSRGB)
+    {
+        sRGB_ = useSRGB;
+        InitializeFinished();
     }
 
     void Texture::Load(std::optional<std::vector<std::uint8_t>>& data)

@@ -271,16 +271,23 @@ namespace viscom {
         camHelper_.SetPickMatrix(syncInfoLocal_.pickMatrix_);
 
         elapsedTime_ = syncInfoLocal_.currentTime_ - lastFrameTime_;
+        applicationHalted_ = false;
+        applicationHalted_ = applicationHalted_ || GetGPUProgramManager().ProcessResourceWaitList();
+        applicationHalted_ = applicationHalted_ || GetTextureManager().ProcessResourceWaitList();
+        applicationHalted_ = applicationHalted_ || GetMeshManager().ProcessResourceWaitList();
+        if (applicationHalted_) return;
         appNodeImpl_->UpdateFrame(syncInfoLocal_.currentTime_, elapsedTime_);
     }
 
     void ApplicationNodeInternal::BaseClearBuffer()
     {
+        if (applicationHalted_) return;
         appNodeImpl_->ClearBuffer(framebuffers_[GetEngine()->getCurrentWindowIndex()]);
     }
 
     void ApplicationNodeInternal::BaseDrawFrame()
     {
+        if (applicationHalted_) return;
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
         glEnable(GL_CULL_FACE);
@@ -290,6 +297,7 @@ namespace viscom {
 
     void ApplicationNodeInternal::BaseDraw2D()
     {
+        if (applicationHalted_) return;
         auto window = GetEngine()->getCurrentWindowPtr();
 
         if constexpr (SHOW_CLIENT_GUI) ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(window->getId()).position_, GetViewportScreen(window->getId()).size_, GetViewportScaling(window->getId()), GetCurrentAppTime(), GetElapsedTime());
@@ -306,6 +314,7 @@ namespace viscom {
 
     void ApplicationNodeInternal::BasePostDraw()
     {
+        if (applicationHalted_) return;
         appNodeImpl_->PostDraw();
         if constexpr (SHOW_CLIENT_GUI) ImGui_ImplGlfwGL3_FinishAllFrames();
         else if (engine_->isMaster()) ImGui_ImplGlfwGL3_FinishAllFrames();
@@ -446,6 +455,7 @@ namespace viscom {
         auto internalID = reinterpret_cast<std::uint8_t*>(&splitID[0]);
         switch (static_cast<InternalTransferType>(internalID[0])) {
         case InternalTransferType::ResourceTransfer:
+            CreateSynchronizedResource(static_cast<ResourceTransferType>(internalID[1]), receivedData, receivedLength);
             break;
         case InternalTransferType::ResourceReleaseTransfer:
             ReleaseSynchronizedResource(static_cast<ResourceTransferType>(internalID[1]), std::string_view(reinterpret_cast<char*>(receivedData), receivedLength));
@@ -595,6 +605,29 @@ namespace viscom {
         }
     }
 
+    void ApplicationNodeInternal::WaitForResource(const std::string& name, ResourceTransferType type)
+    {
+        switch (type) {
+        case ResourceTransferType::GPUProgramTransfer:
+            gpuProgramManager_.WaitForResource(name);
+            break;
+        case ResourceTransferType::MeshTransfer:
+            meshManager_.WaitForResource(name);
+            break;
+        case ResourceTransferType::TextureTransfer:
+            textureManager_.WaitForResource(name);
+            break;
+        default:
+            LOG(WARNING) << "Unknown ResourceTransferType: " << static_cast<std::uint8_t>(type);
+            break;
+        }
+    }
+
+    bool ApplicationNodeInternal::IsMaster() const
+    {
+        return engine_->isMaster();
+    }
+
     void ApplicationNodeInternal::BaseEncodeDataStatic()
     {
         std::lock_guard<std::mutex> lock{ instanceMutex_ };
@@ -655,7 +688,27 @@ namespace viscom {
 
     void ApplicationNodeInternal::CreateSynchronizedResource(ResourceTransferType type, const void* data, std::size_t length)
     {
-        // TODO: implement. [4/27/2018 Sebastian Maisch]
+        auto resourceNamePtr = reinterpret_cast<const std::size_t*>(data);
+        std::string resourceName;
+        resourceName.resize(resourceNamePtr[0]);
+        memcpy(resourceName.data(), &resourceNamePtr[1], resourceNamePtr[0]);
+        auto dataPtr = reinterpret_cast<const std::uint8_t*>(&resourceNamePtr[1]) + resourceNamePtr[0];
+        auto dataLength = length - sizeof(std::size_t) - resourceNamePtr[0];
+
+        switch (type) {
+        case ResourceTransferType::GPUProgramTransfer:
+            gpuProgramManager_.CreateSharedResource(resourceName, dataPtr, dataLength, std::vector<std::string>());
+            break;
+        case ResourceTransferType::MeshTransfer:
+            meshManager_.CreateSharedResource(resourceName, dataPtr, dataLength);
+            break;
+        case ResourceTransferType::TextureTransfer:
+            textureManager_.CreateSharedResource(resourceName, dataPtr, dataLength);
+            break;
+        default:
+            LOG(WARNING) << "Unknown ResourceTransferType: " << static_cast<std::uint8_t>(type);
+            break;
+        }
     }
 
 #ifndef VISCOM_LOCAL_ONLY

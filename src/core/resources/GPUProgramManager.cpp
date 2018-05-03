@@ -42,7 +42,7 @@ namespace viscom {
     {
         for (auto& program : resources_) {
             // TODO: check if is synchronized, then sync recompiled program. [5/2/2018 Sebastian Maisch]
-            if (!program.second.expired()) program.second.lock()->Load(std::optional<std::vector<std::uint8_t>>());
+            if (!program.second.expired()) program.second.lock()->LoadResource();
         }
     }
 }

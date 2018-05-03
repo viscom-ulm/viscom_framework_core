@@ -318,6 +318,26 @@ namespace viscom {
         }
     }
 
+    void ApplicationNodeInternal::TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex)
+    {
+        LOG(INFO) << "TransferDataToNode(...) not implemented in local mode.";
+    }
+
+    void ApplicationNodeInternal::TransferResource(std::string_view name, const void* data, std::size_t length, ResourceTransferType type)
+    {
+        LOG(INFO) << "TransferResource(...) not implemented in local mode.";
+    }
+
+    void ApplicationNodeInternal::TransferReleaseResource(std::string_view name, ResourceTransferType type)
+    {
+        LOG(INFO) << "TransferReleaseResource(...) not implemented in local mode.";
+    }
+
+    void ApplicationNodeInternal::WaitForResource(const std::string& name, ResourceTransferType type)
+    {
+        LOG(INFO) << "WaitForResource(...) not implemented in local mode.";
+    }
+
     void ApplicationNodeInternal::SetCursorInputMode(int mode)
     {
         glfwSetInputMode(window_, GLFW_CURSOR, mode);
