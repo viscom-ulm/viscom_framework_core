@@ -109,6 +109,7 @@ namespace viscom {
             auto rit = syncedResources_.find(resId);
             if (rit != syncedResources_.end()) {
                 if (!rit->second->IsInitialized()) rit->second->Initialize(std::forward<Args>(args)...);
+                return rit->second;
             }
             else {
                 auto resPtr = GetResourceInternal(resId, true, std::forward<Args>(args)...);
