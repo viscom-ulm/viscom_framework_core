@@ -616,6 +616,7 @@ namespace viscom {
 
     void ApplicationNodeInternal::TransferReleaseResource(std::string_view name, ResourceTransferType type)
     {
+        if (!initialized_) return;
         if (engine_->isMaster()) {
             auto completePackageId = MakePackageID(static_cast<std::uint8_t>(InternalTransferType::ResourceReleaseTransfer), static_cast<std::uint8_t>(type), 0);
             engine_->transferDataBetweenNodes(name.data(), static_cast<int>(name.length()), completePackageId);
