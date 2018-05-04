@@ -26,13 +26,11 @@ namespace viscom {
         virtual ~Resource();
 
         const std::string& GetId() const { return id_; }
+        ResourceTransferType GetType() const { return type_; }
         bool IsInitialized() const { return initialized_; }
         bool IsLoaded() const { return loaded_; }
+        const std::vector<std::uint8_t>& GetData() const { return data_; }
 
-        // resource loading:
-        // - with valid parameters: non-synced or synced on master
-        // - without valid parameters: synced on slave
-        // - from memory: synced on slave
         void LoadResource();
         void LoadResource(const void* data, std::size_t size);
 
@@ -60,24 +58,10 @@ namespace viscom {
         bool initialized_ = false;
         /** is the resource loaded (i.e. has the 'Load' method been called). */
         bool loaded_ = false;
+        /** In a synchronized resource on the master node the resources memory representation is stored here. */
+        std::vector<std::uint8_t> data_;
 
         /** Holds the application object for dependencies. */
         ApplicationNodeInternal* appNode_;
-    };
-
-    template<typename RType>
-    struct NetworkSharePolicy {
-        void LoadResource(RType& resource);
-        void ReloadResource(RType& resource);
-        void DeleteResource(RType& resource);
-        // if on master:
-        // - load resource locally
-        // - transfer memory representation to slaves
-
-        // if on slave:
-        // - initialize id
-        // - add id to list of uninitialized resources
-
-        // if new resource comes in .. create...
     };
 }

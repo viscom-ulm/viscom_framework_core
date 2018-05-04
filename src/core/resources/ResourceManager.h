@@ -170,6 +170,25 @@ namespace viscom {
             return !waitedResources_.empty();
         }
 
+        void SynchronizeAllResourcesToNode(int clientID)
+        {
+            std::lock_guard<std::mutex> syncAccessLock{ syncMtx_ };
+
+            for (const auto& res : syncedResources_) {
+                appNode_->TransferResourceToNode(res.first, res.second->GetData().data(), res.second->GetData().size(), res.second->GetType(), clientID);
+            }
+        }
+
+        void SynchronizeResourceToNode(const std::string& resId, int clientID)
+        {
+            std::lock_guard<std::mutex> syncAccessLock{ syncMtx_ };
+
+            auto rit = syncedResources_.find(resId);
+            if (rit != syncedResources_.end()) {
+                appNode_->TransferResourceToNode(rit->first, rit->second->GetData().data(), rit->second->GetData().size(), rit->second->GetType(), clientID);
+            }
+            else LOG(WARNING) << "Requested resource does not exist: " << resId;
+        }
 
     protected:
         template<typename... Args>

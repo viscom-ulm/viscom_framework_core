@@ -87,7 +87,9 @@ namespace viscom {
         void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex);
 
         void TransferResource(std::string_view name, const void* data, std::size_t length, ResourceTransferType type);
+        void TransferResourceToNode(std::string_view name, const void* data, std::size_t length, ResourceTransferType type, std::size_t nodeIndex);
         void TransferReleaseResource(std::string_view name, ResourceTransferType type);
+        void RequestSharedResources();
         void WaitForResource(const std::string& name, ResourceTransferType type);
 
         bool IsMaster() const;
@@ -120,6 +122,8 @@ namespace viscom {
         glm::dvec2 ConvertInputCoordinatesLocalToGlobal(const glm::dvec2& p);
         void ReleaseSynchronizedResource(ResourceTransferType type, std::string_view name);
         void CreateSynchronizedResource(ResourceTransferType type, const void* data, std::size_t length);
+        void SendResourcesToNode(ResourceTransferType type, const void* data, std::size_t length, int clientID);
+        static int MakePackageID(std::uint8_t internalType, std::uint8_t internalPID, std::uint16_t userPID);
 
         /** Holds a static pointer to an object to this class making it singleton in a way. */
         // TODO: This is only a workaround and should be fixed in the future. [12/5/2016 Sebastian Maisch]

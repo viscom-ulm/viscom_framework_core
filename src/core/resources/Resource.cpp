@@ -36,9 +36,8 @@ namespace viscom {
     {
         if (synchronized_) {
             if (appNode_->IsMaster()) {
-                std::vector<std::uint8_t> data;
-                Load(std::optional<std::vector<std::uint8_t>>(data));
-                appNode_->TransferResource(id_, data.data(), data.size(), type_);
+                Load(std::optional<std::vector<std::uint8_t>>(data_));
+                appNode_->TransferResource(id_, data_.data(), data_.size(), type_);
                 loaded_ = true;
             }
             else if (!loaded_) appNode_->WaitForResource(id_, type_);

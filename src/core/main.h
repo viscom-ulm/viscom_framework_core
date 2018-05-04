@@ -60,6 +60,7 @@ namespace viscom {
 
 
     enum class ResourceTransferType : std::uint8_t {
+        All_Resources,
         TextureTransfer,
         MeshTransfer,
         GPUProgramTransfer

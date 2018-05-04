@@ -23,7 +23,8 @@ namespace viscom {
 
     enum class InternalTransferType : std::uint8_t {
         ResourceTransfer,
-        ResourceReleaseTransfer
+        ResourceReleaseTransfer,
+        ResourceRequest
     };
 
     ApplicationNodeInternal* ApplicationNodeInternal::instance_{ nullptr };
@@ -169,6 +170,7 @@ namespace viscom {
         else if (GetEngine()->isMaster()) ImGui_ImplGlfwGL3_Init(GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetEngine()->isMaster() && SHOW_CLIENT_MOUSE_CURSOR);
 
         FullscreenQuad::InitializeStatic();
+        RequestSharedResources();
         appNodeImpl_->InitOpenGL();
     }
 
@@ -460,6 +462,9 @@ namespace viscom {
         case InternalTransferType::ResourceReleaseTransfer:
             ReleaseSynchronizedResource(static_cast<ResourceTransferType>(internalID[1]), std::string_view(reinterpret_cast<char*>(receivedData), receivedLength));
             break;
+        case InternalTransferType::ResourceRequest:
+            SendResourcesToNode(static_cast<ResourceTransferType>(internalID[1]), receivedData, receivedLength, clientID);
+            break;
         default:
             LOG(WARNING) << "Unknown InternalTransferType: " << internalID[0];
             break;
@@ -477,6 +482,8 @@ namespace viscom {
         case InternalTransferType::ResourceTransfer:
             break;
         case InternalTransferType::ResourceReleaseTransfer:
+            break;
+        case InternalTransferType::ResourceRequest:
             break;
         default:
             LOG(WARNING) << "Unknown InternalTransferType: " << internalID[0];
@@ -594,14 +601,32 @@ namespace viscom {
         }
     }
 
+    void ApplicationNodeInternal::TransferResourceToNode(std::string_view name, const void * data, std::size_t length, ResourceTransferType type, std::size_t nodeIndex)
+    {
+        if (engine_->isMaster()) {
+            auto completePackageId = MakePackageID(static_cast<std::uint8_t>(InternalTransferType::ResourceTransfer), static_cast<std::uint8_t>(type), 0);
+
+            std::vector<std::uint8_t> transferedData(sizeof(std::size_t) + name.length() + length);
+            *reinterpret_cast<std::size_t*>(&transferedData[0]) = name.length();
+            memcpy(&transferedData[0] + sizeof(std::size_t), name.data(), name.length());
+            utils::memcpyfaster(&transferedData[0] + sizeof(std::size_t) + name.length(), data, length);
+            engine_->transferDataToNode(transferedData.data(), static_cast<int>(transferedData.size()), completePackageId, nodeIndex);
+        }
+    }
+
     void ApplicationNodeInternal::TransferReleaseResource(std::string_view name, ResourceTransferType type)
     {
         if (engine_->isMaster()) {
-            int completePackageId = 0;
-            auto splitId = reinterpret_cast<std::uint8_t*>(&completePackageId);
-            splitId[0] = static_cast<std::uint8_t>(InternalTransferType::ResourceReleaseTransfer);
-            splitId[1] = static_cast<std::uint8_t>(type);
+            auto completePackageId = MakePackageID(static_cast<std::uint8_t>(InternalTransferType::ResourceReleaseTransfer), static_cast<std::uint8_t>(type), 0);
             engine_->transferDataBetweenNodes(name.data(), static_cast<int>(name.length()), completePackageId);
+        }
+    }
+
+    void ApplicationNodeInternal::RequestSharedResources()
+    {
+        if (!engine_->isMaster()) {
+            auto completePackageId = MakePackageID(static_cast<std::uint8_t>(InternalTransferType::ResourceRequest), static_cast<std::uint8_t>(ResourceTransferType::All_Resources), 0);
+            engine_->transferDataToNode(nullptr, 0, completePackageId, 0);
         }
     }
 
@@ -709,6 +734,46 @@ namespace viscom {
             LOG(WARNING) << "Unknown ResourceTransferType: " << static_cast<std::uint8_t>(type);
             break;
         }
+    }
+
+    void ApplicationNodeInternal::SendResourcesToNode(ResourceTransferType type, const void* data, std::size_t length, int clientID)
+    {
+        if (!engine_->isMaster()) return;
+
+        if (type == ResourceTransferType::All_Resources) {
+            textureManager_.SynchronizeAllResourcesToNode(clientID);
+            meshManager_.SynchronizeAllResourcesToNode(clientID);
+            gpuProgramManager_.SynchronizeAllResourcesToNode(clientID);
+        }
+        else {
+            std::string name(reinterpret_cast<const char*>(data), length);
+            switch (type)
+            {
+            case viscom::ResourceTransferType::TextureTransfer:
+                textureManager_.SynchronizeResourceToNode(name, clientID);
+                break;
+            case viscom::ResourceTransferType::MeshTransfer:
+                meshManager_.SynchronizeResourceToNode(name, clientID);
+                break;
+            case viscom::ResourceTransferType::GPUProgramTransfer:
+                gpuProgramManager_.SynchronizeResourceToNode(name, clientID);
+                break;
+            default:
+                LOG(WARNING) << "Unknown ResourceTransferType: " << static_cast<std::uint8_t>(type);
+                break;
+            }
+        }
+    }
+
+    int ApplicationNodeInternal::MakePackageID(std::uint8_t internalType, std::uint8_t internalPID, std::uint16_t userPID)
+    {
+        int completePackageId = 0;
+        auto splitId = reinterpret_cast<std::uint8_t*>(&completePackageId);
+        splitId[0] = internalType;
+        splitId[1] = internalPID;
+        reinterpret_cast<std::uint16_t*>(&completePackageId)[1] = userPID;
+
+        return completePackageId;
     }
 
 #ifndef VISCOM_LOCAL_ONLY
