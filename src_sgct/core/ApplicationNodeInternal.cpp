@@ -601,7 +601,7 @@ namespace viscom {
         engine_->transferDataToNode(data, static_cast<int>(length), completePackageId, nodeIndex);
     }
 
-    void ApplicationNodeInternal::TransferData(const void * data, std::size_t length, std::uint16_t packageId)
+    void ApplicationNodeInternal::TransferData(const void* data, std::size_t length, std::uint16_t packageId)
     {
         int completePackageId = 0;
         auto splitId = reinterpret_cast<std::uint16_t*>(&completePackageId);
@@ -638,7 +638,7 @@ namespace viscom {
         }
     }
 
-    void ApplicationNodeInternal::TransferResourceToNode(std::string_view name, const void * data, std::size_t length, ResourceType type, std::size_t nodeIndex)
+    void ApplicationNodeInternal::TransferResourceToNode(std::string_view name, const void* data, std::size_t length, ResourceType type, std::size_t nodeIndex)
     {
         if (engine_->isMaster()) {
             auto completePackageId = MakePackageID(static_cast<std::uint8_t>(InternalTransferType::ResourceTransfer), static_cast<std::uint8_t>(type), 0);

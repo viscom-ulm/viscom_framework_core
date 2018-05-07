@@ -37,8 +37,6 @@ namespace viscom {
         if (synchronized_) {
             if (appNode_->IsMaster()) {
                 std::optional<std::vector<std::uint8_t>> optData(std::vector<std::uint8_t>{});
-
-                // Load(std::optional<std::vector<std::uint8_t>>(data_));
                 Load(optData);
                 data_.swap(*optData);
 
