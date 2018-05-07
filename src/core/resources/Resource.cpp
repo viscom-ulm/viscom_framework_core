@@ -19,7 +19,7 @@ namespace viscom {
      * Constructor.
      * @param resourceId the resource id to use
      */
-    Resource::Resource(const std::string& resourceId, ResourceTransferType type, ApplicationNodeInternal* appNode, bool synchronize) :
+    Resource::Resource(const std::string& resourceId, ResourceType type, ApplicationNodeInternal* appNode, bool synchronize) :
         id_{ resourceId },
         type_{ type },
         appNode_{ appNode },
@@ -36,7 +36,12 @@ namespace viscom {
     {
         if (synchronized_) {
             if (appNode_->IsMaster()) {
-                Load(std::optional<std::vector<std::uint8_t>>(data_));
+                std::optional<std::vector<std::uint8_t>> optData(std::vector<std::uint8_t>{});
+
+                // Load(std::optional<std::vector<std::uint8_t>>(data_));
+                Load(optData);
+                data_.swap(*optData);
+
                 appNode_->TransferResource(id_, data_.data(), data_.size(), type_);
                 loaded_ = true;
             }

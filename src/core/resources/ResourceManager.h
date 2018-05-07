@@ -113,8 +113,8 @@ namespace viscom {
             }
             else {
                 auto resPtr = GetResourceInternal(resId, true, std::forward<Args>(args)...);
-                resPtr->LoadResource();
                 syncedResources_[resId] = resPtr;
+                resPtr->LoadResource();
                 return resPtr;
             }
         }
@@ -158,12 +158,12 @@ namespace viscom {
 
         void WaitForResource(const std::string& resId)
         {
-            std::lock_guard<std::mutex> syncAccessLock{ syncMtx_ };
             waitedResources_.push_back(syncedResources_[resId]);
         }
 
         bool ProcessResourceWaitList()
         {
+            if (waitedResources_.empty()) return false;
             std::vector<std::shared_ptr<ResourceType>> newWaitedResources;
             for (const auto& waitedResource : waitedResources_) if (!waitedResource->IsLoaded()) newWaitedResources.push_back(waitedResource);
 

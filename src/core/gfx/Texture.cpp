@@ -21,7 +21,7 @@ namespace viscom {
      * @param texFilename the filename of the texture file.
      */
     Texture::Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool synchronize) :
-        Resource(texFilename, ResourceTransferType::TextureTransfer, node, synchronize),
+        Resource(texFilename, ResourceType::Texture, node, synchronize),
         textureId_{ 0 },
         descriptor_{ 3, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE },
         width_{ 0 },
@@ -30,6 +30,7 @@ namespace viscom {
     {
         // Bind Texture and Set Filtering Levels
         glGenTextures(1, &textureId_);
+        auto e = glGetError();
         glBindTexture(GL_TEXTURE_2D, textureId_);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

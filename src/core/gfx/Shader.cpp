@@ -198,7 +198,7 @@ namespace viscom {
         auto fullFilename = Resource::FindResourceLocation("shader/" + filename, node);
         unsigned int fileId{ 0 };
         auto shaderText = LoadShaderFileRecursive(fullFilename, defines, fileId, 0);
-        std::ofstream shader_out(filename + ".gen");
+        std::ofstream shader_out(fullFilename + ".gen");
         shader_out << shaderText;
         shader_out.close();
 

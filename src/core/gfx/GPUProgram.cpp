@@ -20,7 +20,7 @@ namespace viscom {
      * @param theProgramName the name of the program used to identify during logging.
      */
     GPUProgram::GPUProgram(const std::string& theProgramName, ApplicationNodeInternal* node, bool synchronize) :
-        Resource(theProgramName, ResourceTransferType::GPUProgramTransfer, node, synchronize),
+        Resource(theProgramName, ResourceType::GPUProgram, node, synchronize),
         programName_(theProgramName),
         program_(0)
     {

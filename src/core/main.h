@@ -59,10 +59,26 @@ namespace viscom {
 #endif
 
 
-    enum class ResourceTransferType : std::uint8_t {
+    enum class ResourceType : std::uint8_t {
         All_Resources,
-        TextureTransfer,
-        MeshTransfer,
-        GPUProgramTransfer
-};
+        Texture,
+        Mesh,
+        GPUProgram
+    };
+
+    inline std::ostream& operator<<(std::ostream& str, ResourceType v) {
+        switch (v)
+        {
+        case viscom::ResourceType::All_Resources:
+            return str << "All Resources";
+        case viscom::ResourceType::Texture:
+            return str << "Texture";
+        case viscom::ResourceType::Mesh:
+            return str << "Mesh";
+        case viscom::ResourceType::GPUProgram:
+            return str << "GPUProgram";
+        default:
+            return str << "unknown Resource";
+        }
+    }
 }

@@ -18,7 +18,7 @@ namespace viscom {
     class Resource
     {
     public:
-        Resource(const std::string& resourceId, ResourceTransferType type, ApplicationNodeInternal* appNode, bool synchronize = false);
+        Resource(const std::string& resourceId, ResourceType type, ApplicationNodeInternal* appNode, bool synchronize = false);
         Resource(const Resource&) = delete;
         Resource& operator=(const Resource&) = delete;
         Resource(Resource&&) noexcept = delete;
@@ -26,7 +26,7 @@ namespace viscom {
         virtual ~Resource();
 
         const std::string& GetId() const { return id_; }
-        ResourceTransferType GetType() const { return type_; }
+        ResourceType GetType() const { return type_; }
         bool IsInitialized() const { return initialized_; }
         bool IsLoaded() const { return loaded_; }
         const std::vector<std::uint8_t>& GetData() const { return data_; }
@@ -50,7 +50,7 @@ namespace viscom {
         /** Holds the resources id. */
         const std::string id_;
         /** Holds the resources type. */
-        const ResourceTransferType type_;
+        const ResourceType type_;
         /** Is this resource synchronized. */
         const bool synchronized_;
 
