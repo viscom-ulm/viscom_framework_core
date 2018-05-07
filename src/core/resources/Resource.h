@@ -28,7 +28,10 @@ namespace viscom {
         const std::string& GetId() const { return id_; }
         ResourceType GetType() const { return type_; }
         bool IsInitialized() const { return initialized_; }
-        bool IsLoaded() const { return loaded_; }
+        bool IsLoaded() const { return loadCounter_ == -1; }
+        int GetLoadCounter() const { return loadCounter_; }
+        void IncreaseLoadCounter() { loadCounter_ += 1; }
+        void ResetLoadCounter() { loadCounter_ = 0; }
         const std::vector<std::uint8_t>& GetData() const { return data_; }
 
         void LoadResource();
@@ -57,7 +60,7 @@ namespace viscom {
         /** Is the resource initialized (i.e. has the 'Initialize' method been called). */
         bool initialized_ = false;
         /** is the resource loaded (i.e. has the 'Load' method been called). */
-        bool loaded_ = false;
+        int loadCounter_ = 0;
         /** In a synchronized resource on the master node the resources memory representation is stored here. */
         std::vector<std::uint8_t> data_;
 

@@ -41,20 +41,20 @@ namespace viscom {
                 data_.swap(*optData);
 
                 appNode_->TransferResource(id_, data_.data(), data_.size(), type_);
-                loaded_ = true;
+                loadCounter_ = -1;
             }
-            else if (!loaded_) appNode_->WaitForResource(id_, type_);
+            else if (!IsLoaded()) appNode_->WaitForResource(id_, type_);
         }
         else {
             Load(std::optional<std::vector<std::uint8_t>>());
-            loaded_ = true;
+            loadCounter_ = -1;
         }
     }
 
     void Resource::LoadResource(const void* data, std::size_t size)
     {
         LoadFromMemory(data, size);
-        loaded_ = true;
+        loadCounter_ = -1;
     }
 
     std::string Resource::FindResourceLocation(const std::string& localFilename, const ApplicationNodeInternal* appNode, const std::string& resourceId)

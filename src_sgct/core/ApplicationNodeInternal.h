@@ -91,6 +91,7 @@ namespace viscom {
         void TransferResourceToNode(std::string_view name, const void* data, std::size_t length, ResourceType type, std::size_t nodeIndex);
         void TransferReleaseResource(std::string_view name, ResourceType type);
         void RequestSharedResources();
+        void RequestSharedResource(std::string_view name, ResourceType type);
         void WaitForResource(const std::string& name, ResourceType type);
 
         bool IsMaster() const;

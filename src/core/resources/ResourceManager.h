@@ -165,7 +165,11 @@ namespace viscom {
         {
             if (waitedResources_.empty()) return false;
             std::vector<std::shared_ptr<ResourceType>> newWaitedResources;
-            for (const auto& waitedResource : waitedResources_) if (!waitedResource->IsLoaded()) newWaitedResources.push_back(waitedResource);
+            for (auto& waitedResource : waitedResources_) if (!waitedResource->IsLoaded()) {
+                waitedResource->IncreaseLoadCounter();
+                if (waitedResource->GetLoadCounter() > 10) appNode_->RequestSharedResource(waitedResource->GetId(), waitedResource->GetType());
+                newWaitedResources.emplace_back(std::move(waitedResource));
+            }
 
             waitedResources_ = std::move(newWaitedResources);
             return !waitedResources_.empty();

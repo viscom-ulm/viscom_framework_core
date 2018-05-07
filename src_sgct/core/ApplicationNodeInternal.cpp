@@ -676,6 +676,15 @@ namespace viscom {
         }
     }
 
+    void ApplicationNodeInternal::RequestSharedResource(std::string_view name, ResourceType type)
+    {
+        if (!initialized_) return;
+        if (!engine_->isMaster()) {
+            auto completePackageId = MakePackageID(static_cast<std::uint8_t>(InternalTransferType::ResourceRequest), static_cast<std::uint8_t>(type), 0);
+            engine_->transferDataBetweenNodes(name.data(), static_cast<int>(name.length()), completePackageId);
+        }
+    }
+
     void ApplicationNodeInternal::WaitForResource(const std::string& name, ResourceType type)
     {
         switch (type) {
