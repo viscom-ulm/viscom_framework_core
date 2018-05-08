@@ -324,8 +324,11 @@ namespace viscom {
         appNodeImpl_->Draw2D(fbo);
 
         fbo.DrawToFBO([this]() {
-            // ImGui::Render for slaves is called in SlaveNodeInternal...
-            if (engine_->isMaster()) {
+            // ImGui::Render for slaves is called in SlaveNodeInternal if exists...
+            if constexpr (SHOW_CLIENT_GUI && !USE_DISTORTION) {
+                ImGui::Render();
+                ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+            } else if (engine_->isMaster()) {
                 ImGui::Render();
                 ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
             }

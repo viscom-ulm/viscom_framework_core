@@ -40,11 +40,12 @@ namespace viscom {
     constexpr bool USE_SGCT = false;
 #endif
 
-#ifdef VISCOM_CLIENTMOUSECURSOR
-    constexpr bool SHOW_CLIENT_MOUSE_CURSOR = true;
+#ifdef VISCOM_LOCAL_ONLY
+    constexpr bool USE_DISTORTION = false;
 #else
-    constexpr bool SHOW_CLIENT_MOUSE_CURSOR = false;
+    constexpr bool USE_DISTORTION = true;
 #endif
+
 
 #ifdef VISCOM_CLIENTGUI
     constexpr bool SHOW_CLIENT_GUI = true;
@@ -56,6 +57,12 @@ namespace viscom {
     constexpr bool SYNCHRONIZE_INPUT = true;
 #else
     constexpr bool SYNCHRONIZE_INPUT = false;
+#endif
+
+#ifdef VISCOM_CLIENTMOUSECURSOR
+    constexpr bool SHOW_CLIENT_MOUSE_CURSOR = true;
+#else
+    constexpr bool SHOW_CLIENT_MOUSE_CURSOR = false;
 #endif
 
 
