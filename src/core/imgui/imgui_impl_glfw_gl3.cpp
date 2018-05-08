@@ -28,6 +28,7 @@ struct ImGuiUserDataExt
 {
     void* userData_;
     glm::ivec2 viewportOrigin_;
+    glm::ivec2 viewportSize_;
 };
 
 // Data
@@ -86,7 +87,7 @@ void ImGui_ImplGlfwGL3_RenderDrawData(ImDrawData* draw_data)
 
     // Setup viewport, orthographic projection matrix
     glm::ivec2 bigDisplaySize{ io.DisplaySize.x, io.DisplaySize.y };
-    glViewport(ioExt->viewportOrigin_.x, ioExt->viewportOrigin_.y, bigDisplaySize.x, bigDisplaySize.y);
+    glViewport(ioExt->viewportOrigin_.x, ioExt->viewportOrigin_.y, ioExt->viewportSize_.x, ioExt->viewportSize_.y);
     const float ortho_projection[4][4] =
     {
         { 2.0f/ (io.DisplaySize.x / io.DisplayFramebufferScale.x), 0.0f,                   0.0f, 0.0f },
@@ -370,7 +371,7 @@ void ImGui_ImplGlfwGL3_Shutdown()
     ImGui_ImplGlfwGL3_InvalidateDeviceObjects();
 }
 
-void ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ivec2& viewportSize, const glm::vec2& scaling, double currentTime, double deltaTime)
+void ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ivec2& viewportSize, const glm::ivec2& screenSize, const glm::vec2& scaling, double currentTime, double deltaTime)
 {
     if (!g_FontTexture)
         ImGui_ImplGlfwGL3_CreateDeviceObjects();
@@ -387,6 +388,8 @@ void ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ive
     // io.DisplaySize = ImVec2((float)w, (float)h);
     // io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
     ioExt->viewportOrigin_ = viewportOrigin;
+    ioExt->viewportSize_ = viewportSize;
+    // io.DisplaySize = ImVec2(static_cast<float>(screenSize.x), static_cast<float>(screenSize.y));
     io.DisplaySize = ImVec2(static_cast<float>(viewportSize.x), static_cast<float>(viewportSize.y));
     io.DisplayFramebufferScale = ImVec2(scaling.x, scaling.y);
 
@@ -399,7 +402,7 @@ void ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ive
 
     // Setup inputs
     // (we already got mouse wheel, keyboard keys & characters from glfw callbacks polled in glfwPollEvents())
-    glm::vec2 mPos = glm::vec2(g_MousePos) * glm::vec2(viewportSize) / scaling;
+    glm::vec2 mPos = glm::vec2(g_MousePos) * glm::vec2(screenSize) / scaling;
     io.MousePos = ImVec2(mPos.x, mPos.y);
 
     for (int i = 0; i < 3; i++)

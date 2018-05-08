@@ -21,6 +21,7 @@
 #include <core/utils/utils.h>
 
 namespace viscom {
+
 #ifdef _DEBUG
     constexpr bool DEBUG_MODE = true;
 #else
@@ -31,6 +32,12 @@ namespace viscom {
     constexpr bool USE_TUIO = true;
 #else
     constexpr bool USE_TUIO = false;
+#endif
+
+#ifdef VISCOM_USE_SGCT
+    constexpr bool USE_SGCT = true;
+#else
+    constexpr bool USE_SGCT = false;
 #endif
 
 #ifdef VISCOM_CLIENTMOUSECURSOR
@@ -50,4 +57,28 @@ namespace viscom {
 #else
     constexpr bool SYNCHRONIZE_INPUT = false;
 #endif
+
+
+    enum class ResourceType : std::uint8_t {
+        All_Resources,
+        Texture,
+        Mesh,
+        GPUProgram
+    };
+
+    inline std::ostream& operator<<(std::ostream& str, ResourceType v) {
+        switch (v)
+        {
+        case viscom::ResourceType::All_Resources:
+            return str << "All Resources";
+        case viscom::ResourceType::Texture:
+            return str << "Texture";
+        case viscom::ResourceType::Mesh:
+            return str << "Mesh";
+        case viscom::ResourceType::GPUProgram:
+            return str << "GPUProgram";
+        default:
+            return str << "unknown Resource";
+        }
+    }
 }

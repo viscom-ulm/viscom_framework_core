@@ -34,12 +34,14 @@ namespace viscom {
     class Mesh final : public Resource
     {
     public:
-        Mesh(const std::string& meshFilename, ApplicationNodeInternal* node);
+        Mesh(const std::string& meshFilename, ApplicationNodeInternal* node, bool synchronize = false);
         Mesh(const Mesh&) = delete;
         Mesh& operator=(const Mesh&) = delete;
         Mesh(Mesh&&) noexcept = delete;
         Mesh& operator=(Mesh&&) noexcept = delete;
         virtual ~Mesh() noexcept override;
+
+        void Initialize();
 
         /**
          *  Accessor to the meshes sub-meshes. This can be used to render more complicated meshes (with multiple sets
@@ -75,11 +77,16 @@ namespace viscom {
 
         glm::mat4 GetGlobalInverse() const { return globalInverse_; }
 
+    protected:
+        virtual void Load(std::optional<std::vector<std::uint8_t>>& data) override;
+        virtual void LoadFromMemory(const void* data, std::size_t size) override;
+
     private:
         using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'M', 'E', 'S', 1000>;
 
         std::shared_ptr<const Texture> LoadTexture(const std::string& relFilename, ApplicationNodeInternal* node) const;
-        void CreateNewMesh(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node);
+        void LoadAssimpMeshFromFile(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node);
+        void LoadAssimpMesh(const aiScene* scene, ApplicationNodeInternal* node);
         void Save(const std::string& filename) const;
         void Write(std::ostream& ofs) const;
         bool Load(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node);

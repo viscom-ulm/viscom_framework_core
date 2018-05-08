@@ -9,6 +9,7 @@
 #pragma once
 
 #include "core/main.h"
+#include <optional>
 
 namespace viscom {
 
@@ -17,24 +18,52 @@ namespace viscom {
     class Resource
     {
     public:
-        Resource(const std::string& resourceId, ApplicationNodeInternal* appNode);
-        Resource(const Resource&);
-        Resource& operator=(const Resource&);
-        Resource(Resource&&) noexcept;
-        Resource& operator=(Resource&&) noexcept;
+        Resource(const std::string& resourceId, ResourceType type, ApplicationNodeInternal* appNode, bool synchronize = false);
+        Resource(const Resource&) = delete;
+        Resource& operator=(const Resource&) = delete;
+        Resource(Resource&&) noexcept = delete;
+        Resource& operator=(Resource&&) noexcept = delete;
         virtual ~Resource();
 
         const std::string& GetId() const { return id_; }
+        ResourceType GetType() const { return type_; }
+        bool IsInitialized() const { return initialized_; }
+        bool IsLoaded() const { return loadCounter_ == -1; }
+        int GetLoadCounter() const { return loadCounter_; }
+        void IncreaseLoadCounter() { loadCounter_ += 1; }
+        void ResetLoadCounter() { loadCounter_ = 0; }
+        const std::vector<std::uint8_t>& GetData() const { return data_; }
+
+        void LoadResource();
+        void LoadResource(const void* data, std::size_t size);
+
         static std::string FindResourceLocation(const std::string& localFilename, const ApplicationNodeInternal* appNode, const std::string& resourceId = "_no_resource_");
 
     protected:
         const ApplicationNodeInternal* GetAppNode() const { return appNode_; }
         ApplicationNodeInternal* GetAppNode() { return appNode_; }
+
         std::string FindResourceLocation(const std::string& localFilename) const;
+
+        virtual void Load(std::optional<std::vector<std::uint8_t>>& data) = 0;
+        virtual void LoadFromMemory(const void* data, std::size_t size) = 0;
+        void InitializeFinished() { initialized_ = true; }
 
     private:
         /** Holds the resources id. */
-        std::string id_;
+        const std::string id_;
+        /** Holds the resources type. */
+        const ResourceType type_;
+        /** Is this resource synchronized. */
+        const bool synchronized_;
+
+        /** Is the resource initialized (i.e. has the 'Initialize' method been called). */
+        bool initialized_ = false;
+        /** is the resource loaded (i.e. has the 'Load' method been called). */
+        int loadCounter_ = 0;
+        /** In a synchronized resource on the master node the resources memory representation is stored here. */
+        std::vector<std::uint8_t> data_;
+
         /** Holds the application object for dependencies. */
         ApplicationNodeInternal* appNode_;
     };

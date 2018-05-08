@@ -41,7 +41,8 @@ namespace viscom {
     void GPUProgramManager::RecompileAll()
     {
         for (auto& program : resources_) {
-            if (!program.second.expired()) program.second.lock()->recompileProgram();
+            // TODO: check if is synchronized, then sync recompiled program. [5/2/2018 Sebastian Maisch]
+            if (!program.second.expired()) program.second.lock()->LoadResource();
         }
     }
 }

@@ -11,85 +11,42 @@
 #include "core/ApplicationNodeInternal.h"
 #include "core/gfx/Shader.h"
 #include "core/open_gl.h"
+#include "core/utils/utils.h"
 
 namespace viscom {
 
     /**
      * Constructor.
      * @param theProgramName the name of the program used to identify during logging.
-     * @param theShaderNames the filenames of all shaders to use in this program.
      */
-    GPUProgram::GPUProgram(const std::string& theProgramName, ApplicationNodeInternal* node, std::initializer_list<std::string> theShaderNames) :
-        GPUProgram{ theProgramName, node, theShaderNames, std::vector<std::string>() }
+    GPUProgram::GPUProgram(const std::string& theProgramName, ApplicationNodeInternal* node, bool synchronize) :
+        Resource(theProgramName, ResourceType::GPUProgram, node, synchronize),
+        programName_(theProgramName),
+        program_(0)
     {
     }
 
-    /**
-     * Constructor.
-     * @param theProgramName the name of the program used to identify during logging.
-     * @param theShaderNames the filenames of all shaders to use in this program.
-     */
-    GPUProgram::GPUProgram(const std::string& theProgramName, ApplicationNodeInternal* node, std::vector<std::string> theShaderNames) :
-        GPUProgram{ theProgramName, node, theShaderNames, std::vector<std::string>{} }
+    void GPUProgram::Initialize(std::initializer_list<std::string> shaderNames)
     {
+        shaderNames_ = std::vector<std::string>(shaderNames);
+        InitializeFinished();
     }
 
-    GPUProgram::GPUProgram(const std::string& programName, ApplicationNodeInternal* node, std::vector<std::string> shaderNames, const std::vector<std::string>& defines) :
-        Resource(programName, node),
-        programName_(programName),
-        shaderNames_(shaderNames),
-        program_(0),
-        defines_{ defines }
+    void GPUProgram::Initialize(std::vector<std::string> shaderNames)
     {
-        for (const auto& shaderName : shaderNames_) {
-            shaders_.emplace_back(std::make_unique<Shader>(shaderName, node, defines_));
-        }
-        program_ = linkNewProgram(programName_, shaders_, [](const std::unique_ptr<Shader>& shdr) noexcept { return shdr->getShaderId(); });
+        shaderNames_ = shaderNames;
+        InitializeFinished();
     }
 
-    /**
-     * Move-constructor.
-     * @param rhs the object to move.
-     */
-    GPUProgram::GPUProgram(GPUProgram&& rhs) noexcept :
-        Resource(std::move(rhs)),
-        programName_(std::move(rhs.programName_)),
-        shaderNames_(std::move(rhs.shaderNames_)),
-        program_(std::move(rhs.program_)),
-        shaders_(std::move(rhs.shaders_)),
-        defines_(std::move(rhs.defines_))
+    void GPUProgram::Initialize(std::vector<std::string> shaderNames, const std::vector<std::string>& defines)
     {
-        rhs.program_ = 0;
-    }
-
-    /**
-     * Move-assignment operator.
-     * @param rhs the object to move.
-     * @return reference to this object.
-     */
-    GPUProgram& GPUProgram::operator =(GPUProgram&& rhs) noexcept
-    {
-        if (this != &rhs) {
-            this->~GPUProgram();
-            Resource* tRes = this;
-            *tRes = static_cast<Resource&&>(std::move(rhs));
-            programName_ = std::move(rhs.programName_);
-            shaderNames_ = std::move(rhs.shaderNames_);
-            program_ = rhs.program_;
-            rhs.program_ = 0;
-            shaders_ = std::move(rhs.shaders_);
-            defines_ = std::move(rhs.defines_);
-        }
-        return *this;
+        shaderNames_ = shaderNames;
+        defines_ = defines;
+        InitializeFinished();
     }
 
     /** Destructor. */
     GPUProgram::~GPUProgram() noexcept
-    {
-        unload();
-    }
-
-    void GPUProgram::unload() noexcept
     {
         if (this->program_ != 0) {
             glDeleteProgram(this->program_);
@@ -149,30 +106,7 @@ namespace viscom {
      */
     void GPUProgram::recompileProgram()
     {
-        std::vector<GLuint> newOGLShaders(shaderNames_.size(), 0);
-
-        for (std::size_t i = 0; i < shaderNames_.size(); ++i) {
-            try {
-                newOGLShaders[i] = shaders_[i]->recompileShader();
-            } catch (shader_compiler_error&) {
-                releaseShaders(newOGLShaders);
-                throw;
-            }
-        }
-
-        GLuint tempProgram = 0;
-        try {
-            tempProgram = linkNewProgram(programName_, newOGLShaders, [](GLuint shdr) noexcept { return shdr; });
-        } catch (shader_compiler_error&) {
-            releaseShaders(newOGLShaders);
-            throw;
-        }
-
-        unload();
-        for (std::size_t i = 0; i < shaders_.size(); ++i) {
-            shaders_[i]->resetShader(newOGLShaders[i]);
-        }
-        program_ = tempProgram;
+        Load(std::optional<std::vector<std::uint8_t>>());
     }
 
     GLint GPUProgram::getUniformLocation(const std::string& name) const
@@ -215,10 +149,66 @@ namespace viscom {
         return result;
     }
 
-    void GPUProgram::releaseShaders(const std::vector<GLuint>& shaders) noexcept
+    void GPUProgram::LoadProgram(viscom::function_view<std::unique_ptr<Shader>(const std::string&, const ApplicationNodeInternal*)> createShader)
     {
-        for (auto shader : shaders) {
-            if (shader != 0) glDeleteShader(shader);
+        ShaderList oldShaders = std::move(shaders_);
+        GLuint oldProgram = program_;
+
+        try {
+            for (const auto& shaderName : shaderNames_) {
+                shaders_.emplace_back(createShader(shaderName, GetAppNode()));
+            }
+            program_ = linkNewProgram(programName_, shaders_, [](const std::unique_ptr<Shader>& shdr) noexcept { return shdr->getShaderId(); });
         }
+        catch (shader_compiler_error&) {
+            program_ = oldProgram;
+            shaders_ = std::move(oldShaders);
+            throw;
+        }
+    }
+
+    void GPUProgram::Load(std::optional<std::vector<std::uint8_t>>& data)
+    {
+        LoadProgram([this](const std::string& shaderName, const ApplicationNodeInternal* node) { return std::make_unique<Shader>(shaderName, node, defines_); });
+        if (data.has_value()) {
+            data->clear();
+
+            std::size_t programSize = 0;
+            for (const auto& shader : shaders_) {
+                programSize += sizeof(std::size_t);
+                programSize += shader->GetSource().size() * sizeof(std::remove_reference_t<decltype(shader->GetSource())>::value_type);
+            }
+
+            data->resize(programSize);
+            auto dataptr = data->data();
+            for (const auto& shader : shaders_) {
+                auto shaderSize = shader->GetSource().size() * sizeof(std::remove_reference_t<decltype(shader->GetSource())>::value_type);
+                *reinterpret_cast<std::size_t*>(dataptr) = shaderSize;
+                dataptr += sizeof(std::size_t);
+                utils::memcpyfaster(dataptr, shader->GetSource().data(), shaderSize);
+                dataptr += shaderSize;
+            }
+        }
+    }
+
+    void GPUProgram::LoadFromMemory(const void* data, std::size_t size)
+    {
+        std::unordered_map<std::string, std::string> shaderNameMap;
+        std::size_t totalSize = 0;
+        auto dataPtr = reinterpret_cast<const std::uint8_t*>(data);
+        for (const auto& shaderName : shaderNames_) {
+            auto shaderPtr = reinterpret_cast<const std::size_t*>(dataPtr);
+            auto shaderSize = sizeof(std::size_t) + shaderPtr[0];
+            totalSize += shaderSize;
+            assert(totalSize <= size);
+            std::string shader;
+            shader.resize(shaderPtr[0]);
+            utils::memcpyfaster(shader.data(), &shaderPtr[1], shaderPtr[0]);
+
+            dataPtr += shaderSize;
+            shaderNameMap[shaderName] = shader;
+        }
+
+        LoadProgram([&shaderNameMap](const std::string& shaderName, const ApplicationNodeInternal* node) { return std::make_unique<Shader>(shaderName, node, shaderNameMap[shaderName]); });
     }
 }

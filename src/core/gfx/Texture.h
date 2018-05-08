@@ -37,12 +37,14 @@ namespace viscom {
     class Texture final : public Resource
     {
     public:
-        Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool useSRGB = true);
+        Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool synchronize = false);
         Texture(const Texture&) = delete;
         Texture& operator=(const Texture&) = delete;
-        Texture(Texture&&) noexcept;
-        Texture& operator=(Texture&&) noexcept;
+        Texture(Texture&&) noexcept = delete;
+        Texture& operator=(Texture&&) noexcept = delete;
         virtual ~Texture() noexcept override;
+
+        void Initialize(bool useSRGB = true);
 
         /** Returns the size of the texture. */
         glm::uvec2 getDimensions() const noexcept { return glm::uvec2(width_, height_); }
@@ -51,9 +53,13 @@ namespace viscom {
         /** Returns the texture descriptor. */
         const TextureDescriptor& getDescriptor() const { return descriptor_; }
 
+    protected:
+        virtual void Load(std::optional<std::vector<std::uint8_t>>& data) override;
+        virtual void LoadFromMemory(const void* data, std::size_t size) override;
+
     private:
-        void LoadTextureLDR(const std::string& filename, bool useSRGB);
-        void LoadTextureHDR(const std::string& filename);
+        std::pair<void*, std::size_t> LoadImageLDR(const std::string& filename, bool useSRGB);
+        std::pair<void*, std::size_t> LoadImageHDR(const std::string& filename);
         std::tuple<unsigned int, int, int> FindFormatLDR(const std::string& filename, int imgChannels, bool useSRGB = false) const;
         std::tuple<unsigned int, int, int> FindFormatHDR(const std::string& filename, int imgChannels) const;
 
@@ -66,5 +72,7 @@ namespace viscom {
         unsigned int width_;
         /** Holds the height. */
         unsigned int height_;
+        /** Is this an sRGB texture. */
+        bool sRGB_;
     };
 }
