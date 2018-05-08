@@ -137,7 +137,7 @@ namespace viscom {
         {
             std::lock_guard<std::mutex> accessLock{ syncMtx_ };
             auto rit = syncedResources_.find(resId);
-            if (rit != syncedResources_.end()) syncedResources_.erase(rit);
+            if (rit != syncedResources_.end()) rit = syncedResources_.erase(rit);
         }
 
         template<typename... Args>

@@ -161,7 +161,7 @@ namespace viscom {
         sgct::SharedObject<InternalSyncedInfo> syncInfoSynced_;
 
         /** Holds the last frame time. */
-        double lastFrameTime_;
+        double lastFrameTime_ = 0.0;
         /** Holds the time elapsed since the last frame. */
         double elapsedTime_;
 
@@ -184,7 +184,7 @@ namespace viscom {
         bool applicationHalted_ = false;
 
         struct ResourceData {
-            ResourceType type_;
+            ResourceType type_ = ResourceType::All_Resources;
             std::string name_;
             std::vector<std::uint8_t> data_;
 

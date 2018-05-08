@@ -52,7 +52,7 @@ namespace viscom {
 
     struct Viewport
     {
-        Viewport() : position_{ 0 }, size_{ 0 } {}
+        Viewport() noexcept : position_{ 0 }, size_{ 0 } {}
         Viewport(const glm::ivec2& position, const glm::uvec2& size) : position_{ position }, size_{ size } {}
         Viewport(int x, int y, unsigned int sizex, unsigned int sizey) : position_{ x, y }, size_{ sizex, sizey } {}
 
@@ -80,13 +80,9 @@ namespace viscom {
         ~FrameBuffer();
 
         void UseAsRenderTarget() const;
-        [[deprecated("Use the version with size_t indices instead.")]]
-        void UseAsRenderTarget(const std::vector<unsigned int>& drawBufferIndices) const;
         void UseAsRenderTarget(const std::vector<std::size_t>& drawBufferIndices) const;
 
         inline void DrawToFBO(viscom::function_view<void()> drawFn) const;
-        [[deprecated("Use the version with size_t indices instead.")]]
-        void DrawToFBO(const std::vector<unsigned int>& drawBufferIndices, std::function<void()> drawFn) const;
         inline void DrawToFBO(const std::vector<std::size_t>& drawBufferIndices, viscom::function_view<void()> drawFn) const;
 
         void Resize(unsigned int fbWidth, unsigned int fbHeight);
