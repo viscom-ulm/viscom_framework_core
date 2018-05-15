@@ -181,7 +181,7 @@ namespace viscom {
 
     void ApplicationNodeInternal::BaseDraw2D()
     {
-        ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(0).position_, GetViewportScreen(0).size_, GetViewportScaling(0), GetCurrentAppTime(), GetElapsedTime());
+        ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(0).position_, GetViewportScreen(0).size_, GetViewportScreen(0).size_, GetViewportScaling(0), GetCurrentAppTime(), GetElapsedTime());
 
         appNodeImpl_->Draw2D(backBuffer_);
 
@@ -328,17 +328,17 @@ namespace viscom {
         LOG(INFO) << "TransferDataToNode(...) not implemented in local mode.";
     }
 
-    void ApplicationNodeInternal::TransferResource(std::string_view name, const void* data, std::size_t length, ResourceTransferType type)
+    void ApplicationNodeInternal::TransferResource(std::string_view name, const void* data, std::size_t length, ResourceType type)
     {
         LOG(INFO) << "TransferResource(...) not implemented in local mode.";
     }
 
-    void ApplicationNodeInternal::TransferReleaseResource(std::string_view name, ResourceTransferType type)
+    void ApplicationNodeInternal::TransferReleaseResource(std::string_view name, ResourceType type)
     {
         LOG(INFO) << "TransferReleaseResource(...) not implemented in local mode.";
     }
 
-    void ApplicationNodeInternal::WaitForResource(const std::string& name, ResourceTransferType type)
+    void ApplicationNodeInternal::WaitForResource(const std::string& name, ResourceType type)
     {
         LOG(INFO) << "WaitForResource(...) not implemented in local mode.";
     }
