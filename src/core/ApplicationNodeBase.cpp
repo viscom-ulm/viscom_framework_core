@@ -79,12 +79,12 @@ namespace viscom {
     {
     }
 
-    bool ApplicationNodeBase::DataTransferCallback(void * receivedData, int receivedLength, int packageID, int clientID)
+    bool ApplicationNodeBase::DataTransferCallback(void * receivedData, int receivedLength, std::uint16_t packageID, int clientID)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::DataAcknowledgeCallback(int packageID, int clientID)
+    bool ApplicationNodeBase::DataAcknowledgeCallback(std::uint16_t packageID, int clientID)
     {
         return false;
     }
@@ -97,46 +97,46 @@ namespace viscom {
     // ReSharper disable CppParameterNeverUsed
     bool ApplicationNodeBase::KeyboardCallback(int key, int scancode, int action, int mods)
     {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
-        if (ImGui::GetIO().WantCaptureKeyboard) return true;
-#endif
+        if constexpr (SHOW_CLIENT_GUI) {
+            ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
+            if (ImGui::GetIO().WantCaptureKeyboard) return true;
+        }
         return false;
     }
 
     bool ApplicationNodeBase::CharCallback(unsigned int character, int mods)
     {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_CharCallback(character);
-        if (ImGui::GetIO().WantCaptureKeyboard) return true;
-#endif
+        if constexpr (SHOW_CLIENT_GUI) {
+            ImGui_ImplGlfwGL3_CharCallback(character);
+            if (ImGui::GetIO().WantCaptureKeyboard) return true;
+        }
         return false;
     }
 
     bool ApplicationNodeBase::MouseButtonCallback(int button, int action)
     {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
-        if (ImGui::GetIO().WantCaptureMouse) return true;
-#endif
+        if constexpr (SHOW_CLIENT_GUI) {
+            ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
+            if (ImGui::GetIO().WantCaptureMouse) return true;
+        }
         return false;
     }
 
     bool ApplicationNodeBase::MousePosCallback(double x, double y)
     {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_MousePositionCallback(x, y);
-        if (ImGui::GetIO().WantCaptureMouse) return true;
-#endif
+        if constexpr (SHOW_CLIENT_GUI) {
+            ImGui_ImplGlfwGL3_MousePositionCallback(x, y);
+            if (ImGui::GetIO().WantCaptureMouse) return true;
+        }
         return false;
     }
 
     bool ApplicationNodeBase::MouseScrollCallback(double xoffset, double yoffset)
     {
-#ifdef VISCOM_CLIENTGUI
-        ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
-        if (ImGui::GetIO().WantCaptureMouse) return true;
-#endif
+        if constexpr (SHOW_CLIENT_GUI) {
+            ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
+            if (ImGui::GetIO().WantCaptureMouse) return true;
+        }
         return false;
     }
 

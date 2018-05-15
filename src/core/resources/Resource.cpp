@@ -10,42 +10,52 @@
 #include "core/ApplicationNodeInternal.h"
 #include "core/utils/utils.h"
 
+#ifdef VISCOM_USE_SGCT
+#include <sgct.h>
+#endif
+
 namespace viscom {
     /**
      * Constructor.
      * @param resourceId the resource id to use
      */
-    Resource::Resource(const std::string& resourceId, ApplicationNodeInternal* appNode) :
+    Resource::Resource(const std::string& resourceId, ResourceType type, ApplicationNodeInternal* appNode, bool synchronize) :
         id_{ resourceId },
-        appNode_{ appNode }
+        type_{ type },
+        appNode_{ appNode },
+        synchronized_{ synchronize }
     {
     }
 
-    /** Default copy constructor. */
-    Resource::Resource(const Resource&) = default;
-
-    /** Default assignment operator. */
-    Resource& Resource::operator=(const Resource&) = default;
-
-    /** Move constructor. */
-    Resource::Resource(Resource&& orig) noexcept :
-        id_{ std::move(orig.id_) },
-        appNode_{ orig.appNode_ }
+    Resource::~Resource()
     {
+        if (synchronized_) appNode_->TransferReleaseResource(id_, type_);
     }
 
-    /** Move assignment operator. */
-    Resource& Resource::operator=(Resource&& orig) noexcept
+    void Resource::LoadResource()
     {
-        if (this != &orig) {
-            this->~Resource();
-            id_ = std::move(orig.id_);
-            appNode_ = orig.appNode_;
+        if (synchronized_) {
+            if (appNode_->IsMaster()) {
+                std::optional<std::vector<std::uint8_t>> optData(std::vector<std::uint8_t>{});
+                Load(optData);
+                data_.swap(*optData);
+
+                appNode_->TransferResource(id_, data_.data(), data_.size(), type_);
+                loadCounter_ = -1;
+            }
+            else if (!IsLoaded()) appNode_->WaitForResource(id_, type_);
         }
-        return *this;
+        else {
+            Load(std::optional<std::vector<std::uint8_t>>());
+            loadCounter_ = -1;
+        }
     }
 
-    Resource::~Resource() = default;
+    void Resource::LoadResource(const void* data, std::size_t size)
+    {
+        LoadFromMemory(data, size);
+        loadCounter_ = -1;
+    }
 
     std::string Resource::FindResourceLocation(const std::string& localFilename, const ApplicationNodeInternal* appNode, const std::string& resourceId)
     {

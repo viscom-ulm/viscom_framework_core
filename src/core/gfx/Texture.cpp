@@ -20,63 +20,23 @@ namespace viscom {
      * Constructor, creates a texture from file.
      * @param texFilename the filename of the texture file.
      */
-    Texture::Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool useSRGB) :
-        Resource(texFilename, node),
+    Texture::Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool synchronize) :
+        Resource(texFilename, ResourceType::Texture, node, synchronize),
         textureId_{ 0 },
         descriptor_{ 3, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE },
         width_{ 0 },
-        height_{ 0 }
+        height_{ 0 },
+        sRGB_{ true }
     {
-        auto fullFilename = FindResourceLocation(texFilename);
-
-        stbi_set_flip_vertically_on_load(1);
-
         // Bind Texture and Set Filtering Levels
         glGenTextures(1, &textureId_);
+        auto e = glGetError();
         glBindTexture(GL_TEXTURE_2D, textureId_);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        if (stbi_is_hdr(fullFilename.c_str()) != 0) LoadTextureHDR(fullFilename);
-        else LoadTextureLDR(fullFilename, useSRGB);
-
         glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
-    /**
-     *  Move-constructor.
-     *  @param rhs the object to copy.
-     */
-    Texture::Texture(Texture&& rhs) noexcept :
-        Resource(std::move(rhs)),
-        textureId_{ std::move(rhs.textureId_) },
-        descriptor_{ std::move(rhs.descriptor_) },
-        width_{ std::move(rhs.width_) },
-        height_{ std::move(rhs.height_) }
-    {
-        rhs.textureId_ = 0;
-    }
-
-    /**
-     *  Move-assignment operator.
-     *  @param rhs the object to assign.
-     *  @return reference to this object.
-     */
-    Texture& Texture::operator=(Texture&& rhs) noexcept
-    {
-        if (this != &rhs) {
-            this->~Texture();
-            Resource* tRes = this;
-            *tRes = static_cast<Resource&&>(std::move(rhs));
-            textureId_ = std::move(rhs.textureId_);
-            descriptor_ = std::move(rhs.descriptor_);
-            width_ = std::move(rhs.width_);
-            height_ = std::move(rhs.height_);
-            rhs.textureId_ = 0;
-        }
-        return *this;
     }
 
     /** Destructor. */
@@ -89,7 +49,62 @@ namespace viscom {
         }
     }
 
-    void Texture::LoadTextureLDR(const std::string& filename, bool useSRGB)
+    void Texture::Initialize(bool useSRGB)
+    {
+        sRGB_ = useSRGB;
+        InitializeFinished();
+    }
+
+    void Texture::Load(std::optional<std::vector<std::uint8_t>>& data)
+    {
+        auto fullFilename = FindResourceLocation(GetId());
+
+        stbi_set_flip_vertically_on_load(1);
+
+        std::pair<void*, std::size_t> image = std::make_pair(nullptr, 0);
+        if (stbi_is_hdr(fullFilename.c_str()) != 0) image = LoadImageHDR(fullFilename);
+        else image = LoadImageLDR(fullFilename, sRGB_);
+
+        glBindTexture(GL_TEXTURE_2D, textureId_);
+        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, image.first);
+
+        if (data.has_value()) {
+            data->clear();
+            data->resize(sizeof(TextureDescriptor) + 2 * sizeof(unsigned int) + sizeof(bool) + image.second);
+            auto dataptr = data->data();
+            memcpy(dataptr, &descriptor_, sizeof(TextureDescriptor));
+            dataptr += sizeof(TextureDescriptor);
+            memcpy(dataptr, &width_, sizeof(unsigned int));
+            dataptr += sizeof(unsigned int);
+            memcpy(dataptr, &height_, sizeof(unsigned int));
+            dataptr += sizeof(unsigned int);
+            memcpy(dataptr, &sRGB_, sizeof(bool));
+            dataptr += sizeof(bool);
+            utils::memcpyfaster(dataptr, image.first, image.second);
+        }
+
+        stbi_image_free(image.first);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    void Texture::LoadFromMemory(const void* data, std::size_t size)
+    {
+        auto dataptr = reinterpret_cast<const std::uint8_t*>(data);
+        descriptor_ = *reinterpret_cast<const TextureDescriptor*>(dataptr);
+        dataptr += sizeof(TextureDescriptor);
+        width_ = *reinterpret_cast<const unsigned int*>(dataptr);
+        dataptr += sizeof(unsigned int);
+        height_ = *reinterpret_cast<const unsigned int*>(dataptr);
+        dataptr += sizeof(unsigned int);
+        sRGB_ = *reinterpret_cast<const bool*>(dataptr);
+        dataptr += sizeof(bool);
+
+        glBindTexture(GL_TEXTURE_2D, textureId_);
+        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, dataptr);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    std::pair<void*, std::size_t> Texture::LoadImageLDR(const std::string& filename, bool useSRGB)
     {
         auto imgWidth = 0, imgHeight = 0, imgChannels = 0;
         auto image = stbi_load(filename.c_str(), &imgWidth, &imgHeight, &imgChannels, 0);
@@ -102,12 +117,10 @@ namespace viscom {
         height_ = imgHeight;
         descriptor_.type_ = GL_UNSIGNED_BYTE;
         std::tie(descriptor_.bytesPP_, descriptor_.internalFormat_, descriptor_.format_) = FindFormatLDR(filename, imgChannels, useSRGB);
-        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, imgWidth, imgHeight, 0, descriptor_.format_, descriptor_.type_, image);
-
-        stbi_image_free(image);
+        return std::make_pair(image, imgWidth * imgHeight * imgChannels);
     }
 
-    void Texture::LoadTextureHDR(const std::string& filename)
+    std::pair<void*, std::size_t> Texture::LoadImageHDR(const std::string& filename)
     {
         auto imgWidth = 0, imgHeight = 0, imgChannels = 0;
         auto image = stbi_loadf(filename.c_str(), &imgWidth, &imgHeight, &imgChannels, 0);
@@ -120,9 +133,7 @@ namespace viscom {
         height_ = imgHeight;
         descriptor_.type_ = GL_FLOAT;
         std::tie(descriptor_.bytesPP_, descriptor_.internalFormat_, descriptor_.format_) = FindFormatHDR(filename, imgChannels);
-        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, imgWidth, imgHeight, 0, descriptor_.format_, descriptor_.type_, image);
-
-        stbi_image_free(image);
+        return std::make_pair(image, imgWidth * imgHeight * imgChannels);
     }
 
     std::tuple<unsigned int, int, int> Texture::FindFormatLDR(const std::string& filename, int imgChannels, bool useSRGB) const
@@ -158,4 +169,5 @@ namespace viscom {
         }
         return std::make_tuple(bytesPP, internalFmt, fmt);
     }
+
 }

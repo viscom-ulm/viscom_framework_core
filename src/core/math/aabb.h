@@ -16,7 +16,7 @@ namespace viscom::math {
 
 
     template<typename real, int N, typename V> struct AABB {
-        AABB();
+        AABB() noexcept;
         AABB(const V& minValue, const V& maxValue);
         AABB(const std::vector<V>& points);
         AABB(const std::vector<AABB>& aabbs);
@@ -53,7 +53,7 @@ namespace viscom::math {
 
 
     template<typename real, int N, typename V>
-    inline AABB<real, N, V>::AABB() :
+    inline AABB<real, N, V>::AABB() noexcept :
         minmax_{ V(std::numeric_limits<real>::max()), V(std::numeric_limits<real>::lowest()) }
     {
     }

@@ -241,22 +241,6 @@ namespace viscom {
     }
 
     /**
-    * Use this frame buffer object as target for rendering and select the draw buffers used.
-    * @param drawBufferIndices the indices in the draw buffer to be used.
-    */
-    void FrameBuffer::UseAsRenderTarget(const std::vector<unsigned int>& drawBufferIndices) const
-    {
-        assert(!isBackbuffer_);
-        std::vector<GLenum> drawBuffersReduced(drawBuffers_.size());
-        for (std::size_t i = 0; i < drawBufferIndices.size(); ++i) drawBuffersReduced[i] = drawBuffers_[drawBufferIndices[i]]; //-V108
-
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
-        glDrawBuffers(static_cast<GLsizei>(drawBuffersReduced.size()), drawBuffersReduced.data());
-        glViewport(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
-        glScissor(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
-    }
-
-    /**
      * Use this frame buffer object as target for rendering and select the draw buffers used.
      * @param drawBufferIndices the indices in the draw buffer to be used.
      */
@@ -270,12 +254,6 @@ namespace viscom {
         glDrawBuffers(static_cast<GLsizei>(drawBuffersReduced.size()), drawBuffersReduced.data());
         glViewport(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
         glScissor(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
-    }
-
-    void FrameBuffer::DrawToFBO(const std::vector<unsigned int>& drawBufferIndices, std::function<void()> drawFn) const
-    {
-        UseAsRenderTarget(drawBufferIndices);
-        drawFn();
     }
 
     unsigned int FrameBuffer::findAttachment(GLenum internalFormat, unsigned int& colorAtt, std::vector<GLenum> &drawBuffers)

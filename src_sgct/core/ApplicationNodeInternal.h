@@ -84,6 +84,18 @@ namespace viscom {
         void BaseEncodeData();
         void BaseDecodeData();
 
+        void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex);
+        void TransferData(const void* data, std::size_t length, std::uint16_t packageId);
+
+        void TransferResource(std::string_view name, const void* data, std::size_t length, ResourceType type);
+        void TransferResourceToNode(std::string_view name, const void* data, std::size_t length, ResourceType type, std::size_t nodeIndex);
+        void TransferReleaseResource(std::string_view name, ResourceType type);
+        void RequestSharedResources();
+        void RequestSharedResource(std::string_view name, ResourceType type);
+        void WaitForResource(const std::string& name, ResourceType type);
+
+        bool IsMaster() const;
+
         sgct::Engine* GetEngine() const { return engine_.get(); }
         const FWConfiguration& GetConfig() const { return config_; }
         FrameBuffer& GetFramebuffer(size_t windowId) { return framebuffers_[windowId]; }
@@ -110,6 +122,11 @@ namespace viscom {
 
     private:
         glm::dvec2 ConvertInputCoordinatesLocalToGlobal(const glm::dvec2& p);
+        void ReleaseSynchronizedResource(ResourceType type, std::string_view name);
+        void CreateSynchronizedResource(ResourceType type, const void* data, std::size_t length);
+        void CreateSynchronizedResources();
+        void SendResourcesToNode(ResourceType type, const void* data, std::size_t length, int clientID);
+        static int MakePackageID(std::uint8_t internalType, std::uint8_t internalPID, std::uint16_t userPID);
 
         /** Holds a static pointer to an object to this class making it singleton in a way. */
         // TODO: This is only a workaround and should be fixed in the future. [12/5/2016 Sebastian Maisch]
@@ -144,7 +161,7 @@ namespace viscom {
         sgct::SharedObject<InternalSyncedInfo> syncInfoSynced_;
 
         /** Holds the last frame time. */
-        double lastFrameTime_;
+        double lastFrameTime_ = 0.0;
         /** Holds the time elapsed since the last frame. */
         double elapsedTime_;
 
@@ -163,6 +180,21 @@ namespace viscom {
         std::vector<bool> keyPressedState_;
         /** Holds the current mouse button state. */
         std::vector<bool> mousePressedState_;
+        /** Is the application currently halted. */
+        bool applicationHalted_ = false;
+
+        struct ResourceData {
+            ResourceType type_ = ResourceType::All_Resources;
+            std::string name_;
+            std::vector<std::uint8_t> data_;
+
+            bool operator==(const ResourceData& other) const { return type_ == other.type_ && name_ == other.name_; }
+        };
+
+        /** Synchronized resources to be created at next possible time. */
+        std::vector<ResourceData> creatableResources_;
+        /** The mutex for creatable resources. */
+        std::mutex creatableResourceMutex_;
 
 #ifdef VISCOM_SYNCINPUT
         /** Holds the vector with keyboard events. */

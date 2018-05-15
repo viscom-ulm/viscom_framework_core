@@ -14,12 +14,6 @@
 #include "core/open_gl.h"
 #include <iostream>
 
-#ifdef VISCOM_CLIENTMOUSECURSOR
-#define CLIENTMOUSE true
-#else
-#define CLIENTMOUSE false
-#endif
-
 namespace viscom {
 
     ApplicationNodeInternal::ApplicationNodeInternal(FWConfiguration&& config) :
@@ -47,9 +41,7 @@ namespace viscom {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, oglVer.second);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-#ifdef _DEBUG
-        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-#endif
+        if constexpr (DEBUG_MODE) glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
         glfwSetErrorCallback(ApplicationNodeInternal::ErrorCallbackStatic);
@@ -143,6 +135,9 @@ namespace viscom {
         glbToLcMatrix[3][1] = -static_cast<float>(viewportScreen_[0].position_.y);
         camHelper_.SetLocalCoordMatrix(0, glbToLcMatrix, glm::vec2(projectorSize));
 
+        // Setup ImGui binding
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
         ImGui_ImplGlfwGL3_Init(window_, false);
 
         FullscreenQuad::InitializeStatic();
@@ -192,12 +187,14 @@ namespace viscom {
 
         backBuffer_.DrawToFBO([this]() {
             ImGui::Render();
+            ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
         });
     }
 
     void ApplicationNodeInternal::BaseCleanUp() const
     {
         ImGui_ImplGlfwGL3_Shutdown();
+        ImGui::DestroyContext();
         appNodeImpl_->CleanUp();
     }
 
@@ -304,26 +301,46 @@ namespace viscom {
 
     void ApplicationNodeInternal::addTuioCursor(TUIO::TuioCursor* tcur)
     {
-#ifdef WITH_TUIO
-        // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-        appNodeImpl_->AddTuioCursor(tcur);
-#endif
+        if constexpr (USE_TUIO) {
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->AddTuioCursor(tcur);
+        }
     }
 
     void ApplicationNodeInternal::updateTuioCursor(TUIO::TuioCursor* tcur)
     {
-#ifdef WITH_TUIO
-        // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-        appNodeImpl_->UpdateTuioCursor(tcur);
-#endif
+        if constexpr (USE_TUIO) {
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->UpdateTuioCursor(tcur);
+        }
     }
 
     void ApplicationNodeInternal::removeTuioCursor(TUIO::TuioCursor* tcur)
     {
-#ifdef WITH_TUIO
-        // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-        appNodeImpl_->RemoveTuioCursor(tcur);
-#endif
+        if constexpr (USE_TUIO) {
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->RemoveTuioCursor(tcur);
+        }
+    }
+
+    void ApplicationNodeInternal::TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex)
+    {
+        LOG(INFO) << "TransferDataToNode(...) not implemented in local mode.";
+    }
+
+    void ApplicationNodeInternal::TransferResource(std::string_view name, const void* data, std::size_t length, ResourceTransferType type)
+    {
+        LOG(INFO) << "TransferResource(...) not implemented in local mode.";
+    }
+
+    void ApplicationNodeInternal::TransferReleaseResource(std::string_view name, ResourceTransferType type)
+    {
+        LOG(INFO) << "TransferReleaseResource(...) not implemented in local mode.";
+    }
+
+    void ApplicationNodeInternal::WaitForResource(const std::string& name, ResourceTransferType type)
+    {
+        LOG(INFO) << "WaitForResource(...) not implemented in local mode.";
     }
 
     void ApplicationNodeInternal::SetCursorInputMode(int mode)

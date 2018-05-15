@@ -28,6 +28,7 @@ struct ImGuiUserDataExt
 {
     void* userData_;
     glm::ivec2 viewportOrigin_;
+    glm::ivec2 viewportSize_;
 };
 
 // Data
@@ -42,10 +43,10 @@ static int          g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0;
 static int          g_AttribLocationPosition = 0, g_AttribLocationUV = 0, g_AttribLocationColor = 0;
 static unsigned int g_VboHandle = 0, g_VaoHandle = 0, g_ElementsHandle = 0;
 
-// This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
-// If text or lines are blurry when integrating ImGui in your engine:
-// - in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
-void ImGui_ImplGlfwGL3_RenderDrawLists(ImDrawData* draw_data)
+// OpenGL3 Render function.
+// (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(), but you can now call this directly from your main loop)
+// Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so. 
+void ImGui_ImplGlfwGL3_RenderDrawData(ImDrawData* draw_data)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
     ImGuiIO& io = ImGui::GetIO();
@@ -86,7 +87,7 @@ void ImGui_ImplGlfwGL3_RenderDrawLists(ImDrawData* draw_data)
 
     // Setup viewport, orthographic projection matrix
     glm::ivec2 bigDisplaySize{ io.DisplaySize.x, io.DisplaySize.y };
-    glViewport(ioExt->viewportOrigin_.x, ioExt->viewportOrigin_.y, bigDisplaySize.x, bigDisplaySize.y);
+    glViewport(ioExt->viewportOrigin_.x, ioExt->viewportOrigin_.y, ioExt->viewportSize_.x, ioExt->viewportSize_.y);
     const float ortho_projection[4][4] =
     {
         { 2.0f/ (io.DisplaySize.x / io.DisplayFramebufferScale.x), 0.0f,                   0.0f, 0.0f },
@@ -349,7 +350,6 @@ bool    ImGui_ImplGlfwGL3_Init(GLFWwindow* window, bool drawCursor)
     io.KeyMap[ImGuiKey_Y] = GLFW_KEY_Y;
     io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
 
-    io.RenderDrawListsFn = ImGui_ImplGlfwGL3_RenderDrawLists;       // Alternatively you can set this to NULL and call ImGui::GetDrawData() after ImGui::Render() to get the same ImDrawData pointer.
     io.SetClipboardTextFn = ImGui_ImplGlfwGL3_SetClipboardText;
     io.GetClipboardTextFn = ImGui_ImplGlfwGL3_GetClipboardText;
     io.ClipboardUserData = g_Window;
@@ -369,10 +369,9 @@ void ImGui_ImplGlfwGL3_Shutdown()
     delete ioExt;
     io.UserData = nullptr;
     ImGui_ImplGlfwGL3_InvalidateDeviceObjects();
-    ImGui::Shutdown();
 }
 
-void ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ivec2& viewportSize, const glm::vec2& scaling, double currentTime, double deltaTime)
+void ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ivec2& viewportSize, const glm::ivec2& screenSize, const glm::vec2& scaling, double currentTime, double deltaTime)
 {
     if (!g_FontTexture)
         ImGui_ImplGlfwGL3_CreateDeviceObjects();
@@ -389,6 +388,8 @@ void ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ive
     // io.DisplaySize = ImVec2((float)w, (float)h);
     // io.DisplayFramebufferScale = ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
     ioExt->viewportOrigin_ = viewportOrigin;
+    ioExt->viewportSize_ = viewportSize;
+    // io.DisplaySize = ImVec2(static_cast<float>(screenSize.x), static_cast<float>(screenSize.y));
     io.DisplaySize = ImVec2(static_cast<float>(viewportSize.x), static_cast<float>(viewportSize.y));
     io.DisplayFramebufferScale = ImVec2(scaling.x, scaling.y);
 
@@ -401,7 +402,7 @@ void ImGui_ImplGlfwGL3_NewFrame(const glm::ivec2& viewportOrigin, const glm::ive
 
     // Setup inputs
     // (we already got mouse wheel, keyboard keys & characters from glfw callbacks polled in glfwPollEvents())
-    glm::vec2 mPos = glm::vec2(g_MousePos) * glm::vec2(viewportSize) / scaling;
+    glm::vec2 mPos = glm::vec2(g_MousePos) * glm::vec2(screenSize) / scaling;
     io.MousePos = ImVec2(mPos.x, mPos.y);
 
     for (int i = 0; i < 3; i++)

@@ -9,7 +9,7 @@
 #pragma once
 
 // Make sure this header is included before GLFW. [5/27/2017 Sebastian Maisch]
-#ifdef WITH_TUIO
+#ifdef VISCOM_USE_TUIO
 #include <TuioListener.h>
 #endif
 

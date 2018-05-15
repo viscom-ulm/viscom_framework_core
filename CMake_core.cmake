@@ -32,8 +32,8 @@ set(VISCOM_OPENGL_PROFILE "3.3" CACHE STRING "OpenGL profile version to use.")
 
 set(OPENVR_LIB ON CACHE BOOL "Use Openvr")
 # This could be changed to "off" if the default target doesn't need the tuio library
-set(TUIO_LIB ON CACHE BOOL "Use TUIO input library")
-set(TUIO_PORT 3333 CACHE STRING "UDP Port for TUIO to listen on")
+set(VISCOM_USE_TUIO ON CACHE BOOL "Use TUIO input library")
+set(VISCOM_TUIO_PORT 3333 CACHE STRING "UDP Port for TUIO to listen on")
 
 # Build-flags.
 if(UNIX)
@@ -169,15 +169,15 @@ if (${VISCOM_LOCAL_ONLY})
     list(APPEND COMPILE_TIME_DEFS VISCOM_LOCAL_ONLY)
 endif()
 
-if(${TUIO_LIB})
+if(${VISCOM_USE_TUIO})
     add_subdirectory(extern/fwcore/extern/tuio EXCLUDE_FROM_ALL)
-    list(APPEND COMPILE_TIME_DEFS WITH_TUIO)
+    list(APPEND COMPILE_TIME_DEFS VISCOM_USE_TUIO)
     list(APPEND CORE_LIBS libTUIO)
     list(APPEND CORE_INCLUDE_DIRS extern/fwcore/extern/tuio/TUIO extern/fwcore/extern/tuio/oscpack)
 endif()
 
 macro(copy_core_lib_dlls APP_NAME)
-    if (${TUIO_LIB})
+    if (${VISCOM_USE_TUIO})
         add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:libTUIO> ${PROJECT_BINARY_DIR})
         install(FILES $<TARGET_FILE:libTUIO> DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
     endif()
