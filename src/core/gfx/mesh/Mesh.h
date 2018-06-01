@@ -41,7 +41,7 @@ namespace viscom {
         Mesh& operator=(Mesh&&) noexcept = delete;
         virtual ~Mesh() noexcept override;
 
-        void Initialize();
+        void Initialize(bool forceGenNormals = false);
 
         /**
          *  Accessor to the meshes sub-meshes. This can be used to render more complicated meshes (with multiple sets
@@ -100,6 +100,8 @@ namespace viscom {
 
         /** Filename of this mesh. */
         std::string filename_;
+        /** Force generating normals. */
+        bool forceGenNormals_;
 
         /** Holds all the single points used by the mesh (and its sub-meshes) as points or in vertices. */
         std::vector<glm::vec3> vertices_;
