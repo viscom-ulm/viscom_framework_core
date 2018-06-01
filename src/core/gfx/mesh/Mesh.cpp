@@ -236,7 +236,7 @@ namespace viscom {
                 }
             }
 
-            if (!indices[i].empty) {
+            if (!indices[i].empty()) {
                 std::transform(indices[i].begin(), indices[i].end(), &indices_[currentMeshIndexOffset], [currentMeshVertexOffset](unsigned int idx) { return idx + currentMeshVertexOffset; }); //-V108
             }
 

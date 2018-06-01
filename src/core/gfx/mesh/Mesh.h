@@ -55,6 +55,7 @@ namespace viscom {
 
         const std::vector<glm::vec3>& GetVertices() const noexcept { return vertices_; }
         const std::vector<glm::vec3>& GetNormals() const noexcept { return normals_; }
+        std::size_t GetNumTexCoords() const { return texCoords_.size(); }
         const std::vector<glm::vec3>& GetTexCoords(size_t i) const noexcept { return texCoords_[i]; }
         const std::vector<glm::vec3>& GetTangents() const noexcept { return tangents_; }
         const std::vector<glm::vec3>& GetBinormals() const noexcept { return binormals_; }
