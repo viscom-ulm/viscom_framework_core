@@ -1,9 +1,9 @@
 /**
- * @file   ApplicationNodeInternal.h
+ * @file   FrameworkInternal.h
  * @author Sebastian Maisch <sebastian.maisch@uni-ulm.de>
  * @date   2016.11.25
  *
- * @brief  Declares a base class for all application nodes in the VISCOM lab cluster.
+ * @brief  Declares the internal framework class for the VISCOM lab cluster.
  */
 
 #pragma once
@@ -19,29 +19,19 @@
 #include "core/gfx/FrameBuffer.h"
 #include "core/CameraHelper.h"
 #include "core/gfx/FullscreenQuad.h"
-#include "core/TuioInputWrapper.h"
 #include "sgct/SharedDataTypes.h"
 
 namespace viscom {
 
-    class ApplicationNodeBase;
-
-    struct InternalSyncedInfo {
-        double currentTime_ = 0.0;
-        glm::vec3 cameraPosition_;
-        glm::quat cameraOrientation_;
-        glm::mat4 pickMatrix_;
-    };
-
-    class ApplicationNodeInternal : public viscom::tuio::TuioInputWrapper
+    class FrameworkInternal
     {
     public:
-        ApplicationNodeInternal(FWConfiguration&& config, std::unique_ptr<sgct::Engine> engine);
-        ApplicationNodeInternal(const ApplicationNodeInternal&) = delete;
-        ApplicationNodeInternal(ApplicationNodeInternal&&) = delete;
-        ApplicationNodeInternal& operator=(const ApplicationNodeInternal&) = delete;
-        ApplicationNodeInternal& operator=(ApplicationNodeInternal&&) = delete;
-        virtual ~ApplicationNodeInternal() override;
+        FrameworkInternal(FWConfiguration&& config, std::unique_ptr<sgct::Engine> engine);
+        FrameworkInternal(const FrameworkInternal&) = delete;
+        FrameworkInternal(FrameworkInternal&&) = delete;
+        FrameworkInternal& operator=(const FrameworkInternal&) = delete;
+        FrameworkInternal& operator=(FrameworkInternal&&) = delete;
+        ~FrameworkInternal();
 
         void InitNode(InitNodeFunc coordinatorNodeFactory, InitNodeFunc workerNodeFactory);
         void Render() const;
@@ -73,10 +63,6 @@ namespace viscom {
         void BaseMousePosCallback(double x, double y);
         void BaseMouseScrollCallback(double xoffset, double yoffset);
 
-        virtual void addTuioCursor(TUIO::TuioCursor *tcur) override;
-        virtual void updateTuioCursor(TUIO::TuioCursor *tcur) override;
-        virtual void removeTuioCursor(TUIO::TuioCursor *tcur) override;
-
         void SetCursorInputMode(int mode);
 
         static void BaseEncodeDataStatic();
@@ -107,8 +93,6 @@ namespace viscom {
         const glm::vec2& GetViewportScaling(size_t windowId) const { return viewportScaling_[windowId]; }
         glm::vec2& GetViewportScaling(size_t windowId) { return viewportScaling_[windowId]; }
 
-        double GetCurrentAppTime() const { return syncInfoLocal_.currentTime_; }
-        double GetElapsedTime() const { return elapsedTime_; }
         void Terminate() const;
 
         CameraHelper* GetCamera() { return &camHelper_; }
@@ -120,11 +104,18 @@ namespace viscom {
         TextureManager& GetTextureManager() { return textureManager_; }
         MeshManager& GetMeshManager() { return meshManager_; }
 
+        bool IsInitialized() const { return initialized_; }
+        InitNodeFunc& GetCoordinatorNodeFactory() { return coordinatorNodeFactory_; }
+        InitNodeFunc& GetWorkerNodeFactory() { return workerNodeFactory_; }
+        void SetApplicationHalted(bool halted) { applicationHalted_ = halted; }
+        bool GetApplicationHalted() const { return applicationHalted_; }
+
+        void CreateSynchronizedResources();
+
     private:
         glm::dvec2 ConvertInputCoordinatesLocalToGlobal(const glm::dvec2& p);
         void ReleaseSynchronizedResource(ResourceType type, std::string_view name);
         void CreateSynchronizedResource(ResourceType type, const void* data, std::size_t length);
-        void CreateSynchronizedResources();
         void SendResourcesToNode(ResourceType type, const void* data, std::size_t length, int clientID);
         static int MakePackageID(std::uint8_t internalType, std::uint8_t internalPID, std::uint16_t userPID);
 
@@ -135,7 +126,7 @@ namespace viscom {
 
         /** Holds a static pointer to an object to this class making it singleton in a way. */
         // TODO: This is only a workaround and should be fixed in the future. [12/5/2016 Sebastian Maisch]
-        static ApplicationNodeInternal* instance_;
+        static FrameworkInternal* instance_;
         /** Holds the mutex for the instance pointer. */
         static std::mutex instanceMutex_;
         /** Holds the initialization state of this object. */
@@ -144,7 +135,7 @@ namespace viscom {
         /** Holds the applications configuration. */
         FWConfiguration config_;
         /** Holds the application node implementation. */
-        std::unique_ptr<ApplicationNodeBase> appNodeImpl_;
+        std::unique_ptr<ApplicationNodeInternal> appNodeInternal_;
         /** Holds the SGCT engine. */
         std::unique_ptr<sgct::Engine> engine_;
 
@@ -159,16 +150,6 @@ namespace viscom {
 
         /** The camera helper class. */
         CameraHelper camHelper_;
-
-        /** Holds the synchronized object (local). */
-        InternalSyncedInfo syncInfoLocal_;
-        /** Holds the synchronized object (synced). */
-        sgct::SharedObject<InternalSyncedInfo> syncInfoSynced_;
-
-        /** Holds the last frame time. */
-        double lastFrameTime_ = 0.0;
-        /** Holds the time elapsed since the last frame. */
-        double elapsedTime_;
 
         /** Holds the GPU program manager. */
         GPUProgramManager gpuProgramManager_;
@@ -200,29 +181,6 @@ namespace viscom {
         std::vector<ResourceData> creatableResources_;
         /** The mutex for creatable resources. */
         std::mutex creatableResourceMutex_;
-
-#ifdef VISCOM_SYNCINPUT
-        /** Holds the vector with keyboard events. */
-        std::vector<KeyboardEvent> keyboardEvents_;
-        /** Holds the synchronized vector with keyboard events. */
-        sgct::SharedVector<KeyboardEvent> keyboardEventsSynced_;
-        /** Holds the vector with character events. */
-        std::vector<CharEvent> charEvents_;
-        /** Holds the synchronized vector with character events. */
-        sgct::SharedVector<CharEvent> charEventsSynced_;
-        /** Holds the vector with mouse button events. */
-        std::vector<MouseButtonEvent> mouseButtonEvents_;
-        /** Holds the synchronized vector with mouse button events. */
-        sgct::SharedVector<MouseButtonEvent> mouseButtonEventsSynced_;
-        /** Holds the vector with mouse position events. */
-        std::vector<MousePosEvent> mousePosEvents_;
-        /** Holds the synchronized vector with mouse position events. */
-        sgct::SharedVector<MousePosEvent> mousePosEventsSynced_;
-        /** Holds the vector with mouse scroll events. */
-        std::vector<MouseScrollEvent> mouseScrollEvents_;
-        /** Holds the synchronized vector with mouse scroll events. */
-        sgct::SharedVector<MouseScrollEvent> mouseScrollEventsSynced_;
-#endif
 
 #ifndef VISCOM_LOCAL_ONLY
     public:

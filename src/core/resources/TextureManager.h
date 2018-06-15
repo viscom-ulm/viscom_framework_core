@@ -16,7 +16,7 @@ namespace viscom {
     class TextureManager final : public ResourceManager<Texture>
     {
     public:
-        explicit TextureManager(ApplicationNodeInternal* node);
+        explicit TextureManager(FrameworkInternal* node);
         TextureManager(const TextureManager&);
         TextureManager& operator=(const TextureManager&);
         TextureManager(TextureManager&&) noexcept;

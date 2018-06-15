@@ -13,12 +13,12 @@
 
 namespace viscom {
 
-    class ApplicationNodeInternal;
+    class FrameworkInternal;
 
     class Resource
     {
     public:
-        Resource(const std::string& resourceId, ResourceType type, ApplicationNodeInternal* appNode, bool synchronize = false);
+        Resource(const std::string& resourceId, ResourceType type, FrameworkInternal* appNode, bool synchronize = false);
         Resource(const Resource&) = delete;
         Resource& operator=(const Resource&) = delete;
         Resource(Resource&&) noexcept = delete;
@@ -37,11 +37,11 @@ namespace viscom {
         void LoadResource();
         void LoadResource(const void* data, std::size_t size);
 
-        static std::string FindResourceLocation(const std::string& localFilename, const ApplicationNodeInternal* appNode, const std::string& resourceId = "_no_resource_");
+        static std::string FindResourceLocation(const std::string& localFilename, const FrameworkInternal* appNode, const std::string& resourceId = "_no_resource_");
 
     protected:
-        const ApplicationNodeInternal* GetAppNode() const { return appNode_; }
-        ApplicationNodeInternal* GetAppNode() { return appNode_; }
+        const FrameworkInternal* GetAppNode() const { return appNode_; }
+        FrameworkInternal* GetAppNode() { return appNode_; }
 
         std::string FindResourceLocation(const std::string& localFilename) const;
 
@@ -65,6 +65,6 @@ namespace viscom {
         std::vector<std::uint8_t> data_;
 
         /** Holds the application object for dependencies. */
-        ApplicationNodeInternal* appNode_;
+        FrameworkInternal* appNode_;
     };
 }
