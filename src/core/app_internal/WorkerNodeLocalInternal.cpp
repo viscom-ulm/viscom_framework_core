@@ -108,22 +108,27 @@ namespace viscom {
 
     void WorkerNodeLocalInternal::KeyboardCallback(int key, int scancode, int action, int mods)
     {
+        if constexpr (SHOW_CLIENT_GUI) ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
     }
 
     void WorkerNodeLocalInternal::CharCallback(unsigned int character, int mods)
     {
+        if constexpr (SHOW_CLIENT_GUI) ImGui_ImplGlfwGL3_CharCallback(character);
     }
 
     void WorkerNodeLocalInternal::MouseButtonCallback(int button, int action)
     {
+        if constexpr (SHOW_CLIENT_GUI) ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
     }
 
     void WorkerNodeLocalInternal::MousePosCallback(double x, double y)
     {
+        if constexpr (SHOW_CLIENT_GUI) ImGui_ImplGlfwGL3_MousePositionCallback(x, y);
     }
 
     void WorkerNodeLocalInternal::MouseScrollCallback(double xoffset, double yoffset)
     {
+        if constexpr (SHOW_CLIENT_GUI) ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
     }
 
     void WorkerNodeLocalInternal::addTuioCursor(TUIO::TuioCursor* tcur)

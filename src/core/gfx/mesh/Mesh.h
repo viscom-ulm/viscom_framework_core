@@ -21,7 +21,7 @@ struct aiNode;
 
 namespace viscom {
 
-    class ApplicationNodeInternal;
+    class FrameworkInternal;
     struct Material;
     struct MaterialTextures;
     class SceneMeshNode;
@@ -34,7 +34,7 @@ namespace viscom {
     class Mesh final : public Resource
     {
     public:
-        Mesh(const std::string& meshFilename, ApplicationNodeInternal* node, bool synchronize = false);
+        Mesh(const std::string& meshFilename, FrameworkInternal* node, bool synchronize = false);
         Mesh(const Mesh&) = delete;
         Mesh& operator=(const Mesh&) = delete;
         Mesh(Mesh&&) noexcept = delete;
@@ -84,12 +84,12 @@ namespace viscom {
     private:
         using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'M', 'E', 'S', 1000>;
 
-        std::shared_ptr<const Texture> LoadTexture(const std::string& relFilename, ApplicationNodeInternal* node) const;
-        void LoadAssimpMeshFromFile(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node);
-        void LoadAssimpMesh(const aiScene* scene, ApplicationNodeInternal* node);
+        std::shared_ptr<const Texture> LoadTexture(const std::string& relFilename, FrameworkInternal* node) const;
+        void LoadAssimpMeshFromFile(const std::string& filename, const std::string& binFilename, FrameworkInternal* node);
+        void LoadAssimpMesh(const aiScene* scene, FrameworkInternal* node);
         void Save(const std::string& filename) const;
         void Write(std::ostream& ofs) const;
-        bool Load(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node);
+        bool Load(const std::string& filename, const std::string& binFilename, FrameworkInternal* node);
         bool Read(std::istream& ifs, TextureManager& texMan);
 
         void ParseBoneHierarchy(const std::map<std::string, unsigned int>& bones, const aiNode* node,

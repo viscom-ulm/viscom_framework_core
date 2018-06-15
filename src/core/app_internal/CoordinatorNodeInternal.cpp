@@ -123,10 +123,8 @@ namespace viscom {
         keyboardEvents_.emplace_back(key, scancode, action, mods);
 #endif
 
-        if constexpr (!SHOW_CLIENT_GUI) {
-            ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
-            if (ImGui::GetIO().WantCaptureKeyboard) return;
-        }
+        ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
+        if (ImGui::GetIO().WantCaptureKeyboard) return;
 
         ApplicationNodeInternal::KeyboardCallback(key, scancode, action, mods);
     }
@@ -137,10 +135,8 @@ namespace viscom {
         charEvents_.emplace_back(character, mods);
 #endif
 
-        if constexpr (!SHOW_CLIENT_GUI) {
-            ImGui_ImplGlfwGL3_CharCallback(character);
-            if (ImGui::GetIO().WantCaptureKeyboard) return;
-        }
+        ImGui_ImplGlfwGL3_CharCallback(character);
+        if (ImGui::GetIO().WantCaptureKeyboard) return;
 
         ApplicationNodeInternal::CharCallback(character, mods);
     }
@@ -151,10 +147,8 @@ namespace viscom {
         mouseButtonEvents_.emplace_back(button, action);
 #endif
 
-        if constexpr (!SHOW_CLIENT_GUI) {
-            ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
-            if (ImGui::GetIO().WantCaptureMouse) return;
-        }
+        ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
+        if (ImGui::GetIO().WantCaptureMouse) return;
 
         ApplicationNodeInternal::MouseButtonCallback(button, action);
     }
@@ -165,10 +159,8 @@ namespace viscom {
         mousePosEvents_.emplace_back(x, y);
 #endif
 
-        if constexpr (!SHOW_CLIENT_GUI) {
-            ImGui_ImplGlfwGL3_MousePositionCallback(x, y);
-            if (ImGui::GetIO().WantCaptureMouse) return;
-        }
+        ImGui_ImplGlfwGL3_MousePositionCallback(x, y);
+        if (ImGui::GetIO().WantCaptureMouse) return;
 
         ApplicationNodeInternal::MousePosCallback(x, y);
     }
@@ -179,10 +171,8 @@ namespace viscom {
         mouseScrollEvents_.emplace_back(xoffset, yoffset);
 #endif
 
-        if constexpr (!SHOW_CLIENT_GUI) {
-            ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
-            if (ImGui::GetIO().WantCaptureMouse) return;
-        }
+        ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
+        if (ImGui::GetIO().WantCaptureMouse) return;
 
         ApplicationNodeInternal::MouseScrollCallback(xoffset, yoffset);
     }

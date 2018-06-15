@@ -23,7 +23,7 @@ namespace viscom {
     class GPUProgram final : public Resource
     {
     public:
-        GPUProgram(const std::string& programName, ApplicationNodeInternal* node, bool synchronize);
+        GPUProgram(const std::string& programName, FrameworkInternal* node, bool synchronize);
         GPUProgram(const GPUProgram& orig) = delete;
         GPUProgram& operator=(const GPUProgram&) = delete;
         GPUProgram(GPUProgram&&) noexcept = delete;
@@ -73,6 +73,6 @@ namespace viscom {
 
         template<typename T, typename SHAcc> static GLuint linkNewProgram(const std::string& name,
             const std::vector<T>& shaders, SHAcc shaderAccessor);
-        void LoadProgram(viscom::function_view<std::unique_ptr<Shader>(const std::string&, const ApplicationNodeInternal*)> createShader);
+        void LoadProgram(viscom::function_view<std::unique_ptr<Shader>(const std::string&, const FrameworkInternal*)> createShader);
     };
 }

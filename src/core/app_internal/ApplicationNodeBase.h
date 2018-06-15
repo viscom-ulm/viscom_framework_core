@@ -8,30 +8,15 @@
 
 #pragma once
 
-// #include "core/app_internal/ApplicationNodeInternal.h"
+#include "core/app_internal/ApplicationNodeInternal.h"
+#include "core/FrameworkInternal.h"
+#include "core/TuioInputWrapper.h"
 
 namespace viscom {
 
     class FrameworkInternal;
     class ApplicationNodeInternal;
-
-// #ifndef VISCOM_LOCAL_ONLY
-//     class SGCTEngineWrapper
-//     {
-//         friend class SlaveNodeInternal;
-// 
-//     public:
-//         SGCTEngineWrapper(sgct::Engine* engine) : engine_{ engine } {}
-// 
-//     private:
-//         int GetCurrentWindowId() const;
-//         void UnbindCurrentWindowFBO() const;
-//         void SetProjectionPlaneCoordinate(std::size_t windowIdx, std::size_t vpIndex, std::size_t corner, glm::vec3 coordinate) const;
-// 
-//         /** Holds the SGCT engine. */
-//         sgct::Engine* engine_;
-//     };
-// #endif
+    class FrameBuffer;
 
     class ApplicationNodeBase
     {
@@ -57,14 +42,6 @@ namespace viscom {
         virtual bool DataAcknowledgeCallback(std::uint16_t packageID, int clientID);
         virtual bool DataTransferStatusCallback(bool connected, int clientID);
 
-        // bool IsMouseButtonPressed(int button) const noexcept { return appNode_->IsMouseButtonPressed(button); }
-        // bool IsKeyPressed(int key) const noexcept { return appNode_->IsKeyPressed(key); }
-        // 
-        // /** Returns the current mouse position. */
-        // const glm::vec2& GetMousePosition() const noexcept { return appNode_->GetMousePosition(); }
-        // /** Return the current mouse position in normalized coordinates. */
-        // const glm::vec2& GetMousePositionNormalized() const noexcept { return appNode_->GetMousePositionNormalized(); }
-
         virtual bool KeyboardCallback(int key, int scancode, int action, int mods);
         virtual bool CharCallback(unsigned int character, int mods);
         virtual bool MouseButtonCallback(int button, int action);
@@ -75,14 +52,22 @@ namespace viscom {
         virtual bool UpdateTuioCursor(TUIO::TuioCursor *tcur);
         virtual bool RemoveTuioCursor(TUIO::TuioCursor *tcur);
 
-        // void SetCursorInputMode(int mode) { appNode_->SetCursorInputMode(mode); }
-
         virtual void EncodeData();
         virtual void DecodeData();
 
-        // GPUProgramManager& GetGPUProgramManager() { return appNode_->GetGPUProgramManager(); }
-        // TextureManager& GetTextureManager() { return appNode_->GetTextureManager(); }
-        // MeshManager& GetMeshManager() { return appNode_->GetMeshManager(); }
+        bool IsMouseButtonPressed(int button) const noexcept { return framework_->IsMouseButtonPressed(button); }
+        bool IsKeyPressed(int key) const noexcept { return framework_->IsKeyPressed(key); }
+
+        // /** Returns the current mouse position. */
+        // const glm::vec2& GetMousePosition() const noexcept { return appNode_->GetMousePosition(); }
+        /** Return the current mouse position in normalized coordinates. */
+        const glm::vec2& GetMousePositionNormalized() const noexcept { return framework_->GetMousePositionNormalized(); }
+
+        // void SetCursorInputMode(int mode) { appNode_->SetCursorInputMode(mode); }
+
+        GPUProgramManager& GetGPUProgramManager() { return framework_->GetGPUProgramManager(); }
+        TextureManager& GetTextureManager() { return framework_->GetTextureManager(); }
+        MeshManager& GetMeshManager() { return framework_->GetMeshManager(); }
 
         // CameraHelper* GetCamera() { return appNode_->GetCamera(); }
         // std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc, int sizeDivisor = 1) const { return appNode_->CreateOffscreenBuffers(fboDesc, sizeDivisor); }
@@ -109,11 +94,5 @@ namespace viscom {
         ApplicationNodeInternal* appNode_;
         /** Holds the framework. */
         FrameworkInternal* framework_;
-
-// #ifndef VISCOM_LOCAL_ONLY
-//     protected:
-//         unsigned int GetGlobalProjectorId(int nodeId, int windowId) const { return appNode_->GetGlobalProjectorId(nodeId, windowId); }
-//         SGCTEngineWrapper GetEngine() const { return appNode_->GetEngine(); }
-// #endif
     };
 }

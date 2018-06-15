@@ -10,7 +10,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include "core/ApplicationNodeInternal.h"
+#include "core/FrameworkInternal.h"
 #include "core/resources/ResourceManager.h"
 #include "core/open_gl.h"
 
@@ -20,7 +20,7 @@ namespace viscom {
      * Constructor, creates a texture from file.
      * @param texFilename the filename of the texture file.
      */
-    Texture::Texture(const std::string& texFilename, ApplicationNodeInternal* node, bool synchronize) :
+    Texture::Texture(const std::string& texFilename, FrameworkInternal* node, bool synchronize) :
         Resource(texFilename, ResourceType::Texture, node, synchronize),
         textureId_{ 0 },
         descriptor_{ 3, GL_RGB8, GL_RGB, GL_UNSIGNED_BYTE },

@@ -7,9 +7,9 @@
  */
 
 #include "FullscreenQuad.h"
-#include "core/ApplicationNodeBase.h"
-#include "core/ApplicationNodeInternal.h"
 #include "core/open_gl.h"
+#include "core/app_internal/ApplicationNodeBase.h"
+#include "core/app_internal/ApplicationNodeInternal.h"
 
 namespace viscom {
 
@@ -31,7 +31,7 @@ namespace viscom {
         dummyVAO_ = 0;
     }
 
-    FullscreenQuad::FullscreenQuad(const std::string& fragmentProgram, ApplicationNodeInternal* appNode) :
+    FullscreenQuad::FullscreenQuad(const std::string& fragmentProgram, FrameworkInternal* appNode) :
         gpuProgram_{ appNode->GetGPUProgramManager().GetResource("fullScreenQuad_" + fragmentProgram, std::vector<std::string>{ "fullScreenQuad.vert", fragmentProgram }) }
     {
     }

@@ -8,7 +8,7 @@
 
 #include "core/initialize.h"
 #include "core/main.h"
-#include "core/ApplicationNodeInternal.h"
+#include "core/FrameworkInternal.h"
 #include <sgct.h>
 
 void SGCTLog(const char* msg)
@@ -19,7 +19,7 @@ void SGCTLog(const char* msg)
 
 namespace viscom {
 
-    std::unique_ptr<ApplicationNodeInternal> Application_Init(const FWConfiguration& config,
+    std::unique_ptr<FrameworkInternal> Application_Init(const FWConfiguration& config,
         InitNodeFunc coordinatorNodeFactory, InitNodeFunc workerNodeFactory) {
         std::vector<std::vector<char>> argVec;
         std::vector<char*> args;
@@ -64,7 +64,7 @@ namespace viscom {
         sgct::MessageHandler::instance()->setLogToCallback(true);
 
         auto internalConfig = config;
-        auto node = std::make_unique<viscom::ApplicationNodeInternal>(std::move(internalConfig), std::move(engine));
+        auto node = std::make_unique<viscom::FrameworkInternal>(std::move(internalConfig), std::move(engine));
         node->InitNode(std::move(coordinatorNodeFactory), std::move(workerNodeFactory));
 
         return node;
