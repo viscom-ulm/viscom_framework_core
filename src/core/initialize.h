@@ -9,6 +9,7 @@
 #pragma once
 
 #include <memory>
+#include "core/main.h"
 
 
 namespace viscom {
@@ -16,6 +17,8 @@ namespace viscom {
     class ApplicationNodeInternal;
     struct FWConfiguration;
 
-    std::unique_ptr<ApplicationNodeInternal> Application_Init(const FWConfiguration&);
+    std::unique_ptr<ApplicationNodeInternal> Application_Init(const FWConfiguration&,
+        InitNodeFunc coordinatorNodeFactory,
+        InitNodeFunc workerNodeFactory);
 
 }

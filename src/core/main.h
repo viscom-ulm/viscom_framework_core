@@ -22,6 +22,10 @@
 
 namespace viscom {
 
+    class ApplicationNodeBase;
+    class ApplicationNodeInternal;
+    using InitNodeFunc = std::function<std::unique_ptr<ApplicationNodeBase>(ApplicationNodeInternal*)>;
+
 #ifdef _DEBUG
     constexpr bool DEBUG_MODE = true;
 #else
