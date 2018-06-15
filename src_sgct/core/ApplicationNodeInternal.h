@@ -43,7 +43,7 @@ namespace viscom {
         ApplicationNodeInternal& operator=(ApplicationNodeInternal&&) = delete;
         virtual ~ApplicationNodeInternal() override;
 
-        void InitNode();
+        void InitNode(InitNodeFunc coordinatorNodeFactory, InitNodeFunc workerNodeFactory);
         void Render() const;
 
         void BasePreWindow();
@@ -127,6 +127,11 @@ namespace viscom {
         void CreateSynchronizedResources();
         void SendResourcesToNode(ResourceType type, const void* data, std::size_t length, int clientID);
         static int MakePackageID(std::uint8_t internalType, std::uint8_t internalPID, std::uint16_t userPID);
+
+        /** The function the will create a coordinator node. */
+        InitNodeFunc coordinatorNodeFactory_;
+        /** The function the will create a worker node. */
+        InitNodeFunc workerNodeFactory_;
 
         /** Holds a static pointer to an object to this class making it singleton in a way. */
         // TODO: This is only a workaround and should be fixed in the future. [12/5/2016 Sebastian Maisch]

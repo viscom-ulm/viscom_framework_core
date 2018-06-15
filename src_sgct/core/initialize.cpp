@@ -19,7 +19,8 @@ void SGCTLog(const char* msg)
 
 namespace viscom {
 
-    std::unique_ptr<ApplicationNodeInternal> Application_Init(const FWConfiguration& config) {
+    std::unique_ptr<ApplicationNodeInternal> Application_Init(const FWConfiguration& config,
+        InitNodeFunc coordinatorNodeFactory, InitNodeFunc workerNodeFactory) {
         std::vector<std::vector<char>> argVec;
         std::vector<char*> args;
 
@@ -64,7 +65,7 @@ namespace viscom {
 
         auto internalConfig = config;
         auto node = std::make_unique<viscom::ApplicationNodeInternal>(std::move(internalConfig), std::move(engine));
-        node->InitNode();
+        node->InitNode(std::move(coordinatorNodeFactory), std::move(workerNodeFactory));
 
         return node;
     }

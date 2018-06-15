@@ -7,8 +7,7 @@
  */
 
 #include "ApplicationNodeInternal.h"
-#include "app/MasterNode.h"
-#include "app/SlaveNode.h"
+#include "core/ApplicationNodeBase.h"
 #include "core/imgui/imgui_impl_glfw_gl3.h"
 #include "external/tinyxml2.h"
 #include "core/utils/utils.h"
@@ -78,8 +77,11 @@ namespace viscom {
 
     ApplicationNodeInternal::~ApplicationNodeInternal() = default;
 
-    void ApplicationNodeInternal::InitNode()
+    void ApplicationNodeInternal::InitNode(InitNodeFunc coordinatorNodeFactory, InitNodeFunc workerNodeFactory)
     {
+        coordinatorNodeFactory_ = std::move(coordinatorNodeFactory);
+        workerNodeFactory_ = std::move(workerNodeFactory);
+
         sgct::Engine::RunMode rm = sgct::Engine::Default_Mode;
         if (config_.openglProfile_ == "3.3") rm = sgct::Engine::OpenGL_3_3_Core_Profile;
         else if (config_.openglProfile_ == "4.0") rm = sgct::Engine::OpenGL_4_0_Core_Profile;
@@ -115,8 +117,8 @@ namespace viscom {
 
     void ApplicationNodeInternal::BasePreWindow()
     {
-        if (engine_->isMaster()) appNodeImpl_ = std::make_unique<MasterNode>(this);
-        else appNodeImpl_ = std::make_unique<SlaveNode>(this);
+        if (engine_->isMaster()) appNodeImpl_ = coordinatorNodeFactory_(this);
+        else appNodeImpl_ = workerNodeFactory_(this);
 
         appNodeImpl_->PreWindow();
     }
