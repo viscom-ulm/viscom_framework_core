@@ -118,7 +118,6 @@ else()
 endif()
 
 list(APPEND CORE_INCLUDE_DIRS
-    src
     extern/fwcore/src
     ${VISCOM_SGCT_WRAPPER_DIR}
     extern/fwcore/extern/g3log/src
@@ -156,6 +155,12 @@ if(${VISCOM_USE_TUIO})
     list(APPEND CORE_LIBS libTUIO)
     list(APPEND CORE_INCLUDE_DIRS extern/fwcore/extern/tuio/TUIO extern/fwcore/extern/tuio/oscpack)
 endif()
+
+add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${EXTERN_SOURCES_CORE})
+set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
+target_include_directories(VISCOMCore PUBLIC ${CORE_INCLUDE_DIRS})
+target_link_libraries(VISCOMCore ${CORE_LIBS})
+target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS})
 
 macro(copy_core_lib_dlls APP_NAME)
     if (${VISCOM_USE_TUIO})
