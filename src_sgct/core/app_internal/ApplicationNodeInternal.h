@@ -12,9 +12,12 @@
 #ifdef VISCOM_SYNCINPUT
 #include "core/InputWrapper.h"
 #endif
-#include "core/TuioInputWrapper.h"
 #include "core/FrameworkInternal.h"
 #include "sgct/SharedDataTypes.h"
+
+namespace viscom::tuio {
+    class TuioInputWrapper;
+}
 
 namespace viscom {
 
@@ -27,7 +30,7 @@ namespace viscom {
         glm::mat4 pickMatrix_;
     };
 
-    class ApplicationNodeInternal : public viscom::tuio::TuioInputWrapper
+    class ApplicationNodeInternal
     {
     public:
         ApplicationNodeInternal(FrameworkInternal& fwInternal);
@@ -35,7 +38,7 @@ namespace viscom {
         ApplicationNodeInternal(ApplicationNodeInternal&&) = delete;
         ApplicationNodeInternal& operator=(const ApplicationNodeInternal&) = delete;
         ApplicationNodeInternal& operator=(ApplicationNodeInternal&&) = delete;
-        virtual ~ApplicationNodeInternal() override;
+        virtual ~ApplicationNodeInternal();
 
         virtual void PreWindow();
         virtual void InitOpenGL();
@@ -57,15 +60,16 @@ namespace viscom {
         virtual void MouseButtonCallback(int button, int action);
         virtual void MousePosCallback(double x, double y);
         virtual void MouseScrollCallback(double xoffset, double yoffset);
-        void addTuioCursor(TUIO::TuioCursor *tcur) override;
-        void updateTuioCursor(TUIO::TuioCursor *tcur) override;
-        void removeTuioCursor(TUIO::TuioCursor *tcur) override;
+        virtual void AddTuioCursor(TUIO::TuioCursor *tcur);
+        virtual void UpdateTuioCursor(TUIO::TuioCursor *tcur);
+        virtual void RemoveTuioCursor(TUIO::TuioCursor *tcur);
 
         double GetCurrentAppTime() const { return syncInfoLocal_.currentTime_; }
         double GetElapsedTime() const { return elapsedTime_; }
 
-    protected:
         FrameworkInternal & GetFramework() { return fwInternal_; }
+
+    protected:
         void SetApplicationNode(std::unique_ptr<ApplicationNodeBase> appNodeImpl) { appNodeImpl_ = std::move(appNodeImpl); }
 
         /** Holds the synchronized object (local). */
@@ -91,6 +95,8 @@ namespace viscom {
         FrameworkInternal& fwInternal_;
         /** Holds the application node implementation. */
         std::unique_ptr<ApplicationNodeBase> appNodeImpl_;
+        /** The input wrapper for TUIO. */
+        std::unique_ptr<tuio::TuioInputWrapper> tuio_;
 
         /** Holds the last frame time. */
         double lastFrameTime_ = 0.0;

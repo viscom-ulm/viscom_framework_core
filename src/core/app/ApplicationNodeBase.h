@@ -10,7 +10,6 @@
 
 #include "core/app_internal/ApplicationNodeInternal.h"
 #include "core/FrameworkInternal.h"
-#include "core/TuioInputWrapper.h"
 
 namespace viscom {
 

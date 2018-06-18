@@ -9,6 +9,7 @@
 #include "core/main.h"
 #include <sgct.h>
 #include "ApplicationNodeInternal.h"
+#include "core/TuioInputWrapper.h"
 #include <imgui.h>
 #include "core/app/ApplicationNodeBase.h"
 #include "core/imgui/imgui_impl_glfw_gl3.h"
@@ -28,10 +29,13 @@ namespace viscom {
     };
 
     ApplicationNodeInternal::ApplicationNodeInternal(FrameworkInternal& fwInternal) :
-        tuio::TuioInputWrapper{ fwInternal.GetConfig().tuioPort_ },
         fwInternal_{ fwInternal },
+        tuio_{ std::make_unique<tuio::TuioInputWrapper>(fwInternal.GetConfig().tuioPort_)},
         elapsedTime_{ 0.0 }
     {
+        tuio_->SetAddCursorCallback([this](TUIO::TuioCursor* tcur) { AddTuioCursor(tcur); });
+        tuio_->SetUpdateCursorCallback([this](TUIO::TuioCursor* tcur) { UpdateTuioCursor(tcur); });
+        tuio_->SetRemoveCursorCallback([this](TUIO::TuioCursor* tcur) { RemoveTuioCursor(tcur); });
     }
 
     ApplicationNodeInternal::~ApplicationNodeInternal() = default;
@@ -166,19 +170,17 @@ namespace viscom {
         appNodeImpl_->DecodeData();
     }
 
-
-
-    void ApplicationNodeInternal::addTuioCursor(TUIO::TuioCursor* tcur)
+    void ApplicationNodeInternal::AddTuioCursor(TUIO::TuioCursor* tcur)
     {
         appNodeImpl_->AddTuioCursor(tcur);
     }
 
-    void ApplicationNodeInternal::updateTuioCursor(TUIO::TuioCursor* tcur)
+    void ApplicationNodeInternal::UpdateTuioCursor(TUIO::TuioCursor* tcur)
     {
         appNodeImpl_->UpdateTuioCursor(tcur);
     }
 
-    void ApplicationNodeInternal::removeTuioCursor(TUIO::TuioCursor* tcur)
+    void ApplicationNodeInternal::RemoveTuioCursor(TUIO::TuioCursor* tcur)
     {
         appNodeImpl_->RemoveTuioCursor(tcur);
     }

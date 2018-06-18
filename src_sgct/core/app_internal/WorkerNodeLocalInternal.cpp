@@ -131,15 +131,15 @@ namespace viscom {
         if constexpr (SHOW_CLIENT_GUI) ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
     }
 
-    void WorkerNodeLocalInternal::addTuioCursor(TUIO::TuioCursor* tcur)
+    void WorkerNodeLocalInternal::AddTuioCursor(TUIO::TuioCursor* tcur)
     {
     }
 
-    void WorkerNodeLocalInternal::updateTuioCursor(TUIO::TuioCursor* tcur)
+    void WorkerNodeLocalInternal::UpdateTuioCursor(TUIO::TuioCursor* tcur)
     {
     }
 
-    void WorkerNodeLocalInternal::removeTuioCursor(TUIO::TuioCursor* tcur)
+    void WorkerNodeLocalInternal::RemoveTuioCursor(TUIO::TuioCursor* tcur)
     {
     }
 

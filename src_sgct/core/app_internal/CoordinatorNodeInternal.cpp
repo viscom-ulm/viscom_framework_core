@@ -34,6 +34,8 @@ namespace viscom {
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         ImGui_ImplGlfwGL3_Init(GetFramework().GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetFramework().GetEngine()->isMaster() && SHOW_CLIENT_MOUSE_CURSOR);
+
+        ApplicationNodeInternal::InitOpenGL();
     }
 
     void CoordinatorNodeInternal::PreSync()
@@ -177,32 +179,30 @@ namespace viscom {
         ApplicationNodeInternal::MouseScrollCallback(xoffset, yoffset);
     }
 
-    void CoordinatorNodeInternal::addTuioCursor(TUIO::TuioCursor* tcur)
+    void CoordinatorNodeInternal::AddTuioCursor(TUIO::TuioCursor* tcur)
     {
         if (!GetFramework().IsInitialized()) return;
 #ifdef VISCOM_USE_TUIO
-        auto tPoint = tcur->getPosition();
         // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-        ApplicationNodeInternal::addTuioCursor(tcur);
+        ApplicationNodeInternal::AddTuioCursor(tcur);
 #endif
     }
 
-    void CoordinatorNodeInternal::updateTuioCursor(TUIO::TuioCursor* tcur)
+    void CoordinatorNodeInternal::UpdateTuioCursor(TUIO::TuioCursor* tcur)
     {
         if (!GetFramework().IsInitialized()) return;
 #ifdef VISCOM_USE_TUIO
-        auto tPoint = tcur->getPosition();
         // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-        ApplicationNodeInternal::updateTuioCursor(tcur);
+        ApplicationNodeInternal::UpdateTuioCursor(tcur);
 #endif
     }
 
-    void CoordinatorNodeInternal::removeTuioCursor(TUIO::TuioCursor* tcur)
+    void CoordinatorNodeInternal::RemoveTuioCursor(TUIO::TuioCursor* tcur)
     {
         if (!GetFramework().IsInitialized()) return;
 #ifdef VISCOM_USE_TUIO
         // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
-        ApplicationNodeInternal::removeTuioCursor(tcur);
+        ApplicationNodeInternal::RemoveTuioCursor(tcur);
 #endif
     }
 

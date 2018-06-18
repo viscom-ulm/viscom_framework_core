@@ -31,9 +31,9 @@ namespace viscom {
         virtual void MousePosCallback(double x, double y) override;
         virtual void MouseScrollCallback(double xoffset, double yoffset) override;
 
-        virtual void addTuioCursor(TUIO::TuioCursor* tcur) override;
-        virtual void updateTuioCursor(TUIO::TuioCursor* tcur) override;
-        virtual void removeTuioCursor(TUIO::TuioCursor* tcur) override;
+        virtual void AddTuioCursor(TUIO::TuioCursor* tcur) override;
+        virtual void UpdateTuioCursor(TUIO::TuioCursor* tcur) override;
+        virtual void RemoveTuioCursor(TUIO::TuioCursor* tcur) override;
 
     private:
 #ifdef VISCOM_SYNCINPUT
