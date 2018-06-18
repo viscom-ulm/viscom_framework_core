@@ -8,13 +8,16 @@
 
 #include "core/initialize.h"
 #include "core/main.h"
-#include "core/ApplicationNodeInternal.h"
+#include "core/FrameworkInternal.h"
 
 namespace viscom {
 
-    std::unique_ptr<ApplicationNodeInternal> Application_Init(const FWConfiguration& config) {
+    std::unique_ptr<FrameworkInternal> Application_Init(const FWConfiguration& config,
+        InitNodeFunc coordinatorNodeFactory,
+        InitNodeFunc workerNodeFactory) {
         auto internalConfig = config;
-        auto node = std::make_unique<viscom::ApplicationNodeInternal>(std::move(internalConfig));
+        auto node = std::make_unique<viscom::FrameworkInternal>(std::move(internalConfig),
+            std::move(coordinatorNodeFactory), std::move(workerNodeFactory));
 
         return node;
     }

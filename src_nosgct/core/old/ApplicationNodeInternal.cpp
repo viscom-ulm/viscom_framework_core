@@ -1,44 +1,32 @@
 /**
- * @file   FrameworkInternal.cpp
+ * @file   ApplicationNodeInternal.cpp
  * @author Sebastian Maisch <sebastian.maisch@uni-ulm.de>
  * @date   2016.11.25
  *
- * @brief  Implementation of the internal framework class for the VISCOM lab cluster.
+ * @brief  Implementation of the base application node base class.
  */
 
-#include "FrameworkInternal.h"
+#include "ApplicationNodeInternal.h"
+#include "app/MasterNode.h"
+#include "app/SlaveNode.h"
 #include <imgui.h>
 #include "core/imgui/imgui_impl_glfw_gl3.h"
 #include "core/open_gl.h"
 #include <iostream>
-#include "core/app_internal/CoordinatorNodeInternal.h"
-#include "core/app_internal/WorkerNodeInternal.h"
 
 namespace viscom {
 
-    enum class InternalTransferType : std::uint8_t {
-        ResourceTransfer,
-        ResourceReleaseTransfer,
-        ResourceRequest
-    };
-
-    enum class InternalTransferTypeLarge : std::uint16_t {
-        UserData = std::numeric_limits<std::uint16_t>::max()
-    };
-
-    FrameworkInternal::FrameworkInternal(FWConfiguration&& config,
-        InitNodeFunc coordinatorNodeFactory, InitNodeFunc workerNodeFactory) :
-        coordinatorNodeFactory_{ std::move(coordinatorNodeFactory) },
-        workerNodeFactory_{ std::move(workerNodeFactory) },
-        config_(std::move(config)),
+    ApplicationNodeInternal::ApplicationNodeInternal(FWConfiguration&& config) :
+        tuio::TuioInputWrapper{ config.tuioPort_ },
+        config_{ std::move(config) },
         window_{ nullptr },
         camHelper_{ config_.nearPlaneSize_.x, config.nearPlaneSize_.y, glm::vec3(0.0f, 0.0f, 4.0f) },
+        currentTime_{ 0.0 },
+        elapsedTime_{ 0.0 },
         gpuProgramManager_{ this },
         textureManager_{ this },
         meshManager_{ this }
     {
-        BasePreWindow();
-
         std::pair<int, int> oglVer = std::make_pair(3, 3);
         if (config_.openglProfile_ == "3.3") oglVer = std::make_pair(3, 3);
         else if (config_.openglProfile_ == "4.0") oglVer = std::make_pair(4, 0); //-V112
@@ -53,10 +41,10 @@ namespace viscom {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, oglVer.second);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-        if constexpr (DEBUG_MODE)glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+        if constexpr (DEBUG_MODE) glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-        glfwSetErrorCallback(FrameworkInternal::ErrorCallbackStatic);
+        glfwSetErrorCallback(ApplicationNodeInternal::ErrorCallbackStatic);
         window_ = glfwCreateWindow(static_cast<int>(config_.virtualScreenSize_.x), static_cast<int>(config_.virtualScreenSize_.y), "VISCOM Framework", nullptr, nullptr);
         if (window_ == nullptr) {
             LOG(FATAL) << "Could not create window!";
@@ -68,11 +56,11 @@ namespace viscom {
         glfwSetWindowUserPointer(window_, this);
         glfwSetInputMode(window_, GLFW_STICKY_MOUSE_BUTTONS, 1);
 
-        glfwSetKeyCallback(window_, FrameworkInternal::BaseKeyboardCallbackStatic);
-        glfwSetCharCallback(window_, FrameworkInternal::BaseCharCallbackStatic);
-        glfwSetMouseButtonCallback(window_, FrameworkInternal::BaseMouseButtonCallbackStatic);
-        glfwSetCursorPosCallback(window_, FrameworkInternal::BaseMousePosCallbackStatic);
-        glfwSetScrollCallback(window_, FrameworkInternal::BaseMouseScrollCallbackStatic);
+        glfwSetKeyCallback(window_, ApplicationNodeInternal::BaseKeyboardCallbackStatic);
+        glfwSetCharCallback(window_, ApplicationNodeInternal::BaseCharCallbackStatic);
+        glfwSetMouseButtonCallback(window_, ApplicationNodeInternal::BaseMouseButtonCallbackStatic);
+        glfwSetCursorPosCallback(window_, ApplicationNodeInternal::BaseMousePosCallbackStatic);
+        glfwSetScrollCallback(window_, ApplicationNodeInternal::BaseMouseScrollCallbackStatic);
         glfwMakeContextCurrent(window_);
 
         LOG(INFO) << "Window successfully initialized.";
@@ -86,23 +74,24 @@ namespace viscom {
         }
     }
 
-    FrameworkInternal::~FrameworkInternal()
+
+    ApplicationNodeInternal::~ApplicationNodeInternal()
     {
         if (window_) glfwDestroyWindow(window_);
         glfwTerminate();
     }
 
-    void FrameworkInternal::Render()
+    void ApplicationNodeInternal::Render()
     {
         BaseInitOpenGL();
 
         while (!glfwWindowShouldClose(window_)) {
-            appNodeInternal_->PreSync();
+            appNodeImpl_->PreSync();
             PostSyncFunction();
-            appNodeInternal_->ClearBuffer(backBuffer_);
+            appNodeImpl_->ClearBuffer(backBuffer_);
             BaseDrawFrame();
             BaseDraw2D();
-            appNodeInternal_->PostDraw();
+            appNodeImpl_->PostDraw();
             ImGui_ImplGlfwGL3_FinishAllFrames();
             glfwSwapBuffers(window_);
         }
@@ -110,14 +99,10 @@ namespace viscom {
         BaseCleanUp();
     }
 
-    void FrameworkInternal::BasePreWindow()
+    void ApplicationNodeInternal::BaseInitOpenGL()
     {
-        appNodeInternal_ = std::make_unique<CoordinatorNodeInternal>(*this);
-        appNodeInternal_->PreWindow();
-    }
+        appNodeImpl_ = std::make_unique<MasterNode>(this);
 
-    void FrameworkInternal::BaseInitOpenGL()
-    {
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
         glEnable(GL_CULL_FACE);
@@ -156,11 +141,14 @@ namespace viscom {
         ImGui_ImplGlfwGL3_Init(window_, false);
 
         FullscreenQuad::InitializeStatic();
-        appNodeInternal_->InitOpenGL();
+        appNodeImpl_->InitOpenGL();
     }
 
-    void FrameworkInternal::PostSyncFunction()
+    void ApplicationNodeInternal::PostSyncFunction()
     {
+        auto lastTime = currentTime_;
+        currentTime_ = glfwGetTime();
+
         glm::vec2 relProjectorPos = glm::vec2(viewportScreen_[0].position_) / glm::vec2(viewportScreen_[0].size_);
         glm::vec2 relQuadSize = glm::vec2(viewportQuadSize_[0]) / glm::vec2(viewportScreen_[0].size_);
         glm::vec2 relProjectorSize = 1.0f / relQuadSize;
@@ -175,23 +163,27 @@ namespace viscom {
         pickMatrix = glm::inverse(camHelper_.GetCentralViewPerspectiveMatrix()) * pickMatrix;
         camHelper_.SetPickMatrix(pickMatrix);
 
-        appNodeInternal_->PostSync();
+        appNodeImpl_->UpdateSyncedInfo();
+
+        elapsedTime_ = currentTime_ - lastTime;
+        glfwPollEvents();
+        appNodeImpl_->UpdateFrame(currentTime_, elapsedTime_);
     }
 
-    void FrameworkInternal::BaseDrawFrame()
+    void ApplicationNodeInternal::BaseDrawFrame()
     {
         glCullFace(GL_BACK);
         glFrontFace(GL_CCW);
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
-        appNodeInternal_->DrawFrame(backBuffer_);
+        appNodeImpl_->DrawFrame(backBuffer_);
     }
 
-    void FrameworkInternal::BaseDraw2D()
+    void ApplicationNodeInternal::BaseDraw2D()
     {
         ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(0).position_, GetViewportScreen(0).size_, GetViewportScreen(0).size_, GetViewportScaling(0), GetCurrentAppTime(), GetElapsedTime());
 
-        appNodeInternal_->Draw2D(backBuffer_);
+        appNodeImpl_->Draw2D(backBuffer_);
 
         backBuffer_.DrawToFBO([this]() {
             ImGui::Render();
@@ -199,24 +191,24 @@ namespace viscom {
         });
     }
 
-    void FrameworkInternal::BaseCleanUp()
+    void ApplicationNodeInternal::BaseCleanUp() const
     {
         ImGui_ImplGlfwGL3_Shutdown();
         ImGui::DestroyContext();
-        appNodeInternal_->CleanUp();
+        appNodeImpl_->CleanUp();
     }
 
-    bool FrameworkInternal::IsMouseButtonPressed(int button) const noexcept
+    bool ApplicationNodeInternal::IsMouseButtonPressed(int button) const noexcept
     {
         return glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
     }
 
-    bool FrameworkInternal::IsKeyPressed(int key) const noexcept
+    bool ApplicationNodeInternal::IsKeyPressed(int key) const noexcept
     {
         return glfwGetKey(window_, key) == GLFW_PRESS;
     }
 
-    void FrameworkInternal::ErrorCallbackStatic(int error, const char* description)
+    void ApplicationNodeInternal::ErrorCallbackStatic(int error, const char* description)
     {
         std::cerr << "An GLFW error occurred (" << error << "): " << std::endl;
         std::cerr << description << std::endl;
@@ -224,37 +216,38 @@ namespace viscom {
         LOG(WARNING) << description << std::endl;
     }
 
-    void FrameworkInternal::BaseKeyboardCallbackStatic(GLFWwindow* window, int key, int scancode, int action, int mods)
+    void ApplicationNodeInternal::BaseKeyboardCallbackStatic(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
-        auto app = reinterpret_cast<FrameworkInternal*>(glfwGetWindowUserPointer(window));
+        auto app = reinterpret_cast<ApplicationNodeInternal*>(glfwGetWindowUserPointer(window));
         app->BaseKeyboardCallback(key, scancode, action, mods);
     }
 
-    void FrameworkInternal::BaseCharCallbackStatic(GLFWwindow* window, unsigned int character)
+    void ApplicationNodeInternal::BaseCharCallbackStatic(GLFWwindow* window, unsigned int character)
     {
-        auto app = reinterpret_cast<FrameworkInternal*>(glfwGetWindowUserPointer(window));
+        auto app = reinterpret_cast<ApplicationNodeInternal*>(glfwGetWindowUserPointer(window));
         app->BaseCharCallback(character, 0);
     }
 
-    void FrameworkInternal::BaseMouseButtonCallbackStatic(GLFWwindow* window, int button, int action, int mods)
+    void ApplicationNodeInternal::BaseMouseButtonCallbackStatic(GLFWwindow* window, int button, int action, int mods)
     {
-        auto app = reinterpret_cast<FrameworkInternal*>(glfwGetWindowUserPointer(window));
+        auto app = reinterpret_cast<ApplicationNodeInternal*>(glfwGetWindowUserPointer(window));
         app->BaseMouseButtonCallback(button, action);
     }
 
-    void FrameworkInternal::BaseMousePosCallbackStatic(GLFWwindow* window, double x, double y)
+    void ApplicationNodeInternal::BaseMousePosCallbackStatic(GLFWwindow* window, double x, double y)
     {
-        auto app = reinterpret_cast<FrameworkInternal*>(glfwGetWindowUserPointer(window));
+        auto app = reinterpret_cast<ApplicationNodeInternal*>(glfwGetWindowUserPointer(window));
         app->BaseMousePosCallback(x, y);
     }
 
-    void FrameworkInternal::BaseMouseScrollCallbackStatic(GLFWwindow* window, double xoffset, double yoffset)
+    void ApplicationNodeInternal::BaseMouseScrollCallbackStatic(GLFWwindow* window, double xoffset, double yoffset)
     {
-        auto app = reinterpret_cast<FrameworkInternal*>(glfwGetWindowUserPointer(window));
+        auto app = reinterpret_cast<ApplicationNodeInternal*>(glfwGetWindowUserPointer(window));
         app->BaseMouseScrollCallback(xoffset, yoffset);
     }
 
-    void FrameworkInternal::BaseKeyboardCallback(int key, int scancode, int action, int mods)
+    // ReSharper disable CppMemberFunctionMayBeConst
+    void ApplicationNodeInternal::BaseKeyboardCallback(int key, int scancode, int action, int mods)
     {
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
             glfwSetWindowShouldClose(window_, 1);
@@ -264,26 +257,26 @@ namespace viscom {
         ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
         if (ImGui::GetIO().WantCaptureKeyboard) return;
 
-        appNodeInternal_->KeyboardCallback(key, scancode, action, mods);
+        appNodeImpl_->KeyboardCallback(key, scancode, action, mods);
     }
 
-    void FrameworkInternal::BaseCharCallback(unsigned int character, int mods)
+    void ApplicationNodeInternal::BaseCharCallback(unsigned int character, int mods)
     {
         ImGui_ImplGlfwGL3_CharCallback(character);
         if (ImGui::GetIO().WantCaptureKeyboard) return;
 
-        appNodeInternal_->CharCallback(character, mods);
+        appNodeImpl_->CharCallback(character, mods);
     }
 
-    void FrameworkInternal::BaseMouseButtonCallback(int button, int action)
+    void ApplicationNodeInternal::BaseMouseButtonCallback(int button, int action)
     {
         ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
         if (ImGui::GetIO().WantCaptureMouse) return;
 
-        appNodeInternal_->MouseButtonCallback(button, action);
+        appNodeImpl_->MouseButtonCallback(button, action);
     }
 
-    void FrameworkInternal::BaseMousePosCallback(double x, double y)
+    void ApplicationNodeInternal::BaseMousePosCallback(double x, double y)
     {
         auto mousePos = ConvertInputCoordinates(x, y);
 
@@ -295,48 +288,67 @@ namespace viscom {
         if (ImGui::GetIO().WantCaptureMouse) return;
 
 
-        appNodeInternal_->MousePosCallback(mousePos.x, mousePos.y);
+        appNodeImpl_->MousePosCallback(mousePos.x, mousePos.y);
     }
 
-    void FrameworkInternal::BaseMouseScrollCallback(double xoffset, double yoffset)
+    void ApplicationNodeInternal::BaseMouseScrollCallback(double xoffset, double yoffset)
     {
         ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
         if (ImGui::GetIO().WantCaptureMouse) return;
 
-        appNodeInternal_->MouseScrollCallback(xoffset, yoffset);
+        appNodeImpl_->MouseScrollCallback(xoffset, yoffset);
     }
 
-    void FrameworkInternal::SetCursorInputMode(int mode)
+    void ApplicationNodeInternal::addTuioCursor(TUIO::TuioCursor* tcur)
     {
-        glfwSetInputMode(window_, GLFW_CURSOR, mode);
+        if constexpr (USE_TUIO) {
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->AddTuioCursor(tcur);
+        }
     }
 
-    void FrameworkInternal::TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex)
+    void ApplicationNodeInternal::updateTuioCursor(TUIO::TuioCursor* tcur)
+    {
+        if constexpr (USE_TUIO) {
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->UpdateTuioCursor(tcur);
+        }
+    }
+
+    void ApplicationNodeInternal::removeTuioCursor(TUIO::TuioCursor* tcur)
+    {
+        if constexpr (USE_TUIO) {
+            // TODO: TUIO events will not be synced currently. [5/27/2017 Sebastian Maisch]
+            appNodeImpl_->RemoveTuioCursor(tcur);
+        }
+    }
+
+    void ApplicationNodeInternal::TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex)
     {
         LOG(INFO) << "TransferDataToNode(...) not implemented in local mode.";
     }
 
-    void FrameworkInternal::TransferResource(std::string_view name, const void* data, std::size_t length, ResourceType type)
+    void ApplicationNodeInternal::TransferResource(std::string_view name, const void* data, std::size_t length, ResourceType type)
     {
         LOG(INFO) << "TransferResource(...) not implemented in local mode.";
     }
 
-    void FrameworkInternal::TransferReleaseResource(std::string_view name, ResourceType type)
+    void ApplicationNodeInternal::TransferReleaseResource(std::string_view name, ResourceType type)
     {
         LOG(INFO) << "TransferReleaseResource(...) not implemented in local mode.";
     }
 
-    void FrameworkInternal::WaitForResource(const std::string& name, ResourceType type)
+    void ApplicationNodeInternal::WaitForResource(const std::string& name, ResourceType type)
     {
         LOG(INFO) << "WaitForResource(...) not implemented in local mode.";
     }
 
-    void FrameworkInternal::SetCursorInputMode(int mode)
+    void ApplicationNodeInternal::SetCursorInputMode(int mode)
     {
         glfwSetInputMode(window_, GLFW_CURSOR, mode);
     }
 
-    glm::dvec2 FrameworkInternal::ConvertInputCoordinates(double x, double y)
+    glm::dvec2 ApplicationNodeInternal::ConvertInputCoordinates(double x, double y)
     {
         glm::dvec2 result{ x, static_cast<double>(viewportScreen_[0].size_.y) - y };
         result += viewportScreen_[0].position_;
@@ -345,12 +357,12 @@ namespace viscom {
         return result;
     }
 
-    void FrameworkInternal::Terminate() const
+    void ApplicationNodeInternal::Terminate() const
     {
         glfwSetWindowShouldClose(window_, 1);
     }
 
-    std::vector<FrameBuffer> FrameworkInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc, int sizeDivisor) const
+    std::vector<FrameBuffer> ApplicationNodeInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc, int sizeDivisor) const
     {
         std::vector<FrameBuffer> result;
         glm::ivec2 fboSize(config_.virtualScreenSize_.x / sizeDivisor, config_.virtualScreenSize_.y / sizeDivisor);
@@ -358,12 +370,12 @@ namespace viscom {
         return result;
     }
 
-    const FrameBuffer* FrameworkInternal::SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const
+    const FrameBuffer* ApplicationNodeInternal::SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const
     {
         return &offscreenBuffers[0];
     }
 
-    std::unique_ptr<FullscreenQuad> FrameworkInternal::CreateFullscreenQuad(const std::string& fragmentShader)
+    std::unique_ptr<FullscreenQuad> ApplicationNodeInternal::CreateFullscreenQuad(const std::string& fragmentShader)
     {
         return std::make_unique<FullscreenQuad>(fragmentShader, this);
     }
