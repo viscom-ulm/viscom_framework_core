@@ -57,12 +57,12 @@ namespace viscom {
         bool IsMouseButtonPressed(int button) const noexcept { return framework_->IsMouseButtonPressed(button); }
         bool IsKeyPressed(int key) const noexcept { return framework_->IsKeyPressed(key); }
 
-        // /** Returns the current mouse position. */
-        // const glm::vec2& GetMousePosition() const noexcept { return appNode_->GetMousePosition(); }
+        /** Returns the current mouse position. */
+        const glm::vec2& GetMousePosition() const noexcept { return framework_->GetMousePosition(); }
         /** Return the current mouse position in normalized coordinates. */
         const glm::vec2& GetMousePositionNormalized() const noexcept { return framework_->GetMousePositionNormalized(); }
 
-        // void SetCursorInputMode(int mode) { appNode_->SetCursorInputMode(mode); }
+        void SetCursorInputMode(int mode) { framework_->SetCursorInputMode(mode); }
 
         GPUProgramManager& GetGPUProgramManager() { return framework_->GetGPUProgramManager(); }
         TextureManager& GetTextureManager() { return framework_->GetTextureManager(); }
@@ -74,15 +74,15 @@ namespace viscom {
         std::unique_ptr<FullscreenQuad> CreateFullscreenQuad(const std::string& fragmentShader) { return framework_->CreateFullscreenQuad(fragmentShader); }
 
     protected:
-        // const FWConfiguration& GetConfig() const { return appNode_->GetConfig(); }
-        // ApplicationNodeInternal* GetApplication() const { return appNode_; }
-        // 
-        // const Viewport& GetViewportScreen(size_t windowId) const { return appNode_->GetViewportScreen(windowId); }
-        // Viewport& GetViewportScreen(size_t windowId) { return appNode_->GetViewportScreen(windowId); }
-        // const glm::ivec2& GetViewportQuadSize(size_t windowId) const { return appNode_->GetViewportQuadSize(windowId); }
-        // glm::ivec2& GetViewportQuadSize(size_t windowId) { return appNode_->GetViewportQuadSize(windowId); }
-        // const glm::vec2& GetViewportScaling(size_t windowId) const { return appNode_->GetViewportScaling(windowId); }
-        // glm::vec2& GetViewportScaling(size_t windowId) { return appNode_->GetViewportScaling(windowId); }
+        const FWConfiguration& GetConfig() const { return framework_->GetConfig(); }
+        ApplicationNodeInternal* GetApplication() const { return appNode_; }
+
+        const Viewport& GetViewportScreen(size_t windowId) const { return framework_->GetViewportScreen(windowId); }
+        Viewport& GetViewportScreen(size_t windowId) { return framework_->GetViewportScreen(windowId); }
+        const glm::ivec2& GetViewportQuadSize(size_t windowId) const { return framework_->GetViewportQuadSize(windowId); }
+        glm::ivec2& GetViewportQuadSize(size_t windowId) { return framework_->GetViewportQuadSize(windowId); }
+        const glm::vec2& GetViewportScaling(size_t windowId) const { return framework_->GetViewportScaling(windowId); }
+        glm::vec2& GetViewportScaling(size_t windowId) { return framework_->GetViewportScaling(windowId); }
 
         double GetCurrentAppTime() const { return appNode_->GetCurrentAppTime(); }
         double GetElapsedTime() const { return appNode_->GetElapsedTime(); }
