@@ -8,7 +8,7 @@
 
 #include "FullscreenQuad.h"
 #include "core/open_gl.h"
-#include "core/app_internal/ApplicationNodeBase.h"
+#include "core/app/ApplicationNodeBase.h"
 #include "core/app_internal/ApplicationNodeInternal.h"
 
 namespace viscom {

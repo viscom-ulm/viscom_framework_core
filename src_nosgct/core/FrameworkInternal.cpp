@@ -13,6 +13,7 @@
 #include <iostream>
 #include "core/app_internal/CoordinatorNodeInternal.h"
 #include "core/app_internal/WorkerNodeInternal.h"
+#include "core/app/ApplicationNodeBase.h"
 
 namespace viscom {
 
@@ -189,7 +190,8 @@ namespace viscom {
 
     void FrameworkInternal::BaseDraw2D()
     {
-        ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(0).position_, GetViewportScreen(0).size_, GetViewportScreen(0).size_, GetViewportScaling(0), GetCurrentAppTime(), GetElapsedTime());
+        ImGui_ImplGlfwGL3_NewFrame(-GetViewportScreen(0).position_, GetViewportScreen(0).size_, GetViewportScreen(0).size_, GetViewportScaling(0),
+            appNodeInternal_->GetCurrentAppTime(), appNodeInternal_->GetElapsedTime());
 
         appNodeInternal_->Draw2D(backBuffer_);
 
@@ -329,11 +331,6 @@ namespace viscom {
     void FrameworkInternal::WaitForResource(const std::string& name, ResourceType type)
     {
         LOG(INFO) << "WaitForResource(...) not implemented in local mode.";
-    }
-
-    void FrameworkInternal::SetCursorInputMode(int mode)
-    {
-        glfwSetInputMode(window_, GLFW_CURSOR, mode);
     }
 
     glm::dvec2 FrameworkInternal::ConvertInputCoordinates(double x, double y)

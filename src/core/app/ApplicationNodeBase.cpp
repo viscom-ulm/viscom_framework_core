@@ -14,7 +14,8 @@
 namespace viscom {
 
     ApplicationNodeBase::ApplicationNodeBase(ApplicationNodeInternal* appNode) :
-        appNode_{ appNode }
+        appNode_{ appNode },
+        framework_{ &appNode_->GetFramework() }
     {
     }
 

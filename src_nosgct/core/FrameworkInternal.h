@@ -9,16 +9,14 @@
 #pragma once
 
 #include "core/main.h"
-#ifdef VISCOM_SYNCINPUT
-#include "core/InputWrapper.h"
-#endif
-#include <mutex>
 #include "core/resources/GPUProgramManager.h"
 #include "core/resources/TextureManager.h"
 #include "core/resources/MeshManager.h"
 #include "core/gfx/FrameBuffer.h"
 #include "core/CameraHelper.h"
 #include "core/gfx/FullscreenQuad.h"
+
+struct GLFWwindow;
 
 namespace viscom {
 
@@ -45,16 +43,11 @@ namespace viscom {
         void SetCursorInputMode(int mode);
 
         void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex);
-        // void TransferData(const void* data, std::size_t length, std::uint16_t packageId);
-
         void TransferResource(std::string_view name, const void* data, std::size_t length, ResourceType type);
-        // void TransferResourceToNode(std::string_view name, const void* data, std::size_t length, ResourceType type, std::size_t nodeIndex);
         void TransferReleaseResource(std::string_view name, ResourceType type);
-        // void RequestSharedResources();
-        // void RequestSharedResource(std::string_view name, ResourceType type);
         void WaitForResource(const std::string& name, ResourceType type);
 
-        bool IsMaster() const { return true };
+        bool IsMaster() const { return true; }
 
         const FWConfiguration& GetConfig() const { return config_; }
         FrameBuffer& GetFramebuffer(size_t windowId) { return backBuffer_; }
@@ -77,14 +70,8 @@ namespace viscom {
         TextureManager& GetTextureManager() { return textureManager_; }
         MeshManager& GetMeshManager() { return meshManager_; }
 
-        bool IsInitialized() const { return initialized_; }
         InitNodeFunc& GetCoordinatorNodeFactory() { return coordinatorNodeFactory_; }
         InitNodeFunc& GetWorkerNodeFactory() { return workerNodeFactory_; }
-        // void SetApplicationHalted(bool halted) { applicationHalted_ = halted; }
-        // bool GetApplicationHalted() const { return applicationHalted_; }
-
-        // void CreateSynchronizedResources();
-
 
         static void ErrorCallbackStatic(int error, const char* description);
         static void BaseKeyboardCallbackStatic(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -113,14 +100,6 @@ namespace viscom {
         InitNodeFunc coordinatorNodeFactory_;
         /** The function the will create a worker node. */
         InitNodeFunc workerNodeFactory_;
-
-        /** Holds a static pointer to an object to this class making it singleton in a way. */
-        // TODO: This is only a workaround and should be fixed in the future. [12/5/2016 Sebastian Maisch]
-        // static FrameworkInternal* instance_;
-        /** Holds the mutex for the instance pointer. */
-        // static std::mutex instanceMutex_;
-        /** Holds the initialization state of this object. */
-        // bool initialized_ = false;
 
         /** Holds the applications configuration. */
         FWConfiguration config_;

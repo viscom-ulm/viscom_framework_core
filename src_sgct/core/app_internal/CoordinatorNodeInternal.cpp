@@ -11,7 +11,7 @@
 #include "CoordinatorNodeInternal.h"
 #include "core/imgui/imgui_impl_glfw_gl3.h"
 #include <imgui.h>
-#include "core/app_internal/ApplicationNodeBase.h"
+#include "core/app/ApplicationNodeBase.h"
 
 namespace viscom {
 

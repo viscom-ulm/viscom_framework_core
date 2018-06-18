@@ -11,7 +11,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <limits>
-#include "core/app_internal/ApplicationNodeBase.h"
+#include "core/app/ApplicationNodeBase.h"
 #include <iostream>
 #include "core/glfw.h"
 

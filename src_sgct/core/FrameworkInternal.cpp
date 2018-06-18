@@ -14,7 +14,7 @@
 #include <sgct.h>
 #include "core/app_internal/CoordinatorNodeInternal.h"
 #include "core/app_internal/WorkerNodeInternal.h"
-#include "core/app_internal/ApplicationNodeBase.h"
+#include "core/app/ApplicationNodeBase.h"
 
 #ifndef VISCOM_LOCAL_ONLY
 #include "core/OpenCVParserHelper.h"

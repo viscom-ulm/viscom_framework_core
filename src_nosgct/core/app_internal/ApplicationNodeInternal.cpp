@@ -36,6 +36,8 @@ namespace viscom {
 
     void ApplicationNodeInternal::PreWindow()
     {
+        if (fwInternal_.IsMaster()) appNodeImpl_ = fwInternal_.GetCoordinatorNodeFactory()(this);
+        else appNodeImpl_ = fwInternal_.GetWorkerNodeFactory()(this);
         appNodeImpl_->PreWindow();
     }
 
