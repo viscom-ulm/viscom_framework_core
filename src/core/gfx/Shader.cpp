@@ -14,7 +14,7 @@
 #ifndef __APPLE_CC__
 #include <experimental/filesystem>
 #endif
-#include "core/ApplicationNodeInternal.h"
+#include "core/FrameworkInternal.h"
 #include <regex>
 #include "core/open_gl.h"
 
@@ -102,18 +102,18 @@ namespace viscom {
      * Constructor.
      * @param shaderFilename the shader file name
      */
-    Shader::Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node) :
+    Shader::Shader(const std::string& shaderFilename, const FrameworkInternal* node) :
         Shader{ shaderFilename, node, std::vector<std::string>{} }
     {
     }
 
-    Shader::Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node, const std::vector<std::string>& defines) :
+    Shader::Shader(const std::string& shaderFilename, const FrameworkInternal* node, const std::vector<std::string>& defines) :
         Shader{ shaderFilename, node, LoadShaderFile(shaderFilename, defines, node) }
     {
         defines_ = defines;
     }
 
-    Shader::Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node, const std::string& shader) :
+    Shader::Shader(const std::string& shaderFilename, const FrameworkInternal* node, const std::string& shader) :
         filename_{ shaderFilename },
         shader_{ 0 },
         type_{ GL_VERTEX_SHADER },
@@ -193,7 +193,7 @@ namespace viscom {
     * @param defines the defines to add at the beginning.
     * @param fileId the id of the current file.
     */
-    std::string Shader::LoadShaderFile(const std::string& filename, const std::vector<std::string>& defines, const ApplicationNodeInternal* node)
+    std::string Shader::LoadShaderFile(const std::string& filename, const std::vector<std::string>& defines, const FrameworkInternal* node)
     {
         auto fullFilename = Resource::FindResourceLocation("shader/" + filename, node);
         unsigned int fileId{ 0 };

@@ -1,23 +1,23 @@
 /**
- * @file   SlaveNodeInternal.h
+ * @file   WorkerNodeCalibratedInternal.h
  * @author Sebastian Maisch <sebastian.maisch@uni-ulm.de>
- * @date   2016.11.25
+ * @date   2018.06.15
  *
- * @brief  Declaration of the ApplicationNodeImplementation for the slave node.
+ * @brief  Declaration of the ApplicationNodeInternal for calibrated workers.
  */
 
 #pragma once
 
-#include "app/ApplicationNodeImplementation.h"
+#include "core/app_internal/WorkerNodeLocalInternal.h"
 #include "core/CalibrationVertices.h"
 
 namespace viscom {
 
-    class SlaveNodeInternal : public ApplicationNodeImplementation
+    class WorkerNodeCalibratedInternal : public WorkerNodeLocalInternal
     {
     public:
-        explicit SlaveNodeInternal(ApplicationNodeInternal* appNode);
-        virtual ~SlaveNodeInternal() override;
+        explicit WorkerNodeCalibratedInternal(FrameworkInternal& fwInternal);
+        virtual ~WorkerNodeCalibratedInternal() override;
 
         void InitOpenGL() override;
         void DrawFrame(FrameBuffer& fbo) override;

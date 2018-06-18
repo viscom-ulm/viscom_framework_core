@@ -13,7 +13,7 @@
 
 namespace viscom {
 
-    class ApplicationNodeInternal;
+    class FrameworkInternal;
 
     /**
      * Exception class for shader compiler errors.
@@ -43,9 +43,9 @@ namespace viscom {
     class Shader final
     {
     public:
-        Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node);
-        Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node, const std::vector<std::string>& defines);
-        Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node, const std::string& shader);
+        Shader(const std::string& shaderFilename, const FrameworkInternal* node);
+        Shader(const std::string& shaderFilename, const FrameworkInternal* node, const std::vector<std::string>& defines);
+        Shader(const std::string& shaderFilename, const FrameworkInternal* node, const std::string& shader);
         Shader(const Shader& orig) = delete;
         Shader& operator=(const Shader&) = delete;
         Shader(Shader&& orig) noexcept;
@@ -71,7 +71,7 @@ namespace viscom {
         /** Holds the shaders source code. */
         std::string generatedSource_;
 
-        static std::string LoadShaderFile(const std::string &filename, const std::vector<std::string> &defines, const ApplicationNodeInternal* node);
+        static std::string LoadShaderFile(const std::string &filename, const std::vector<std::string> &defines, const FrameworkInternal* node);
         static std::string LoadShaderFileRecursive(const std::string &filename, const std::vector<std::string> &defines, unsigned int &fileId, unsigned int recursionDepth);
         static GLuint CompileShader(const std::string& filename, const std::string& shader, GLenum type, const std::string& strType);
     };

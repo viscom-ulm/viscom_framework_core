@@ -9,7 +9,7 @@
 #include "Mesh.h"
 #include "SceneMeshNode.h"
 #include "assimp_convert_helpers.h"
-#include "core/ApplicationNodeInternal.h"
+#include "core/FrameworkInternal.h"
 #include "core/gfx/Material.h"
 #include "core/open_gl.h"
 #include <assimp/Importer.hpp>
@@ -41,7 +41,7 @@ namespace viscom {
      * Constructor, creates a mesh from file.
      * @param meshFilename the filename of the mesh file.
      */
-    Mesh::Mesh(const std::string& meshFilename, ApplicationNodeInternal* node, bool synchronize) :
+    Mesh::Mesh(const std::string& meshFilename, FrameworkInternal* node, bool synchronize) :
         Resource(meshFilename, ResourceType::Mesh, node, synchronize),
         filename_{ meshFilename },
         indexBuffer_(0)
@@ -114,7 +114,7 @@ namespace viscom {
         LoadAssimpMesh(scene, GetAppNode());
     }
 
-    void Mesh::LoadAssimpMeshFromFile(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node)
+    void Mesh::LoadAssimpMeshFromFile(const std::string& filename, const std::string& binFilename, FrameworkInternal* node)
     {
         auto fullFilename = FindResourceLocation(filename);
         // Load a Model from File
@@ -125,7 +125,7 @@ namespace viscom {
         Save(binFilename);
     }
 
-    void Mesh::LoadAssimpMesh(const aiScene * scene, ApplicationNodeInternal * node)
+    void Mesh::LoadAssimpMesh(const aiScene * scene, FrameworkInternal* node)
     {
         unsigned int maxUVChannels = 0, maxColorChannels = 0, numVertices = 0, numIndices = 0;
         std::vector<std::vector<unsigned int>> indices;
@@ -302,7 +302,7 @@ namespace viscom {
         globalInverse_ = glm::inverse(rootNode_->GetLocalTransform());
     }
 
-    std::shared_ptr<const Texture> Mesh::LoadTexture(const std::string& relFilename, ApplicationNodeInternal* node) const
+    std::shared_ptr<const Texture> Mesh::LoadTexture(const std::string& relFilename, FrameworkInternal* node) const
     {
         auto path = filename_.substr(0, filename_.find_last_of('/') + 1);
         std::shared_ptr<const Texture> texture;
@@ -372,7 +372,7 @@ namespace viscom {
         rootNode_->Write(ofs);
     }
 
-    bool Mesh::Load(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node)
+    bool Mesh::Load(const std::string& filename, const std::string& binFilename, FrameworkInternal* node)
     {
 #ifndef __APPLE_CC__
         if (std::experimental::filesystem::exists(binFilename)) {

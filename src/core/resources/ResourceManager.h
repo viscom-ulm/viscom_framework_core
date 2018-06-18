@@ -13,7 +13,8 @@
 #include <optional>
 
 namespace viscom {
-    class ApplicationNodeInternal;
+
+    class FrameworkInternal;
 
     struct resource_loading_error
     {
@@ -45,7 +46,7 @@ namespace viscom {
 
     public:
         /** Constructor for resource managers. */
-        explicit ResourceManager(ApplicationNodeInternal* node) : appNode_{ node } {}
+        explicit ResourceManager(FrameworkInternal* node) : appNode_{ node } {}
 
         /** Copy constructor. */
         ResourceManager(const ResourceManager& rhs) : ResourceManager(rhs.appNode_)
@@ -245,7 +246,7 @@ namespace viscom {
         /** Holds the resources managed. */
         ResourceMap resources_;
         /** Holds the application base. */
-        ApplicationNodeInternal* appNode_;
+        FrameworkInternal* appNode_;
         /** Holds a map of synchronized resources (to make sure they are not deleted). */
         SyncedResourceMap syncedResources_;
         /** Holds a list of resources to wait for. */

@@ -14,7 +14,7 @@ namespace viscom {
      * Constructor.
      * @param app the application node.
      */
-    GPUProgramManager::GPUProgramManager(ApplicationNodeInternal* app) :
+    GPUProgramManager::GPUProgramManager(FrameworkInternal* app) :
         ResourceManager(app)
     {
     }

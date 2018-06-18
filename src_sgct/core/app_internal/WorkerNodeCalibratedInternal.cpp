@@ -1,44 +1,45 @@
 /**
- * @file   SlaveNodeInternal.cpp
+ * @file   WorkerNodeCalibratedInternal.cpp
  * @author Sebastian Maisch <sebastian.maisch@uni-ulm.de>
- * @date   2016.11.25
+ * @date   2018.06.15
  *
- * @brief  Implementation of the slave application node.
+ * @brief  Implementation of the ApplicationNodeInternal for calibrated workers.
  */
 
 #define GLM_SWIZZLE
 
-#include "SlaveNodeInternal.h"
+#include "core/main.h"
+#include <sgct.h>
+#include "WorkerNodeCalibratedInternal.h"
 #include "core/OpenCVParserHelper.h"
 #include <fstream>
 #include <imgui.h>
 #include "core/imgui/imgui_impl_glfw_gl3.h"
 #include <experimental/filesystem>
 #include "core/open_gl.h"
+#include "core/app/ApplicationNodeBase.h"
 
 namespace viscom {
 
-    SlaveNodeInternal::SlaveNodeInternal(ApplicationNodeInternal* appNode) :
-        ApplicationNodeImplementation{ appNode }
+    WorkerNodeCalibratedInternal::WorkerNodeCalibratedInternal(FrameworkInternal& fwInternal) :
+        WorkerNodeLocalInternal{ fwInternal }
     {
     }
 
+    WorkerNodeCalibratedInternal::~WorkerNodeCalibratedInternal() = default;
 
-    SlaveNodeInternal::~SlaveNodeInternal() = default;
-
-
-    void SlaveNodeInternal::InitOpenGL()
+    void WorkerNodeCalibratedInternal::InitOpenGL()
     {
         LOG(DBUG) << "Initializing calibration data.";
         // init shaders
-        calibrationProgram_ = GetApplication()->GetGPUProgramManager().GetResource("calibrationRendering", std::vector<std::string>{ "calibrationRendering.vert", "calibrationRendering.frag" });
+        calibrationProgram_ = GetFramework().GetGPUProgramManager().GetResource("calibrationRendering", std::vector<std::string>{ "calibrationRendering.vert", "calibrationRendering.frag" });
         calibrationAlphaTexLoc_ = calibrationProgram_->getUniformLocation("alphaTex");
         calibrationSceneTexLoc_ = calibrationProgram_->getUniformLocation("tex");
 
         LOG(DBUG) << "Loading projector data.";
         tinyxml2::XMLDocument doc;
-        OpenCVParserHelper::LoadXMLDocument("Projector data", GetConfig().projectorData_, doc);
-        std::experimental::filesystem::path projectorDataPath(GetConfig().projectorData_);
+        OpenCVParserHelper::LoadXMLDocument("Projector data", GetFramework().GetConfig().projectorData_, doc);
+        std::experimental::filesystem::path projectorDataPath(GetFramework().GetConfig().projectorData_);
         auto alphaTexturePath = projectorDataPath.parent_path();
 
         LOG(DBUG) << "Initializing viewports.";
@@ -52,10 +53,10 @@ namespace viscom {
 
         for (auto i = 0U; i < numWindows; ++i) {
             LOG(DBUG) << "Initializing viewport: " << i;
-            projectorViewport_[i] = GetViewportScreen(i);
-            auto projectorSize = GetViewportScreen(i).size_;
+            projectorViewport_[i] = GetFramework().GetViewportScreen(i);
+            auto projectorSize = GetFramework().GetViewportScreen(i).size_;
 
-            auto projectorNo = GetGlobalProjectorId(slaveId, i);
+            auto projectorNo = GetFramework().GetGlobalProjectorId(slaveId, i);
             auto quadCornersName = FWConfiguration::CALIBRATION_QUAD_CORNERS_NAME + std::to_string(projectorNo);
             auto quadTexCoordsName = FWConfiguration::CALIBRATION_QUAD_TEX_COORDS_NAME + std::to_string(projectorNo);
             auto resolutionScalingName = FWConfiguration::CALIBRATION_QUAD_RESOLUTION_SCALING_NAME + std::to_string(projectorNo);
@@ -71,25 +72,25 @@ namespace viscom {
             for (const auto& v : viewportv2) viewport.emplace_back(v, 0.0f);
             for (auto j = 0U; j < screenQuadCoords.size(); ++j) quadCoordsProjector_.emplace_back(screenQuadCoords[j], screenQuadTexCoords[j]);
 
-            GetEngine().SetProjectionPlaneCoordinate(i, 0, sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::LowerLeft, viewport[3]);
-            GetEngine().SetProjectionPlaneCoordinate(i, 0, sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperLeft, viewport[0]);
-            GetEngine().SetProjectionPlaneCoordinate(i, 0, sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperRight, viewport[1]);
+            GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::LowerLeft, viewport[3]);
+            GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperLeft, viewport[0]);
+            GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperRight, viewport[1]);
 
 
             auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling));
-            glm::vec3 vpSize(GetConfig().nearPlaneSize_.x, GetConfig().nearPlaneSize_.y, 1.0f);
+            glm::vec3 vpSize(GetFramework().GetConfig().nearPlaneSize_.x, GetFramework().GetConfig().nearPlaneSize_.y, 1.0f);
             auto totalScreenSize = (glm::vec2(fboSize) * 2.0f * vpSize.xy) / (viewport[1] - viewport[3]).xy;
-            GetViewportScreen(i).position_ = glm::ivec2(glm::floor(((viewport[3] + vpSize) / (2.0f * vpSize)).xy * totalScreenSize));
-            GetViewportScreen(i).size_ = glm::uvec2(glm::floor(totalScreenSize));
-            GetViewportQuadSize(i) = fboSize;
-            GetViewportScaling(i) = totalScreenSize / GetConfig().virtualScreenSize_;
+            GetFramework().GetViewportScreen(i).position_ = glm::ivec2(glm::floor(((viewport[3] + vpSize) / (2.0f * vpSize)).xy * totalScreenSize));
+            GetFramework().GetViewportScreen(i).size_ = glm::uvec2(glm::floor(totalScreenSize));
+            GetFramework().GetViewportQuadSize(i) = fboSize;
+            GetFramework().GetViewportScaling(i) = totalScreenSize / GetFramework().GetConfig().virtualScreenSize_;
 
             CreateProjectorFBO(i, fboSize);
 
             LOG(DBUG) << "VP Pos: " << projectorViewport_[i].position_.x << ", " << projectorViewport_[i].position_.y;
-            LOG(DBUG) << "VP Size: " << GetViewportQuadSize(i).x << ", " << GetViewportQuadSize(i).y;
-            sceneFBOs_[i].SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, GetViewportQuadSize(i).x, GetViewportQuadSize(i).y);
-            GetApplication()->GetFramebuffer(i).SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, projectorViewport_[i].size_.x, projectorViewport_[i].size_.y);
+            LOG(DBUG) << "VP Size: " << GetFramework().GetViewportQuadSize(i).x << ", " << GetFramework().GetViewportQuadSize(i).y;
+            sceneFBOs_[i].SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, GetFramework().GetViewportQuadSize(i).x, GetFramework().GetViewportQuadSize(i).y);
+            GetFramework().GetFramebuffer(i).SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, projectorViewport_[i].size_.x, projectorViewport_[i].size_.y);
 
             {
                 std::ifstream texAlphaFile(texAlphaFilename, std::ios::binary);
@@ -129,32 +130,25 @@ namespace viscom {
 
         LOG(DBUG) << "Calibration Initialized.";
 
-        ApplicationNodeImplementation::InitOpenGL();
+        WorkerNodeLocalInternal::InitOpenGL();
     }
 
 
-    void SlaveNodeInternal::DrawFrame(FrameBuffer& fbo)
+    void WorkerNodeCalibratedInternal::DrawFrame(FrameBuffer& fbo)
     {
-        auto windowId = GetEngine().GetCurrentWindowId();
+        auto windowId = GetFramework().GetEngine()->getCurrentWindowPtr()->getId();
 
-        GetEngine().UnbindCurrentWindowFBO();
+        GetFramework().GetEngine()->getCurrentWindowPtr()->getFBOPtr()->unBind();
 
         ClearBuffer(sceneFBOs_[windowId]);
 
-        ApplicationNodeImplementation::DrawFrame(sceneFBOs_[windowId]);
+        WorkerNodeLocalInternal::DrawFrame(sceneFBOs_[windowId]);
     }
 
-    void SlaveNodeInternal::Draw2D(FrameBuffer& fbo)
+    void WorkerNodeCalibratedInternal::Draw2D(FrameBuffer& fbo)
     {
-        auto windowId = GetEngine().GetCurrentWindowId();
-        ApplicationNodeImplementation::Draw2D(sceneFBOs_[windowId]);
-
-#ifdef VISCOM_CLIENTGUI
-        sceneFBOs_[windowId].DrawToFBO([]() {
-            ImGui::Render();
-            ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
-        });
-#endif
+        auto windowId = GetFramework().GetEngine()->getCurrentWindowPtr()->getId();
+        WorkerNodeLocalInternal::Draw2D(sceneFBOs_[windowId]);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -190,23 +184,7 @@ namespace viscom {
         });
     }
 
-
-    void SlaveNodeInternal::CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize)
-    {
-        FrameBufferDescriptor fbDesc;
-        fbDesc.texDesc_.emplace_back(GL_RGBA32F, GL_TEXTURE_2D);
-        fbDesc.rbDesc_.emplace_back(GL_DEPTH_COMPONENT32);
-        sceneFBOs_.emplace_back(fboSize.x, fboSize.y, fbDesc);
-        glBindTexture(GL_TEXTURE_2D, sceneFBOs_[windowId].GetTextures()[0]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    }
-
-
-    void SlaveNodeInternal::CleanUp()
+    void WorkerNodeCalibratedInternal::CleanUp()
     {
         if (vaoProjectorQuads_ != 0) glDeleteVertexArrays(0, &vaoProjectorQuads_);
         vaoProjectorQuads_ = 0;
@@ -216,6 +194,20 @@ namespace viscom {
         if (!alphaTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(alphaTextures_.size()), alphaTextures_.data());
         alphaTextures_.clear();
 
-        ApplicationNodeImplementation::CleanUp();
+        WorkerNodeLocalInternal::CleanUp();
+    }
+
+    void WorkerNodeCalibratedInternal::CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize)
+    {
+        FrameBufferDescriptor fbDesc;
+        fbDesc.texDesc_.emplace_back(GL_RGBA8, GL_TEXTURE_2D);
+        fbDesc.rbDesc_.emplace_back(GL_DEPTH_COMPONENT32);
+        sceneFBOs_.emplace_back(fboSize.x, fboSize.y, fbDesc);
+        glBindTexture(GL_TEXTURE_2D, sceneFBOs_[windowId].GetTextures()[0]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
 }

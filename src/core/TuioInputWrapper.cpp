@@ -39,18 +39,21 @@ namespace viscom::tuio {
 #if VISCOM_USE_TUIO
     void TuioInputWrapper::addTuioCursor(TUIO::TuioCursor *tcur)
     {
-        std::cout << "add    cur  " << tcur->getCursorID() << " (" << tcur->getSessionID() << "/" << tcur->getTuioSourceID() << ") " << tcur->getX() << " " << tcur->getY() << std::endl;
+        if (addCursorFn_) addCursorFn_(tcur);
+        else std::cout << "add    cur  " << tcur->getCursorID() << " (" << tcur->getSessionID() << "/" << tcur->getTuioSourceID() << ") " << tcur->getX() << " " << tcur->getY() << std::endl;
     }
 
     void TuioInputWrapper::updateTuioCursor(TUIO::TuioCursor *tcur)
     {
-        std::cout << "set    cur  " << tcur->getCursorID() << " (" << tcur->getSessionID() << "/" << tcur->getTuioSourceID() << ") " << tcur->getX() << " " << tcur->getY()
+        if (updateCursorFn_) updateCursorFn_(tcur);
+        else std::cout << "set    cur  " << tcur->getCursorID() << " (" << tcur->getSessionID() << "/" << tcur->getTuioSourceID() << ") " << tcur->getX() << " " << tcur->getY()
             << " " << tcur->getMotionSpeed() << " " << tcur->getMotionAccel() << " " << std::endl;
     }
 
     void TuioInputWrapper::removeTuioCursor(TUIO::TuioCursor *tcur)
     {
-        std::cout << "delete cur  " << tcur->getCursorID() << " (" << tcur->getSessionID() << "/" << tcur->getTuioSourceID() << ")" << std::endl;
+        if (removeCursorFn_) removeCursorFn_(tcur);
+        else std::cout << "delete cur  " << tcur->getCursorID() << " (" << tcur->getSessionID() << "/" << tcur->getTuioSourceID() << ")" << std::endl;
     }
 
     void TuioInputWrapper::addTuioObject(TUIO::TuioObject *tobj)
@@ -89,5 +92,21 @@ namespace viscom::tuio {
     {
         std::cout << "TUIO refresh " << frameTime.getTotalMilliseconds() << std::endl;
     }
+
+    void TuioInputWrapper::SetAddCursorCallback(std::function<void(TUIO::TuioCursor*)> fn)
+    {
+        addCursorFn_ = std::move(fn);
+    }
+
+    void TuioInputWrapper::SetUpdateCursorCallback(std::function<void(TUIO::TuioCursor*)> fn)
+    {
+        updateCursorFn_ = std::move(fn);
+    }
+
+    void TuioInputWrapper::SetRemoveCursorCallback(std::function<void(TUIO::TuioCursor*)> fn)
+    {
+        removeCursorFn_ = std::move(fn);
+    }
+
 #endif
 }

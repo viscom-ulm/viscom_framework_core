@@ -18,7 +18,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/vector_angle.hpp>
-#include "core/ApplicationNodeBase.h"
+#include "core/app/ApplicationNodeBase.h"
 
 namespace viscom {
 
