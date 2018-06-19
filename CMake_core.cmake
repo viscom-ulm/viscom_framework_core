@@ -1,5 +1,5 @@
 set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
-set(CMAKE_DEBUGSLAVE_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
+set(CMAKE_DEBUGWORKER_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows.")
 
 set(G3_SHARED_LIB OFF CACHE BOOL "Build shared library." FORCE)
