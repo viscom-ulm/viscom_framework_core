@@ -12,7 +12,7 @@
 #include <memory>
 
 #include "g3log/logmessage.hpp"
-namespace vku {
+namespace viscom {
 
     class FileSink final {
     public:

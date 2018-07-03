@@ -27,10 +27,19 @@ namespace viscom {
         ApplicationNodeBase& operator=(ApplicationNodeBase&&) = delete;
         virtual ~ApplicationNodeBase();
 
+        /** Called before a window is created. */
         virtual void PreWindow();
+        /** Called after the OpenGL context is created. Here OpenGL objects can be initialized. */
         virtual void InitOpenGL();
+        /** Called before each synchronization in each frame to prepare for it. */
         virtual void PreSync();
+        /** Called after each synchronization in each frame to update local information based on the sync. */
         virtual void UpdateSyncedInfo();
+        /**
+         *  This method is called once each frame to step forward the simulation.
+         *  @param currentTime the current time of the application.
+         *  @param elapsedTime the time elapsed during the last frame.
+         */
         virtual void UpdateFrame(double currentTime, double elapsedTime);
         virtual void ClearBuffer(FrameBuffer& fbo);
         virtual void DrawFrame(FrameBuffer& fbo);

@@ -17,6 +17,7 @@ namespace viscom {
     class ApplicationNodeBase;
     class FrameworkInternal;
 
+    /** Static helper class for having only a single VAO for all fullscreen quads. */
     class StaticFullscreenQuad
     {
     public:
