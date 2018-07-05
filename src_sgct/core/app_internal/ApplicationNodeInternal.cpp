@@ -12,7 +12,6 @@
 #include "core/TuioInputWrapper.h"
 #include <imgui.h>
 #include "core/app/ApplicationNodeBase.h"
-#include "core/imgui/imgui_impl_glfw_gl3.h"
 #include "core/utils/utils.h"
 #include <sgct.h>
 

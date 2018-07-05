@@ -9,7 +9,8 @@
 #include "core/main.h"
 #include <sgct.h>
 #include "CoordinatorNodeInternal.h"
-#include "core/imgui/imgui_impl_glfw_gl3.h"
+#include "core/imgui/imgui_impl_glfw.h"
+#include "core/imgui/imgui_impl_opengl3.h"
 #include <imgui.h>
 #include "core/app/ApplicationNodeBase.h"
 
@@ -31,9 +32,13 @@ namespace viscom {
     void CoordinatorNodeInternal::InitOpenGL()
     {
         // Setup ImGui binding
+        IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
-        ImGui_ImplGlfwGL3_Init(GetFramework().GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetFramework().GetEngine()->isMaster() && SHOW_CLIENT_MOUSE_CURSOR);
+        ImGui_ImplGlfw_InitForOpenGL(GetFramework().GetEngine()->getCurrentWindowPtr()->getWindowHandle(), !GetFramework().GetEngine()->isMaster() && SHOW_CLIENT_MOUSE_CURSOR);
+        ImGui_ImplOpenGL3_Init();
+
+        ImGui::StyleColorsDark();
 
         ApplicationNodeInternal::InitOpenGL();
     }
@@ -96,25 +101,22 @@ namespace viscom {
     void CoordinatorNodeInternal::Draw2D(FrameBuffer& fbo)
     {
         auto windowId = GetFramework().GetEngine()->getCurrentWindowPtr()->getId();
-        ImGui_ImplGlfwGL3_NewFrame(-GetFramework().GetViewportScreen(windowId).position_,
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame(-GetFramework().GetViewportScreen(windowId).position_,
             GetFramework().GetViewportQuadSize(windowId), GetFramework().GetViewportScreen(windowId).size_,
             GetFramework().GetViewportScaling(windowId), GetCurrentAppTime(), GetElapsedTime());
+        ImGui::NewFrame();
 
         ApplicationNodeInternal::Draw2D(fbo);
 
         ImGui::Render();
-        ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
-    }
-
-    void CoordinatorNodeInternal::PostDraw()
-    {
-        ImGui_ImplGlfwGL3_FinishAllFrames();
-        ApplicationNodeInternal::PostDraw();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
     void CoordinatorNodeInternal::CleanUp()
     {
-        ImGui_ImplGlfwGL3_Shutdown();
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
         ApplicationNodeInternal::CleanUp();
     }
@@ -125,7 +127,7 @@ namespace viscom {
         keyboardEvents_.emplace_back(key, scancode, action, mods);
 #endif
 
-        ImGui_ImplGlfwGL3_KeyCallback(key, scancode, action, mods);
+        ImGui_ImplGlfw_KeyCallback(key, scancode, action, mods);
         if (ImGui::GetIO().WantCaptureKeyboard) return;
 
         ApplicationNodeInternal::KeyboardCallback(key, scancode, action, mods);
@@ -137,7 +139,7 @@ namespace viscom {
         charEvents_.emplace_back(character, mods);
 #endif
 
-        ImGui_ImplGlfwGL3_CharCallback(character);
+        ImGui_ImplGlfw_CharCallback(character);
         if (ImGui::GetIO().WantCaptureKeyboard) return;
 
         ApplicationNodeInternal::CharCallback(character, mods);
@@ -149,7 +151,7 @@ namespace viscom {
         mouseButtonEvents_.emplace_back(button, action);
 #endif
 
-        ImGui_ImplGlfwGL3_MouseButtonCallback(button, action, 0);
+        ImGui_ImplGlfw_MouseButtonCallback(button, action, 0);
         if (ImGui::GetIO().WantCaptureMouse) return;
 
         ApplicationNodeInternal::MouseButtonCallback(button, action);
@@ -161,7 +163,7 @@ namespace viscom {
         mousePosEvents_.emplace_back(x, y);
 #endif
 
-        ImGui_ImplGlfwGL3_MousePositionCallback(x, y);
+        ImGui_ImplGlfw_MousePositionCallback(x, y);
         if (ImGui::GetIO().WantCaptureMouse) return;
 
         ApplicationNodeInternal::MousePosCallback(x, y);
@@ -173,7 +175,7 @@ namespace viscom {
         mouseScrollEvents_.emplace_back(xoffset, yoffset);
 #endif
 
-        ImGui_ImplGlfwGL3_ScrollCallback(xoffset, yoffset);
+        ImGui_ImplGlfw_ScrollCallback(xoffset, yoffset);
         if (ImGui::GetIO().WantCaptureMouse) return;
 
         ApplicationNodeInternal::MouseScrollCallback(xoffset, yoffset);

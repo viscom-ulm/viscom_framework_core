@@ -7,7 +7,6 @@
  */
 
 #include "FrameworkInternal.h"
-#include "core/imgui/imgui_impl_glfw_gl3.h"
 #include "external/tinyxml2.h"
 #include "core/utils/utils.h"
 #include <imgui.h>
