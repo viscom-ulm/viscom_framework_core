@@ -86,8 +86,10 @@ namespace viscom {
         glUseProgram(drawProgram_->getProgramId());
         glBindVertexArray(vao_);
         glBindBuffer(GL_ARRAY_BUFFER, vbo_);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh_->GetIndexBuffer());
         DrawNode(modelMatrix, mesh_->GetRootNode(), overrideBump);
         glBindVertexArray(0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
