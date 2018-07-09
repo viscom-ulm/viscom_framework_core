@@ -310,7 +310,6 @@ namespace viscom {
             auto texFilename = path + relFilename;
             texture = std::move(node->GetTextureManager().GetResource(texFilename));
         } catch (resource_loading_error&) {
-            // TODO: Test this!! [1/8/2018 Sebastian Maisch]
             auto textureFilename = relFilename.substr(relFilename.find_last_of("/") + 1);
             auto texFilename = path + textureFilename;
 
@@ -383,14 +382,14 @@ namespace viscom {
                 bool correctHeader;
                 unsigned int actualVersion;
                 std::tie(correctHeader, actualVersion) = VersionableSerializerType::checkHeader(inBinFile);
-                if (correctHeader) return Read(inBinFile, node->GetTextureManager());
+                if (correctHeader) return Read(inBinFile, node);
             }
         }
 #endif
         return false;
     }
 
-    bool Mesh::Read(std::istream& ifs, TextureManager& texMan)
+    bool Mesh::Read(std::istream& ifs, FrameworkInternal* node)
     {
         serializeHelper::readV(ifs, vertices_);
         serializeHelper::readV(ifs, normals_);
@@ -418,8 +417,8 @@ namespace viscom {
             std::string diffuseTexId, bumpTexId;
             serializeHelper::read(ifs, diffuseTexId);
             serializeHelper::read(ifs, bumpTexId);
-            if (!diffuseTexId.empty()) matTex.diffuseTex = texMan.GetResource(diffuseTexId);
-            if (!bumpTexId.empty()) matTex.bumpTex = texMan.GetResource(bumpTexId);
+            if (!diffuseTexId.empty()) matTex.diffuseTex = LoadTexture(diffuseTexId, node);
+            if (!bumpTexId.empty()) matTex.bumpTex = LoadTexture(bumpTexId, node);
         }
 
         std::size_t numMeshes;

@@ -91,7 +91,7 @@ namespace viscom {
         void Save(const std::string& filename) const;
         void Write(std::ostream& ofs) const;
         bool Load(const std::string& filename, const std::string& binFilename, FrameworkInternal* node);
-        bool Read(std::istream& ifs, TextureManager& texMan);
+        bool Read(std::istream& ifs, FrameworkInternal* node);
 
         void ParseBoneHierarchy(const std::map<std::string, unsigned int>& bones, const aiNode* node,
             std::size_t parent, glm::mat4 parentMatrix);
