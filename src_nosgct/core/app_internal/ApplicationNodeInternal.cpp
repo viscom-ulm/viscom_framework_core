@@ -8,7 +8,6 @@
 
 #include "ApplicationNodeInternal.h"
 #include <imgui.h>
-#include "core/imgui/imgui_impl_glfw_gl3.h"
 #include "core/open_gl.h"
 #include "core/app/ApplicationNodeBase.h"
 
