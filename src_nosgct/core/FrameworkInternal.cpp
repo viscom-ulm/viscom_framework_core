@@ -197,6 +197,7 @@ namespace viscom {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame(-GetViewportScreen(0).position_, GetViewportScreen(0).size_, GetViewportScreen(0).size_, GetViewportScaling(0),
             appNodeInternal_->GetCurrentAppTime(), appNodeInternal_->GetElapsedTime());
+        ImGui::NewFrame();
 
         appNodeInternal_->Draw2D(backBuffer_);
 
