@@ -325,6 +325,11 @@ namespace viscom {
         LOG(INFO) << "TransferDataToNode(...) not implemented in local mode.";
     }
 
+    void FrameworkInternal::TransferData(const void* data, std::size_t length, std::uint16_t packageId)
+    {
+        LOG(INFO) << "TransferData(...) not implemented in local mode.";
+    }
+
     void FrameworkInternal::TransferResource(std::string_view name, const void* data, std::size_t length, ResourceType type)
     {
         LOG(INFO) << "TransferResource(...) not implemented in local mode.";

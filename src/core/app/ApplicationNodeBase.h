@@ -82,10 +82,13 @@ namespace viscom {
         const FrameBuffer* SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const { return framework_->SelectOffscreenBuffer(offscreenBuffers); }
         std::unique_ptr<FullscreenQuad> CreateFullscreenQuad(const std::string& fragmentShader) { return framework_->CreateFullscreenQuad(fragmentShader); }
 
+        void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex) { framework_->TransferDataToNode(data, length, packageId, nodeIndex); }
+        void TransferData(const void* data, std::size_t length, std::uint16_t packageId) { framework_->TransferData(data, length, packageId); }
+
     protected:
         const FWConfiguration& GetConfig() const { return framework_->GetConfig(); }
         ApplicationNodeInternal* GetApplication() const { return appNode_; }
-
+        std::size_t GetCurrentWindowID() const { return framework_->GetCurrentWindowID(); }
         const Viewport& GetViewportScreen(size_t windowId) const { return framework_->GetViewportScreen(windowId); }
         Viewport& GetViewportScreen(size_t windowId) { return framework_->GetViewportScreen(windowId); }
         const glm::ivec2& GetViewportQuadSize(size_t windowId) const { return framework_->GetViewportQuadSize(windowId); }

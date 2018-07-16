@@ -43,6 +43,7 @@ namespace viscom {
         void SetCursorInputMode(int mode);
 
         void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex);
+        void TransferData(const void* data, std::size_t length, std::uint16_t packageId);
         void TransferResource(std::string_view name, const void* data, std::size_t length, ResourceType type);
         void TransferReleaseResource(std::string_view name, ResourceType type);
         void WaitForResource(const std::string& name, ResourceType type);
@@ -50,14 +51,14 @@ namespace viscom {
         bool IsMaster() const { return true; }
 
         const FWConfiguration& GetConfig() const { return config_; }
-        FrameBuffer& GetFramebuffer(size_t windowId) { return backBuffer_; }
-
-        const Viewport& GetViewportScreen(size_t windowId) const { return viewportScreen_[windowId]; }
-        Viewport& GetViewportScreen(size_t windowId) { return viewportScreen_[windowId]; }
-        const glm::ivec2& GetViewportQuadSize(size_t windowId) const { return viewportQuadSize_[windowId]; }
-        glm::ivec2& GetViewportQuadSize(size_t windowId) { return viewportQuadSize_[windowId]; }
-        const glm::vec2& GetViewportScaling(size_t windowId) const { return viewportScaling_[windowId]; }
-        glm::vec2& GetViewportScaling(size_t windowId) { return viewportScaling_[windowId]; }
+        FrameBuffer& GetFramebuffer(std::size_t windowId) { return backBuffer_; }
+        std::size_t GetCurrentWindowID() const { return 0; }
+        const Viewport& GetViewportScreen(std::size_t windowId) const { return viewportScreen_[windowId]; }
+        Viewport& GetViewportScreen(std::size_t windowId) { return viewportScreen_[windowId]; }
+        const glm::ivec2& GetViewportQuadSize(std::size_t windowId) const { return viewportQuadSize_[windowId]; }
+        glm::ivec2& GetViewportQuadSize(std::size_t windowId) { return viewportQuadSize_[windowId]; }
+        const glm::vec2& GetViewportScaling(std::size_t windowId) const { return viewportScaling_[windowId]; }
+        glm::vec2& GetViewportScaling(std::size_t windowId) { return viewportScaling_[windowId]; }
 
         void Terminate() const;
 

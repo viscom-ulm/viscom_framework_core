@@ -486,6 +486,11 @@ namespace viscom {
         return engine_->isMaster();
     }
 
+    std::size_t FrameworkInternal::GetCurrentWindowID() const
+    {
+        return static_cast<std::size_t>(engine_->getCurrentWindowPtr()->getId());
+    }
+
     void FrameworkInternal::Terminate() const
     {
         engine_->terminate();

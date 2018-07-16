@@ -63,14 +63,14 @@ namespace viscom {
 
         sgct::Engine* GetEngine() const { return engine_.get(); }
         const FWConfiguration& GetConfig() const { return config_; }
-        FrameBuffer& GetFramebuffer(size_t windowId) { return framebuffers_[windowId]; }
-
-        const Viewport& GetViewportScreen(size_t windowId) const { return viewportScreen_[windowId]; }
-        Viewport& GetViewportScreen(size_t windowId) { return viewportScreen_[windowId]; }
-        const glm::ivec2& GetViewportQuadSize(size_t windowId) const { return viewportQuadSize_[windowId]; }
-        glm::ivec2& GetViewportQuadSize(size_t windowId) { return viewportQuadSize_[windowId]; }
-        const glm::vec2& GetViewportScaling(size_t windowId) const { return viewportScaling_[windowId]; }
-        glm::vec2& GetViewportScaling(size_t windowId) { return viewportScaling_[windowId]; }
+        FrameBuffer& GetFramebuffer(std::size_t windowId) { return framebuffers_[windowId]; }
+        std::size_t GetCurrentWindowID() const;
+        const Viewport& GetViewportScreen(std::size_t windowId) const { return viewportScreen_[windowId]; }
+        Viewport& GetViewportScreen(std::size_t windowId) { return viewportScreen_[windowId]; }
+        const glm::ivec2& GetViewportQuadSize(std::size_t windowId) const { return viewportQuadSize_[windowId]; }
+        glm::ivec2& GetViewportQuadSize(std::size_t windowId) { return viewportQuadSize_[windowId]; }
+        const glm::vec2& GetViewportScaling(std::size_t windowId) const { return viewportScaling_[windowId]; }
+        glm::vec2& GetViewportScaling(std::size_t windowId) { return viewportScaling_[windowId]; }
 
         void Terminate() const;
 
