@@ -49,8 +49,8 @@ namespace viscom {
         static void BaseEncodeDataStatic();
         static void BaseDecodeDataStatic();
 
-        void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex);
-        void TransferData(const void* data, std::size_t length, std::uint16_t packageId);
+        void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex) const;
+        void TransferData(const void* data, std::size_t length, std::uint16_t packageId) const;
 
         void TransferResource(std::string_view name, const void* data, std::size_t length, ResourceType type);
         void TransferResourceToNode(std::string_view name, const void* data, std::size_t length, ResourceType type, std::size_t nodeIndex);
