@@ -70,7 +70,7 @@ namespace viscom {
         auto program = glCreateProgram();
         if (program == 0) {
             std::cerr << "Could not create GPU program!";
-            throw std::runtime_error("Could not create GPU program!");
+            throw resource_loading_error(name, "Could not create GPU program!");
         }
         for (const auto& shader : shaders) {
             glAttachShader(program, shaderAccessor(shader));

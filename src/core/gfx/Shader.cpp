@@ -28,6 +28,7 @@ namespace viscom {
      * @param errors the error string OpenGL returned
      */
     shader_compiler_error::shader_compiler_error(const std::string& shader, const std::string& errors) noexcept :
+        resource_loading_error(shader, errors),
         shr_(shader.size() + 1),
         errs_(errors.size() + 1),
         myWhat_(0)
@@ -69,7 +70,7 @@ namespace viscom {
      *  @param rhs the object to move.
      */
     shader_compiler_error::shader_compiler_error(shader_compiler_error&& rhs) noexcept :
-    std::exception(std::move(rhs)),
+        resource_loading_error(std::move(rhs)),
         shr_(std::move(rhs.shr_)),
         errs_(std::move(rhs.errs_)),
         myWhat_(std::move(rhs.myWhat_))
@@ -82,8 +83,8 @@ namespace viscom {
      */
     shader_compiler_error& shader_compiler_error::operator= (shader_compiler_error&& rhs) noexcept
     {
-        std::exception* tExcpt = this;
-        *tExcpt = std::move(static_cast<std::exception&&>(rhs));
+        resource_loading_error* tExcpt = this;
+        *tExcpt = std::move(static_cast<resource_loading_error&&>(rhs));
         if (this != &rhs) {
             shr_ = std::move(rhs.shr_);
             errs_ = std::move(rhs.errs_);
@@ -213,7 +214,7 @@ namespace viscom {
         if (!file) {
             LOG(WARNING) << "Could not load shader file!";
             std::cerr << "Could not load shader file!";
-            throw std::runtime_error("Could not load shader file!");
+            throw resource_loading_error(filename, "Could not load shader file!");
         }
         std::string line;
         std::stringstream content;
@@ -226,7 +227,7 @@ namespace viscom {
 #else
         if (recursionDepth > MAX_INCLUDE_RECURSION_DEPTH) {
             LOG(WARNING) << L"Header inclusion depth limit reached! Cyclic header inclusion?";
-            throw std::runtime_error("Header inclusion depth limit reached! Cyclic header inclusion? File " + filename);
+            throw resource_loading_error(filename, "Header inclusion depth limit reached! Cyclic header inclusion? File " + filename);
         }
         namespace filesystem = std::experimental::filesystem;
         filesystem::path sdrFile{ filename };
@@ -248,7 +249,7 @@ namespace viscom {
                 if (!filesystem::exists(includeFile)) {
                     LOG(WARNING) << filename.c_str() << L"(" << lineCount << R"() : fatal error: cannot open include file ")"
                         << includeFile.c_str() << R"(".)";
-                    throw std::runtime_error("Cannot open include file: " + includeFile);
+                    throw resource_loading_error(filename, "Cannot open include file: " + includeFile);
                 }
                 content << "#line " << 1 << " " << nextFileId << std::endl;
                 content << LoadShaderFileRecursive(includeFile, std::vector<std::string>(), nextFileId, recursionDepth + 1);
@@ -287,7 +288,7 @@ namespace viscom {
         if (shader == 0) {
             LOG(WARNING) << "Could not create shader!";
             std::cerr << "Could not create shader!";
-            throw std::runtime_error("Could not create shader!");
+            throw resource_loading_error(filename, "Could not create shader!");
         }
         auto shaderTextArray = shaderText.c_str();
         auto shaderLength = static_cast<int>(shaderText.length());
