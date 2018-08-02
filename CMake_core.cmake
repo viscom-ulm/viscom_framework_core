@@ -103,6 +103,10 @@ foreach(f ${SRC_FILES_CORE})
 endforeach()
 
 
+if(UNIX)
+    set(OpenGL_GL_PREFERENCE GLVND)
+endif()
+
 if (${VISCOM_USE_SGCT})
     find_package(OpenGL REQUIRED)
     find_library(SGCT_RELEASE_LIBRARY NAMES sgct libsgct PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
@@ -113,7 +117,13 @@ if (${VISCOM_USE_SGCT})
         debug ${SGCT_DEBUG_LIBRARY}
         optimized ${SGCT_RELEASE_LIBRARY})
 
-    list(APPEND CORE_LIBS ${SGCT_LIBS} ${OPENGL_LIBRARY} ws2_32)
+    list(APPEND CORE_LIBS ${SGCT_LIBS})
+    if(MSVC)
+        list(APPEND CORE_LIBS ${OPENGL_LIBRARY} ws2_32)
+    elseif(UNIX)
+        find_package(Threads REQUIRED)
+        list(APPEND CORE_LIBS dl OpenGL::OpenGL OpenGL::GLX X11 Xrandr Xcursor Xinerama Xxf86vm Threads::Threads)
+    endif()
     list(APPEND CORE_INCLUDE_DIRS ${SGCT_INCLUDE_DIRECTORY})
 else()
     find_package(OpenGL REQUIRED)
