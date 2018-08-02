@@ -1,3 +1,7 @@
+cmake_minimum_required(VERSION 3.9)
+
+project(VISCOMCore)
+
 set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_DEBUGSLAVE_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows.")
@@ -9,12 +13,12 @@ set(ADD_BUILD_WIN_SHARED OFF CACHE BOOL "Build shared library on Windows" FORCE)
 set(USE_DYNAMIC_LOGGING_LEVELS ON CACHE BOOL "Turn ON/OFF log levels. An disabled level will not push logs of that level to the sink. By default dynamic logging is disabled" FORCE)
 set(CHANGE_G3LOG_DEBUG_TO_DBUG ON CACHE BOOL "Use DBUG logging level instead of DEBUG. By default DEBUG is the debugging level" FORCE)
 set(VERSION "1.3.160-0")
-add_subdirectory(extern/fwcore/extern/g3log EXCLUDE_FROM_ALL)
+add_subdirectory(extern/g3log EXCLUDE_FROM_ALL)
 
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-add_subdirectory(extern/fwcore/extern/assimp EXCLUDE_FROM_ALL)
+add_subdirectory(extern/assimp EXCLUDE_FROM_ALL)
 
 set(VISCOM_CLIENTGUI ON CACHE BOOL "Use ImGui on clients.")
 set(VISCOM_SYNCINPUT ON CACHE BOOL "Synchronize input from master to clients.")
@@ -50,43 +54,43 @@ elseif(MSVC)
 endif()
 
 file(GLOB EXTERN_SOURCES_CORE
-    extern/fwcore/extern/imgui/imgui.cpp
-    extern/fwcore/extern/imgui/imgui_draw.cpp
-    extern/fwcore/extern/imgui/imgui_demo.cpp)
+    extern/imgui/imgui.cpp
+    extern/imgui/imgui_draw.cpp
+    extern/imgui/imgui_demo.cpp)
 
-if (${VISCOM_USE_SGCT})
+if (VISCOM_USE_SGCT)
     list(APPEND COMPILE_TIME_DEFS VISCOM_USE_SGCT)
-    set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/extern/fwcore/src_sgct/)
+    set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/src_sgct/)
 else()
     option(GLFW_BUILD_DOCS OFF)
     option(GLFW_BUILD_EXAMPLES OFF)
     option(GLFW_BUILD_TESTS OFF)
     option(GLFW_INSTALL OFF)
-    add_subdirectory(extern/fwcore/extern/glfw EXCLUDE_FROM_ALL)
+    add_subdirectory(extern/glfw EXCLUDE_FROM_ALL)
 
     list(APPEND COMPILE_TIME_DEFS GLEW_STATIC)
-    list(APPEND EXTERN_SOURCES_CORE extern/fwcore/src_nosgct/glew/src/glew.c)
-    set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/extern/fwcore/src_nosgct/)
+    list(APPEND EXTERN_SOURCES_CORE src_nosgct/glew/src/glew.c)
+    set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/src_nosgct/)
 endif()
 
 
-file(GLOB_RECURSE SHADER_FILES_CORE ${PROJECT_SOURCE_DIR}/extern/fwcore/resources/shader/*.*)
+file(GLOB_RECURSE SHADER_FILES_CORE ${PROJECT_SOURCE_DIR}/resources/shader/*.*)
 file(GLOB_RECURSE SRC_FILES_CORE
-    ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.h
-    ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.cpp
-    ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.inl
+    ${PROJECT_SOURCE_DIR}/src/core/*.h
+    ${PROJECT_SOURCE_DIR}/src/core/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/core/*.inl
     ${VISCOM_SGCT_WRAPPER_DIR}/core/*.h
     ${VISCOM_SGCT_WRAPPER_DIR}/core/*.cpp
     ${VISCOM_SGCT_WRAPPER_DIR}/core/*.inl)
 source_group("extern\\core" FILES ${EXTERN_SOURCES_CORE})
 source_group("shader\\core" FILES ${SHADER_FILES_CORE})
 
-if (${VISCOM_LOCAL_ONLY})
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/CalibrationVertices.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/SlaveNodeInternal.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/SlaveNodeInternal.cpp")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/OpenCVParserHelper.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/OpenCVParserHelper.cpp")
+if (VISCOM_LOCAL_ONLY)
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/CalibrationVertices.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/SlaveNodeInternal.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/SlaveNodeInternal.cpp")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.cpp")
 endif()
 
 foreach(f ${SRC_FILES_CORE})
@@ -99,33 +103,30 @@ foreach(f ${SRC_FILES_CORE})
 endforeach()
 
 
-if (${VISCOM_USE_SGCT})
+if (VISCOM_USE_SGCT)
     find_package(OpenGL REQUIRED)
-    find_library(SGCT_RELEASE_LIBRARY NAMES sgct libsgct PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
-    find_library(SGCT_DEBUG_LIBRARY NAMES sgctd libsgctd PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
-    find_path(SGCT_INCLUDE_DIRECTORY NAMES sgct PATHS $ENV{SGCT_ROOT_DIR}/include NO_DEFAULT_PATH REQUIRED)
 
-    set(SGCT_LIBS
-        debug ${SGCT_DEBUG_LIBRARY}
-        optimized ${SGCT_RELEASE_LIBRARY})
-
+    set(SGCT_LIBS sgct_light freetype glew glfw png16_static turbojpeg-static tinyxml2static zlibstatic miniziplibstatic vrpn)
     list(APPEND CORE_LIBS ${SGCT_LIBS} ${OPENGL_LIBRARY} ws2_32)
-    list(APPEND CORE_INCLUDE_DIRS ${SGCT_INCLUDE_DIRECTORY})
+    if(MSVC)
+        list(APPEND CORE_LIBS ws2_32)
+    endif()
+    list(APPEND CORE_INCLUDE_DIRS extern/sgct/include)
 else()
     find_package(OpenGL REQUIRED)
     list(APPEND CORE_LIBS glfw ${GLFW_LIBRARIES} ${OPENGL_LIBRARY})
-    list(APPEND CORE_INCLUDE_DIRS extern/fwcore/extern/glm extern/fwcore/extern/glfw/include)
+    list(APPEND CORE_INCLUDE_DIRS extern/glm extern/glfw/include)
 endif()
 
 list(APPEND CORE_INCLUDE_DIRS
-    extern/fwcore/src
+    src
     ${VISCOM_SGCT_WRAPPER_DIR}
-    extern/fwcore/extern/g3log/src
-    ${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/g3log/include
-    extern/fwcore/extern/imgui
-    extern/fwcore/extern/stb
-    extern/fwcore/extern/assimp/include
-    ${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/assimp/include)
+    extern/g3log/src
+    ${CMAKE_CURRENT_BINARY_DIR}/extern/g3log/include
+    extern/imgui
+    extern/stb
+    extern/assimp/include
+    ${CMAKE_CURRENT_BINARY_DIR}/extern/assimp/include)
 
 list(APPEND CORE_LIBS g3logger assimp)
 
@@ -134,26 +135,26 @@ if(MSVC)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${APP_NAME})
 endif()
 
-if (${VISCOM_CLIENTMOUSECURSOR})
+if (VISCOM_CLIENTMOUSECURSOR)
     list(APPEND COMPILE_TIME_DEFS VISCOM_CLIENTGUI VISCOM_SYNCINPUT VISCOM_CLIENTMOUSECURSOR)
 else()
-    if(${VISCOM_SYNCINPUT})
+    if(VISCOM_SYNCINPUT)
         list(APPEND COMPILE_TIME_DEFS VISCOM_SYNCINPUT)
     endif()
-    if(${VISCOM_CLIENTGUI})
+    if(VISCOM_CLIENTGUI)
         list(APPEND COMPILE_TIME_DEFS VISCOM_CLIENTGUI)
     endif()
 endif()
 
-if (${VISCOM_LOCAL_ONLY})
+if (VISCOM_LOCAL_ONLY)
     list(APPEND COMPILE_TIME_DEFS VISCOM_LOCAL_ONLY)
 endif()
 
-if(${VISCOM_USE_TUIO})
-    add_subdirectory(extern/fwcore/extern/tuio EXCLUDE_FROM_ALL)
+if(VISCOM_USE_TUIO)
+    add_subdirectory(extern/tuio EXCLUDE_FROM_ALL)
     list(APPEND COMPILE_TIME_DEFS VISCOM_USE_TUIO)
     list(APPEND CORE_LIBS libTUIO)
-    list(APPEND CORE_INCLUDE_DIRS extern/fwcore/extern/tuio/TUIO extern/fwcore/extern/tuio/oscpack)
+    list(APPEND CORE_INCLUDE_DIRS extern/tuio/TUIO extern/tuio/oscpack)
 endif()
 
 add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${EXTERN_SOURCES_CORE})
@@ -163,10 +164,10 @@ target_link_libraries(VISCOMCore ${CORE_LIBS})
 target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS})
 
 macro(copy_core_lib_dlls APP_NAME)
-    if (${VISCOM_USE_TUIO})
+    if (VISCOM_USE_TUIO)
         add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:libTUIO> ${PROJECT_BINARY_DIR})
         install(FILES $<TARGET_FILE:libTUIO> DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
     endif()
 endmacro()
 
-install(DIRECTORY extern/fwcore/resources/ DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME}/resources)
+install(DIRECTORY resources/ DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME}/resources)
