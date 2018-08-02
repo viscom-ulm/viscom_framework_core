@@ -168,7 +168,7 @@ if(TARGET Doxygen::doxygen)
     configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
 
     doxygen_add_docs(doc_doxygen ${DOXYGEN_OUT}
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/extern/fwcore/doc COMMENT "Generating API documentation with Doxygen" VERBATIM)
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/extern/fwcore/doc COMMENT "Generating API documentation with Doxygen")
     ## doxygen_add_docs(VISCOMCoreDoc extern/fwcore/src)
 endif()
 
