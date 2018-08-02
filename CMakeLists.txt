@@ -1,3 +1,7 @@
+cmake_minimum_required(VERSION 3.9)
+
+project(VISCOMCore)
+
 set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_DEBUGSLAVE_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows.")
@@ -101,16 +105,13 @@ endforeach()
 
 if (VISCOM_USE_SGCT)
     find_package(OpenGL REQUIRED)
-    find_library(SGCT_RELEASE_LIBRARY NAMES sgct libsgct PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
-    find_library(SGCT_DEBUG_LIBRARY NAMES sgctd libsgctd PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
-    find_path(SGCT_INCLUDE_DIRECTORY NAMES sgct PATHS $ENV{SGCT_ROOT_DIR}/include NO_DEFAULT_PATH REQUIRED)
 
-    set(SGCT_LIBS
-        debug ${SGCT_DEBUG_LIBRARY}
-        optimized ${SGCT_RELEASE_LIBRARY})
-
+    set(SGCT_LIBS sgct_light freetype glew glfw png16_static turbojpeg-static tinyxml2static zlibstatic miniziplibstatic vrpn)
     list(APPEND CORE_LIBS ${SGCT_LIBS} ${OPENGL_LIBRARY} ws2_32)
-    list(APPEND CORE_INCLUDE_DIRS ${SGCT_INCLUDE_DIRECTORY})
+    if(MSVC)
+        list(APPEND CORE_LIBS ws2_32)
+    endif()
+    list(APPEND CORE_INCLUDE_DIRS extern/sgct/include)
 else()
     find_package(OpenGL REQUIRED)
     list(APPEND CORE_LIBS glfw ${GLFW_LIBRARIES} ${OPENGL_LIBRARY})
