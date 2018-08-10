@@ -9,7 +9,7 @@
 #include "Mesh.h"
 #include "SceneMeshNode.h"
 #include "assimp_convert_helpers.h"
-#include "core/ApplicationNodeInternal.h"
+#include "core/FrameworkInternal.h"
 #include "core/gfx/Material.h"
 #include "core/open_gl.h"
 #include <assimp/Importer.hpp>
@@ -29,15 +29,19 @@ namespace viscom {
         return glm::vec3{ c.r, c.g, c.b };
     }
 
-    constexpr unsigned int ASSIMP_FLAGS = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_JoinIdenticalVertices
-        | aiProcess_Triangulate | aiProcess_LimitBoneWeights | aiProcess_ImproveCacheLocality
-        | aiProcess_RemoveRedundantMaterials | aiProcess_FlipUVs | aiProcess_CalcTangentSpace;
+    constexpr unsigned int ASSIMP_FLAGS = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs;
+
+    constexpr unsigned int ASSIMP_FLAGS_FORCEGEN = aiProcess_CalcTangentSpace | aiProcess_GenNormals
+        | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality | aiProcess_SplitLargeMeshes
+        | aiProcess_GenUVCoords | aiProcess_SortByPType | aiProcess_FindDegenerates | aiProcess_FindInvalidData | aiProcess_FindInstances
+        | aiProcess_ValidateDataStructure | aiProcess_OptimizeMeshes | aiProcess_Triangulate | aiProcess_LimitBoneWeights | aiProcess_ForceGenNormals
+        | aiProcess_RemoveRedundantMaterials | aiProcess_FlipUVs;
 
     /**
      * Constructor, creates a mesh from file.
      * @param meshFilename the filename of the mesh file.
      */
-    Mesh::Mesh(const std::string& meshFilename, ApplicationNodeInternal* node, bool synchronize) :
+    Mesh::Mesh(const std::string& meshFilename, FrameworkInternal* node, bool synchronize) :
         Resource(meshFilename, ResourceType::Mesh, node, synchronize),
         filename_{ meshFilename },
         indexBuffer_(0)
@@ -51,8 +55,9 @@ namespace viscom {
         indexBuffer_ = 0;
     }
 
-    void Mesh::Initialize()
+    void Mesh::Initialize(bool forceGenNormals)
     {
+        forceGenNormals_ = forceGenNormals;
         InitializeFinished();
     }
 
@@ -77,12 +82,14 @@ namespace viscom {
             auto hintSize = hint.size() * sizeof(std::remove_reference_t<decltype(hint)>::value_type);
             std::ifstream meshFile(filename, std::ios::binary | std::ios::ate);
             std::size_t meshFileSize = meshFile.tellg();
-            data->resize(sizeof(std::size_t) + hintSize + meshFileSize);
+            data->resize(sizeof(std::size_t) + hintSize + sizeof(bool) + meshFileSize);
 
             reinterpret_cast<std::size_t*>(data->data())[0] = hint.size();
             auto dataptr = data->data() + sizeof(std::size_t);
             memcpy(dataptr, hint.data(), hintSize);
             dataptr += hintSize;
+            memcpy(dataptr, &forceGenNormals_, sizeof(bool));
+            dataptr += sizeof(bool);
 
             meshFile.seekg(0);
             meshFile.read(reinterpret_cast<char*>(dataptr), meshFileSize);
@@ -97,26 +104,28 @@ namespace viscom {
         std::string hint;
         hint.resize(hintSize[0]);
         memcpy(hint.data(), &hintSize[1], hintSize[0]);
-        auto meshData = reinterpret_cast<const std::uint8_t*>(data) + sizeof(std::size_t) + hintSize[0] * sizeof(char);
-        auto meshSize = size - (sizeof(std::size_t) + hintSize[0] * sizeof(char));
+        auto dataptr = reinterpret_cast<const std::uint8_t*>(data) + sizeof(std::size_t) + hintSize[0] * sizeof(char);
+        memcpy(&forceGenNormals_, dataptr, sizeof(bool));
+        dataptr += sizeof(bool);
+        auto meshSize = size - (sizeof(std::size_t) + hintSize[0] * sizeof(char) + sizeof(bool));
         Assimp::Importer loader;
-        auto scene = loader.ReadFileFromMemory(meshData, meshSize, ASSIMP_FLAGS, hint.c_str());
+        auto scene = loader.ReadFileFromMemory(dataptr, meshSize, forceGenNormals_ ? ASSIMP_FLAGS_FORCEGEN : ASSIMP_FLAGS, hint.c_str());
 
         LoadAssimpMesh(scene, GetAppNode());
     }
 
-    void Mesh::LoadAssimpMeshFromFile(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node)
+    void Mesh::LoadAssimpMeshFromFile(const std::string& filename, const std::string& binFilename, FrameworkInternal* node)
     {
         auto fullFilename = FindResourceLocation(filename);
         // Load a Model from File
         Assimp::Importer loader;
-        auto scene = loader.ReadFile(fullFilename, ASSIMP_FLAGS);
+        auto scene = loader.ReadFile(fullFilename, forceGenNormals_ ? ASSIMP_FLAGS_FORCEGEN : ASSIMP_FLAGS);
 
         LoadAssimpMesh(scene, node);
         Save(binFilename);
     }
 
-    void Mesh::LoadAssimpMesh(const aiScene * scene, ApplicationNodeInternal * node)
+    void Mesh::LoadAssimpMesh(const aiScene * scene, FrameworkInternal* node)
     {
         unsigned int maxUVChannels = 0, maxColorChannels = 0, numVertices = 0, numIndices = 0;
         std::vector<std::vector<unsigned int>> indices;
@@ -236,7 +245,9 @@ namespace viscom {
                 }
             }
 
-            std::transform(indices[i].begin(), indices[i].end(), &indices_[currentMeshIndexOffset], [currentMeshVertexOffset](unsigned int idx) { return idx + currentMeshVertexOffset; }); //-V108
+            if (!indices[i].empty()) {
+                std::transform(indices[i].begin(), indices[i].end(), &indices_[currentMeshIndexOffset], [currentMeshVertexOffset](unsigned int idx) { return idx + currentMeshVertexOffset; }); //-V108
+            }
 
             subMeshes_.emplace_back(this, mesh->mName.C_Str(), currentMeshIndexOffset, static_cast<unsigned int>(indices[i].size()), mesh->mMaterialIndex);
             currentMeshVertexOffset += mesh->mNumVertices; //-V127
@@ -291,7 +302,7 @@ namespace viscom {
         globalInverse_ = glm::inverse(rootNode_->GetLocalTransform());
     }
 
-    std::shared_ptr<const Texture> Mesh::LoadTexture(const std::string& relFilename, ApplicationNodeInternal* node) const
+    std::shared_ptr<const Texture> Mesh::LoadTexture(const std::string& relFilename, FrameworkInternal* node) const
     {
         auto path = filename_.substr(0, filename_.find_last_of('/') + 1);
         std::shared_ptr<const Texture> texture;
@@ -299,7 +310,6 @@ namespace viscom {
             auto texFilename = path + relFilename;
             texture = std::move(node->GetTextureManager().GetResource(texFilename));
         } catch (resource_loading_error&) {
-            // TODO: Test this!! [1/8/2018 Sebastian Maisch]
             auto textureFilename = relFilename.substr(relFilename.find_last_of("/") + 1);
             auto texFilename = path + textureFilename;
 
@@ -361,7 +371,7 @@ namespace viscom {
         rootNode_->Write(ofs);
     }
 
-    bool Mesh::Load(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node)
+    bool Mesh::Load(const std::string& filename, const std::string& binFilename, FrameworkInternal* node)
     {
 #ifndef __APPLE_CC__
         if (std::experimental::filesystem::exists(binFilename)) {
@@ -372,14 +382,14 @@ namespace viscom {
                 bool correctHeader;
                 unsigned int actualVersion;
                 std::tie(correctHeader, actualVersion) = VersionableSerializerType::checkHeader(inBinFile);
-                if (correctHeader) return Read(inBinFile, node->GetTextureManager());
+                if (correctHeader) return Read(inBinFile, node);
             }
         }
 #endif
         return false;
     }
 
-    bool Mesh::Read(std::istream& ifs, TextureManager& texMan)
+    bool Mesh::Read(std::istream& ifs, FrameworkInternal* node)
     {
         serializeHelper::readV(ifs, vertices_);
         serializeHelper::readV(ifs, normals_);
@@ -407,8 +417,8 @@ namespace viscom {
             std::string diffuseTexId, bumpTexId;
             serializeHelper::read(ifs, diffuseTexId);
             serializeHelper::read(ifs, bumpTexId);
-            if (!diffuseTexId.empty()) matTex.diffuseTex = texMan.GetResource(diffuseTexId);
-            if (!bumpTexId.empty()) matTex.bumpTex = texMan.GetResource(bumpTexId);
+            if (!diffuseTexId.empty()) matTex.diffuseTex = LoadTexture(diffuseTexId, node);
+            if (!bumpTexId.empty()) matTex.bumpTex = LoadTexture(bumpTexId, node);
         }
 
         std::size_t numMeshes;

@@ -1,5 +1,5 @@
 set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
-set(CMAKE_DEBUGSLAVE_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
+set(CMAKE_DEBUGWORKER_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows.")
 
 set(G3_SHARED_LIB OFF CACHE BOOL "Build shared library." FORCE)
@@ -15,6 +15,8 @@ set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 add_subdirectory(extern/fwcore/extern/assimp EXCLUDE_FROM_ALL)
+
+find_package(Doxygen)
 
 set(VISCOM_CLIENTGUI ON CACHE BOOL "Use ImGui on clients.")
 set(VISCOM_SYNCINPUT ON CACHE BOOL "Synchronize input from master to clients.")
@@ -58,6 +60,7 @@ file(GLOB EXTERN_SOURCES_CORE
 
 if (${VISCOM_USE_SGCT})
     list(APPEND COMPILE_TIME_DEFS VISCOM_USE_SGCT)
+    set(VISCOM_SGCT_TAG "sgct")
     set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/extern/fwcore/src_sgct/)
 else()
     option(GLFW_BUILD_DOCS OFF)
@@ -66,6 +69,7 @@ else()
     option(GLFW_INSTALL OFF)
     add_subdirectory(extern/fwcore/extern/glfw EXCLUDE_FROM_ALL)
 
+    set(VISCOM_SGCT_TAG "nosgct")
     list(APPEND COMPILE_TIME_DEFS GLEW_STATIC)
     list(APPEND EXTERN_SOURCES_CORE extern/fwcore/src_nosgct/glew/src/glew.c)
     set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/extern/fwcore/src_nosgct/)
@@ -85,8 +89,8 @@ source_group("shader\\core" FILES ${SHADER_FILES_CORE})
 
 if (${VISCOM_LOCAL_ONLY})
     list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/CalibrationVertices.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/SlaveNodeInternal.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/SlaveNodeInternal.cpp")
+    list(REMOVE_ITEM SRC_FILES_CORE "${VISCOM_SGCT_WRAPPER_DIR}/core/app_internal/WorkerNodeCalibratedInternal.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${VISCOM_SGCT_WRAPPER_DIR}/core/app_internal/WorkerNodeCalibratedInternal.cpp")
     list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/OpenCVParserHelper.h")
     list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/OpenCVParserHelper.cpp")
 endif()
@@ -120,7 +124,6 @@ else()
 endif()
 
 list(APPEND CORE_INCLUDE_DIRS
-    src
     extern/fwcore/src
     ${VISCOM_SGCT_WRAPPER_DIR}
     extern/fwcore/extern/g3log/src
@@ -175,6 +178,24 @@ if(${VISCOM_USE_TUIO})
     list(APPEND CORE_LIBS libTUIO)
     list(APPEND CORE_INCLUDE_DIRS extern/fwcore/extern/tuio/TUIO extern/fwcore/extern/tuio/oscpack)
 endif()
+
+if(TARGET Doxygen::doxygen)
+    get_property(DOXYGEN_EXECUTABLE TARGET Doxygen::doxygen PROPERTY IMPORTED_LOCATION)
+
+    set(DOXYGEN_IN ${PROJECT_SOURCE_DIR}/extern/fwcore/doc/Doxyfile.in)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+
+    add_custom_target(doc_doxygen ALL COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/extern/fwcore/doc COMMENT "Generating API documentation with Doxygen" VERBATIM)
+    ## doxygen_add_docs(VISCOMCoreDoc extern/fwcore/src)
+endif()
+
+add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${EXTERN_SOURCES_CORE})
+set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
+target_include_directories(VISCOMCore PUBLIC ${CORE_INCLUDE_DIRS})
+target_link_libraries(VISCOMCore ${CORE_LIBS})
+target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS})
 
 macro(copy_core_lib_dlls APP_NAME)
     if (${VISCOM_USE_TUIO})

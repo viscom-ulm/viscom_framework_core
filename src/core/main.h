@@ -20,7 +20,22 @@
 #include <core/config.h>
 #include <core/utils/utils.h>
 
+
+#ifdef VISCOM_USE_TUIO
+namespace TUIO {
+    class TuioCursor;
+}
+#else
+namespace TUIO {
+    using TuioCursor = void;
+}
+#endif
+
 namespace viscom {
+
+    class ApplicationNodeBase;
+    class ApplicationNodeInternal;
+    using InitNodeFunc = std::function<std::unique_ptr<ApplicationNodeBase>(ApplicationNodeInternal*)>;
 
 #ifdef _DEBUG
     constexpr bool DEBUG_MODE = true;

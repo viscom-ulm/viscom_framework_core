@@ -7,7 +7,7 @@
  */
 
 #include "Resource.h"
-#include "core/ApplicationNodeInternal.h"
+#include "core/FrameworkInternal.h"
 #include "core/utils/utils.h"
 
 #ifdef VISCOM_USE_SGCT
@@ -19,7 +19,7 @@ namespace viscom {
      * Constructor.
      * @param resourceId the resource id to use
      */
-    Resource::Resource(const std::string& resourceId, ResourceType type, ApplicationNodeInternal* appNode, bool synchronize) :
+    Resource::Resource(const std::string& resourceId, ResourceType type, FrameworkInternal* appNode, bool synchronize) :
         id_{ resourceId },
         type_{ type },
         appNode_{ appNode },
@@ -46,7 +46,8 @@ namespace viscom {
             else if (!IsLoaded()) appNode_->WaitForResource(id_, type_);
         }
         else {
-            Load(std::optional<std::vector<std::uint8_t>>());
+            std::optional<std::vector<std::uint8_t>> optData(std::vector<std::uint8_t>{});
+            Load(optData);
             loadCounter_ = -1;
         }
     }
@@ -57,7 +58,7 @@ namespace viscom {
         loadCounter_ = -1;
     }
 
-    std::string Resource::FindResourceLocation(const std::string& localFilename, const ApplicationNodeInternal* appNode, const std::string& resourceId)
+    std::string Resource::FindResourceLocation(const std::string& localFilename, const FrameworkInternal* appNode, const std::string& resourceId)
     {
         for (const auto& dir : appNode->GetConfig().resourceSearchPaths_) {
             auto filename = dir + "/" + localFilename;

@@ -40,9 +40,13 @@ namespace viscom::tuio {
         TuioInputWrapper(int port);
         virtual ~TuioInputWrapper() override;
 
-        virtual void addTuioCursor(TUIO::TuioCursor *tcur) override;
-        virtual void updateTuioCursor(TUIO::TuioCursor *tcur) override;
-        virtual void removeTuioCursor(TUIO::TuioCursor *tcur) override;
+        void SetAddCursorCallback(std::function<void(TUIO::TuioCursor*)> fn);
+        void SetUpdateCursorCallback(std::function<void(TUIO::TuioCursor*)> fn);
+        void SetRemoveCursorCallback(std::function<void(TUIO::TuioCursor*)> fn);
+
+        void addTuioCursor(TUIO::TuioCursor *tcur) override;
+        void updateTuioCursor(TUIO::TuioCursor *tcur) override;
+        void removeTuioCursor(TUIO::TuioCursor *tcur) override;
 
         //////////////////////////////////////////////////////////////////////////
         // These methods are currently not used, so do not override them.
@@ -60,6 +64,9 @@ namespace viscom::tuio {
     private:
         std::unique_ptr<TUIO::TuioClient> tuioClient_;
         std::unique_ptr<TUIO::OscReceiver> receiver_;
+        std::function<void(TUIO::TuioCursor*)> addCursorFn_;
+        std::function<void(TUIO::TuioCursor*)> updateCursorFn_;
+        std::function<void(TUIO::TuioCursor*)> removeCursorFn_;
     };
 
 #else
@@ -69,6 +76,10 @@ namespace viscom::tuio {
     public:
         TuioInputWrapper(int port);
         virtual ~TuioInputWrapper();
+
+        void SetAddCursorCallback(std::function<void(TUIO::TuioCursor*)> fn) {}
+        void SetUpdateCursorCallback(std::function<void(TUIO::TuioCursor*)> fn) {}
+        void SetRemoveCursorCallback(std::function<void(TUIO::TuioCursor*)> fn) {}
 
         virtual void addTuioCursor(TUIO::TuioCursor *tcur) {}
         virtual void updateTuioCursor(TUIO::TuioCursor *tcur) {}

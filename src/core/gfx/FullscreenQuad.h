@@ -15,7 +15,9 @@
 namespace viscom {
 
     class ApplicationNodeBase;
+    class FrameworkInternal;
 
+    /** Static helper class for having only a single VAO for all fullscreen quads. */
     class StaticFullscreenQuad
     {
     public:
@@ -35,7 +37,7 @@ namespace viscom {
     class FullscreenQuad
     {
     public:
-        FullscreenQuad(const std::string& fragmentProgram, ApplicationNodeInternal* appNode);
+        FullscreenQuad(const std::string& fragmentProgram, FrameworkInternal* appNode);
         FullscreenQuad(const std::string& fragmentProgram, ApplicationNodeBase* appNode);
         FullscreenQuad(const std::string& shaderName, const std::string& fragmentProgram,
             const std::vector<std::string>& defines, ApplicationNodeBase* appNode);

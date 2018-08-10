@@ -54,12 +54,28 @@ namespace viscom::serializeHelper {
         value.resize(vecLength); for (auto& str : value) readV(ifs, str);
     }
 
+    /**
+     *  Helper class to inherit from to make your class easier serializable.
+     *  @tparam T0 first part of the tag identifying the class.
+     *  @tparam T1 second part of the tag identifying the class.
+     *  @tparam T2 third part of the tag identifying the class.
+     *  @tparam T3 fourth part of the tag identifying the class.
+     *  @tparam V version of the class.
+     */
     template<char T0, char T1, char T2, char T3, unsigned int V> struct VersionableSerializer
     {
+    private:
         using VersionableSerializerType = VersionableSerializer<T0, T1, T2, T3, V>;
         static const unsigned int VERSION = V;
 
+    public:
 #ifndef __APPLE_CC__
+        /**
+         *  Checks if the original file is older than the binary file.
+         *  @param filename the name of the original file.
+         *  @param binFilename the name of the binary file.
+         *  @return true if the original file is older.
+         */
         static bool checkFileDate(const std::string& filename, const std::string& binFilename)
         {
             auto fileLastWrite = std::experimental::filesystem::last_write_time(filename);
@@ -68,6 +84,11 @@ namespace viscom::serializeHelper {
         }
 #endif
 
+        /**
+         *  Checks if the file header of a serialized file matches in tag and version.
+         *  @param ifs the stream to check the file header.
+         *  @return a tuple containing whether tag and version of the file match and the actual file version.
+         */
         static std::tuple<bool, unsigned int> checkHeader(std::istream& ifs)
         {
             const auto TAG = tag(T0, T1, T2, T3);
@@ -78,6 +99,10 @@ namespace viscom::serializeHelper {
             else return std::make_tuple(false, 0);
         }
 
+        /**
+         *  Writes the file header with tag and version. 
+         *  @param ofs the stream to write the header to.
+         */
         static void writeHeader(std::ostream& ofs)
         {
             const auto TAG = tag(T0, T1, T2, T3);

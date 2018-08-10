@@ -10,6 +10,7 @@
 
 #include <string>
 #include <future>
+#include <vector>
 
 namespace viscom {
 
@@ -74,6 +75,16 @@ namespace viscom {
             const auto strRange = strEnd - strBegin + 1;
 
             return s.substr(strBegin, strRange);
+        }
+
+        static std::vector<std::string> split(const std::string &s, char delim) {
+            std::stringstream ss(s);
+            std::string item;
+            std::vector<std::string> tokens;
+            while (getline(ss, item, delim)) {
+                tokens.push_back(item);
+            }
+            return tokens;
         }
 
         static void memcpyfaster(void* dest, const void* src, std::size_t size) {

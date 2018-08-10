@@ -18,7 +18,7 @@
 #include <chrono>
 
 
-namespace vku {
+namespace viscom {
     namespace internal {
         static const std::string file_name_time_formatted = "%Y%m%d-%H%M%S";
 

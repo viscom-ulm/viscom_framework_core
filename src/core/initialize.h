@@ -9,13 +9,16 @@
 #pragma once
 
 #include <memory>
+#include "core/main.h"
 
 
 namespace viscom {
 
-    class ApplicationNodeInternal;
+    class FrameworkInternal;
     struct FWConfiguration;
 
-    std::unique_ptr<ApplicationNodeInternal> Application_Init(const FWConfiguration&);
+    std::unique_ptr<FrameworkInternal> Application_Init(const FWConfiguration&,
+        InitNodeFunc coordinatorNodeFactory,
+        InitNodeFunc workerNodeFactory);
 
 }

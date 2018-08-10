@@ -21,7 +21,7 @@ struct aiNode;
 
 namespace viscom {
 
-    class ApplicationNodeInternal;
+    class FrameworkInternal;
     struct Material;
     struct MaterialTextures;
     class SceneMeshNode;
@@ -34,14 +34,14 @@ namespace viscom {
     class Mesh final : public Resource
     {
     public:
-        Mesh(const std::string& meshFilename, ApplicationNodeInternal* node, bool synchronize = false);
+        Mesh(const std::string& meshFilename, FrameworkInternal* node, bool synchronize = false);
         Mesh(const Mesh&) = delete;
         Mesh& operator=(const Mesh&) = delete;
         Mesh(Mesh&&) noexcept = delete;
         Mesh& operator=(Mesh&&) noexcept = delete;
         virtual ~Mesh() noexcept override;
 
-        void Initialize();
+        void Initialize(bool forceGenNormals = false);
 
         /**
          *  Accessor to the meshes sub-meshes. This can be used to render more complicated meshes (with multiple sets
@@ -55,6 +55,7 @@ namespace viscom {
 
         const std::vector<glm::vec3>& GetVertices() const noexcept { return vertices_; }
         const std::vector<glm::vec3>& GetNormals() const noexcept { return normals_; }
+        std::size_t GetNumTexCoords() const { return texCoords_.size(); }
         const std::vector<glm::vec3>& GetTexCoords(size_t i) const noexcept { return texCoords_[i]; }
         const std::vector<glm::vec3>& GetTangents() const noexcept { return tangents_; }
         const std::vector<glm::vec3>& GetBinormals() const noexcept { return binormals_; }
@@ -84,13 +85,13 @@ namespace viscom {
     private:
         using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'M', 'E', 'S', 1000>;
 
-        std::shared_ptr<const Texture> LoadTexture(const std::string& relFilename, ApplicationNodeInternal* node) const;
-        void LoadAssimpMeshFromFile(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node);
-        void LoadAssimpMesh(const aiScene* scene, ApplicationNodeInternal* node);
+        std::shared_ptr<const Texture> LoadTexture(const std::string& relFilename, FrameworkInternal* node) const;
+        void LoadAssimpMeshFromFile(const std::string& filename, const std::string& binFilename, FrameworkInternal* node);
+        void LoadAssimpMesh(const aiScene* scene, FrameworkInternal* node);
         void Save(const std::string& filename) const;
         void Write(std::ostream& ofs) const;
-        bool Load(const std::string& filename, const std::string& binFilename, ApplicationNodeInternal* node);
-        bool Read(std::istream& ifs, TextureManager& texMan);
+        bool Load(const std::string& filename, const std::string& binFilename, FrameworkInternal* node);
+        bool Read(std::istream& ifs, FrameworkInternal* node);
 
         void ParseBoneHierarchy(const std::map<std::string, unsigned int>& bones, const aiNode* node,
             std::size_t parent, glm::mat4 parentMatrix);
@@ -99,6 +100,8 @@ namespace viscom {
 
         /** Filename of this mesh. */
         std::string filename_;
+        /** Force generating normals. */
+        bool forceGenNormals_;
 
         /** Holds all the single points used by the mesh (and its sub-meshes) as points or in vertices. */
         std::vector<glm::vec3> vertices_;
