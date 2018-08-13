@@ -10,6 +10,7 @@
 
 #include "core/app_internal/ApplicationNodeInternal.h"
 #include "core/FrameworkInternal.h"
+#include <openvr.h>
 
 namespace viscom {
 
@@ -60,6 +61,16 @@ namespace viscom {
         virtual bool UpdateTuioCursor(TUIO::TuioCursor *tcur);
         virtual bool RemoveTuioCursor(TUIO::TuioCursor *tcur);
 
+        float * VrGetPosition(const float hmdMatrix[3][4]);
+        double * VrGetRotation(const float matrix[3][4]);
+        float * GetZVector(const float matrix[3][4]);
+        float * GetDisplayPosVector(const float position[3], const float zvector[3], const float display_lowerLeftCorner[3], const float display_upperLeftCorner[3], const float display_lowerRightCorner[3]);
+        void InitDisplay(float dpos[3]);
+        void InitDisplayFloor(float cpos[3], float cz[3]);
+
+        void InitDisplayFromFile();
+        void WriteInitDisplayToFile();
+
         virtual void EncodeData();
         virtual void DecodeData();
 
@@ -85,6 +96,10 @@ namespace viscom {
         void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex) const { framework_->TransferDataToNode(data, length, packageId, nodeIndex); }
         void TransferData(const void* data, std::size_t length, std::uint16_t packageId) const { framework_->TransferData(data, length, packageId); }
 
+        vr::IVRSystem *m_pHMD = NULL;
+
+        vr::IVRSystem *GetIVRSystem();
+
     protected:
         const FWConfiguration& GetConfig() const { return framework_->GetConfig(); }
         ApplicationNodeInternal* GetApplication() const { return appNode_; }
@@ -100,10 +115,20 @@ namespace viscom {
         double GetElapsedTime() const { return appNode_->GetElapsedTime(); }
         void Terminate() const;
 
+        
+        float displayEdges[3][3] = {{ -1.7f, -0.2f, -3.0f },{ -1.7f, 1.5f, -3.0f },{ 1.8f, -0.28f, -3.0f}};
+        bool initDisplay = true;
+        bool displayllset = false;
+        bool displayulset = false;
+        bool displaylrset = false;
+        bool initfloor = true;
+
     private:
         /** Holds the application node. */
         ApplicationNodeInternal* appNode_;
         /** Holds the framework. */
         FrameworkInternal* framework_;
+        
+        bool vrInitSucc = false;
     };
 }
