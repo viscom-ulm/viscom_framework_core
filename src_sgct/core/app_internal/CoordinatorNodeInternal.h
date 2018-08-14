@@ -9,6 +9,7 @@
 #pragma once
 
 #include "core/app_internal/ApplicationNodeInternal.h"
+#include <openvr.h>
 
 namespace viscom {
 
@@ -32,6 +33,7 @@ namespace viscom {
 
         virtual void AddTuioCursor(TUIO::TuioCursor* tcur) override;
         virtual void UpdateTuioCursor(TUIO::TuioCursor* tcur) override;
+        void ParseTrackingFrame();
         virtual void RemoveTuioCursor(TUIO::TuioCursor* tcur) override;
 
     private:
@@ -47,5 +49,35 @@ namespace viscom {
         /** Holds the vector with mouse scroll events. */
         std::vector<MouseScrollEvent> mouseScrollEvents_;
 #endif
+
+        float * GetPosition(const float hmdMatrix[3][4]);
+        double * GetRotation(const float matrix[3][4]);
+        float * GetZVector(const float matrix[3][4]);
+        float * GetDisplayPosVector(const float position[3], const float zvector[3], const float display_lowerLeftCorner[3], const float display_upperLeftCorner[3], const float display_lowerRightCorner[3]);
+        void InitDisplay(float dpos[3]);
+        void InitDisplayFloor(float cpos[3], float cz[3]);
+        void InitDisplayFromFile();
+        void WriteInitDisplayToFile();
+
+        void CoordinatorNodeInternal::HandleSCGT(glm::vec3 pos, glm::quat q);
+        
+        vr::IVRSystem *m_pHMD;
+        bool vrInitSucc = false;
+
+        vr::HmdVector3_t position;
+        vr::HmdVector3_t zvector;
+        vr::HmdVector2_t displayPos;
+        vr::HmdVector3_t trackerPos;
+        vr::HmdVector3_t midDisplayPos;
+        vr::HmdVector3_t sgctTrackerPos;
+
+        float displayEdges[3][3] = { { -1.7f, -0.2f, -3.0f },{ -1.7f, 1.5f, -3.0f },{ 1.8f, -0.28f, -3.0f } };
+        bool initDisplay = true;
+        bool displayllset = false;
+        bool displayulset = false;
+        bool displaylrset = false;
+        bool initfloor = true;
+
+
     };
 }
