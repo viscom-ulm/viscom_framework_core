@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <cstring>
 #include <string>
 #include <future>
 #include <vector>
