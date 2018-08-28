@@ -147,5 +147,113 @@ namespace viscom {
     void WorkerNodeLocalInternal::RemoveTuioCursor(TUIO::TuioCursor* tcur)
     {
     }
+    void WorkerNodeLocalInternal::ParseTrackingFrame() 
+    {
+    }
+
+    glm::vec3 WorkerNodeLocalInternal::GetController0Pos()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 WorkerNodeLocalInternal::GetController0Zvec()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 WorkerNodeLocalInternal::GetController1Pos()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 WorkerNodeLocalInternal::GetController1Zvec()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 WorkerNodeLocalInternal::GetTrackerPos()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 WorkerNodeLocalInternal::GetTrackerZvec()
+    {
+        return glm::vec3();
+    }
+
+    glm::quat WorkerNodeLocalInternal::GetController0Rot()
+    {
+        return glm::quat();
+    }
+
+    glm::quat WorkerNodeLocalInternal::GetController1Rot()
+    {
+        return glm::quat();
+    }
+
+    glm::quat WorkerNodeLocalInternal::GetTrackerRot()
+    {
+        return glm::quat();
+    }
+
+    glm::vec2 WorkerNodeLocalInternal::GetDisplayPosition(bool useLeftController)
+    {
+        return glm::vec2();
+    }
+
+    void WorkerNodeLocalInternal::InitialiseDisplay(bool useLeftController)
+    {
+    }
+
+    bool WorkerNodeLocalInternal::GetDisplayInitialised()
+    {
+        return false;
+    }
+
+    void WorkerNodeLocalInternal::SetDisplayNotInitialised()
+    {
+    }
+
+    bool WorkerNodeLocalInternal::GetDisplayInitByFloor()
+    {
+        return false;
+    }
+
+    void WorkerNodeLocalInternal::SetDisplayInitByFloor(bool b)
+    {
+    }
+
+    void WorkerNodeLocalInternal::PollAndParseNextEvent()
+    {
+    }
+
+    void WorkerNodeLocalInternal::PollAndParseEvents()
+    {
+    }
+
+    std::vector<std::string> WorkerNodeLocalInternal::OutputDevices()
+    {
+        return std::vector<std::string>();
+    }
+
+    float * WorkerNodeLocalInternal::GetDisplayEdges()
+    {
+        return nullptr;
+    }
+
+    bool WorkerNodeLocalInternal::GetVrInitSuccess()
+    {
+        return false;
+    }
+
+    std::vector<std::string> WorkerNodeLocalInternal::GetController0Buttons()
+    {
+        return std::vector<std::string>();
+    }
+
+    std::vector<std::string> WorkerNodeLocalInternal::GetController1Buttons()
+    {
+        return std::vector<std::string>();
+    }
 
 }

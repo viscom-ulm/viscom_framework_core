@@ -64,6 +64,30 @@ namespace viscom {
         virtual void UpdateTuioCursor(TUIO::TuioCursor *tcur);
         virtual void RemoveTuioCursor(TUIO::TuioCursor *tcur);
 
+        virtual void ParseTrackingFrame();
+        virtual glm::vec3 GetController0Pos();
+        virtual glm::vec3 GetController0Zvec();
+        virtual glm::vec3 GetController1Pos();
+        virtual glm::vec3 GetController1Zvec();
+        virtual glm::vec3 GetTrackerPos();
+        virtual glm::vec3 GetTrackerZvec();
+        virtual glm::quat GetController0Rot();
+        virtual glm::quat GetController1Rot();
+        virtual glm::quat GetTrackerRot();
+        virtual glm::vec2 GetDisplayPosition(bool useleftcontroller);
+        virtual void InitialiseDisplay(bool useLeftController);
+        virtual bool GetDisplayInitialised();
+        virtual void SetDisplayNotInitialised();
+        virtual bool GetDisplayInitByFloor();
+        virtual void SetDisplayInitByFloor(bool b);
+        virtual void PollAndParseNextEvent();
+        virtual void PollAndParseEvents();
+        virtual std::vector<std::string> OutputDevices();
+        virtual float* GetDisplayEdges();
+        virtual bool GetVrInitSuccess() = 0;
+        virtual std::vector<std::string> GetController0Buttons() = 0;
+        virtual std::vector<std::string> GetController1Buttons() = 0;
+
         double GetCurrentAppTime() const { return syncInfoLocal_.currentTime_; }
         double GetElapsedTime() const { return elapsedTime_; }
 
@@ -76,6 +100,8 @@ namespace viscom {
         InternalSyncedInfo syncInfoLocal_;
         /** Holds the synchronized object (synced). */
         sgct::SharedObject<InternalSyncedInfo> syncInfoSynced_;
+
+        
 
 #ifdef VISCOM_SYNCINPUT
         /** Holds the synchronized vector with keyboard events. */
@@ -115,5 +141,7 @@ namespace viscom {
         std::vector<ResourceData> creatableResources_;
         /** The mutex for creatable resources. */
         std::mutex creatableResourceMutex_;
+
+        
     };
 }

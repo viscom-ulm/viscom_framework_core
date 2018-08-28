@@ -17,21 +17,11 @@ namespace viscom {
         appNode_{ appNode },
         framework_{ &appNode_->GetFramework() }
     {
-        /*vr::EVRInitError peError;
-        // VRApplication_Scene (starts SteamVR no proper data) VRApplication_Overlay (starts SteamVR no SteamVRHome)  VRApplication_Background (doesn't start SteamVR uses SteamVRHome)
-        m_pHMD = vr::VR_Init(&peError, vr::EVRApplicationType::VRApplication_Background);
-        if (peError == vr::VRInitError_None) {
-            vrInitSucc = true;
-            //TODO fix output to imgui 
-            //OutputDevices();
-        }*/
+
     }
 
     ApplicationNodeBase::~ApplicationNodeBase() = default;
-    /*ApplicationNodeBase::~ApplicationNodeBase() {
-        vr::VR_Shutdown();
-    }*/
-
+ 
     void ApplicationNodeBase::PreWindow()
     {
     }
@@ -123,11 +113,6 @@ namespace viscom {
         return false;
     }
 
-    /*vr::IVRSystem *ApplicationNodeBase::GetIVRSystem()
-    {
-        return m_pHMD;
-    }*/
-
     void ApplicationNodeBase::EncodeData()
     {
     }
@@ -140,4 +125,114 @@ namespace viscom {
     {
         framework_->Terminate();
     }
+
+    void ApplicationNodeBase::ParseTrackingFrame()
+    {
+    }
+
+    glm::vec3 ApplicationNodeBase::GetController0Pos()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 ApplicationNodeBase::GetController0Zvec()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 ApplicationNodeBase::GetController1Pos()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 ApplicationNodeBase::GetController1Zvec()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 ApplicationNodeBase::GetTrackerPos()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 ApplicationNodeBase::GetTrackerZvec()
+    {
+        return glm::vec3();
+    }
+
+    glm::quat ApplicationNodeBase::GetController0Rot()
+    {
+        return glm::quat();
+    }
+
+    glm::quat ApplicationNodeBase::GetController1Rot()
+    {
+        return glm::quat();
+    }
+
+    glm::quat ApplicationNodeBase::GetTrackerRot()
+    {
+        return glm::quat();
+    }
+
+    glm::vec2 ApplicationNodeBase::GetDisplayPosition(bool useleftcontroller)
+    {
+        return glm::vec2();
+    }
+
+    void ApplicationNodeBase::InitialiseDisplay(bool useLeftController)
+    {
+    }
+
+    bool ApplicationNodeBase::GetDisplayInitialised()
+    {
+        return false;
+    }
+
+    void ApplicationNodeBase::SetDisplayNotInitialised()
+    {
+    }
+
+    bool ApplicationNodeBase::GetDisplayInitByFloor()
+    {
+        return false;
+    }
+
+    void ApplicationNodeBase::SetDisplayInitByFloor(bool b)
+    {
+    }
+
+    void ApplicationNodeBase::PollAndParseNextEvent()
+    {
+    }
+
+    void ApplicationNodeBase::PollAndParseEvents()
+    {
+    }
+
+    std::vector<std::string> ApplicationNodeBase::OutputDevices()
+    {
+        return std::vector<std::string>();
+    }
+
+    float * ApplicationNodeBase::GetDisplayEdges()
+    {
+        return nullptr;
+    }
+
+    bool ApplicationNodeBase::GetVrInitSuccess()
+    {
+        return false;
+    }
+
+    std::vector<std::string> ApplicationNodeBase::GetController0Buttons()
+    {
+        return std::vector<std::string>();
+    }
+
+    std::vector<std::string> ApplicationNodeBase::GetController1Buttons()
+    {
+        return std::vector<std::string>();
+    }
+
 }

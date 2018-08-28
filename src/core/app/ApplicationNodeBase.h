@@ -10,7 +10,6 @@
 
 #include "core/app_internal/ApplicationNodeInternal.h"
 #include "core/FrameworkInternal.h"
-//#include <openvr.h>
 
 namespace viscom {
 
@@ -86,9 +85,30 @@ namespace viscom {
         void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex) const { framework_->TransferDataToNode(data, length, packageId, nodeIndex); }
         void TransferData(const void* data, std::size_t length, std::uint16_t packageId) const { framework_->TransferData(data, length, packageId); }
 
-        //vr::IVRSystem *m_pHMD = NULL;
+        virtual void ParseTrackingFrame();
+        virtual glm::vec3 GetController0Pos();
+        virtual glm::vec3 GetController0Zvec();
+        virtual glm::vec3 GetController1Pos();
+        virtual glm::vec3 GetController1Zvec();
+        virtual glm::vec3 GetTrackerPos();
+        virtual glm::vec3 GetTrackerZvec();
+        virtual glm::quat GetController0Rot();
+        virtual glm::quat GetController1Rot();
+        virtual glm::quat GetTrackerRot();
+        virtual glm::vec2 GetDisplayPosition(bool useleftcontroller);
+        virtual void InitialiseDisplay(bool useLeftController);
+        virtual bool GetDisplayInitialised();
+        virtual void SetDisplayNotInitialised();
+        virtual bool GetDisplayInitByFloor();
+        virtual void SetDisplayInitByFloor(bool b);
+        virtual void PollAndParseNextEvent();
+        virtual void PollAndParseEvents();
+        virtual std::vector<std::string> OutputDevices();
+        virtual float* GetDisplayEdges();
+        virtual bool GetVrInitSuccess();
+        virtual std::vector<std::string> GetController0Buttons();
+        virtual std::vector<std::string> GetController1Buttons();
 
-        //vr::IVRSystem *GetIVRSystem();
 
     protected:
         const FWConfiguration& GetConfig() const { return framework_->GetConfig(); }

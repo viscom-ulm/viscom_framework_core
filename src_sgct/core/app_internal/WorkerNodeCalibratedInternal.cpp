@@ -21,7 +21,7 @@
 namespace viscom {
 
     WorkerNodeCalibratedInternal::WorkerNodeCalibratedInternal(FrameworkInternal& fwInternal) :
-        WorkerNodeLocalInternal{ fwInternal }
+        WorkerNodeCalibratedInternal{ fwInternal }
     {
     }
 
@@ -129,7 +129,7 @@ namespace viscom {
 
         LOG(DBUG) << "Calibration Initialized.";
 
-        WorkerNodeLocalInternal::InitOpenGL();
+        WorkerNodeCalibratedInternal::InitOpenGL();
     }
 
 
@@ -141,13 +141,13 @@ namespace viscom {
 
         ClearBuffer(sceneFBOs_[windowId]);
 
-        WorkerNodeLocalInternal::DrawFrame(sceneFBOs_[windowId]);
+        WorkerNodeCalibratedInternal::DrawFrame(sceneFBOs_[windowId]);
     }
 
     void WorkerNodeCalibratedInternal::Draw2D(FrameBuffer& fbo)
     {
         auto windowId = GetFramework().GetEngine()->getCurrentWindowPtr()->getId();
-        WorkerNodeLocalInternal::Draw2D(sceneFBOs_[windowId]);
+        WorkerNodeCalibratedInternal::Draw2D(sceneFBOs_[windowId]);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -193,7 +193,7 @@ namespace viscom {
         if (!alphaTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(alphaTextures_.size()), alphaTextures_.data());
         alphaTextures_.clear();
 
-        WorkerNodeLocalInternal::CleanUp();
+        WorkerNodeCalibratedInternal::CleanUp();
     }
 
     void WorkerNodeCalibratedInternal::CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize)
@@ -209,4 +209,113 @@ namespace viscom {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
+        void WorkerNodeCalibratedInternal::ParseTrackingFrame() 
+    {
+    }
+
+    glm::vec3 WorkerNodeCalibratedInternal::GetController0Pos()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 WorkerNodeCalibratedInternal::GetController0Zvec()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 WorkerNodeCalibratedInternal::GetController1Pos()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 WorkerNodeCalibratedInternal::GetController1Zvec()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 WorkerNodeCalibratedInternal::GetTrackerPos()
+    {
+        return glm::vec3();
+    }
+
+    glm::vec3 WorkerNodeCalibratedInternal::GetTrackerZvec()
+    {
+        return glm::vec3();
+    }
+
+    glm::quat WorkerNodeCalibratedInternal::GetController0Rot()
+    {
+        return glm::quat();
+    }
+
+    glm::quat WorkerNodeCalibratedInternal::GetController1Rot()
+    {
+        return glm::quat();
+    }
+
+    glm::quat WorkerNodeCalibratedInternal::GetTrackerRot()
+    {
+        return glm::quat();
+    }
+
+    glm::vec2 WorkerNodeCalibratedInternal::GetDisplayPosition(bool useLeftController)
+    {
+        return glm::vec2();
+    }
+
+    void WorkerNodeCalibratedInternal::InitialiseDisplay(bool useLeftController)
+    {
+    }
+
+    bool WorkerNodeCalibratedInternal::GetDisplayInitialised()
+    {
+        return false;
+    }
+
+    void WorkerNodeCalibratedInternal::SetDisplayNotInitialised()
+    {
+    }
+
+    bool WorkerNodeCalibratedInternal::GetDisplayInitByFloor()
+    {
+        return false;
+    }
+
+    void WorkerNodeCalibratedInternal::SetDisplayInitByFloor(bool b)
+    {
+    }
+
+    void WorkerNodeCalibratedInternal::PollAndParseNextEvent()
+    {
+    }
+
+    void WorkerNodeCalibratedInternal::PollAndParseEvents()
+    {
+    }
+
+    std::vector<std::string> WorkerNodeCalibratedInternal::OutputDevices()
+    {
+        return std::vector<std::string>();
+    }
+
+    float * WorkerNodeCalibratedInternal::GetDisplayEdges()
+    {
+        return nullptr;
+    }
+
+    bool WorkerNodeCalibratedInternal::GetVrInitSuccess()
+    {
+        return false;
+    }
+
+    std::vector<std::string> WorkerNodeCalibratedInternal::GetController0Buttons()
+    {
+        return std::vector<std::string>();
+    }
+
+    std::vector<std::string> WorkerNodeCalibratedInternal::GetController1Buttons()
+    {
+        return std::vector<std::string>();
+    }
+
 }

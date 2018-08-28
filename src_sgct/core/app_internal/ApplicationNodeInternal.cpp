@@ -183,4 +183,88 @@ namespace viscom {
     {
         appNodeImpl_->RemoveTuioCursor(tcur);
     }
+    void ApplicationNodeInternal::ParseTrackingFrame()
+    {
+        appNodeImpl_->ParseTrackingFrame();
+    }
+    glm::vec3 ApplicationNodeInternal::GetController0Pos()
+    {
+        return appNodeImpl_->GetController0Pos();
+    }
+    glm::vec3 ApplicationNodeInternal::GetController0Zvec()
+    {
+        return appNodeImpl_->GetController0Zvec();
+    }
+    glm::vec3 ApplicationNodeInternal::GetController1Pos()
+    {
+        return appNodeImpl_->GetController1Pos();
+    }
+    glm::vec3 ApplicationNodeInternal::GetController1Zvec()
+    {
+        return appNodeImpl_->GetController1Zvec();
+    }
+    glm::vec3 ApplicationNodeInternal::GetTrackerPos()
+    {
+        return appNodeImpl_->GetTrackerPos();
+    }
+    glm::vec3 ApplicationNodeInternal::GetTrackerZvec()
+    {
+        return appNodeImpl_->GetTrackerZvec();
+    }
+    glm::quat ApplicationNodeInternal::GetController0Rot()
+    {
+        return appNodeImpl_->GetController0Rot();
+    }
+    glm::quat ApplicationNodeInternal::GetController1Rot()
+    {
+        return appNodeImpl_->GetController1Rot();
+    }
+    glm::quat ApplicationNodeInternal::GetTrackerRot()
+    {
+        return appNodeImpl_->GetTrackerRot();
+    }
+    glm::vec2 ApplicationNodeInternal::GetDisplayPosition(bool useleftcontroller)
+    {
+        return appNodeImpl_->GetDisplayPosition(useleftcontroller);
+    }
+    void ApplicationNodeInternal::InitialiseDisplay(bool useLeftController)
+    {
+        return appNodeImpl_->InitialiseDisplay(useLeftController);
+    }
+    bool ApplicationNodeInternal::GetDisplayInitialised()
+    {
+        return appNodeImpl_->GetDisplayInitialised();
+    }
+    void ApplicationNodeInternal::SetDisplayNotInitialised()
+    {
+        appNodeImpl_->SetDisplayNotInitialised();
+    }
+    bool ApplicationNodeInternal::GetDisplayInitByFloor()
+    {
+        return appNodeImpl_->GetDisplayInitByFloor();
+    }
+    void ApplicationNodeInternal::SetDisplayInitByFloor(bool b)
+    {
+        appNodeImpl_->SetDisplayInitByFloor(b);
+    }
+    void ApplicationNodeInternal::PollAndParseNextEvent()
+    {
+        appNodeImpl_->PollAndParseNextEvent();
+    }
+    void ApplicationNodeInternal::PollAndParseEvents()
+    {
+        appNodeImpl_->PollAndParseEvents();
+    }
+    std::vector<std::string> ApplicationNodeInternal::OutputDevices()
+    {
+        return appNodeImpl_->OutputDevices();
+    }
+    float * ApplicationNodeInternal::GetDisplayEdges()
+    {
+        return appNodeImpl_->GetDisplayEdges();
+    }
+    /*bool ApplicationNodeInternal::GetVrInitSuccess()
+    {
+        GetFramework()
+    }*/
 }
