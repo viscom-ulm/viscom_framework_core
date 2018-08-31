@@ -12,6 +12,9 @@
 #include "core/FrameworkInternal.h"
 
 namespace viscom {
+    enum CalibrateMethod { CALIBRATE_BY_TOUCHING, CALIBRATE_BY_POINTING };
+    enum TrackedDeviceIdentifier { CONTROLLER_LEFT_HAND, CONTROLLER_RIGHT_HAND, GENERIC_TRACKER };
+    enum ControllerButtonIdentifier { TIGGER, TRACKPAD, MENU, GRIP, TRACKPAD_BUTTON};
 
     class FrameworkInternal;
     class ApplicationNodeInternal;
@@ -84,6 +87,18 @@ namespace viscom {
 
         void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex) const { framework_->TransferDataToNode(data, length, packageId, nodeIndex); }
         void TransferData(const void* data, std::size_t length, std::uint16_t packageId) const { framework_->TransferData(data, length, packageId); }
+
+        virtual bool InitialiseVR() { return appNode_->InitialiseVR(); }
+        virtual bool CalibrateVR(viscom::CalibrateMethod method, TrackedDeviceIdentifier trackedDevice) { return appNode_->CalibrateVR(method, trackedDevice); }
+        virtual glm::vec3 GetControllerPosition(TrackedDeviceIdentifier trackedDevice) { return appNode_->GetControllerPosition(trackedDevice); }
+        virtual glm::vec3 GetControllerZVector(TrackedDeviceIdentifier trackedDevice) { return appNode_->GetControllerZVector(trackedDevice); }
+        virtual glm::quat GetControllerRotation(TrackedDeviceIdentifier trackedDevice) { return appNode_->GetControllerRotation(trackedDevice); }
+        virtual glm::vec2 GetDisplayPosition(TrackedDeviceIdentifier trackedDevice) { return appNode_->GetDisplayPosition(trackedDevice); }
+
+        virtual bool ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
+        virtual bool ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
+        virtual bool ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
+        virtual bool ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
 
         virtual void ParseTrackingFrame();
         virtual glm::vec3 GetController0Pos();

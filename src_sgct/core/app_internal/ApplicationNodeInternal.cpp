@@ -183,6 +183,46 @@ namespace viscom {
     {
         appNodeImpl_->RemoveTuioCursor(tcur);
     }
+    bool ApplicationNodeInternal::InitialiseVR()
+    {
+        return appNodeImpl_->InitialiseVR();
+    }
+    bool ApplicationNodeInternal::CalibrateVR(CalibrateMethod method, TrackedDeviceIdentifier trackedDevice)
+    {
+        return appNodeImpl_->CalibrateVR(method, trackedDevice);
+    }
+    glm::vec3 ApplicationNodeInternal::GetControllerPosition(TrackedDeviceIdentifier trackedDevice)
+    {
+        return appNodeImpl_->GetControllerPosition(trackedDevice);
+    }
+    glm::vec3 ApplicationNodeInternal::GetControllerZVector(TrackedDeviceIdentifier trackedDevice)
+    {
+        return appNodeImpl_->GetControllerZVector(trackedDevice);
+    }
+    glm::quat ApplicationNodeInternal::GetControllerRotation(TrackedDeviceIdentifier trackedDevice)
+    {
+        return appNodeImpl_->GetControllerRotation(trackedDevice);
+    }
+    glm::vec2 ApplicationNodeInternal::GetDisplayPosition(TrackedDeviceIdentifier trackedDevice)
+    {
+        return appNodeImpl_->GetDisplayPosition(trackedDevice);
+    }
+    void ApplicationNodeInternal::ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation)
+    {
+        appNodeImpl_->ControllerButtonPressedCallback(trackedDevice, buttonid, posx, posy, position, zvector, rotation);
+    }
+    void ApplicationNodeInternal::ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation)
+    {
+        appNodeImpl_->ControllerButtonTouchedCallback(trackedDevice, buttonid, posx, posy, position, zvector, rotation);
+    }
+    void ApplicationNodeInternal::ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation)
+    {
+        appNodeImpl_->ControllerButtonUnpressedCallback(trackedDevice, buttonid, posx, posy, position, zvector, rotation);
+    }
+    void ApplicationNodeInternal::ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation)
+    {
+        appNodeImpl_->ControllerButtonUntouchedCallback(trackedDevice, buttonid, posx, posy, position, zvector, rotation);
+    }
     void ApplicationNodeInternal::ParseTrackingFrame()
     {
         appNodeImpl_->ParseTrackingFrame();

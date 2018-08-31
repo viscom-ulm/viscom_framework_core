@@ -126,6 +126,26 @@ namespace viscom {
         framework_->Terminate();
     }
 
+    bool ApplicationNodeBase::ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation)
+    {
+        return false;
+    }
+
+    bool ApplicationNodeBase::ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation)
+    {
+        return false;
+    }
+
+    bool ApplicationNodeBase::ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation)
+    {
+        return false;
+    }
+
+    bool ApplicationNodeBase::ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation)
+    {
+        return false;
+    }
+
     void ApplicationNodeBase::ParseTrackingFrame()
     {
     }

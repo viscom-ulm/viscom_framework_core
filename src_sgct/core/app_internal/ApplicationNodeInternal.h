@@ -64,6 +64,18 @@ namespace viscom {
         virtual void UpdateTuioCursor(TUIO::TuioCursor *tcur);
         virtual void RemoveTuioCursor(TUIO::TuioCursor *tcur);
 
+        virtual bool InitialiseVR();
+        virtual bool CalibrateVR(CalibrateMethod method, TrackedDeviceIdentifier trackedDevice);
+        virtual glm::vec3 GetControllerPosition(TrackedDeviceIdentifier trackedDevice);
+        virtual glm::vec3 GetControllerZVector(TrackedDeviceIdentifier trackedDevice);
+        virtual glm::quat GetControllerRotation(TrackedDeviceIdentifier trackedDevice);
+        virtual glm::vec2 GetDisplayPosition(TrackedDeviceIdentifier trackedDevice);
+
+        virtual void ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
+        virtual void ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
+        virtual void ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
+        virtual void ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
+
         virtual void ParseTrackingFrame();
         virtual glm::vec3 GetController0Pos();
         virtual glm::vec3 GetController0Zvec();
