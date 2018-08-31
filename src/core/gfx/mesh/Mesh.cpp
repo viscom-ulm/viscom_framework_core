@@ -315,8 +315,14 @@ namespace viscom {
         try {
             auto texFilename = path + relFilename;
             texture = std::move(node->GetTextureManager().GetResource(texFilename));
-        } catch (resource_loading_error&) {
+        }
+        catch (resource_loading_error&) {
+#ifndef __APPLE_CC__
+            namespace fs = std::filesystem;
+            auto textureFilename = fs::path(filename_).filename().string();
+#else
             auto textureFilename = relFilename.substr(relFilename.find_last_of("/") + 1);
+#endif
             auto texFilename = path + textureFilename;
 
             texture = std::move(node->GetTextureManager().GetResource(texFilename));
