@@ -248,7 +248,10 @@ namespace viscom {
     {
         assert(!isBackbuffer_);
         std::vector<GLenum> drawBuffersReduced(drawBuffers_.size());
-        for (std::size_t i = 0; i < drawBufferIndices.size(); ++i) drawBuffersReduced[i] = drawBuffers_[drawBufferIndices[i]];
+        for (std::size_t i = 0; i < drawBufferIndices.size(); ++i) {
+            if (drawBufferIndices[i] >= drawBuffers_.size()) drawBuffersReduced[i] = GL_NONE;
+            else drawBuffersReduced[i] = drawBuffers_[drawBufferIndices[i]];
+        }
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
         glDrawBuffers(static_cast<GLsizei>(drawBuffersReduced.size()), drawBuffersReduced.data());

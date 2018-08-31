@@ -58,9 +58,9 @@ namespace viscom {
         /// Holds the channels (position, rotation, scaling) for each bone.
         std::vector<Channel> channels_;
         /// Ticks per second.
-        float framesPerSecond_ = 0;
+        float framesPerSecond_ = 0.f;
         /// Duration of this animation.
-        float duration_ = 0;
+        float duration_ = 0.f;
     };
 
     inline float Animation::GetFramesPerSecond() const { return framesPerSecond_; }

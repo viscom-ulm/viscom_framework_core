@@ -23,13 +23,13 @@ namespace viscom {
         /** Holds the materials specular albedo. */
         glm::vec3 specular;
         /** Holds the materials alpha value. */
-        float alpha;
+        float alpha = 1.f;
         /** Holds the materials specular exponent. */
-        float specularExponent;
+        float specularExponent = 1.f;
         /** Holds the materials index of refraction. */
-        float refraction;
+        float refraction = 1.f;
         /** Holds the materials bump multiplier. */
-        float bumpMultiplier;
+        float bumpMultiplier = 1.f;
     };
 
     struct MaterialTextures final

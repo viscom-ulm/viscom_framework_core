@@ -187,7 +187,7 @@ namespace viscom {
         }
 
         unsigned int currentMeshIndexOffset = 0;
-        unsigned int currentMeshVertexOffset = 0;
+        std::size_t currentMeshVertexOffset = 0;
 
         // using Bone = unsigned int;
 
@@ -246,7 +246,8 @@ namespace viscom {
             }
 
             if (!indices[i].empty()) {
-                std::transform(indices[i].begin(), indices[i].end(), &indices_[currentMeshIndexOffset], [currentMeshVertexOffset](unsigned int idx) { return idx + currentMeshVertexOffset; }); //-V108
+                std::transform(indices[i].begin(), indices[i].end(), &indices_[currentMeshIndexOffset],
+                    [currentMeshVertexOffset](unsigned int idx) { return static_cast<unsigned int>(idx + currentMeshVertexOffset); }); //-V108
             }
 
             subMeshes_.emplace_back(this, mesh->mName.C_Str(), currentMeshIndexOffset, static_cast<unsigned int>(indices[i].size()), mesh->mMaterialIndex);
@@ -304,7 +305,12 @@ namespace viscom {
 
     std::shared_ptr<const Texture> Mesh::LoadTexture(const std::string& relFilename, FrameworkInternal* node) const
     {
+#ifndef __APPLE_CC__
+        namespace fs = std::filesystem;
+        auto path =  fs::path(filename_).parent_path().string() + '/';
+#else
         auto path = filename_.substr(0, filename_.find_last_of('/') + 1);
+#endif
         std::shared_ptr<const Texture> texture;
         try {
             auto texFilename = path + relFilename;
