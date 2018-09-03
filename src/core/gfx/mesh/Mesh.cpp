@@ -307,26 +307,18 @@ namespace viscom {
     {
 #ifndef __APPLE_CC__
         namespace fs = std::filesystem;
-        auto path =  fs::path(filename_).parent_path().string() + '/';
-#else
-        auto path = filename_.substr(0, filename_.find_last_of('/') + 1);
-#endif
-        std::shared_ptr<const Texture> texture;
-        try {
-            auto texFilename = path + relFilename;
-            texture = std::move(node->GetTextureManager().GetResource(texFilename));
+        std::string fullTexFilename;
+        if (fs::exists(relFilename)) fullTexFilename = relFilename;
+        else {
+            auto path = fs::path(filename_).parent_path();
+            if (auto relFilePath = path / relFilename; fs::exists(relFilePath))
+                fullTexFilename = relFilePath.string();
+            else fullTexFilename = (path / fs::path(relFilename).filename()).string();
         }
-        catch (resource_loading_error&) {
-#ifndef __APPLE_CC__
-            namespace fs = std::filesystem;
-            auto textureFilename = fs::path(filename_).filename().string();
 #else
-            auto textureFilename = relFilename.substr(relFilename.find_last_of("/") + 1);
+        auto fullTexFilename = filename_.substr(0, filename_.find_last_of('/') + 1) + relFilename;
 #endif
-            auto texFilename = path + textureFilename;
-
-            texture = std::move(node->GetTextureManager().GetResource(texFilename));
-        }
+        std::shared_ptr<const Texture> texture = std::move(node->GetTextureManager().GetResource(fullTexFilename));
 
         glBindTexture(GL_TEXTURE_2D, texture->getTextureId());
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
