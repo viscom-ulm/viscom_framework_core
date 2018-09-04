@@ -20,6 +20,16 @@ namespace viscom::tuio {
 }
 
 namespace viscom {
+    enum class CalibrateMethod { CALIBRATE_BY_TOUCHING, CALIBRATE_BY_POINTING };
+    enum class TrackedDeviceIdentifier { CONTROLLER_LEFT_HAND, CONTROLLER_RIGHT_HAND, GENERIC_TRACKER };
+    enum class ControllerButtonIdentifier { TIGGER, TRACKPAD, MENU, GRIP, TRACKPAD_BUTTON };
+
+    struct ControllerButtonState {
+        uint64_t buttonspressed;
+        uint64_t buttonstouched;
+        glm::vec2 rAxis[5];
+    };
+
 
     class ApplicationNodeBase;
 
@@ -66,17 +76,19 @@ namespace viscom {
 
         virtual bool InitialiseVR();
         virtual bool CalibrateVR(CalibrateMethod method, TrackedDeviceIdentifier trackedDevice);
-        virtual glm::vec3 GetControllerPosition(TrackedDeviceIdentifier trackedDevice);
-        virtual glm::vec3 GetControllerZVector(TrackedDeviceIdentifier trackedDevice);
-        virtual glm::quat GetControllerRotation(TrackedDeviceIdentifier trackedDevice);
-        virtual glm::vec2 GetDisplayPosition(TrackedDeviceIdentifier trackedDevice);
+        virtual const glm::vec3& GetControllerPosition(TrackedDeviceIdentifier trackedDevice);
+        virtual const glm::vec3& GetControllerZVector(TrackedDeviceIdentifier trackedDevice);
+        virtual const glm::quat& GetControllerRotation(TrackedDeviceIdentifier trackedDevice);
+        virtual const glm::vec2& GetDisplayPosition(TrackedDeviceIdentifier trackedDevice);
 
-        virtual void ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
-        virtual void ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
-        virtual void ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
-        virtual void ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
+        virtual void ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues);
+        virtual void ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues);
+        virtual void ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues);
+        virtual void ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues);
 
-        virtual void ParseTrackingFrame();
+        virtual ControllerButtonState GetControllerButtonState(TrackedDeviceIdentifier trackedDevice);
+        
+        /*virtual void ParseTrackingFrame();
         virtual glm::vec3 GetController0Pos();
         virtual glm::vec3 GetController0Zvec();
         virtual glm::vec3 GetController1Pos();
@@ -99,6 +111,7 @@ namespace viscom {
         virtual bool GetVrInitSuccess() = 0;
         virtual std::vector<std::string> GetController0Buttons() = 0;
         virtual std::vector<std::string> GetController1Buttons() = 0;
+        */
 
         double GetCurrentAppTime() const { return syncInfoLocal_.currentTime_; }
         double GetElapsedTime() const { return elapsedTime_; }
@@ -153,7 +166,5 @@ namespace viscom {
         std::vector<ResourceData> creatableResources_;
         /** The mutex for creatable resources. */
         std::mutex creatableResourceMutex_;
-
-        
     };
 }

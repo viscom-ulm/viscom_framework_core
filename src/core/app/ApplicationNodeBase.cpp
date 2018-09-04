@@ -125,28 +125,29 @@ namespace viscom {
     {
         framework_->Terminate();
     }
-
-    bool ApplicationNodeBase::ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation)
+    
+    bool ApplicationNodeBase::ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation)
+    bool ApplicationNodeBase::ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation)
+    bool ApplicationNodeBase::ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation)
+    bool ApplicationNodeBase::ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues)
     {
         return false;
     }
 
-    void ApplicationNodeBase::ParseTrackingFrame()
+
+    /*void ApplicationNodeBase::ParseTrackingFrame()
     {
     }
 
@@ -253,6 +254,6 @@ namespace viscom {
     std::vector<std::string> ApplicationNodeBase::GetController1Buttons()
     {
         return std::vector<std::string>();
-    }
+    }*/
 
 }

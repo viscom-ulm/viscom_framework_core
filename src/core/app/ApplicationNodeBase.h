@@ -12,9 +12,6 @@
 #include "core/FrameworkInternal.h"
 
 namespace viscom {
-    enum CalibrateMethod { CALIBRATE_BY_TOUCHING, CALIBRATE_BY_POINTING };
-    enum TrackedDeviceIdentifier { CONTROLLER_LEFT_HAND, CONTROLLER_RIGHT_HAND, GENERIC_TRACKER };
-    enum ControllerButtonIdentifier { TIGGER, TRACKPAD, MENU, GRIP, TRACKPAD_BUTTON};
 
     class FrameworkInternal;
     class ApplicationNodeInternal;
@@ -89,18 +86,20 @@ namespace viscom {
         void TransferData(const void* data, std::size_t length, std::uint16_t packageId) const { framework_->TransferData(data, length, packageId); }
 
         virtual bool InitialiseVR() { return appNode_->InitialiseVR(); }
-        virtual bool CalibrateVR(viscom::CalibrateMethod method, TrackedDeviceIdentifier trackedDevice) { return appNode_->CalibrateVR(method, trackedDevice); }
-        virtual glm::vec3 GetControllerPosition(TrackedDeviceIdentifier trackedDevice) { return appNode_->GetControllerPosition(trackedDevice); }
-        virtual glm::vec3 GetControllerZVector(TrackedDeviceIdentifier trackedDevice) { return appNode_->GetControllerZVector(trackedDevice); }
-        virtual glm::quat GetControllerRotation(TrackedDeviceIdentifier trackedDevice) { return appNode_->GetControllerRotation(trackedDevice); }
-        virtual glm::vec2 GetDisplayPosition(TrackedDeviceIdentifier trackedDevice) { return appNode_->GetDisplayPosition(trackedDevice); }
+        bool CalibrateVR(CalibrateMethod method, TrackedDeviceIdentifier trackedDevice) { return appNode_->CalibrateVR(method, trackedDevice); }
+        virtual const glm::vec3& GetControllerPosition(TrackedDeviceIdentifier trackedDevice) { return appNode_->GetControllerPosition(trackedDevice); }
+        virtual const glm::vec3& GetControllerZVector(TrackedDeviceIdentifier trackedDevice) { return appNode_->GetControllerZVector(trackedDevice); }
+        virtual const glm::quat& GetControllerRotation(TrackedDeviceIdentifier trackedDevice) { return appNode_->GetControllerRotation(trackedDevice); }
+        virtual const glm::vec2& GetDisplayPosition(TrackedDeviceIdentifier trackedDevice) { return appNode_->GetDisplayPosition(trackedDevice); }
 
-        virtual bool ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
-        virtual bool ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
-        virtual bool ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
-        virtual bool ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation);
+        virtual bool ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues);
+        virtual bool ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues);
+        virtual bool ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues);
+        virtual bool ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues);
 
-        virtual void ParseTrackingFrame();
+        virtual ControllerButtonState GetControllerButtonState(TrackedDeviceIdentifier trackedDevice) { return appNode_->GetControllerButtonState(trackedDevice); }
+
+        /*virtual void ParseTrackingFrame();
         virtual glm::vec3 GetController0Pos();
         virtual glm::vec3 GetController0Zvec();
         virtual glm::vec3 GetController1Pos();
@@ -123,7 +122,7 @@ namespace viscom {
         virtual bool GetVrInitSuccess();
         virtual std::vector<std::string> GetController0Buttons();
         virtual std::vector<std::string> GetController1Buttons();
-
+        */
 
     protected:
         const FWConfiguration& GetConfig() const { return framework_->GetConfig(); }

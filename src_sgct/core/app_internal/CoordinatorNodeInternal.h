@@ -18,7 +18,6 @@ namespace vr {
 }
 namespace viscom {
     
-
     class CoordinatorNodeInternal : public ApplicationNodeInternal
     {
     public:
@@ -41,40 +40,24 @@ namespace viscom {
         virtual void UpdateTuioCursor(TUIO::TuioCursor* tcur) override;
         virtual void RemoveTuioCursor(TUIO::TuioCursor* tcur) override;
         
-        virtual bool InitialiseVR() override;
-        virtual bool CalibrateVR(CalibrateMethod method, TrackedDeviceIdentifier trackedDevice) override;
-        virtual glm::vec3 GetControllerPosition(TrackedDeviceIdentifier trackedDevice) override;
-        virtual glm::vec3 GetControllerZVector(TrackedDeviceIdentifier trackedDevice) override;
-        virtual glm::quat GetControllerRotation(TrackedDeviceIdentifier trackedDevice) override;
-        virtual glm::vec2 GetDisplayPosition(TrackedDeviceIdentifier trackedDevice) override;
-        virtual void SetDisplayInitByFloor(bool b) override;
+        bool InitialiseVR() override;
+        bool CalibrateVR(CalibrateMethod method, TrackedDeviceIdentifier trackedDevice) override;
+        const glm::vec3& GetControllerPosition(TrackedDeviceIdentifier trackedDevice) override;
+        const glm::vec3& GetControllerZVector(TrackedDeviceIdentifier trackedDevice) override;
+        const glm::quat& GetControllerRotation(TrackedDeviceIdentifier trackedDevice) override;
+        const glm::vec2& GetDisplayPosition(TrackedDeviceIdentifier trackedDevice) override;        
 
-        virtual void ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation) override;
-        virtual void ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation) override;
-        virtual void ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation) override;
-        virtual void ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, float posx, float posy, glm::vec3 position, glm::vec3 zvector, glm::quat rotation) override;
-
-        virtual void ParseTrackingFrame() override;
-        virtual glm::vec3 GetController0Pos() override;
-        virtual glm::vec3 GetController0Zvec() override;
-        virtual glm::vec3 GetController1Pos() override;
-        virtual glm::vec3 GetController1Zvec() override;
-        virtual glm::vec3 GetTrackerPos() override;
-        virtual glm::vec3 GetTrackerZvec() override;
-        virtual glm::quat GetController0Rot() override;
-        virtual glm::quat GetController1Rot() override;
-        virtual glm::quat GetTrackerRot() override;
-        virtual glm::vec2 GetDisplayPosition(bool useleftcontroller) override;
-        virtual void InitialiseDisplay(bool useLeftController) override;
-        virtual bool GetDisplayInitialised() override;
-        virtual void SetDisplayNotInitialised() override;
-        virtual bool GetDisplayInitByFloor() override;
+        void ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues) override;
+        void ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues) override;
+        void ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues) override;
+        void ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues) override;
         
-        virtual void PollAndParseNextEvent() override;
-        virtual void PollAndParseEvents() override;        
+        ControllerButtonState GetControllerButtonState(TrackedDeviceIdentifier trackedDevice);
+
+              
         //virtual float* GetDisplayEdges() override;
         //virtual bool GetVrInitSuccess() override;
-        virtual std::vector<std::string> OutputDevices() override;
+        virtual std::vector<std::string> OutputDevices();
         //virtual std::vector<std::string> GetController0Buttons() override;
         //virtual std::vector<std::string> GetController1Buttons() override;
 
@@ -92,10 +75,19 @@ namespace viscom {
         std::vector<MouseScrollEvent> mouseScrollEvents_;
 #endif
 
+        void ParseTrackingFrame();
+        void PollAndParseNextEvent();
+        void PollAndParseEvents();
+
+        void InitialiseDisplay(bool useLeftController);
+        bool GetDisplayInitialised();
+        void SetDisplayNotInitialised();
+        bool GetDisplayInitByFloor();
+
         float * GetPosition(const float hmdMatrix[3][4]);
         double * GetRotation(const float matrix[3][4]);
         float * GetZVector(const float matrix[3][4]);
-        glm::vec2 GetDisplayPosVector(glm::vec3 pos, glm::vec3 zvector, const float display_lowerLeftCorner[3], const float display_upperLeftCorner[3], const float display_lowerRightCorner[3]);
+        const glm::vec2& GetDisplayPosVector(const glm::vec3& pos,const glm::vec3& zvector);
         void InitDisplay(glm::vec3 dpos);
         void InitDisplayFloor(glm::vec3 cpos, glm::vec3 cz);
         void InitDisplayFromFile();
@@ -122,6 +114,7 @@ namespace viscom {
         bool displaylrset = false;
         bool initfloor = true;
         bool useleftcontroller;
+        bool calibrate = false;
         std::vector<std::string> controller0buttons;
         std::vector<std::string> controller1buttons;
 
