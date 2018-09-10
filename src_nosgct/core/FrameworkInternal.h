@@ -45,7 +45,9 @@ namespace viscom {
         void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex);
         void TransferData(const void* data, std::size_t length, std::uint16_t packageId);
         void TransferResource(std::string_view name, const void* data, std::size_t length, ResourceType type);
+        void TransferResourceToNode(std::string_view name, const void* data, std::size_t length, ResourceType type, std::size_t nodeIndex);
         void TransferReleaseResource(std::string_view name, ResourceType type);
+        void RequestSharedResource(std::string_view name, ResourceType type);
         void WaitForResource(const std::string& name, ResourceType type);
 
         bool IsMaster() const { return true; }

@@ -10,7 +10,10 @@
 
 #include "core/main.h"
 #include <unordered_map>
+#include <mutex>
 #include <optional>
+
+#include "core/gfx/Texture.h"
 
 namespace viscom {
 
@@ -25,6 +28,22 @@ namespace viscom {
         std::string errorDescription_;
     };
 
+    class BaseResourceManager
+    {
+    public:
+        /** Constructor for resource managers. */
+        explicit BaseResourceManager(FrameworkInternal* node) : appNode_{ node } {}
+        /** Default destructor. */
+        virtual ~BaseResourceManager() = default;
+
+    protected:
+        void RequestSharedResource(std::string_view name, ResourceType type);
+        void TransferResourceToNode(std::string_view name, const void* data, std::size_t length, ResourceType type, std::size_t nodeIndex);
+
+        /** Holds the application base. */
+        FrameworkInternal* appNode_;
+    };
+
     /**
      * @brief  Base class for all resource managers.
      *
@@ -32,7 +51,7 @@ namespace viscom {
      * @date   2014.01.03
      */
     template<typename rType>
-    class ResourceManager
+    class ResourceManager : public BaseResourceManager
     {
     protected:
         /** The resource managers resource type. */
@@ -46,10 +65,10 @@ namespace viscom {
 
     public:
         /** Constructor for resource managers. */
-        explicit ResourceManager(FrameworkInternal* node) : appNode_{ node } {}
+        explicit ResourceManager(FrameworkInternal* node) : BaseResourceManager{ node } {}
 
         /** Copy constructor. */
-        ResourceManager(const ResourceManager& rhs) : ResourceManager(rhs.appNode_)
+        ResourceManager(const ResourceManager& rhs) : BaseResourceManager{ rhs }
         {
             for (const auto& res : rhs.resources_) {
                 resources_.emplace(res.first, std::weak_ptr<ResourceType>());
@@ -65,19 +84,14 @@ namespace viscom {
         }
 
         /** Default move constructor. */
-        ResourceManager(ResourceManager&& rhs) noexcept : resources_(std::move(rhs.resources_)), appNode_(rhs.appNode_) {}
+        ResourceManager(ResourceManager&& rhs) noexcept : BaseResourceManager{ std::move(rhs) }, resources_(std::move(rhs.resources_)) {}
         /** Default move assignment operator. */
         ResourceManager& operator=(ResourceManager&& rhs) noexcept
         {
-            if (this != &rhs) {
-                resources_ = std::move(rhs.resources_);
-                appNode_ = rhs.appNode_;
-            }
+            BaseResourceManager::operator=(std::move(rhs));
+            resources_ = std::move(rhs.resources_);
             return *this;
         }
-
-        /** Default destructor. */
-        virtual ~ResourceManager() = default;
 
         /**
          * Gets a resource from the manager.
@@ -130,7 +144,7 @@ namespace viscom {
         {
             std::lock_guard<std::mutex> accessLock{ mtx_ };
             auto rit = resources_.find(resId);
-            return (rit != resources_.end()) && !rit->expired();
+            return (rit != resources_.end()) && !rit->second.expired();
         }
 
         /** Releases a shared resource (it is not deleted if the shared pointers to it are used elsewhere). */
@@ -168,7 +182,7 @@ namespace viscom {
             std::vector<std::shared_ptr<ResourceType>> newWaitedResources;
             for (auto& waitedResource : waitedResources_) if (!waitedResource->IsLoaded()) {
                 waitedResource->IncreaseLoadCounter();
-                if (waitedResource->GetLoadCounter() > 10) appNode_->RequestSharedResource(waitedResource->GetId(), waitedResource->GetType());
+                if (waitedResource->GetLoadCounter() > 10) RequestSharedResource(waitedResource->GetId(), waitedResource->GetType());
                 newWaitedResources.emplace_back(std::move(waitedResource));
             }
 
@@ -181,7 +195,7 @@ namespace viscom {
             std::lock_guard<std::mutex> syncAccessLock{ syncMtx_ };
 
             for (const auto& res : syncedResources_) {
-                appNode_->TransferResourceToNode(res.first, res.second->GetData().data(), res.second->GetData().size(), res.second->GetType(), clientID);
+                TransferResourceToNode(res.first, res.second->GetData().data(), res.second->GetData().size(), res.second->GetType(), clientID);
             }
         }
 
@@ -191,7 +205,7 @@ namespace viscom {
 
             auto rit = syncedResources_.find(resId);
             if (rit != syncedResources_.end()) {
-                appNode_->TransferResourceToNode(rit->first, rit->second->GetData().data(), rit->second->GetData().size(), rit->second->GetType(), clientID);
+                TransferResourceToNode(rit->first, rit->second->GetData().data(), rit->second->GetData().size(), rit->second->GetType(), clientID);
             }
             else LOG(WARNING) << "Requested resource does not exist: " << resId;
         }
@@ -245,14 +259,12 @@ namespace viscom {
 
         /** Holds the resources managed. */
         ResourceMap resources_;
-        /** Holds the application base. */
-        FrameworkInternal* appNode_;
         /** Holds a map of synchronized resources (to make sure they are not deleted). */
         SyncedResourceMap syncedResources_;
         /** Holds a list of resources to wait for. */
         std::vector<std::shared_ptr<rType>> waitedResources_;
         /** Holds a mutex to the resources. */
-        std::mutex mtx_;
+        mutable std::mutex mtx_;
         /** Holds a mutex to the synced resources. */
         std::mutex syncMtx_;
     };

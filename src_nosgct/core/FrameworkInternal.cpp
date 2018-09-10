@@ -335,9 +335,19 @@ namespace viscom {
         LOG(INFO) << "TransferResource(...) not implemented in local mode.";
     }
 
+    void FrameworkInternal::TransferResourceToNode(std::string_view name, const void* data, std::size_t length, ResourceType type, std::size_t nodeIndex)
+    {
+        LOG(INFO) << "TransferResourceToNode(...) not implemented in local mode.";
+    }
+
     void FrameworkInternal::TransferReleaseResource(std::string_view name, ResourceType type)
     {
         LOG(INFO) << "TransferReleaseResource(...) not implemented in local mode.";
+    }
+
+    void FrameworkInternal::RequestSharedResource(std::string_view name, ResourceType type)
+    {
+        LOG(INFO) << "RequestSharedResource(...) not implemented in local mode.";
     }
 
     void FrameworkInternal::WaitForResource(const std::string& name, ResourceType type)
