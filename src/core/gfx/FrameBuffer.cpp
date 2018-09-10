@@ -259,6 +259,12 @@ namespace viscom {
         glScissor(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
     }
 
+	/**
+	*  Returns the adequate attachment given an internal OpenGL format.
+	*  @param internalFormat the internal OpenGL format of the buffer.
+	*  @param colorAtt the index of the color attachment
+	*  @param drawBuffers the list of the draw buffers used.
+	*/
     unsigned int FrameBuffer::findAttachment(GLenum internalFormat, unsigned int& colorAtt, std::vector<GLenum> &drawBuffers)
     {
         GLenum attachment;
@@ -291,6 +297,10 @@ namespace viscom {
         return attachment;
     }
 
+	/**
+	*  Checks if the given internal format has a depth or stencil component.
+	*  @param internalFormat the internal OpenGL format of the buffer.
+	*/
     bool FrameBuffer::isDepthStencil(GLenum internalFormat)
     {
         switch (internalFormat)
