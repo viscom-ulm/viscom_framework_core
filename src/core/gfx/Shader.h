@@ -10,6 +10,7 @@
 
 #include "core/main.h"
 #include "core/open_gl_fwd.h"
+#include "core/resources/ResourceManager.h"
 
 namespace viscom {
 
@@ -18,7 +19,7 @@ namespace viscom {
     /**
      * Exception class for shader compiler errors.
      */
-    class shader_compiler_error : public std::exception
+    class shader_compiler_error : public resource_loading_error
     {
     public:
         shader_compiler_error(const std::string& shader, const std::string& errors) noexcept;
@@ -26,7 +27,7 @@ namespace viscom {
         shader_compiler_error& operator=(const shader_compiler_error&) noexcept;
         shader_compiler_error(shader_compiler_error&&) noexcept;
         shader_compiler_error& operator=(shader_compiler_error&&) noexcept;
-        const char* what() const noexcept override;
+        const char* what() const noexcept;
 
     private:
         /** Holds the shader name. */

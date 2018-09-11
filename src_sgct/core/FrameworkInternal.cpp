@@ -363,7 +363,7 @@ namespace viscom {
         return result;
     }
 
-    void FrameworkInternal::TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex)
+    void FrameworkInternal::TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex) const
     {
         int completePackageId = 0;
         auto splitId = reinterpret_cast<std::uint16_t*>(&completePackageId);
@@ -379,7 +379,7 @@ namespace viscom {
         engine_->transferDataToNode(data, static_cast<int>(length), completePackageId, nodeIndex);
     }
 
-    void FrameworkInternal::TransferData(const void* data, std::size_t length, std::uint16_t packageId)
+    void FrameworkInternal::TransferData(const void* data, std::size_t length, std::uint16_t packageId) const
     {
         int completePackageId = 0;
         auto splitId = reinterpret_cast<std::uint16_t*>(&completePackageId);

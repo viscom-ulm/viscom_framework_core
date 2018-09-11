@@ -75,6 +75,7 @@ endif()
 
 
 file(GLOB_RECURSE SHADER_FILES_CORE ${PROJECT_SOURCE_DIR}/extern/fwcore/resources/shader/*.*)
+list(FILTER SHADER_FILES_CORE EXCLUDE REGEX ".*\.gen$")
 file(GLOB_RECURSE SRC_FILES_CORE
     ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.h
     ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.cpp
@@ -119,7 +120,7 @@ if (${VISCOM_USE_SGCT})
 
     list(APPEND CORE_LIBS ${SGCT_LIBS})
     if(MSVC)
-        list(APPEND CORE_LIBS ${OPENGL_LIBRARY} ws2_32)
+        list(APPEND CORE_LIBS OpenGL::GL ws2_32)
     elseif(UNIX)
         find_package(Threads REQUIRED)
         list(APPEND CORE_LIBS dl OpenGL::OpenGL OpenGL::GLX X11 Xrandr Xcursor Xinerama Xxf86vm Threads::Threads)
@@ -127,7 +128,7 @@ if (${VISCOM_USE_SGCT})
     list(APPEND CORE_INCLUDE_DIRS ${SGCT_INCLUDE_DIRECTORY})
 else()
     find_package(OpenGL REQUIRED)
-    list(APPEND CORE_LIBS glfw ${GLFW_LIBRARIES} ${OPENGL_LIBRARY})
+    list(APPEND CORE_LIBS glfw ${GLFW_LIBRARIES} OpenGL::GL)
     list(APPEND CORE_INCLUDE_DIRS extern/fwcore/extern/glm extern/fwcore/extern/glfw/include)
 endif()
 
