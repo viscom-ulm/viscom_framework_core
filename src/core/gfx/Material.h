@@ -14,7 +14,7 @@ namespace viscom {
 
     class Texture;
 
-	/** Holds all material information. */
+    /** Holds all material information. */
     struct Material final
     {
         /** Holds the materials ambient color. */
@@ -33,7 +33,7 @@ namespace viscom {
         float bumpMultiplier = 1.f;
     };
 
-	/** Holds the materials diffuse and bump texture. */
+    /** Holds the materials diffuse and bump texture. */
     struct MaterialTextures final
     {
         /** Holds the materials diffuse texture. */

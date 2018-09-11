@@ -187,13 +187,13 @@ namespace viscom {
     }
 
     /**
-    * Loads a shader from file and recursively adds all includes.
-    * taken from https://github.com/dasmysh/OGLFramework_uulm/blob/c4548e84d29bc16b53360f65227597530306c686/OGLFramework_uulm/gfx/glrenderer/Shader.cpp
-    * licensed under MIT by Sebastian Maisch
-    * @param filename the name of the file to load.
-    * @param defines the defines to add at the beginning.
-    * @param fileId the id of the current file.
-    */
+     *  Loads a shader from file and recursively adds all includes.
+     *  taken from https://github.com/dasmysh/OGLFramework_uulm/blob/c4548e84d29bc16b53360f65227597530306c686/OGLFramework_uulm/gfx/glrenderer/Shader.cpp
+     *  licensed under MIT by Sebastian Maisch
+     *  @param filename the name of the file to load.
+     *  @param defines the defines to add at the beginning.
+     *  @param fileId the id of the current file.
+     */
     std::string Shader::LoadShaderFile(const std::string& filename, const std::vector<std::string>& defines, const FrameworkInternal* node)
     {
         auto fullFilename = Resource::FindResourceLocation("shader/" + filename, node);

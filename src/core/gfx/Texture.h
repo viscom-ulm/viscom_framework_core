@@ -32,8 +32,8 @@ namespace viscom {
     };
 
     /**
-    * Helper class for loading an OpenGL texture from file.
-    */
+     * Helper class for loading an OpenGL texture from file.
+     */
     class Texture final : public Resource
     {
     public:

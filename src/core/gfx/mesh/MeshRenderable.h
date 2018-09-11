@@ -31,6 +31,11 @@ namespace viscom {
     class MeshRenderable
     {
     public:
+        /**
+         *  Creates a new mesh renderable.
+         *  @param renderMesh the mesh to render.
+         *  @param program the GPU program to render the mesh with.
+         */
         template<class VTX> static std::unique_ptr<MeshRenderable> create(const Mesh* renderMesh, GPUProgram* program);
 
         virtual ~MeshRenderable();
@@ -39,6 +44,11 @@ namespace viscom {
         MeshRenderable(MeshRenderable&&) noexcept;
         MeshRenderable& operator=(MeshRenderable&&) noexcept;
 
+        /**
+         *  Draws the mesh of the mesh renderable.
+         *  @param modelMatrix the model matrix to draw the mesh with.
+         *  @param overrideBump flag for bumb map parameters.
+         */
         void Draw(const glm::mat4& modelMatrix, bool overrideBump = false) const;
 
         template<class VTX> void NotifyRecompiledShader(const GPUProgram* program);
@@ -46,6 +56,12 @@ namespace viscom {
     protected:
         MeshRenderable(const Mesh* renderMesh, GLuint vBuffer, GPUProgram* program);
 
+        /**
+         *  Draws a node and all its child nodes of the mesh.
+         *  @param modelMatrix the model matrix to draw the mesh with.
+         *  @param node the node to draw.
+         *  @param overrideBump flag for bumb map parameters.
+         */
         void DrawNode(const glm::mat4& modelMatrix, const SceneMeshNode* node, bool overrideBump = false) const;
 
     private:

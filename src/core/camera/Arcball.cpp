@@ -72,6 +72,10 @@ namespace viscom {
         return result;
     }
 
+    /**
+     *  Calculates the mouse position on the arc-ball.
+     *  @param mousePosition the mouse position in normalized device coordinates.
+     */
     glm::vec3 Arcball::MousePositionToArcball(const glm::vec2 & mousePosition) const
     {
         glm::vec3 result{ mousePosition, 0.0f };

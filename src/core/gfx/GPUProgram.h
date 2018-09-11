@@ -32,48 +32,48 @@ namespace viscom {
 
         [[deprecated("Use the vector version instead.")]]
         void Initialize(std::initializer_list<std::string> shaderNames);
-		/**
-		*  Initializes the GPU program by setting the shader names.
-		*  @param shaderNames shader names for the program.
-		*/
+        /**
+         *  Initializes the GPU program by setting the shader names.
+         *  @param shaderNames shader names for the program.
+         */
         void Initialize(std::vector<std::string> shaderNames);
-		/**
-		*  Initializes the GPU program by setting the shader names and specifying the defines to be used.
-		*  @param shaderNames the shader names for the program.
-		*  @param defines the defines to be used in the program.
-		*/
+        /**
+         *  Initializes the GPU program by setting the shader names and specifying the defines to be used.
+         *  @param shaderNames the shader names for the program.
+         *  @param defines the defines to be used in the program.
+         */
         void Initialize(std::vector<std::string> shaderNames, const std::vector<std::string>& defines);
 
         [[deprecated("Use 'Load' (without optional parameter) instead.")]]
         void recompileProgram();
         /** Returns the OpenGL program id. */
         GLuint getProgramId() const noexcept { return program_; }
-		/**
-		*  Returns a uniform location.
-		*  @param name uniform name to be used.
-		*/
+        /**
+         *  Returns a uniform location.
+         *  @param name uniform name to be used.
+         */
         GLint getUniformLocation(const std::string& name) const;
         /** Returns a list of uniform locations. */
         [[deprecated("Use the vector version instead.")]]
         std::vector<GLint> getUniformLocations(const std::initializer_list<std::string>& names) const;
-		/**
-		*  Returns a list of uniform locations.
-		*  @param names list of uniform names to be used.
-		*/
+        /**
+         *  Returns a list of uniform locations.
+         *  @param names list of uniform names to be used.
+         */
         std::vector<GLint> GetUniformLocations(const std::vector<std::string>& names) const;
 
-		/**
-		*  Returns an attribute location.
-		*  @param name attribute name to be used.
-		*/
+        /**
+         *  Returns an attribute location.
+         *  @param name attribute name to be used.
+         */
         GLint getAttributeLocation(const std::string& name) const;
         /** Returns a list of attribute locations. */
         [[deprecated("Use the vector version instead.")]]
         std::vector<GLint> getAttributeLocations(const std::initializer_list<std::string>& names) const;
-		/**
-		*  Returns a list of attribute locations.
-		*  @param names list of attribute names to be used.
-		*/
+        /**
+         *  Returns a list of attribute locations.
+         *  @param names list of attribute names to be used.
+         */
         std::vector<GLint> GetAttributeLocations(const std::vector<std::string>& names) const;
 
     protected:

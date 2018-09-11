@@ -41,6 +41,10 @@ namespace viscom {
         Mesh& operator=(Mesh&&) noexcept = delete;
         virtual ~Mesh() noexcept override;
 
+        /**
+         *  Initializes the mesh by setting the force generating normals flag.
+         *  @param forceGenNormals force generating normals.
+         */
         void Initialize(bool forceGenNormals = false);
 
         /**
@@ -50,32 +54,66 @@ namespace viscom {
         std::vector<SubMesh>& GetSubMeshes() noexcept { return subMeshes_; }
         /** Const accessor to the meshes sub-meshes. */
         const std::vector<SubMesh>& GetSubMeshes() const noexcept { return subMeshes_; }
+        /** Accessor to the nodes of the mesh. */
         const std::vector<const SceneMeshNode*>& GetNodes() const noexcept { return nodes_; }
+        /** Returns the root node of the mesh. */
         const SceneMeshNode* GetRootNode() const noexcept { return rootNode_.get(); }
 
+        /** Returns the vertices used by the mesh and all sub-meshes. */
         const std::vector<glm::vec3>& GetVertices() const noexcept { return vertices_; }
+        /** Returns the normals used by the mesh and all sub-meshes. */
         const std::vector<glm::vec3>& GetNormals() const noexcept { return normals_; }
+        /** Returns the number of texture coords used by the mesh and all sub-meshes. */
         std::size_t GetNumTexCoords() const { return texCoords_.size(); }
+        /** Returns the texture coords used by the mesh and all sub-meshes. */
         const std::vector<glm::vec3>& GetTexCoords(size_t i) const noexcept { return texCoords_[i]; }
+        /** Returns the tangents used by the mesh and all sub-meshes. */
         const std::vector<glm::vec3>& GetTangents() const noexcept { return tangents_; }
+        /** Returns the binormals used by the mesh and all sub-meshes. */
         const std::vector<glm::vec3>& GetBinormals() const noexcept { return binormals_; }
+        /** Returns the colors of the vertices used by the mesh and all sub-meshes. */
         const std::vector<glm::vec4>& GetColors(size_t i) const noexcept { return colors_[i]; }
+        /** Returns the indices of the influencing bones for each vertex. */
         const std::vector<glm::uvec4>& GetBoneIndices() const noexcept { return boneOffsetMatrixIndices_; }
+        /** Returns the weights of the influencing bones for each vertex. */
         const std::vector<glm::vec4>& GetBoneWeights() const noexcept { return boneWeights_; }
+        /** Returns the integer vectors to be used as indices for each vertex. */
         const std::vector<glm::uvec4>& GetIndexVectors(size_t i) const noexcept { return indexVectors_[i]; }
 
+        /** Returns all the indices used by the sub-meshes. */
         const std::vector<unsigned int>& GetIndices() const noexcept { return indices_; }
+        /** Returns the OpenGL index buffer. */
         GLuint GetIndexBuffer() const noexcept { return indexBuffer_; }
 
+        /**
+         *  Returns an animation of the mesh.
+         *  @param animationIndex index of the animation to return.
+         */
         const Animation* GetAnimation(std::size_t animationIndex = 0) const { return &animations_[animationIndex]; }
+        /**
+         *  Returns a material of the mesh.
+         *  @param materialIndex index of the material to return.
+         */
         const Material* GetMaterial(std::size_t materialIndex) const { return &materials_[materialIndex]; }
+        /**
+         *  Returns a material texture of the mesh.
+         *  @param materialIndex index of the material to return the texture from.
+         */
         const MaterialTextures* GetMaterialTexture(std::size_t materialIndex) const { return &materialTextures_[materialIndex]; }
 
+        /** Returns the offset matrices for all bones. */
         const std::vector<glm::mat4>& GetInverseBindPoseMatrices() const noexcept { return inverseBindPoseMatrices_; }
+        /** Returns the AABB for all bones. */
         const std::vector<math::AABB3<float>>& GetBoneBoundingBoxes() const noexcept { return boneBoundingBoxes_; }
+        /**
+         *  Returns the parent bone of any given bone.
+         *  @param boneIndex index of the child bone.
+         */
         std::size_t GetParentBone(std::size_t boneIndex) const { return boneParent_[boneIndex]; }
+        /** Returns the number of bones used by the mesh. */
         std::size_t GetNumberOfBones() const noexcept { return inverseBindPoseMatrices_.size(); }
 
+        /** Returns the global inverse matrix of the mesh. */
         glm::mat4 GetGlobalInverse() const { return globalInverse_; }
 
     protected:
@@ -96,6 +134,7 @@ namespace viscom {
         void ParseBoneHierarchy(const std::map<std::string, unsigned int>& bones, const aiNode* node,
             std::size_t parent, glm::mat4 parentMatrix);
 
+        /** Generates AABB for all bones. */
         void GenerateBoneBoundingBoxes();
 
         /** Filename of this mesh. */

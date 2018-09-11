@@ -40,16 +40,31 @@ namespace viscom {
         Animation();
         Animation(aiAnimation* aiAnimation, const std::map<std::string, unsigned int>& boneNameToOffset);
 
+        /** Returns the number of ticks per second. */
         float GetFramesPerSecond() const;
+        /** Returns the duration of the animation in seconds. */
         float GetDuration() const;
+        /** Returns the channels for each bone. */
         const std::vector<Channel>& GetChannels() const;
+        /**
+         *  Returns the channel of one bone.
+         *  @param id id of the bone.
+         */
         const Channel& GetChannel(std::size_t id) const;
 
         Animation GetSubSequence(Time start, Time end) const;
 
         glm::mat4 ComputePoseAtTime(std::size_t id, Time time) const;
 
+        /**
+         *  Writes the channels of the animation to a stream.
+         *  @param ofs stream to write to.
+         */
         void Write(std::ostream& ofs) const;
+        /**
+         *  Reads the channels of the animation from a stream.
+         *  @param ifs stream to read from.
+         */
         bool Read(std::istream& ifs);
 
     private:
