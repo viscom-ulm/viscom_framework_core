@@ -187,7 +187,7 @@ namespace viscom {
         }
 
         unsigned int currentMeshIndexOffset = 0;
-        unsigned int currentMeshVertexOffset = 0;
+        std::size_t currentMeshVertexOffset = 0;
 
         // using Bone = unsigned int;
 
@@ -246,7 +246,8 @@ namespace viscom {
             }
 
             if (!indices[i].empty()) {
-                std::transform(indices[i].begin(), indices[i].end(), &indices_[currentMeshIndexOffset], [currentMeshVertexOffset](unsigned int idx) { return idx + currentMeshVertexOffset; }); //-V108
+                std::transform(indices[i].begin(), indices[i].end(), &indices_[currentMeshIndexOffset],
+                    [currentMeshVertexOffset](unsigned int idx) { return static_cast<unsigned int>(idx + currentMeshVertexOffset); }); //-V108
             }
 
             subMeshes_.emplace_back(this, mesh->mName.C_Str(), currentMeshIndexOffset, static_cast<unsigned int>(indices[i].size()), mesh->mMaterialIndex);
@@ -304,17 +305,20 @@ namespace viscom {
 
     std::shared_ptr<const Texture> Mesh::LoadTexture(const std::string& relFilename, FrameworkInternal* node) const
     {
-        auto path = filename_.substr(0, filename_.find_last_of('/') + 1);
-        std::shared_ptr<const Texture> texture;
-        try {
-            auto texFilename = path + relFilename;
-            texture = std::move(node->GetTextureManager().GetResource(texFilename));
-        } catch (resource_loading_error&) {
-            auto textureFilename = relFilename.substr(relFilename.find_last_of("/") + 1);
-            auto texFilename = path + textureFilename;
-
-            texture = std::move(node->GetTextureManager().GetResource(texFilename));
+#ifndef __APPLE_CC__
+        namespace fs = std::filesystem;
+        std::string fullTexFilename;
+        if (fs::exists(relFilename)) fullTexFilename = relFilename;
+        else {
+            auto path = fs::path(filename_).parent_path();
+            if (auto relFilePath = path / relFilename; fs::exists(relFilePath))
+                fullTexFilename = relFilePath.string();
+            else fullTexFilename = (path / fs::path(relFilename).filename()).string();
         }
+#else
+        auto fullTexFilename = filename_.substr(0, filename_.find_last_of('/') + 1) + relFilename;
+#endif
+        std::shared_ptr<const Texture> texture = std::move(node->GetTextureManager().GetResource(fullTexFilename));
 
         glBindTexture(GL_TEXTURE_2D, texture->getTextureId());
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

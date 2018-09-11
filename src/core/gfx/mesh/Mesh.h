@@ -101,7 +101,7 @@ namespace viscom {
         /** Filename of this mesh. */
         std::string filename_;
         /** Force generating normals. */
-        bool forceGenNormals_;
+        bool forceGenNormals_ = false;
 
         /** Holds all the single points used by the mesh (and its sub-meshes) as points or in vertices. */
         std::vector<glm::vec3> vertices_;

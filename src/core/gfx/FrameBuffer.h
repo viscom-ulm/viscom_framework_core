@@ -50,6 +50,7 @@ namespace viscom {
         unsigned int numSamples_ = 1;
     };
 
+	/** Describes a viewport to be used by the frame buffer. */
     struct Viewport
     {
         Viewport() noexcept : position_{ 0 }, size_{ 0 } {}
@@ -119,12 +120,21 @@ namespace viscom {
         unsigned int height_;
     };
 
+	/**
+	*  Uses the frame buffer object as target for rendering and draws as specified in the lambda expression.
+	*  @param drawFn the lambda expression drawing to the frame buffer.
+	*/
     inline void viscom::FrameBuffer::DrawToFBO(viscom::function_view<void()> drawFn) const
     {
         UseAsRenderTarget();
         drawFn();
     }
 
+	/**
+	*  Uses the frame buffer object as target for rendering, selects the draw buffers used and draws as specified in the lambda expression.
+	*  @param drawBufferIndices the indices in the draw buffer to be used.
+	*  @param drawFn the lambda expression drawing to the frame buffer.
+	*/
     inline void viscom::FrameBuffer::DrawToFBO(const std::vector<std::size_t>& drawBufferIndices, viscom::function_view<void()> drawFn) const
     {
         UseAsRenderTarget(drawBufferIndices);
