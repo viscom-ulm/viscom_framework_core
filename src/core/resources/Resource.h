@@ -14,6 +14,7 @@
 namespace viscom {
 
     class FrameworkInternal;
+    struct FWConfiguration;
 
     class Resource
     {
@@ -37,6 +38,7 @@ namespace viscom {
         void LoadResource();
         void LoadResource(const void* data, std::size_t size);
 
+        static std::string FindResourceLocation(const std::string& localFilename, const FWConfiguration* config, const std::string& resourceId = "_no_resource_");
         static std::string FindResourceLocation(const std::string& localFilename, const FrameworkInternal* appNode, const std::string& resourceId = "_no_resource_");
 
     protected:

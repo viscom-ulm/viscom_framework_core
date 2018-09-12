@@ -58,6 +58,18 @@ namespace viscom {
         loadCounter_ = -1;
     }
 
+    std::string Resource::FindResourceLocation(const std::string& localFilename, const FWConfiguration* config, const std::string& resourceId)
+    {
+        for (const auto& dir : config->resourceSearchPaths_) {
+            auto filename = dir + "/" + localFilename;
+            if (dir.empty()) filename = localFilename;
+            if (utils::file_exists(filename)) return filename;
+        }
+
+        LOG(WARNING) << "Cannot find local resource file \"" << localFilename.c_str() << "\".";
+        throw resource_loading_error(resourceId, "Cannot find local resource file (" + localFilename + ").");
+    }
+
     std::string Resource::FindResourceLocation(const std::string& localFilename, const FrameworkInternal* appNode, const std::string& resourceId)
     {
         for (const auto& dir : appNode->GetConfig().resourceSearchPaths_) {
