@@ -21,24 +21,71 @@ namespace viscom::math {
         AABB(const std::vector<V>& points);
         AABB(const std::vector<AABB>& aabbs);
 
+        /** Returns the dimensions of the bounding box. */
         V Size() const;
 
+        /** Returns the minimum of the bounding box. */
         const V& GetMin() const;
+        /** Returns the maximum of the bounding box. */
         const V& GetMax() const;
 
+        /**
+         *  Sets the minimum of the bounding box.
+         *  @param v the new minimum.
+         */
         void SetMin(const V&);
+        /**
+         *  Sets the maximum of the bounding box.
+         *  @param v the new maximum.
+         */
         void SetMax(const V&);
 
+        /**
+         *  Scales the bounding box.
+         *  @param scale the scaling factor.
+         */
         void Scale(float scale);
+        /**
+         *  Scales the bounding box.
+         *  @param scale the scaling factor.
+         */
         void Scale(const V& scale);
+        /**
+         *  Translates the bounding box.
+         *  @param offset the translation offset.
+         */
         void Offset(const V& offset);
+        /**
+         *  Performs a transformation on the bounding box.
+         *  @param mat the transformation matrix.
+         */
         void Transform(const glm::tmat4x4<real, glm::highp>&);
+        /**
+         *  Performs a transformation and yields a new bounding box.
+         *  @param mat the transformation matrix.
+         */
         AABB NewFromTransform(const glm::tmat4x4<real, glm::highp>&) const;
 
+        /**
+         *  Calculates the union of two bounding boxes.
+         *  @param other the second bounding box.
+         */
         AABB Union(const AABB& other) const;
+        /**
+         *  Calculates the intersection of two bounding boxes.
+         *  @param other the second bounding box.
+         */
         AABB Difference(const AABB& other) const;
 
+        /**
+         *  Checks if two bounding boxes intersect.
+         *  @param other the second bounding box.
+         */
         bool IsIntersecting(const AABB& other) const;
+        /**
+         *  Adds a point to the bounding box.
+         *  @param point the point to add.
+         */
         void AddPoint(const V&);
 
         /** Contains the minimum and maximum points of the box. */

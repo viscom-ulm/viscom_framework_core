@@ -63,13 +63,30 @@ namespace viscom {
         /** Returns if the AABB is valid. */
         bool IsBoundingBoxValid() const noexcept { return boundingBoxValid_; }
 
+        /**
+         *  Flattens the tree of the node and its child nodes to a vector.
+         *  @param nodes list of nodes that will contain the flattened tree.
+         */
         void FlattenNodeTree(std::vector<const SceneMeshNode*>& nodes);
+        /**
+         *  Generates the AABB for the mesh and all sub meshes.
+         *  @param mesh the mesh to generate the bounding box to.
+         */
         bool GenerateBoundingBoxes(const Mesh& mesh);
 
         [[deprecated("Do we even need this anymore?")]]
         void GetBoundingBox(math::AABB3<float>& aabb, const glm::mat4& transform) const;
 
+        /**
+         *  Writes the node and all its children to a stream.
+         *  @param ofs stream to write to.
+         */
         void Write(std::ostream& ofs);
+        /**
+         *  Reads the node and all its children from a stream.
+         *  @param ifs stream to read from.
+         *  @param nodes the node that will be the parent to the read node.
+         */
         bool Read(std::istream& ifs, std::unordered_map<std::uint64_t, SceneMeshNode*>& nodes);
 
     private:

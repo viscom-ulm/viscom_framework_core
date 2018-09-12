@@ -12,7 +12,12 @@
 
 namespace viscom {
     namespace math {
-
+        
+    /**
+     *  Performs a transformation and yields a new bounding box.
+     *  @param aabb the bounding box to be transformed.
+     *  @param m the transformation matrix.
+     */
     template<class T> AABB3<T> transformAABB(const AABB3<T>& aabb, const glm::mat4& m)
     {
         AABB3<T> result{ glm::vec3(std::numeric_limits<float>::infinity()), glm::vec3(-std::numeric_limits<float>::infinity()) };
