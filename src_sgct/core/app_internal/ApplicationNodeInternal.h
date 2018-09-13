@@ -21,13 +21,14 @@ namespace viscom::tuio {
 
 namespace viscom {
     enum class CalibrateMethod { CALIBRATE_BY_TOUCHING, CALIBRATE_BY_POINTING };
-    enum class TrackedDeviceIdentifier { CONTROLLER_LEFT_HAND, CONTROLLER_RIGHT_HAND, GENERIC_TRACKER };
-    enum class ControllerButtonIdentifier { TIGGER, TRACKPAD, MENU, GRIP, TRACKPAD_BUTTON };
+    enum class TrackedDeviceRole { CONTROLLER_LEFT_HAND, CONTROLLER_RIGHT_HAND, GENERIC_TRACKER, INVALID };
+    enum class ButtonState { PRESSED, TOUCHED, RELEASED };
+    enum class TrackedDeviceClass { INVALID, CONTROLLER, GENERIC_TRACKER, TRACKING_REFERENCE, DISPLAY_REDIRECT, HMD };
 
-    struct ControllerButtonState {
-        uint64_t buttonspressed;
-        uint64_t buttonstouched;
-        glm::vec2 rAxis[5];
+    struct DeviceInfo {
+        size_t deviceId;
+        TrackedDeviceRole deviceRole;
+        TrackedDeviceClass deviceClass;
     };
 
 
@@ -75,43 +76,19 @@ namespace viscom {
         virtual void RemoveTuioCursor(TUIO::TuioCursor *tcur);
 
         virtual bool InitialiseVR();
-        virtual bool CalibrateVR(CalibrateMethod method, TrackedDeviceIdentifier trackedDevice);
-        virtual const glm::vec3& GetControllerPosition(TrackedDeviceIdentifier trackedDevice);
-        virtual const glm::vec3& GetControllerZVector(TrackedDeviceIdentifier trackedDevice);
-        virtual const glm::quat& GetControllerRotation(TrackedDeviceIdentifier trackedDevice);
-        virtual const glm::vec2& GetDisplayPosition(TrackedDeviceIdentifier trackedDevice);
+        virtual bool CalibrateVR(CalibrateMethod method);
+        virtual const std::vector<DeviceInfo>& GetConnectedDevices();
+        virtual const glm::vec3& GetControllerPosition(size_t trackedDeviceId);
+        virtual const glm::vec3& GetControllerZVector(size_t trackedDeviceId);
+        virtual const glm::quat& GetControllerRotation(size_t trackedDeviceId);
+        virtual const glm::vec2& GetDisplayPosition(size_t trackedDeviceId);
 
-        virtual void ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues);
-        virtual void ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues);
-        virtual void ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues);
-        virtual void ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues);
+        virtual void ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
+        virtual void ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
+        virtual void ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
+        virtual void ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
 
-        virtual ControllerButtonState GetControllerButtonState(TrackedDeviceIdentifier trackedDevice);
-        
-        /*virtual void ParseTrackingFrame();
-        virtual glm::vec3 GetController0Pos();
-        virtual glm::vec3 GetController0Zvec();
-        virtual glm::vec3 GetController1Pos();
-        virtual glm::vec3 GetController1Zvec();
-        virtual glm::vec3 GetTrackerPos();
-        virtual glm::vec3 GetTrackerZvec();
-        virtual glm::quat GetController0Rot();
-        virtual glm::quat GetController1Rot();
-        virtual glm::quat GetTrackerRot();
-        virtual glm::vec2 GetDisplayPosition(bool useleftcontroller);
-        virtual void InitialiseDisplay(bool useLeftController);
-        virtual bool GetDisplayInitialised();
-        virtual void SetDisplayNotInitialised();
-        virtual bool GetDisplayInitByFloor();
-        virtual void SetDisplayInitByFloor(bool b);
-        virtual void PollAndParseNextEvent();
-        virtual void PollAndParseEvents();
-        virtual std::vector<std::string> OutputDevices();
-        virtual float* GetDisplayEdges();
-        virtual bool GetVrInitSuccess() = 0;
-        virtual std::vector<std::string> GetController0Buttons() = 0;
-        virtual std::vector<std::string> GetController1Buttons() = 0;
-        */
+        virtual void GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate);
 
         double GetCurrentAppTime() const { return syncInfoLocal_.currentTime_; }
         double GetElapsedTime() const { return elapsedTime_; }

@@ -187,131 +187,50 @@ namespace viscom {
     {
         return false;
     }
-    bool ApplicationNodeInternal::CalibrateVR(CalibrateMethod method, TrackedDeviceIdentifier trackedDevice)
+    bool ApplicationNodeInternal::CalibrateVR(CalibrateMethod method)
     {
         return false;
     }
-    const glm::vec3& ApplicationNodeInternal::GetControllerPosition(TrackedDeviceIdentifier trackedDevice)
+    const std::vector<DeviceInfo>& ApplicationNodeInternal::GetConnectedDevices()
+    {
+        return std::vector<DeviceInfo>();
+    }
+    const glm::vec3& ApplicationNodeInternal::GetControllerPosition(size_t trackedDeviceId)
     {
         return glm::vec3();
     }
-    const glm::vec3& ApplicationNodeInternal::GetControllerZVector(TrackedDeviceIdentifier trackedDevice)
+    const glm::vec3& ApplicationNodeInternal::GetControllerZVector(size_t trackedDeviceId)
     {
         return glm::vec3();
     }
-    const glm::quat& ApplicationNodeInternal::GetControllerRotation(TrackedDeviceIdentifier trackedDevice)
+    const glm::quat& ApplicationNodeInternal::GetControllerRotation(size_t trackedDeviceId)
     {
         return glm::quat();
     }
-    const glm::vec2& ApplicationNodeInternal::GetDisplayPosition(TrackedDeviceIdentifier trackedDevice)
+    const glm::vec2& ApplicationNodeInternal::GetDisplayPosition(size_t trackedDeviceId)
     {
         return glm::vec2();
     }
    
-    void ApplicationNodeInternal::ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues)
+    void ApplicationNodeInternal::ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
     {
-        appNodeImpl_->ControllerButtonPressedCallback(trackedDevice, buttonid, axisvalues);
+        appNodeImpl_->ControllerButtonPressedCallback(trackedDeviceId, buttonid, axisvalues);
     }
-    void ApplicationNodeInternal::ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues)
+    void ApplicationNodeInternal::ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
     {
-        appNodeImpl_->ControllerButtonTouchedCallback(trackedDevice, buttonid, axisvalues);
+        appNodeImpl_->ControllerButtonTouchedCallback(trackedDeviceId, buttonid, axisvalues);
     }
-    void ApplicationNodeInternal::ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues)
+    void ApplicationNodeInternal::ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
     {
-        appNodeImpl_->ControllerButtonUnpressedCallback(trackedDevice, buttonid, axisvalues);
+        appNodeImpl_->ControllerButtonUnpressedCallback(trackedDeviceId, buttonid, axisvalues);
     }
-    void ApplicationNodeInternal::ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues)
+    void ApplicationNodeInternal::ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
     {
-        appNodeImpl_->ControllerButtonUntouchedCallback(trackedDevice, buttonid, axisvalues);
-    }
-
-    ControllerButtonState ApplicationNodeInternal::GetControllerButtonState(TrackedDeviceIdentifier trackedDevice)
-    {
-        return ControllerButtonState();
+        appNodeImpl_->ControllerButtonUntouchedCallback(trackedDeviceId, buttonid, axisvalues);
     }
 
-    /*void ApplicationNodeInternal::ParseTrackingFrame()
+    void ApplicationNodeInternal::GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2 & axisvalues, ButtonState & buttonstate)
     {
-        appNodeImpl_->ParseTrackingFrame();
     }
-    glm::vec3 ApplicationNodeInternal::GetController0Pos()
-    {
-        return appNodeImpl_->GetController0Pos();
-    }
-    glm::vec3 ApplicationNodeInternal::GetController0Zvec()
-    {
-        return appNodeImpl_->GetController0Zvec();
-    }
-    glm::vec3 ApplicationNodeInternal::GetController1Pos()
-    {
-        return appNodeImpl_->GetController1Pos();
-    }
-    glm::vec3 ApplicationNodeInternal::GetController1Zvec()
-    {
-        return appNodeImpl_->GetController1Zvec();
-    }
-    glm::vec3 ApplicationNodeInternal::GetTrackerPos()
-    {
-        return appNodeImpl_->GetTrackerPos();
-    }
-    glm::vec3 ApplicationNodeInternal::GetTrackerZvec()
-    {
-        return appNodeImpl_->GetTrackerZvec();
-    }
-    glm::quat ApplicationNodeInternal::GetController0Rot()
-    {
-        return appNodeImpl_->GetController0Rot();
-    }
-    glm::quat ApplicationNodeInternal::GetController1Rot()
-    {
-        return appNodeImpl_->GetController1Rot();
-    }
-    glm::quat ApplicationNodeInternal::GetTrackerRot()
-    {
-        return appNodeImpl_->GetTrackerRot();
-    }
-    glm::vec2 ApplicationNodeInternal::GetDisplayPosition(bool useleftcontroller)
-    {
-        return appNodeImpl_->GetDisplayPosition(useleftcontroller);
-    }
-    void ApplicationNodeInternal::InitialiseDisplay(bool useLeftController)
-    {
-        return appNodeImpl_->InitialiseDisplay(useLeftController);
-    }
-    bool ApplicationNodeInternal::GetDisplayInitialised()
-    {
-        return appNodeImpl_->GetDisplayInitialised();
-    }
-    void ApplicationNodeInternal::SetDisplayNotInitialised()
-    {
-        appNodeImpl_->SetDisplayNotInitialised();
-    }
-    bool ApplicationNodeInternal::GetDisplayInitByFloor()
-    {
-        return appNodeImpl_->GetDisplayInitByFloor();
-    }
-    void ApplicationNodeInternal::SetDisplayInitByFloor(bool b)
-    {
-        appNodeImpl_->SetDisplayInitByFloor(b);
-    }
-    void ApplicationNodeInternal::PollAndParseNextEvent()
-    {
-        appNodeImpl_->PollAndParseNextEvent();
-    }
-    void ApplicationNodeInternal::PollAndParseEvents()
-    {
-        appNodeImpl_->PollAndParseEvents();
-    }
-    std::vector<std::string> ApplicationNodeInternal::OutputDevices()
-    {
-        return appNodeImpl_->OutputDevices();
-    }
-    float * ApplicationNodeInternal::GetDisplayEdges()
-    {
-        return appNodeImpl_->GetDisplayEdges();
-    }*/
-    /*bool ApplicationNodeInternal::GetVrInitSuccess()
-    {
-        GetFramework()
-    }*/
+
 }

@@ -126,24 +126,28 @@ namespace viscom {
         framework_->Terminate();
     }
     
-    bool ApplicationNodeBase::ControllerButtonPressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues)
+    bool ApplicationNodeBase::ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::ControllerButtonTouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues)
+    bool ApplicationNodeBase::ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::ControllerButtonUnpressedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues)
+    bool ApplicationNodeBase::ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::ControllerButtonUntouchedCallback(TrackedDeviceIdentifier trackedDevice, ControllerButtonIdentifier buttonid, glm::vec2 axisvalues)
+    bool ApplicationNodeBase::ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
     {
         return false;
+    }
+
+    void ApplicationNodeBase::GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2 & axisvalues, ButtonState & buttonstate)
+    {
     }
 
 
