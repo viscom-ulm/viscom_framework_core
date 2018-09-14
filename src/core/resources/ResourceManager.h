@@ -171,6 +171,10 @@ namespace viscom {
             }
         }
 
+        /**
+         *  Adds the resource with the specified id to the list of resources to wait for.
+         *  @param resId the resource id.
+         */
         void WaitForResource(const std::string& resId)
         {
             waitedResources_.push_back(syncedResources_[resId]);

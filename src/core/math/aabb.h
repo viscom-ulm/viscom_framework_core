@@ -15,6 +15,7 @@
 namespace viscom::math {
 
 
+    /** Class defining and handling all axis aligned bounding box operations. */
     template<typename real, int N, typename V> struct AABB {
         AABB() noexcept;
         AABB(const V& minValue, const V& maxValue);
@@ -98,19 +99,28 @@ namespace viscom::math {
 
 
 
-
+    /** Constructor method. */
     template<typename real, int N, typename V>
     inline AABB<real, N, V>::AABB() noexcept :
         minmax_{ V(std::numeric_limits<real>::max()), V(std::numeric_limits<real>::lowest()) }
     {
     }
 
+    /**
+     *  Constructor method.
+     *  @param minValue minimum corner for the AABB.
+     *  @param maxValue maximum corner for the AABB.
+     */
     template<typename real, int N, typename V>
     inline AABB<real, N, V>::AABB(const V& minValue, const V& maxValue) :
         minmax_{ minValue, maxValue }
     {
     }
 
+    /**
+     *  Constructor method.
+     *  @param points list of points to retrieve bounding box information from.
+     */
     template<typename real, int N, typename V>
     inline AABB<real, N, V>::AABB(const std::vector<V>& points) :
         minmax_{ V(std::numeric_limits<real>::max()), V(std::numeric_limits<real>::lowest()) }
@@ -118,6 +128,10 @@ namespace viscom::math {
         FromPoints(points);
     }
 
+    /**
+     *  Constructor method.
+     *  @param aabbs list of AABB to calculate new bounding box.
+     */
     template<typename real, int N, typename V>
     inline AABB<real, N, V>::AABB(const std::vector<AABB>& aabbs) :
         minmax_{ V(std::numeric_limits<real>::max()), V(std::numeric_limits<real>::lowest()) }

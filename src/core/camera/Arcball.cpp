@@ -54,8 +54,9 @@ namespace viscom {
     }
 
     /**
-     *  Calculates the world rotation using a view matrix.
-     *  @param view the view matrix.
+     *  Calculates the world rotation using the cameras position and orientation.
+     *  @param elapsedTime the time elapsed since the last frame.
+     *  @param camPosOrientation the cameras position and orientation.
      */
     glm::quat Arcball::GetWorldRotation(double elapsedTime, const glm::quat& camPosOrientation) noexcept
     {

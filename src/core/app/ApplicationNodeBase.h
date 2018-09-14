@@ -106,7 +106,7 @@ namespace viscom {
         virtual bool AddTuioCursor(TUIO::TuioCursor *tcur);
         /**
          *  Called each frame for touch screens to update a cursor.
-         *  @param tcur cursor to be added.
+         *  @param tcur cursor to be updated.
          */
         virtual bool UpdateTuioCursor(TUIO::TuioCursor *tcur);
         /**

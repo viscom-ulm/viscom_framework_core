@@ -16,6 +16,7 @@ namespace viscom {
     class FrameworkInternal;
     struct FWConfiguration;
 
+    /** Base class for all resources. */
     class Resource
     {
     public:
@@ -26,29 +27,56 @@ namespace viscom {
         Resource& operator=(Resource&&) noexcept = delete;
         virtual ~Resource();
 
+        /** Returns the resources id. */
         const std::string& GetId() const { return id_; }
+        /** Returns the resources type. */
         ResourceType GetType() const { return type_; }
+        /** Checks if the resource has been initialized. */
         bool IsInitialized() const { return initialized_; }
+        /** Checks if the resource has been loaded. */
         bool IsLoaded() const { return loadCounter_ == -1; }
+        /** Returns the resource load counter. */
         int GetLoadCounter() const { return loadCounter_; }
+        /** Increases the resource load counter by one. */
         void IncreaseLoadCounter() { loadCounter_ += 1; }
+        /** Resets the resource load counter to zero. */
         void ResetLoadCounter() { loadCounter_ = 0; }
+        /** Return the data of the resource memory representation. */
         const std::vector<std::uint8_t>& GetData() const { return data_; }
 
         void LoadResource();
         void LoadResource(const void* data, std::size_t size);
 
+        /**
+         *  Returns the location of the file with the specified file name.
+         *  @param localFilename the file name to search for.
+         *  @param config the framework configuration holding the search paths.
+         *  @param resourceId the resource id.
+         */
         static std::string FindResourceLocation(const std::string& localFilename, const FWConfiguration* config, const std::string& resourceId = "_no_resource_");
+        /**
+         *  Returns the location of the file with the specified file name.
+         *  @param localFilename the file name to search for.
+         *  @param appNode the application node holding the framework configuration to retrieve the search paths.
+         *  @param resourceId the resource id.
+         */
         static std::string FindResourceLocation(const std::string& localFilename, const FrameworkInternal* appNode, const std::string& resourceId = "_no_resource_");
 
     protected:
+        /** Returns the application object. */
         const FrameworkInternal* GetAppNode() const { return appNode_; }
+        /** Returns the application object. */
         FrameworkInternal* GetAppNode() { return appNode_; }
 
+        /**
+         *  Returns the location of the file with the specified file name.
+         *  @param localFilename the file name to search for.
+         */
         std::string FindResourceLocation(const std::string& localFilename) const;
 
         virtual void Load(std::optional<std::vector<std::uint8_t>>& data) = 0;
         virtual void LoadFromMemory(const void* data, std::size_t size) = 0;
+        /** Initializes the resource by setting the initialized flag. */
         void InitializeFinished() { initialized_ = true; }
 
     private:
