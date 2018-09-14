@@ -87,8 +87,20 @@ namespace viscom {
         inline void DrawToFBO(const std::vector<std::size_t>& drawBufferIndices, viscom::function_view<void()> drawFn) const;
 
         void Resize(unsigned int fbWidth, unsigned int fbHeight);
+        /** Returns the textures the frame buffer uses. */
         const std::vector<GLuint>& GetTextures() const { return textures_; }
+        /**
+         *  Sets the frame buffers standart viewport.
+         *  @param vp the viewport to be used.
+         */
         void SetStandardViewport(const Viewport& vp) { standardViewport_ = vp; }
+        /**
+         *  Sets the frame buffers standart viewport.
+         *  @param x the horizontal component of the viewports lower left corner.
+         *  @param y the vertical component of the viewports lower left corner.
+         *  @param sizex the viewports horizontal size.
+         *  @param sizey the viewports vertical size.
+         */
         void SetStandardViewport(int x, int y, unsigned int sizex, unsigned int sizey) { standardViewport_.position_ = glm::ivec2(x, y); standardViewport_.size_ = glm::ivec2(sizex, sizey); }
 
         // void SetWidth(unsigned int width) { standardViewport_.size_.x = width; }

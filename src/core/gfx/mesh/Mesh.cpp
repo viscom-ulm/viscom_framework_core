@@ -447,18 +447,18 @@ namespace viscom {
         return true;
     }
 
-    ///
-    /// This function walks the hierarchy of bones and does two things:
-    /// - set the parent of each bone into `boneParent_`
-    /// - update the boneOffsetMatrices_, so each matrix also includes the
-    ///   transformations of the child bones.
-    ///
-    /// \param map from name of bone to index in boneOffsetMatrices_
-    /// \param current node in
-    /// \param index of the parent in boneOffsetMatrices_
-    /// \param Matrix including all transformations from the parents of the
-    ///        current node.
-    ///
+    /**
+     *  This function walks the hierarchy of bones and does two things:
+     *  - set the parent of each bone into `boneParent_`
+     *  - update the boneOffsetMatrices_, so each matrix also includes the
+     *    transformations of the child bones.
+     * 
+     *  @param bones map from name of bone to index in boneOffsetMatrices_
+     *  @param node current node in
+     *  @param parent index of the parent in boneOffsetMatrices_
+     *  @param parentMatrix Matrix including all transformations from the parents of the
+     *         current node.
+     */
     void Mesh::ParseBoneHierarchy(const std::map<std::string, unsigned int>& bones, const aiNode* node,
         std::size_t parent, glm::mat4 parentMatrix)
     {
@@ -476,9 +476,7 @@ namespace viscom {
         }
     }
 
-    ///
-    /// Generate all BoundingBoxes for the bones.
-    ///
+    /** Generate all BoundingBoxes for the bones. */
     void Mesh::GenerateBoneBoundingBoxes()
     {
         if (inverseBindPoseMatrices_.empty()) {

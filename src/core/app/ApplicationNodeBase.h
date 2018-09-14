@@ -17,6 +17,7 @@ namespace viscom {
     class ApplicationNodeInternal;
     class FrameBuffer;
 
+    /** Base class for the application node. */
     class ApplicationNodeBase
     {
     public:
@@ -56,10 +57,7 @@ namespace viscom {
          *  @param fbo back buffer of the framework.
          */
         virtual void Draw2D(FrameBuffer& fbo);
-        /**
-         *  This method is called when exiting the application in order to delete vertex arrays and buffers.
-         *  @param fbo back buffer of the framework.
-         */
+        /** This method is called when exiting the application in order to delete vertex arrays and buffers. */
         virtual void CleanUp();
         
         virtual bool DataTransferCallback(void* receivedData, int receivedLength, std::uint16_t packageID, int clientID);
@@ -170,14 +168,41 @@ namespace viscom {
         void TransferData(const void* data, std::size_t length, std::uint16_t packageId) const { framework_->TransferData(data, length, packageId); }
 
     protected:
+        /** Returns the applications configuration. */
         const FWConfiguration& GetConfig() const { return framework_->GetConfig(); }
+        /** Returns the application node. */
         ApplicationNodeInternal* GetApplication() const { return appNode_; }
+        /** Returns the current window id. */
         std::size_t GetCurrentWindowID() const { return framework_->GetCurrentWindowID(); }
+        /**
+         *  Returns the viewport for the specified window.
+         *  @param windowId the window id.
+         */
         const Viewport& GetViewportScreen(size_t windowId) const { return framework_->GetViewportScreen(windowId); }
+        /**
+         *  Returns the viewport for the specified window.
+         *  @param windowId the window id.
+         */
         Viewport& GetViewportScreen(size_t windowId) { return framework_->GetViewportScreen(windowId); }
+        /**
+         *  Returns the size of the viewport for the specified window.
+         *  @param windowId the window id.
+         */
         const glm::ivec2& GetViewportQuadSize(size_t windowId) const { return framework_->GetViewportQuadSize(windowId); }
+        /**
+         *  Returns the size of the viewport for the specified window.
+         *  @param windowId the window id.
+         */
         glm::ivec2& GetViewportQuadSize(size_t windowId) { return framework_->GetViewportQuadSize(windowId); }
+        /**
+         *  Returns the viewport scaling for the specified window.
+         *  @param windowId the window id.
+         */
         const glm::vec2& GetViewportScaling(size_t windowId) const { return framework_->GetViewportScaling(windowId); }
+        /**
+         *  Returns the viewport scaling for the specified window.
+         *  @param windowId the window id.
+         */
         glm::vec2& GetViewportScaling(size_t windowId) { return framework_->GetViewportScaling(windowId); }
 
         /** Returns the current application time. */

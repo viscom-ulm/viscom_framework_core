@@ -19,6 +19,7 @@
 
 namespace viscom {
 
+    /** Type alias to describe animation time values. */
     using Time = float;
 
     /**
@@ -28,8 +29,11 @@ namespace viscom {
      */
     struct Channel
     {
+        /** Nodes position at specific timestamps. */
         std::vector<std::pair<Time, glm::vec3>> positionFrames_;
+        /** Nodes rotation at specific timestamps. */
         std::vector<std::pair<Time, glm::quat>> rotationFrames_;
+        /** Nodes scale at specific timestamps. */
         std::vector<std::pair<Time, glm::vec3>> scalingFrames_;
     };
 
@@ -70,11 +74,11 @@ namespace viscom {
     private:
         using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'A', 'N', 'M', 1000>;
 
-        /// Holds the channels (position, rotation, scaling) for each bone.
+        /** Holds the channels (position, rotation, scaling) for each bone. */
         std::vector<Channel> channels_;
-        /// Ticks per second.
+        /** Ticks per second. */
         float framesPerSecond_ = 0.f;
-        /// Duration of this animation.
+        /** Duration of this animation. */
         float duration_ = 0.f;
     };
 

@@ -23,7 +23,9 @@ namespace viscom {
         CameraBase(const glm::vec3& camPos, viscom::CameraHelper& cameraHelper) noexcept;
         virtual ~CameraBase();
 
+        /** Handles the mouse events for the camera. */
         virtual bool HandleMouse(int button, int action, float mouseWheelDelta, const ApplicationNodeBase* sender) = 0;
+        /** Updates the camera parameters. */
         virtual void UpdateCamera(double elapsedTime, const ApplicationNodeBase* sender) = 0;
 
         /** Returns the cameras projection matrix. */

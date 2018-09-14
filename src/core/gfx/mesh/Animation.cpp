@@ -17,19 +17,17 @@
 
 namespace viscom {
 
-    ///
-    /// Default constructor for animations.
-    ///
+    /** Default constructor for animations. */
     Animation::Animation() = default;
 
-    ///
-    /// Constructor for animations.
-    ///
-    /// Takes an assimp animation and converts the data into our data-structure.
-    ///
-    /// \param Assimp animation
-    /// \param Mapping between bone/node-names to offsets
-    ///
+    /**
+     *  Constructor for animations.
+     * 
+     *  Takes an assimp animation and converts the data into our data-structure.
+     * 
+     *  @param aiAnimation Assimp animation
+     *  @param boneNameToOffset Mapping between bone/node-names to offsets
+     */
     Animation::Animation(aiAnimation* aiAnimation, const std::map<std::string, unsigned int>& boneNameToOffset)
         : framesPerSecond_{aiAnimation->mTicksPerSecond > 0.0 ? static_cast<float>(aiAnimation->mTicksPerSecond)
                                                               : 24.0f},
@@ -77,32 +75,32 @@ namespace viscom {
         }
     }
 
-    ///
-    /// Returns a sub-sequence of this animation.
-    ///
-    /// Timestamps of the new animations are normalized in the following way:
-    ///
-    ///          Original animation
-    ///                v
-    /// x                                     y
-    /// |-------------------------------------|
-    ///
-    ///      |-------|
-    ///      a       b
-    ///         ^
-    ///   Desired subsequence
-    ///
-    ///
-    /// New (sub-)animation:
-    ///
-    /// 0     (b-a)
-    /// |-------|
-    ///
-    /// \param Start-time of the sub-sequence
-    /// \param End-time of the sub-sequence
-    ///
-    /// \return New animation
-    ///
+    /**
+     *  Returns a sub-sequence of this animation.
+     * 
+     *  Timestamps of the new animations are normalized in the following way:
+     *  \verbatim
+     *           Original animation
+     *                 v
+     *  x                                     y
+     *  |-------------------------------------|
+     * 
+     *       |-------|
+     *       a       b
+     *          ^
+     *    Desired subsequence
+     * 
+     * 
+     *  New (sub-)animation:
+     * 
+     *  0     (b-a)
+     *  |-------|
+     *  \endverbatim
+     *  @param start Start-time of the sub-sequence
+     *  @param end End-time of the sub-sequence
+     * 
+     *  @return New animation
+     */
     Animation Animation::GetSubSequence(Time start, Time end) const
     {
         assert(start < end && "Start time must be less then stop time");
@@ -131,14 +129,14 @@ namespace viscom {
         return subSequence;
     }
 
-    ///
-    /// Computes the transformation of a given bone/node, at a given time.
-    ///
-    /// \param Index of the bone/node
-    /// \param Desired time
-    ///
-    /// \return Transform of this bone/node.
-    ///
+    /**
+     *  Computes the transformation of a given bone/node, at a given time.
+     * 
+     *  @param id Index of the bone/node
+     *  @param time Desired time
+     * 
+     *  @return Transform of this bone/node.
+     */
     glm::mat4 Animation::ComputePoseAtTime(std::size_t id, Time time) const
     {
         time = glm::clamp(time, 0.0f, duration_);

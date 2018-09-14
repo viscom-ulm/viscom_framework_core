@@ -31,7 +31,7 @@ namespace viscom {
 
     /**
      *  Handles the mouse input to the arc-ball.
-     *  @param button the mouse button the event belongs to.
+     *  @param theButton the mouse button the event belongs to.
      *  @param action the mouse buttons action.
      *  @param sender the application to supply normalized screen coordinates.
      */
