@@ -138,7 +138,7 @@ namespace viscom {
                         if (displayllset_ && !displaylrset_) ImGui::Text("Pointa at the lower right corner and press the trigger.");
                         if (displayllset_ && displaylrset_ && !displayulset_) ImGui::Text("Point at the upper left corner and press the trigger.");
                     }
-                    else {
+                    if(!initfloor_) {
                         if (!displayllset_) ImGui::Text("Touch the lower left corner and press the trigger.");
                         if (displayllset_ && !displayulset_) ImGui::Text("Touch the upper left corner and press the trigger.");
                         if (displayllset_ && displayulset_ && !displaylrset_) ImGui::Text("Touch the lower right corner and press the trigger.");
@@ -261,19 +261,23 @@ namespace viscom {
     //TODO add CalibrationMode
     bool CoordinatorNodeInternal::CalibrateVR(CalibrateMethod method)
     {
+        initDisplay_ = false;
+        displayllset_ = false;
+        displaylrset_ = false;
+        displayulset_ = false;
+        calibrate_ = true;
         switch (method)
         {
         case viscom::CalibrateMethod::CALIBRATE_BY_TOUCHING:
-            calibrate_ = true;
             initfloor_ = false;
             return true;
             break;
         case viscom::CalibrateMethod::CALIBRATE_BY_POINTING:
-            calibrate_ = true;
             initfloor_ = true;
             return true;
             break;
         default:
+            calibrate_ = false;
             return false;
             break;
         }
@@ -534,7 +538,7 @@ namespace viscom {
                 default:
                     break;
                 }
-
+                break;
             case vr::ETrackedDeviceClass::TrackedDeviceClass_Controller:
                 deviceInform.deviceClass = TrackedDeviceClass::CONTROLLER;
 
@@ -1379,13 +1383,7 @@ namespace viscom {
         return initDisplay_;
     }
 
-    void CoordinatorNodeInternal::SetDisplayNotInitialised()
-    {
-        initDisplay_ = false;
-        displayllset_ = false;
-        displayulset_ = false;
-        displaylrset_ = false;
-    }
+
     /** Returns true if the display is currently initialised by pointing at the display edges.
     *   @return bool is display initialised by pointing at the display corners.
     */
