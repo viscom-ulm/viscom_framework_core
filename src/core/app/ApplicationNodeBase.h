@@ -21,6 +21,10 @@ namespace viscom {
     class ApplicationNodeBase
     {
     public:
+        /**
+         *  Constructor method.
+         *  @param appNode the ApplicationNodeInternal object to create the ApplicationNodeBase with.
+         */
         explicit ApplicationNodeBase(ApplicationNodeInternal* appNode);
         ApplicationNodeBase(const ApplicationNodeBase&) = delete;
         ApplicationNodeBase(ApplicationNodeBase&&) = delete;
@@ -60,8 +64,25 @@ namespace viscom {
         /** This method is called when exiting the application in order to delete vertex arrays and buffers. */
         virtual void CleanUp();
         
+        /**
+         *  Called when receiving a message from another node.
+         *  @param receivedData pointer to the received data.
+         *  @param receivedLength length of the received data.
+         *  @param packageID index of the received package.
+         *  @param clientID index of the node sending the message.
+         */
         virtual bool DataTransferCallback(void* receivedData, int receivedLength, std::uint16_t packageID, int clientID);
+        /**
+         *  Called when successfully sending a message to another node.
+         *  @param packageID index of the sent package.
+         *  @param clientID index of the node receiving the message.
+         */
         virtual bool DataAcknowledgeCallback(std::uint16_t packageID, int clientID);
+        /**
+         *  Called when the connection status changes.
+         *  @param connected connection status.
+         *  @param clientID index of the node connected or disconnected.
+         */
         virtual bool DataTransferStatusCallback(bool connected, int clientID);
         
         /**
@@ -164,7 +185,20 @@ namespace viscom {
          */
         std::unique_ptr<FullscreenQuad> CreateFullscreenQuad(const std::string& fragmentShader) { return framework_->CreateFullscreenQuad(fragmentShader); }
 
+        /**
+         *  Sends data to a specified node.
+         *  @param data pointer to the data to be sent.
+         *  @param length length of the data to be sent.
+         *  @param packageId index of the package.
+         *  @param nodeIndex index of the node the data is sent to.
+         */
         void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex) const { framework_->TransferDataToNode(data, length, packageId, nodeIndex); }
+        /**
+         *  Sends data to all nodes.
+         *  @param data pointer to the data to be sent.
+         *  @param length length of the data to be sent.
+         *  @param packageId index of the package.
+         */
         void TransferData(const void* data, std::size_t length, std::uint16_t packageId) const { framework_->TransferData(data, length, packageId); }
 
     protected:
