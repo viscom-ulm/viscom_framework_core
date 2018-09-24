@@ -77,7 +77,16 @@ namespace viscom {
         std::vector<GLint> GetAttributeLocations(const std::vector<std::string>& names) const;
 
     protected:
+        /**
+         *  Loads the GPU program data from file.
+         *  @param data vector for optional data.
+         */
         virtual void Load(std::optional<std::vector<std::uint8_t>>& data) override;
+        /**
+         *  Loads the GPU program data from memory.
+         *  @param data pointer to the GPU program data.
+         *  @param size size of the GPU program data.
+         */
         virtual void LoadFromMemory(const void* data, std::size_t size) override;
 
     private:

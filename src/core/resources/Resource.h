@@ -44,7 +44,9 @@ namespace viscom {
         /** Return the data of the resource memory representation. */
         const std::vector<std::uint8_t>& GetData() const { return data_; }
 
+        /** Manages the resource data loading from file for shared and local resources handling both coordinator and worker nodes. */
         void LoadResource();
+        /** Loads the resource data from memory. */
         void LoadResource(const void* data, std::size_t size);
 
         /**
@@ -74,7 +76,16 @@ namespace viscom {
          */
         std::string FindResourceLocation(const std::string& localFilename) const;
 
+        /**
+         *  Loads the resource data from file.
+         *  @param data vector for optional data.
+         */
         virtual void Load(std::optional<std::vector<std::uint8_t>>& data) = 0;
+        /**
+         *  Loads the resource data from memory.
+         *  @param data pointer to the resource data.
+         *  @param size size of the resource data.
+         */
         virtual void LoadFromMemory(const void* data, std::size_t size) = 0;
         /** Initializes the resource by setting the initialized flag. */
         void InitializeFinished() { initialized_ = true; }

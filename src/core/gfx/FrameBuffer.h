@@ -18,6 +18,10 @@ namespace viscom {
     struct RenderBufferDescriptor
     {
         // ReSharper disable once CppNonExplicitConvertingConstructor
+        /**
+         *  Constructor method.
+         *  @param internalFormat internal OpneGL format.
+         */
         explicit RenderBufferDescriptor(GLenum internalFormat) : internalFormat_{ internalFormat } {}
 
         /** Holds the internal format of the render buffer. */
@@ -27,7 +31,16 @@ namespace viscom {
     /** Describes a texture render target for frame buffers. */
     struct FrameBufferTextureDescriptor
     {
+        /**
+        *  Constructor method.
+        *  @param internalFormat internal OpneGL format.
+        */
         explicit FrameBufferTextureDescriptor(GLenum internalFormat);
+        /**
+        *  Constructor method.
+        *  @param internalFormat internal OpneGL format.
+        *  @param texType OpenGL texture type.
+        */
         FrameBufferTextureDescriptor(GLenum internalFormat, GLenum texType);
 
         /** The texture descriptor. */
@@ -40,6 +53,11 @@ namespace viscom {
     struct FrameBufferDescriptor
     {
         FrameBufferDescriptor() = default;
+        /**
+         *  Constructor for the frame buffer descriptor.
+         *  @param tex list of the descriptions of all textures used.
+         *  @param rb list of the descriptions of all render buffers used.
+         */
         FrameBufferDescriptor(const std::vector<FrameBufferTextureDescriptor>& tex, const std::vector<RenderBufferDescriptor>& rb) : texDesc_(tex), rbDesc_(rb), numSamples_(1) {}
 
         /** Holds descriptions for all textures used. */
@@ -54,7 +72,19 @@ namespace viscom {
     struct Viewport
     {
         Viewport() noexcept : position_{ 0 }, size_{ 0 } {}
+        /**
+         *  Viewport constructor.
+         *  @param position lower left viewport position.
+         *  @param size viewport size.
+         */
         Viewport(const glm::ivec2& position, const glm::uvec2& size) : position_{ position }, size_{ size } {}
+        /**
+        *  Viewport constructor.
+        *  @param x left viewport position.
+        *  @param y lower viewport position.
+        *  @param sizex horizontal viewport size.
+        *  @param sizey vertical viewport size.
+        */
         Viewport(int x, int y, unsigned int sizex, unsigned int sizey) : position_{ x, y }, size_{ sizex, sizey } {}
 
         /** Holds the viewport lower left position. */
@@ -105,7 +135,10 @@ namespace viscom {
 
         // void SetWidth(unsigned int width) { standardViewport_.size_.x = width; }
         // void SetHeight(unsigned int height) { standardViewport_.size_ = height; }
+
+        /** Returns the frame buffers width. */
         unsigned int GetWidth() const { return width_; };
+        /** Returns the frame buffers height. */
         unsigned int GetHeight() const { return height_; };
 
     private:

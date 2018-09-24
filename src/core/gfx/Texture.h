@@ -54,7 +54,16 @@ namespace viscom {
         const TextureDescriptor& getDescriptor() const { return descriptor_; }
 
     protected:
+        /**
+         *  Loads the texture data from file.
+         *  @param data vector for optional data.
+         */
         virtual void Load(std::optional<std::vector<std::uint8_t>>& data) override;
+        /**
+         *  Loads the texture data from memory.
+         *  @param data pointer to the texture data.
+         *  @param size size of the texture data.
+         */
         virtual void LoadFromMemory(const void* data, std::size_t size) override;
 
     private:

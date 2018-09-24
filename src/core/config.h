@@ -16,6 +16,7 @@
 
 namespace viscom {
 
+    /** Holds all the configuration values. */
     struct FWConfiguration
     {
         static constexpr const char* CALIBRATION_WALL_COORDINATES_IMAGE = "WallCoordinatesImage";
@@ -41,5 +42,9 @@ namespace viscom {
         std::string openglProfile_;
     };
 
+    /**
+     *  Loads a config file to set all the configuration values.
+     *  @param configFilename name of the config file.
+     */
     FWConfiguration LoadConfiguration(const std::string& configFilename);
 }

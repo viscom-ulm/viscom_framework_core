@@ -39,8 +39,25 @@ namespace viscom {
     class FullscreenQuad
     {
     public:
+        /**
+         *  Constructor method.
+         *  @param fragmentProgram file name of the fragment program.
+         *  @param appNode the application node object.
+         */
         FullscreenQuad(const std::string& fragmentProgram, FrameworkInternal* appNode);
+        /**
+        *  Constructor method.
+        *  @param fragmentProgram file name of the fragment program.
+        *  @param appNode the application node object.
+        */
         FullscreenQuad(const std::string& fragmentProgram, ApplicationNodeBase* appNode);
+        /**
+        *  Constructor method using defines.
+        *  @param shaderName the fragment programs resource name to be used.
+        *  @param fragmentProgram file name of the fragment program.
+        *  @param defines list of defines to be used in the fragment program.
+        *  @param appNode the application node object.
+        */
         FullscreenQuad(const std::string& shaderName, const std::string& fragmentProgram,
             const std::vector<std::string>& defines, ApplicationNodeBase* appNode);
         ~FullscreenQuad();
