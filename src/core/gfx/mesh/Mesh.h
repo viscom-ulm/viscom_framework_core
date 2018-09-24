@@ -117,7 +117,16 @@ namespace viscom {
         glm::mat4 GetGlobalInverse() const { return globalInverse_; }
 
     protected:
+        /**
+         *  Loads the mesh data from file.
+         *  @param data vector for optional data.
+         */
         virtual void Load(std::optional<std::vector<std::uint8_t>>& data) override;
+        /**
+         *  Loads the mesh data from memory.
+         *  @param data pointer to the mesh data.
+         *  @param size size of the mesh data.
+         */
         virtual void LoadFromMemory(const void* data, std::size_t size) override;
 
     private:

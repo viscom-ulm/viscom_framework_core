@@ -155,6 +155,12 @@ namespace viscom {
             if (rit != syncedResources_.end()) rit = syncedResources_.erase(rit);
         }
 
+        /**
+         *  Creates and loads a synchronized resource.
+         *  @param resId the index of the resource.
+         *  @param data pointer to the resource data.
+         *  @param size size of the resource data.
+         */
         template<typename... Args>
         void CreateSharedResource(const std::string& resId, const void* data, std::size_t size, Args&&... args)
         {
@@ -171,11 +177,19 @@ namespace viscom {
             }
         }
 
+        /**
+         *  Adds the resource with the specified id to the list of resources to wait for.
+         *  @param resId the resource id.
+         */
         void WaitForResource(const std::string& resId)
         {
             waitedResources_.push_back(syncedResources_[resId]);
         }
 
+        /**
+         *  Checks for each resource to wait for if it's loaded.
+         *  Requests the resource again if necessary.
+         */
         bool ProcessResourceWaitList()
         {
             if (waitedResources_.empty()) return false;
@@ -190,6 +204,10 @@ namespace viscom {
             return !waitedResources_.empty();
         }
 
+        /**
+         *  Sends all resources to the specified node.
+         *  @param clientID index of the client to send the resources to.
+         */
         void SynchronizeAllResourcesToNode(int clientID)
         {
             std::lock_guard<std::mutex> syncAccessLock{ syncMtx_ };
@@ -199,6 +217,11 @@ namespace viscom {
             }
         }
 
+        /**
+         *  Sends a resource to the specified node.
+         *  @param resId index of the resource to be sent.
+         *  @param clientID index of the client to send the resource to.
+         */
         void SynchronizeResourceToNode(const std::string& resId, int clientID)
         {
             std::lock_guard<std::mutex> syncAccessLock{ syncMtx_ };

@@ -39,7 +39,7 @@ namespace viscom {
      * Creates a new FrameBuffer with given width and height. It is initialized as back buffer as default.
      * @param fbWidth the frame buffers width
      * @param fbHeight the frame buffers height.
-     * @param d the frame buffers description.
+     * @param desc the frame buffers description.
      */
     FrameBuffer::FrameBuffer(unsigned int fbWidth, unsigned int fbHeight, const FrameBufferDescriptor& desc) :
         fbo_(0),

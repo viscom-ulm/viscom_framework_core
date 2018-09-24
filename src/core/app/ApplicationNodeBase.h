@@ -17,9 +17,14 @@ namespace viscom {
     class ApplicationNodeInternal;
     class FrameBuffer;
 
+    /** Base class for the application node. */
     class ApplicationNodeBase
     {
     public:
+        /**
+         *  Constructor method.
+         *  @param appNode the ApplicationNodeInternal object to create the ApplicationNodeBase with.
+         */
         explicit ApplicationNodeBase(ApplicationNodeInternal* appNode);
         ApplicationNodeBase(const ApplicationNodeBase&) = delete;
         ApplicationNodeBase(ApplicationNodeBase&&) = delete;
@@ -58,15 +63,29 @@ namespace viscom {
          *  @param fbo back buffer of the framework.
          */
         virtual void Draw2D(FrameBuffer& fbo);
-        /**
-         *  This method is called when exiting the application in order to delete vertex arrays and buffers.
-         *  @param fbo back buffer of the framework.
-         */
+        /** This method is called when exiting the application in order to delete vertex arrays and buffers. */
         [[deprecated("All initialization should be moved to the destructor in the future.")]]
         virtual void CleanUp();
         
+        /**
+         *  Called when receiving a message from another node.
+         *  @param receivedData pointer to the received data.
+         *  @param receivedLength length of the received data.
+         *  @param packageID index of the received package.
+         *  @param clientID index of the node sending the message.
+         */
         virtual bool DataTransferCallback(void* receivedData, int receivedLength, std::uint16_t packageID, int clientID);
+        /**
+         *  Called when successfully sending a message to another node.
+         *  @param packageID index of the sent package.
+         *  @param clientID index of the node receiving the message.
+         */
         virtual bool DataAcknowledgeCallback(std::uint16_t packageID, int clientID);
+        /**
+         *  Called when the connection status changes.
+         *  @param connected connection status.
+         *  @param clientID index of the node connected or disconnected.
+         */
         virtual bool DataTransferStatusCallback(bool connected, int clientID);
         
         /**
@@ -109,7 +128,7 @@ namespace viscom {
         virtual bool AddTuioCursor(TUIO::TuioCursor *tcur);
         /**
          *  Called each frame for touch screens to update a cursor.
-         *  @param tcur cursor to be added.
+         *  @param tcur cursor to be updated.
          */
         virtual bool UpdateTuioCursor(TUIO::TuioCursor *tcur);
         /**
@@ -169,18 +188,58 @@ namespace viscom {
          */
         std::unique_ptr<FullscreenQuad> CreateFullscreenQuad(const std::string& fragmentShader) { return framework_->CreateFullscreenQuad(fragmentShader); }
 
+        /**
+         *  Sends data to a specified node.
+         *  @param data pointer to the data to be sent.
+         *  @param length length of the data to be sent.
+         *  @param packageId index of the package.
+         *  @param nodeIndex index of the node the data is sent to.
+         */
         void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex) const { framework_->TransferDataToNode(data, length, packageId, nodeIndex); }
+        /**
+         *  Sends data to all nodes.
+         *  @param data pointer to the data to be sent.
+         *  @param length length of the data to be sent.
+         *  @param packageId index of the package.
+         */
         void TransferData(const void* data, std::size_t length, std::uint16_t packageId) const { framework_->TransferData(data, length, packageId); }
 
     protected:
+        /** Returns the applications configuration. */
         const FWConfiguration& GetConfig() const { return framework_->GetConfig(); }
+        /** Returns the application node. */
         ApplicationNodeInternal* GetApplication() const { return appNode_; }
+        /** Returns the current window id. */
         std::size_t GetCurrentWindowID() const { return framework_->GetCurrentWindowID(); }
+        /**
+         *  Returns the viewport for the specified window.
+         *  @param windowId the window id.
+         */
         const Viewport& GetViewportScreen(size_t windowId) const { return framework_->GetViewportScreen(windowId); }
+        /**
+         *  Returns the viewport for the specified window.
+         *  @param windowId the window id.
+         */
         Viewport& GetViewportScreen(size_t windowId) { return framework_->GetViewportScreen(windowId); }
+        /**
+         *  Returns the size of the viewport for the specified window.
+         *  @param windowId the window id.
+         */
         const glm::ivec2& GetViewportQuadSize(size_t windowId) const { return framework_->GetViewportQuadSize(windowId); }
+        /**
+         *  Returns the size of the viewport for the specified window.
+         *  @param windowId the window id.
+         */
         glm::ivec2& GetViewportQuadSize(size_t windowId) { return framework_->GetViewportQuadSize(windowId); }
+        /**
+         *  Returns the viewport scaling for the specified window.
+         *  @param windowId the window id.
+         */
         const glm::vec2& GetViewportScaling(size_t windowId) const { return framework_->GetViewportScaling(windowId); }
+        /**
+         *  Returns the viewport scaling for the specified window.
+         *  @param windowId the window id.
+         */
         glm::vec2& GetViewportScaling(size_t windowId) { return framework_->GetViewportScaling(windowId); }
 
         /** Returns the current application time. */

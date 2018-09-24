@@ -19,6 +19,12 @@ namespace viscom {
     class CameraHelper
     {
     public:
+        /**
+         *  Constructor method.
+         *  @param width the camera view plane width.
+         *  @param height the camera view plane height.
+         *  @param userPosition position of the user.
+         */
         CameraHelper(float width, float height, const glm::vec3& userPosition);
 
         /** Returns the user position. */
@@ -52,12 +58,14 @@ namespace viscom {
          */
         void SetLocalCoordMatrix(std::size_t windowID, const glm::mat4& localCoordMatrix, const glm::vec2& localScreenSize);
 
-        /** Get camera matrices (eye dependent). */
+        /** Returns the cameras eye dependent projection matrix. */
         const glm::mat4& GetPerspectiveMatrix() const { return projection_; }
+        /** Returns the cameras eye dependent view-projection matrix. */
         glm::mat4 GetViewPerspectiveMatrix() const;
 
-        /** Get camera matrices (eye independent). */
+        /** Returns the cameras eye independent projection matrix. */
         glm::mat4 GetCentralPerspectiveMatrix() const;
+        /** Returns the cameras eye independent view-projection matrix. */
         glm::mat4 GetCentralViewPerspectiveMatrix() const;
 
         /**
