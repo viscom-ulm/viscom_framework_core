@@ -35,7 +35,7 @@ namespace viscom {
     void Resource::LoadResource()
     {
         if (synchronized_) {
-            if (appNode_->IsMaster()) {
+            if (appNode_->IsCoordinator()) {
                 std::optional<std::vector<std::uint8_t>> optData(std::vector<std::uint8_t>{});
                 Load(optData);
                 data_.swap(*optData);

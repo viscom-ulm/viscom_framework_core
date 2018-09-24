@@ -23,11 +23,21 @@ namespace viscom {
     WorkerNodeCalibratedInternal::WorkerNodeCalibratedInternal(FrameworkInternal& fwInternal) :
         WorkerNodeLocalInternal{ fwInternal }
     {
+        InitOffscreenBuffers();
     }
 
-    WorkerNodeCalibratedInternal::~WorkerNodeCalibratedInternal() = default;
+    WorkerNodeCalibratedInternal::~WorkerNodeCalibratedInternal()
+    {
+        if (vaoProjectorQuads_ != 0) glDeleteVertexArrays(0, &vaoProjectorQuads_);
+        vaoProjectorQuads_ = 0;
+        if (vboProjectorQuads_ != 0) glDeleteBuffers(0, &vboProjectorQuads_);
+        vboProjectorQuads_ = 0;
 
-    void WorkerNodeCalibratedInternal::InitOpenGL()
+        if (!alphaTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(alphaTextures_.size()), alphaTextures_.data());
+        alphaTextures_.clear();
+    }
+
+    void WorkerNodeCalibratedInternal::InitOffscreenBuffers()
     {
         LOG(DBUG) << "Initializing calibration data.";
         // init shaders
@@ -128,8 +138,6 @@ namespace viscom {
         glBindVertexArray(0);
 
         LOG(DBUG) << "Calibration Initialized.";
-
-        WorkerNodeLocalInternal::InitOpenGL();
     }
 
 
@@ -181,19 +189,6 @@ namespace viscom {
             if (last_enable_scissor_test) glEnable(GL_SCISSOR_TEST);
             if (last_enable_stencil_test) glEnable(GL_STENCIL_TEST);
         });
-    }
-
-    void WorkerNodeCalibratedInternal::CleanUp()
-    {
-        if (vaoProjectorQuads_ != 0) glDeleteVertexArrays(0, &vaoProjectorQuads_);
-        vaoProjectorQuads_ = 0;
-        if (vboProjectorQuads_ != 0) glDeleteBuffers(0, &vboProjectorQuads_);
-        vboProjectorQuads_ = 0;
-
-        if (!alphaTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(alphaTextures_.size()), alphaTextures_.data());
-        alphaTextures_.clear();
-
-        WorkerNodeLocalInternal::CleanUp();
     }
 
     void WorkerNodeCalibratedInternal::CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize)

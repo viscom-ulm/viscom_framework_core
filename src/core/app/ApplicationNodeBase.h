@@ -28,8 +28,10 @@ namespace viscom {
         virtual ~ApplicationNodeBase();
         
         /** Called before a window is created. */
+        [[deprecated("All initialization should be moved to the constructor in the future.")]]
         virtual void PreWindow();
         /** Called after the OpenGL context is created. Here OpenGL objects can be initialized. */
+        [[deprecated("All initialization should be moved to the constructor in the future.")]]
         virtual void InitOpenGL();
         /** Called before each synchronization in each frame to prepare for it. */
         virtual void PreSync();
@@ -60,6 +62,7 @@ namespace viscom {
          *  This method is called when exiting the application in order to delete vertex arrays and buffers.
          *  @param fbo back buffer of the framework.
          */
+        [[deprecated("All initialization should be moved to the destructor in the future.")]]
         virtual void CleanUp();
         
         virtual bool DataTransferCallback(void* receivedData, int receivedLength, std::uint16_t packageID, int clientID);

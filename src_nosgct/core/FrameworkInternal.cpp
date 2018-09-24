@@ -39,8 +39,6 @@ namespace viscom {
         textureManager_{ this },
         meshManager_{ this }
     {
-        BasePreWindow();
-
         std::pair<int, int> oglVer = std::make_pair(3, 3);
         if (config_.openglProfile_ == "3.3") oglVer = std::make_pair(3, 3);
         else if (config_.openglProfile_ == "4.0") oglVer = std::make_pair(4, 0); //-V112
@@ -86,6 +84,8 @@ namespace viscom {
             glfwTerminate();
             throw std::runtime_error("Could not load OpenGL.");
         }
+        BasePreWindow();
+        BaseInitOpenGL();
     }
 
     FrameworkInternal::~FrameworkInternal()
@@ -96,8 +96,6 @@ namespace viscom {
 
     void FrameworkInternal::Render()
     {
-        BaseInitOpenGL();
-
         while (!glfwWindowShouldClose(window_)) {
             appNodeInternal_->PreSync();
             PostSyncFunction();
@@ -113,8 +111,6 @@ namespace viscom {
 
     void FrameworkInternal::BasePreWindow()
     {
-        appNodeInternal_ = std::make_unique<CoordinatorNodeInternal>(*this);
-        appNodeInternal_->PreWindow();
     }
 
     void FrameworkInternal::BaseInitOpenGL()
@@ -161,7 +157,12 @@ namespace viscom {
         ImGui::StyleColorsDark();
 
         FullscreenQuad::InitializeStatic();
+        appNodeInternal_ = std::make_unique<CoordinatorNodeInternal>(*this);
+#pragma warning( push )
+#pragma warning( disable: 4996 )
+        appNodeInternal_->PreWindow();
         appNodeInternal_->InitOpenGL();
+#pragma warning( pop )
     }
 
     void FrameworkInternal::PostSyncFunction()
@@ -212,7 +213,11 @@ namespace viscom {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
+#pragma warning( push )
+#pragma warning( disable: 4996 )
         appNodeInternal_->CleanUp();
+#pragma warning( pop )
+        appNodeInternal_ = nullptr;
     }
 
     bool FrameworkInternal::IsMouseButtonPressed(int button) const noexcept

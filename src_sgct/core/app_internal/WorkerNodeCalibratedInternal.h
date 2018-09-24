@@ -19,12 +19,11 @@ namespace viscom {
         explicit WorkerNodeCalibratedInternal(FrameworkInternal& fwInternal);
         virtual ~WorkerNodeCalibratedInternal() override;
 
-        void InitOpenGL() override;
         void DrawFrame(FrameBuffer& fbo) override;
         void Draw2D(FrameBuffer& fbo) override;
-        void CleanUp() override;
 
     private:
+        void InitOffscreenBuffers();
         void CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize);
 
 

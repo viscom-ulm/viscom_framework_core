@@ -114,10 +114,6 @@ namespace viscom {
 
     void FrameworkInternal::BasePreWindow()
     {
-        if (engine_->isMaster()) appNodeInternal_ = std::make_unique<CoordinatorNodeInternal>(*this);
-        else appNodeInternal_ = std::make_unique<WorkerNodeInternal>(*this);
-
-        appNodeInternal_->PreWindow();
     }
 
     void FrameworkInternal::BaseInitOpenGL()
@@ -172,7 +168,13 @@ namespace viscom {
         FullscreenQuad::InitializeStatic();
         RequestSharedResources();
 
-        appNodeInternal_->InitOpenGL();
+        if (engine_->isMaster()) appNodeInternal_ = std::make_unique<CoordinatorNodeInternal>(*this);
+        else appNodeInternal_ = std::make_unique<WorkerNodeInternal>(*this);
+#pragma warning( push )
+#pragma warning( disable: 4996 )
+        appNodeInternal_->PreWindow();
+#pragma warning( pop )
+        appNodeInternal_->InitImplementation();
     }
 
     void FrameworkInternal::BasePreSync()
@@ -215,10 +217,14 @@ namespace viscom {
 
     void FrameworkInternal::BaseCleanUp()
     {
+#pragma warning( push )
+#pragma warning( disable: 4996 )
+        appNodeInternal_->CleanUp();
+#pragma warning( pop )
+        appNodeInternal_ = nullptr;
+
         std::lock_guard<std::mutex> lock{ instanceMutex_ };
         instance_ = nullptr;
-
-        appNodeInternal_->CleanUp();
 
         initialized_ = false;
     }
@@ -481,7 +487,7 @@ namespace viscom {
         }
     }
 
-    bool FrameworkInternal::IsMaster() const
+    bool FrameworkInternal::IsCoordinator() const
     {
         return engine_->isMaster();
     }

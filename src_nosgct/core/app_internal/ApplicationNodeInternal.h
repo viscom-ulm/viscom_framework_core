@@ -33,7 +33,9 @@ namespace viscom {
         ApplicationNodeInternal& operator=(ApplicationNodeInternal&&) = delete;
         virtual ~ApplicationNodeInternal() override;
 
+        [[deprecated("All initialization should be moved to the constructor in the future.")]]
         virtual void PreWindow();
+        [[deprecated("All initialization should be moved to the constructor in the future.")]]
         virtual void InitOpenGL();
         virtual void PreSync();
         virtual void PostSync();
@@ -41,6 +43,7 @@ namespace viscom {
         virtual void DrawFrame(FrameBuffer& fbo);
         virtual void Draw2D(FrameBuffer& fbo);
         virtual void PostDraw();
+        [[deprecated("All initialization should be moved to the destructor in the future.")]]
         virtual void CleanUp();
         void DataTransfer(void* receivedData, int receivedLength, std::uint16_t packageID, int clientID);
         void DataAcknowledge(std::uint16_t packageID, int clientID);

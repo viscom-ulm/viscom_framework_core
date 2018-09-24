@@ -40,14 +40,16 @@ namespace viscom {
         ApplicationNodeInternal& operator=(ApplicationNodeInternal&&) = delete;
         virtual ~ApplicationNodeInternal();
 
+        [[deprecated("All initialization should be moved to the constructor in the future.")]]
         virtual void PreWindow();
-        virtual void InitOpenGL();
+        virtual void InitImplementation() = 0;
         virtual void PreSync();
         virtual void PostSync();
         virtual void ClearBuffer(FrameBuffer& fbo);
         virtual void DrawFrame(FrameBuffer& fbo);
         virtual void Draw2D(FrameBuffer& fbo);
         virtual void PostDraw();
+        [[deprecated("All initialization should be moved to the destructor in the future.")]]
         virtual void CleanUp();
         void DataTransfer(void* receivedData, int receivedLength, std::uint16_t packageID, int clientID);
         void DataAcknowledge(std::uint16_t packageID, int clientID);
@@ -71,6 +73,7 @@ namespace viscom {
 
     protected:
         void SetApplicationNode(std::unique_ptr<ApplicationNodeBase> appNodeImpl) { appNodeImpl_ = std::move(appNodeImpl); }
+        ApplicationNodeBase* GetApplicationNode() { return appNodeImpl_.get(); }
 
         /** Holds the synchronized object (local). */
         InternalSyncedInfo syncInfoLocal_;

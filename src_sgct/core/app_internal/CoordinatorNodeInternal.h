@@ -18,11 +18,9 @@ namespace viscom {
         CoordinatorNodeInternal(FrameworkInternal& fwInternal);
         virtual ~CoordinatorNodeInternal() override;
 
-        virtual void PreWindow() override;
-        virtual void InitOpenGL() override;
+        virtual void InitImplementation() override;
         virtual void PreSync() override;
         virtual void Draw2D(FrameBuffer& fbo) override;
-        virtual void CleanUp() override;
 
         virtual void KeyboardCallback(int key, int scancode, int action, int mods) override;
         virtual void CharCallback(unsigned int character, int mods) override;

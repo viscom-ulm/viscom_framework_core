@@ -19,18 +19,6 @@ namespace viscom {
     CoordinatorNodeInternal::CoordinatorNodeInternal(FrameworkInternal& fwInternal) :
         ApplicationNodeInternal{ fwInternal }
     {
-    }
-
-    CoordinatorNodeInternal::~CoordinatorNodeInternal() = default;
-
-    void CoordinatorNodeInternal::PreWindow()
-    {
-        SetApplicationNode(GetFramework().GetCoordinatorNodeFactory()(this));
-        ApplicationNodeInternal::PreWindow();
-    }
-
-    void CoordinatorNodeInternal::InitOpenGL()
-    {
         // Setup ImGui binding
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -39,8 +27,23 @@ namespace viscom {
         ImGui_ImplOpenGL3_Init();
 
         ImGui::StyleColorsDark();
+    }
 
-        ApplicationNodeInternal::InitOpenGL();
+    CoordinatorNodeInternal::~CoordinatorNodeInternal()
+    {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+    }
+
+    void CoordinatorNodeInternal::InitImplementation()
+    {
+        SetApplicationNode(GetFramework().GetCoordinatorNodeFactory()(this));
+#pragma warning ( push )
+#pragma warning ( disable : 4996 )
+        GetApplicationNode()->PreWindow();
+        GetApplicationNode()->InitOpenGL();
+#pragma warning ( pop )
     }
 
     void CoordinatorNodeInternal::PreSync()
@@ -111,14 +114,6 @@ namespace viscom {
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    }
-
-    void CoordinatorNodeInternal::CleanUp()
-    {
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
-        ApplicationNodeInternal::CleanUp();
     }
 
     void CoordinatorNodeInternal::KeyboardCallback(int key, int scancode, int action, int mods)

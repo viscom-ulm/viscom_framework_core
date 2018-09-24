@@ -59,7 +59,7 @@ namespace viscom {
         void RequestSharedResource(std::string_view name, ResourceType type);
         void WaitForResource(const std::string& name, ResourceType type);
 
-        bool IsMaster() const;
+        bool IsCoordinator() const;
 
         sgct::Engine* GetEngine() const { return engine_.get(); }
         const FWConfiguration& GetConfig() const { return config_; }

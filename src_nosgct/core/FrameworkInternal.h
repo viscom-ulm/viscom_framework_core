@@ -50,7 +50,7 @@ namespace viscom {
         void RequestSharedResource(std::string_view name, ResourceType type);
         void WaitForResource(const std::string& name, ResourceType type);
 
-        bool IsMaster() const { return true; }
+        bool IsCoordinator() const { return true; }
 
         const FWConfiguration& GetConfig() const { return config_; }
         FrameBuffer& GetFramebuffer(std::size_t windowId) { return backBuffer_; }
