@@ -137,7 +137,9 @@ namespace viscom {
          */
         virtual bool RemoveTuioCursor(TUIO::TuioCursor *tcur);
 
+        /** Synchronizes the framework by encoding and sending all synchronized data to the other nodes. */
         virtual void EncodeData();
+        /** Synchronizes the framework by receiving and decoding synchronized data from other nodes. */
         virtual void DecodeData();
 
         /**

@@ -93,6 +93,10 @@ namespace viscom::math {
         std::array<V, 2> minmax_;
 
     private:
+        /**
+         *  Defines new min and max values from a set of points.
+         *  @param points the list of points to create the AABB with.
+         */
         void FromPoints(const std::vector<V>&);
     };
 

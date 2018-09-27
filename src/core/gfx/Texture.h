@@ -19,6 +19,13 @@ namespace viscom {
     /** Describes the format of a texture. */
     struct TextureDescriptor
     {
+        /**
+         *  Constructor.
+         *  @param btsPP the bytes per pixel of the format.
+         *  @param intFmt the internal format of the texture.
+         *  @param fmt the format of the texture.
+         *  @param tp the type of the texture.
+         */
         TextureDescriptor(unsigned int btsPP, GLint intFmt, GLenum fmt, GLenum tp) noexcept : bytesPP_(btsPP), internalFormat_(intFmt), format_(fmt), type_(tp) {};
 
         /** Holds the bytes per pixel of the format. */
@@ -44,6 +51,10 @@ namespace viscom {
         Texture& operator=(Texture&&) noexcept = delete;
         virtual ~Texture() noexcept override;
 
+        /**
+         *  Initializes the Texture.
+         *  @param useSRGB defines if the texture uses sRGB.
+         */
         void Initialize(bool useSRGB = true);
 
         /** Returns the size of the texture. */

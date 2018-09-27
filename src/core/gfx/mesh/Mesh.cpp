@@ -38,8 +38,10 @@ namespace viscom {
         | aiProcess_RemoveRedundantMaterials | aiProcess_FlipUVs;
 
     /**
-     * Constructor, creates a mesh from file.
-     * @param meshFilename the filename of the mesh file.
+     *  Constructor, creates a mesh from file.
+     *  @param meshFilename the filename of the mesh file.
+     *  @param node the application object for dependencies.
+     *  @param synchronize defines if the mesh is a synchronized resource.
      */
     Mesh::Mesh(const std::string& meshFilename, FrameworkInternal* node, bool synchronize) :
         Resource(meshFilename, ResourceType::Mesh, node, synchronize),

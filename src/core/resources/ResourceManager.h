@@ -19,8 +19,14 @@ namespace viscom {
 
     class FrameworkInternal;
 
+    /** Struct for errors occurring while loading resources. */
     struct resource_loading_error
     {
+        /**
+         *  Constructor.
+         *  @param resId the resource ID.
+         *  @param errorDesc a string holding the error description.
+         */
         resource_loading_error(const std::string& resId, const std::string& errorDesc) : resId_{resId}, errorDescription_{errorDesc} {}
         /** Holds the resource id. */
         std::string resId_;
@@ -28,6 +34,7 @@ namespace viscom {
         std::string errorDescription_;
     };
 
+    /** Base class for the ResourceManager. */
     class BaseResourceManager
     {
     public:
@@ -37,7 +44,20 @@ namespace viscom {
         virtual ~BaseResourceManager() = default;
 
     protected:
+        /**
+         *  Requests a shared resource from the coordinator node.
+         *  @param name the resource name.
+         *  @param type the resource type.
+         */
         void RequestSharedResource(std::string_view name, ResourceType type);
+        /**
+         *  Sends a shared resource to a worker node.
+         *  @param name the resource name.
+         *  @param data the resource data.
+         *  @param length the length of the resource data.
+         *  @param type the resource type
+         *  @param nodeIndex the index of the node to transfer the resource to.
+         */
         void TransferResourceToNode(std::string_view name, const void* data, std::size_t length, ResourceType type, std::size_t nodeIndex);
 
         /** Holds the application base. */
@@ -234,6 +254,13 @@ namespace viscom {
         }
 
     protected:
+
+        /**
+         *  Returns the resource with the specified ID or loads the resource if non existent.
+         *  @param resId the resource ID.
+         *  @param synchronized defines if the resource is synchronized.
+         *  @param args additional arguments.
+         */
         template<typename... Args>
         std::shared_ptr<ResourceType> GetResourceInternal(const std::string& resId, bool synchronized, Args&&... args)
         {
@@ -254,6 +281,13 @@ namespace viscom {
             return wpResource.lock();
         }
 
+        /**
+         *  Loads a new resource.
+         *  @param resId the resource ID.
+         *  @param synchronized defines if the resource is synchronized.
+         *  @param spResource a shared pointer to the resource object to load.
+         *  @param args additional arguments.
+         */
         template<typename... Args>
         void LoadResource(const std::string& resId, bool synchronized, std::shared_ptr<ResourceType>& spResource, Args&&... args)
         {

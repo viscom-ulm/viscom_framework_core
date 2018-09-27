@@ -17,8 +17,10 @@
 namespace viscom {
 
     /**
-     * Constructor, creates a texture from file.
-     * @param texFilename the filename of the texture file.
+     *  Constructor, creates a texture from file.
+     *  @param texFilename the filename of the texture file.
+     *  @param node the application object for dependencies.
+     *  @param synchronize defines if the resource is synchronized.
      */
     Texture::Texture(const std::string& texFilename, FrameworkInternal* node, bool synchronize) :
         Resource(texFilename, ResourceType::Texture, node, synchronize),

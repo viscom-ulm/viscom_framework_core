@@ -21,6 +21,7 @@ namespace viscom {
     class SubMesh;
     class Mesh;
 
+    /** The class representing a node in the scene and holding the local meshes. */
     class SceneMeshNode
     {
     public:

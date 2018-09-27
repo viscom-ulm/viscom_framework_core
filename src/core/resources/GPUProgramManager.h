@@ -13,6 +13,7 @@
 
 namespace viscom {
 
+    /** Manager for handling all GPU programs. */
     class GPUProgramManager : public ResourceManager<GPUProgram>
     {
     public:

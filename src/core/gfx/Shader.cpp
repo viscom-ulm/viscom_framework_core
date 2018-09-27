@@ -100,20 +100,33 @@ namespace viscom {
     }
 
     /**
-     * Constructor.
-     * @param shaderFilename the shader file name
+     *  Constructor.
+     *  @param shaderFilename the shader file name
+     *  @param node the application holding the configuration to retrieve the search paths.
      */
     Shader::Shader(const std::string& shaderFilename, const FrameworkInternal* node) :
         Shader{ shaderFilename, node, std::vector<std::string>{} }
     {
     }
 
+    /**
+     *  Constructor.
+     *  @param shaderFilename the shader file name
+     *  @param node the application holding the configuration to retrieve the search paths.
+     *  @param defines the defines to be used in the shader.
+     */
     Shader::Shader(const std::string& shaderFilename, const FrameworkInternal* node, const std::vector<std::string>& defines) :
         Shader{ shaderFilename, node, LoadShaderFile(shaderFilename, defines, node) }
     {
         defines_ = defines;
     }
 
+    /**
+     *  Constructor.
+     *  @param shaderFilename the shader file name
+     *  @param node the application holding the configuration to retrieve the search paths.
+     *  @param shader source code of the shader.
+     */
     Shader::Shader(const std::string& shaderFilename, const FrameworkInternal* node, const std::string& shader) :
         filename_{ shaderFilename },
         shader_{ 0 },

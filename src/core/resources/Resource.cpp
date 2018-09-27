@@ -18,6 +18,9 @@ namespace viscom {
     /**
      * Constructor.
      * @param resourceId the resource id to use
+     * @param type defines if the resource is a mesh, texture or GPU program.
+     * @param appNode the application object for dependencies.
+     * @param synchronize defines if the resource is synchronized.
      */
     Resource::Resource(const std::string& resourceId, ResourceType type, FrameworkInternal* appNode, bool synchronize) :
         id_{ resourceId },

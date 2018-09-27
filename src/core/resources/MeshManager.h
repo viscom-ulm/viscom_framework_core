@@ -13,6 +13,7 @@
 
 namespace viscom {
 
+    /** Manager for handling all mesh objects. */
     class MeshManager final : public ResourceManager<Mesh>
     {
     public:

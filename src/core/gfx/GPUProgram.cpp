@@ -16,8 +16,10 @@
 namespace viscom {
 
     /**
-     * Constructor.
-     * @param theProgramName the name of the program used to identify during logging.
+     *  Constructor.
+     *  @param theProgramName the name of the program used to identify during logging.
+     *  @param node the application object for dependencies.
+     *  @param synchronize defines if the GPU program is a synchronized resource.
      */
     GPUProgram::GPUProgram(const std::string& theProgramName, FrameworkInternal* node, bool synchronize) :
         Resource(theProgramName, ResourceType::GPUProgram, node, synchronize),
