@@ -207,7 +207,7 @@ namespace viscom {
     {
         return glm::quat();
     }
-    const glm::vec2& ApplicationNodeInternal::GetDisplayPosition(size_t trackedDeviceId)
+    const glm::vec2& ApplicationNodeInternal::GetDisplayPointerPosition(size_t trackedDeviceId)
     {
         return glm::vec2();
     }

@@ -85,19 +85,73 @@ namespace viscom {
         void TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex) const { framework_->TransferDataToNode(data, length, packageId, nodeIndex); }
         void TransferData(const void* data, std::size_t length, std::uint16_t packageId) const { framework_->TransferData(data, length, packageId); }
 
+        /** Initailises OpenVR */
         virtual bool InitialiseVR() { return appNode_->InitialiseVR(); }
+        /** Calibrates OpenVR */
         virtual bool CalibrateVR(CalibrateMethod method) { return appNode_->CalibrateVR(method); }
+        /** Returns a vector containing the connected Devices */
         virtual const std::vector<DeviceInfo>& GetConnectedDevices() { return appNode_->GetConnectedDevices(); }
+        /**
+        * Returns the current controller position for a given device id.
+        * @param trackedDeviceId to select a device.
+        * @return position of the selected controller.
+        */
         virtual const glm::vec3& GetControllerPosition(size_t trackedDeviceId) { return appNode_->GetControllerPosition(trackedDeviceId); }
+        /**
+        * Returns the current z-vector for a given device id.
+        * @param trackedDeviceId to select a device.
+        * @return z-vector of the selected controller.
+        */
         virtual const glm::vec3& GetControllerZVector(size_t trackedDeviceId) { return appNode_->GetControllerZVector(trackedDeviceId); }
+        /**
+        * Returns the current controller rotation for a given device id.
+        * @param trackedDeviceId to select a device.
+        * @return rotation quaternion for the selected controller.
+        */
         virtual const glm::quat& GetControllerRotation(size_t trackedDeviceId) { return appNode_->GetControllerRotation(trackedDeviceId); }
-        virtual const glm::vec2& GetDisplayPosition(size_t trackedDeviceId) { return appNode_->GetDisplayPosition(trackedDeviceId); }
+        /**
+        * Returns the display pointing position for a given device id.
+        * @param trackedDeviceId to select a device.
+        * @return position of the selected controller.
+        */
+        virtual const glm::vec2& GetDisplayPointerPosition(size_t trackedDeviceId) { return appNode_->GetDisplayPointerPosition(trackedDeviceId); }
 
+        /** 
+        * Callback for a button press on a controller.
+        * @param trackedDeviceId identifies the device.
+        * @param buttonid identifies the button ( using the OpenVR buttonids).
+        * @param axisvalues for buttons having axis this will be filled with the axis values.
+        */
         virtual bool ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
+        /**
+        * Callback for a button touch on a controller.
+        * @param trackedDeviceId identifies the device.
+        * @param buttonid identifies the button ( using the OpenVR buttonids).
+        * @param axisvalues for buttons having axis this will be filled with the axis values.
+        */
         virtual bool ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
+        /**
+        * Callback if a button on a controller is not pressed anymore.
+        * @param trackedDeviceId identifies the device.
+        * @param buttonid identifies the button ( using the OpenVR buttonids).
+        * @param axisvalues for buttons having axis this will be filled with the axis values.
+        */
         virtual bool ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
+        /**
+        * Callback if a button on a controller is not touched anymore.
+        * @param trackedDeviceId identifies the device.
+        * @param buttonid identifies the button ( using the OpenVR buttonids).
+        * @param axisvalues for buttons having axis this will be filled with the axis values.
+        */
         virtual bool ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
 
+        /**
+        * Immediate method to get the buttonstate of a controller.
+        * @param trackedDeviceId identifies the device.
+        * @param buttonid identifies the button ( using the OpenVR buttonids).
+        * @param axisvalues for buttons having axis this will be filled with the axis values.
+        * @param buttonstate for identifying the button state ( pressed, touched, released)
+        */
         virtual void GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate);
 
     protected:

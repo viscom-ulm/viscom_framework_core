@@ -81,7 +81,7 @@ namespace viscom {
         virtual const glm::vec3& GetControllerPosition(size_t trackedDeviceId);
         virtual const glm::vec3& GetControllerZVector(size_t trackedDeviceId);
         virtual const glm::quat& GetControllerRotation(size_t trackedDeviceId);
-        virtual const glm::vec2& GetDisplayPosition(size_t trackedDeviceId);
+        virtual const glm::vec2& GetDisplayPointerPosition(size_t trackedDeviceId);
 
         virtual void ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
         virtual void ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);

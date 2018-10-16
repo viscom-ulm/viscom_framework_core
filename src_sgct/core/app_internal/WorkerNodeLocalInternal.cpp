@@ -196,7 +196,7 @@ namespace viscom {
         return glm::quat();
     }
 
-    glm::vec2 WorkerNodeLocalInternal::GetDisplayPosition(bool useLeftController)
+    glm::vec2 WorkerNodeLocalInternal::GetDisplayPointerPosition(bool useLeftController)
     {
         return glm::vec2();
     }

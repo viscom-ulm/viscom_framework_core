@@ -26,8 +26,8 @@ namespace viscom {
         // VRApplication_Scene (starts SteamVR no proper data) VRApplication_Overlay (starts SteamVR no SteamVRHome)  VRApplication_Background (doesn't start SteamVR uses SteamVRHome)
         m_pHMD_ = vr::VR_Init(&peError, vr::EVRApplicationType::VRApplication_Background);
         if (peError == vr::VRInitError_None) {
-            vrInitSucc_ = true; 
-            
+            vrInitSucc_ = true;
+
         }
     }
 
@@ -108,8 +108,12 @@ namespace viscom {
         syncInfoLocal_.pickMatrix_ = glm::inverse(GetFramework().GetCamera()->GetCentralViewPerspectiveMatrix()) * syncInfoLocal_.pickMatrix_;
 
         syncInfoSynced_.setVal(syncInfoLocal_);
-
-        ParseTrackingFrame();
+		
+		ParseTrackingFrame();
+		vrInfoLocal_.displayPosLeftController_ = controller0displaypos_;
+		vrInfoLocal_.displayPosRightController_ = controller1displaypos_;
+		vrInfoSynced_.setVal(vrInfoLocal_);
+        
         PollAndParseEvents();
 
         ApplicationNodeInternal::PreSync();
@@ -138,7 +142,7 @@ namespace viscom {
                         if (displayllset_ && !displaylrset_) ImGui::Text("Pointa at the lower right corner and press the trigger.");
                         if (displayllset_ && displaylrset_ && !displayulset_) ImGui::Text("Point at the upper left corner and press the trigger.");
                     }
-                    if(!initfloor_) {
+                    if (!initfloor_) {
                         if (!displayllset_) ImGui::Text("Touch the lower left corner and press the trigger.");
                         if (displayllset_ && !displayulset_) ImGui::Text("Touch the upper left corner and press the trigger.");
                         if (displayllset_ && displayulset_ && !displaylrset_) ImGui::Text("Touch the lower right corner and press the trigger.");
@@ -248,6 +252,16 @@ namespace viscom {
         ApplicationNodeInternal::RemoveTuioCursor(tcur);
 #endif
     }
+
+	void CoordinatorNodeInternal::EncodeData()
+	{
+		sgct::SharedData::instance()->writeObj(&vrInfoSynced_);
+	}
+
+	void CoordinatorNodeInternal::DecodeData()
+	{
+		sgct::SharedData::instance()->readObj(&vrInfoSynced_);
+	}
 
     //TODO check File
     bool CoordinatorNodeInternal::InitialiseVR()
@@ -384,7 +398,7 @@ namespace viscom {
         }
     }
 
-    const glm::vec2& CoordinatorNodeInternal::GetDisplayPosition(size_t trackedDeviceId)
+    const glm::vec2& CoordinatorNodeInternal::GetDisplayPointerPosition(size_t trackedDeviceId)
     {
         if (m_pHMD_ == nullptr) return glm::vec2();
         vr::ETrackedDeviceClass deviceClass = m_pHMD_->GetTrackedDeviceClass(trackedDeviceId);
@@ -461,25 +475,23 @@ namespace viscom {
             }
         }
     }
- 
+
     //TODO test
     /** Parses a OpenVR Tracking Frame by going through all connected devices. */
     void CoordinatorNodeInternal::ParseTrackingFrame()
     {
-        
+
         vr::HmdVector3_t position;
         vr::HmdVector3_t zvector;
         vr::HmdQuaternion_t quaternion;
         connectedDevices_.clear();
         // Process SteamVR device states
-        for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++) {
-            if (m_pHMD_ == NULL)
-                continue;
+        for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
+        {
+            if (m_pHMD_ == NULL) continue;
             // if not connected just skip the rest of the routine
-            if (!m_pHMD_->IsTrackedDeviceConnected(unDevice))
-                continue;
-            
-            
+            if (!m_pHMD_->IsTrackedDeviceConnected(unDevice)) continue;
+
             vr::TrackedDevicePose_t trackedDevicePose;
             vr::TrackedDevicePose_t *devicePose = &trackedDevicePose;
 
@@ -489,13 +501,10 @@ namespace viscom {
             vr::HmdQuaternion_t quaternion;
             DeviceInfo deviceInform;
 
-            if (!vr::VRSystem()->IsInputAvailable()) {
-                continue;
-            }
+            if (!vr::VRSystem()->IsInputAvailable()) continue;
 
             bool bPoseValid = trackedDevicePose.bPoseIsValid;
             vr::ETrackingResult eTrackingResult;
-
             deviceInform.deviceId = unDevice;
 
             // Get what type of device it is and work with its data
@@ -521,7 +530,6 @@ namespace viscom {
 
                 eTrackingResult = trackedDevicePose.eTrackingResult;
                 bPoseValid = trackedDevicePose.bPoseIsValid;
-                
 
                 switch (eTrackingResult) {
 
@@ -569,6 +577,7 @@ namespace viscom {
                     controller0pos_ = glm::vec3(position.v[0], position.v[1], position.v[2]);
                     controller0zvec_ = glm::vec3(zvector.v[0], zvector.v[1], zvector.v[2]);
                     controller0rot_ = glm::quat(quaternion.w, quaternion.x, quaternion.y, quaternion.z);
+					controller0displaypos_ = GetDisplayPointerPosition(unDevice);
                     break;
 
                 case vr::TrackedControllerRole_RightHand:
@@ -576,6 +585,7 @@ namespace viscom {
                     controller1pos_ = glm::vec3(position.v[0], position.v[1], position.v[2]);
                     controller1zvec_ = glm::vec3(zvector.v[0], zvector.v[1], zvector.v[2]);
                     controller1rot_ = glm::quat(quaternion.w, quaternion.x, quaternion.y, quaternion.z);
+					controller1displaypos_ = GetDisplayPointerPosition(unDevice);
                     break;
 
                 case vr::TrackedDeviceClass_TrackingReference:
@@ -583,9 +593,9 @@ namespace viscom {
                     break;
                 }
                 break;
-
-                case vr::ETrackedDeviceClass::TrackedDeviceClass_GenericTracker:
-                vr::VRSystem()->GetControllerStateWithPose(vr::TrackingUniverseStanding, unDevice, &controllerState, sizeof(controllerState), &trackedDevicePose);
+				
+			case vr::ETrackedDeviceClass::TrackedDeviceClass_GenericTracker:
+				vr::VRSystem()->GetControllerStateWithPose(vr::TrackingUniverseStanding, unDevice, &controllerState, sizeof(controllerState), &trackedDevicePose);
 
                 deviceInform.deviceClass = TrackedDeviceClass::GENERIC_TRACKER;
                 deviceInform.deviceRole = TrackedDeviceRole::GENERIC_TRACKER;
@@ -608,32 +618,38 @@ namespace viscom {
                 trackerrot_ = glm::quat(quaternion.w, quaternion.x, quaternion.y, quaternion.z);
                 if (bPoseValid) {
                     HandleSCGT(trackerpos_, trackerrot_);
-                }                
+                }
+
                 break;
+
+            case vr::ETrackedDeviceClass::TrackedDeviceClass_DisplayRedirect:
+                deviceInform.deviceClass = TrackedDeviceClass::DISPLAY_REDIRECT;
+                deviceInform.deviceRole = TrackedDeviceRole::INVALID;
+                break;
+
+            case vr::ETrackedDeviceClass::TrackedDeviceClass_TrackingReference:
+                deviceInform.deviceClass = TrackedDeviceClass::TRACKING_REFERENCE;
+                deviceInform.deviceRole = TrackedDeviceRole::INVALID;
+                break;
+
+            case vr::ETrackedDeviceClass::TrackedDeviceClass_Invalid:
+                deviceInform.deviceClass = TrackedDeviceClass::INVALID;
+                deviceInform.deviceClass = TrackedDeviceClass::INVALID;
+                deviceInform.deviceId = vr::k_unTrackedDeviceIndexInvalid;
+                break;
+
+            default:
+                deviceInform.deviceClass = TrackedDeviceClass::INVALID;
+                deviceInform.deviceClass = TrackedDeviceClass::INVALID;
+                deviceInform.deviceId = vr::k_unTrackedDeviceIndexInvalid;
             }
 
-            
             if (m_pHMD_->IsTrackedDeviceConnected(unDevice)) {
                 connectedDevices_.emplace_back(deviceInform);
             }
         }
     }
 
-    /** Get the left hand controller rotation.
-    *   @param bool use the left controller as pointing device
-    *   @return vec2 with display positon.
-    */
-    /*glm::vec2 CoordinatorNodeInternal::GetDisplayPosition(bool useleftcontroller)
-    {
-        float *xydisplay;
-        if (useleftcontroller) {
-            xydisplay=GetDisplayPosVector(controller0pos , controller0zvec, displayEdges[0], displayEdges[1], displayEdges[2]);
-        }
-        else {
-            xydisplay=GetDisplayPosVector(controller1pos, controller1zvec, displayEdges[0], displayEdges[1], displayEdges[2]);
-        }
-        return glm::vec2(xydisplay[0], xydisplay[1]);
-    }
     /** Initialises the display position
     *   @param bool use left controller as pointing or touching device
     */
@@ -697,7 +713,7 @@ namespace viscom {
 
         result[1] = (position[0] * zvector[1] * d3[0] * zvector[2] - position.x * zvector.y * d3[2] * zvector[0] - position[1] * zvector[0] * d3[0] * zvector[2] + position[1] * zvector[0] * d3[2] * zvector[0] - d1[0] * zvector[1] * d3[0] * zvector[2] + d1[0] * zvector[1] * d3[2] * zvector[0] + d1[1] * zvector[0] * d3[0] * zvector[2] - d1[1] * zvector[0] * d3[2] * zvector[0] - position[0] * zvector[2] * d3[0] * zvector[1] + position[0] * zvector[2] * d3[1] * zvector[0] + position[2] * zvector[0] * d3[0] * zvector[1] - position[2] * zvector[0] * d3[1] * zvector[0] + d1[0] * zvector[2] * d3[0] * zvector[1] - d1[0] * zvector[2] * d3[1] * zvector[0] - d1[2] * zvector[0] * d3[0] * zvector[1] + d1[2] * zvector[0] * d3[1] * zvector[0]) / (d2[0] * zvector[1] * d3[0] * zvector[2] - d2[0] * zvector[1] * d3[2] * zvector[0] - d2[1] * zvector[0] * d3[0] * zvector[2] + d2[1] * zvector[0] * d3[2] * zvector[0] - d2[0] * zvector[2] * d3[0] * zvector[1] + d2[0] * zvector[2] * d3[1] * zvector[0] + d2[2] * zvector[0] * d3[0] * zvector[1] - d2[2] * zvector[0] * d3[1] * zvector[0]);
         result[0] = (position[0] * zvector[1] * d2[0] * zvector[2] - position.x * zvector.y * d2[2] * zvector[0] - position[1] * zvector[0] * d2[0] * zvector[2] + position[1] * zvector[0] * d2[2] * zvector[0] - d1[0] * zvector[1] * d2[0] * zvector[2] + d1[0] * zvector[1] * d2[2] * zvector[0] + d1[1] * zvector[0] * d2[0] * zvector[2] - d1[1] * zvector[0] * d2[2] * zvector[0] - position[0] * zvector[2] * d2[0] * zvector[1] + position[0] * zvector[2] * d2[1] * zvector[0] + position[2] * zvector[0] * d2[0] * zvector[1] - position[2] * zvector[0] * d2[1] * zvector[0] + d1[0] * zvector[2] * d2[0] * zvector[1] - d1[0] * zvector[2] * d2[1] * zvector[0] - d1[2] * zvector[0] * d2[0] * zvector[1] + d1[2] * zvector[0] * d2[1] * zvector[0]) / (d3[0] * zvector[1] * d2[0] * zvector[2] - d3[0] * zvector[1] * d2[2] * zvector[0] - d3[1] * zvector[0] * d2[0] * zvector[2] + d3[1] * zvector[0] * d2[2] * zvector[0] - d3[0] * zvector[2] * d2[0] * zvector[1] + d3[0] * zvector[2] * d2[1] * zvector[0] + d3[2] * zvector[0] * d2[0] * zvector[1] - d3[2] * zvector[0] * d2[1] * zvector[0]);
-        
+
         midDisplayPos_[0] = d1[0] + 0.5f * d2[0] + 0.5f * d3[0];
         midDisplayPos_[1] = d1[1] + 0.5f * d2[1] + 0.5f * d3[1];
         midDisplayPos_[2] = d1[2] + 0.5f * d2[2] + 0.5f * d3[2];
@@ -871,7 +887,7 @@ namespace viscom {
                 ParseTrackingFrame();
                 InitialiseDisplay(useleftcontroller_);
             }
-            
+            ControllerButtonPressedCallback(event.trackedDeviceIndex, event.data.controller.button, glm::vec2(event.data.dualAnalog.x, event.data.dualAnalog.y));
             switch (event.data.controller.button)
             {
             case vr::EVRButtonId::k_EButton_A:
@@ -1065,12 +1081,13 @@ namespace viscom {
 
         case vr::VREvent_ButtonTouch:
         {
-            //TODO add if needed
+            ControllerButtonTouchedCallback(event.trackedDeviceIndex, event.data.controller.button, glm::vec2(event.data.dualAnalog.x, event.data.dualAnalog.y));
         }
         break;
 
         case vr::VREvent_ButtonUnpress:
         {
+            ControllerButtonUnpressedCallback(event.trackedDeviceIndex, event.data.controller.button, glm::vec2(event.data.dualAnalog.x, event.data.dualAnalog.y));
             switch (event.data.controller.button)
             {
             case vr::EVRButtonId::k_EButton_A:
@@ -1264,6 +1281,7 @@ namespace viscom {
 
         case vr::VREvent_ButtonUntouch:
         {
+            ControllerButtonUntouchedCallback(event.trackedDeviceIndex, event.data.controller.button, glm::vec2(event.data.dualAnalog.x, event.data.dualAnalog.y));
             //process Event
         }
         break;
@@ -1409,6 +1427,6 @@ namespace viscom {
         {
             ProcessVREvent(event);
         }
-            
+
     }
 }

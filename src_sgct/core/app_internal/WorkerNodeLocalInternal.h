@@ -46,7 +46,7 @@ namespace viscom {
          glm::quat GetController0Rot() ;
          glm::quat GetController1Rot() ;
          glm::quat GetTrackerRot() ;
-         glm::vec2 GetDisplayPosition(bool useLeftController) ;
+         glm::vec2 GetDisplayPointerPosition(bool useLeftController) ;
          void InitialiseDisplay(bool useLeftController) ;
          bool GetDisplayInitialised() ;
          void SetDisplayNotInitialised() ;

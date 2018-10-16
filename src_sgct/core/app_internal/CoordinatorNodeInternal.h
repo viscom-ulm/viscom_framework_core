@@ -17,6 +17,12 @@ namespace vr {
 
 }
 namespace viscom {
+
+	struct VrSyncedInfo {
+		glm::vec2 displayPosLeftController_;
+		glm::vec2 displayPosRightController_;
+	};
+
     
     class CoordinatorNodeInternal : public ApplicationNodeInternal
     {
@@ -39,6 +45,9 @@ namespace viscom {
         virtual void AddTuioCursor(TUIO::TuioCursor* tcur) override;
         virtual void UpdateTuioCursor(TUIO::TuioCursor* tcur) override;
         virtual void RemoveTuioCursor(TUIO::TuioCursor* tcur) override;
+
+		void EncodeData();
+		void DecodeData();
         
         /** Initialises OpenVR for controller usage. */
         bool InitialiseVR() override;
@@ -53,7 +62,7 @@ namespace viscom {
         /** Returns the rotation to a given tracked device id. */
         const glm::quat& GetControllerRotation(size_t trackedDeviceId) override;
         /** Returns the display pointing position for a given tracked device id. */
-        const glm::vec2& GetDisplayPosition(size_t trackedDeviceId) override;
+        const glm::vec2& GetDisplayPointerPosition(size_t trackedDeviceId) override;
 
         void ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues) override;
         void ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues) override;
@@ -65,7 +74,11 @@ namespace viscom {
 
  
         virtual std::vector<std::string> OutputDevices();
-
+	protected:
+		/** Holds the synchronized object (local). */
+		VrSyncedInfo vrInfoLocal_;
+		/** Holds the synchronized object (synced). */
+		sgct::SharedObject<VrSyncedInfo> vrInfoSynced_;
 
     private:
 #ifdef VISCOM_SYNCINPUT
@@ -89,7 +102,6 @@ namespace viscom {
 
         void InitialiseDisplay(bool useLeftController);
         bool GetDisplayInitialised();
-        void SetDisplayNotInitialised();
         bool GetDisplayInitByFloor();
 
         float * GetPosition(const float hmdMatrix[3][4]);
@@ -100,20 +112,37 @@ namespace viscom {
         void InitDisplayFloor(glm::vec3 cpos, glm::vec3 cz);
         void InitDisplayFromFile();
         void WriteInitDisplayToFile();
+        /** Processes a given vr event */
         bool ProcessVREvent(const vr::VREvent_t & event);
+        /** If using SGCT this method passes the tracker data as head tracked device to SGCT */
         void HandleSCGT(glm::vec3 pos, glm::quat q);
 
+        /** Holds the IVRSystem pointer */
         vr::IVRSystem *m_pHMD_;
+        /** Represents if the OpenVR initialisation was succesful. */
         bool vrInitSucc_ = false;
+        /** Holds the left hand controller positon. */
         glm::vec3 controller0pos_;
+        /** Holds the left hand controller z-vector. */
         glm::vec3 controller0zvec_;
+        /** Holds the right hand controller positon. */
         glm::vec3 controller1pos_;
+        /** Holds the right hand controller z-vector. */
         glm::vec3 controller1zvec_;
+        /** Holds the tracker positon. */
         glm::vec3 trackerpos_;
+        /** Holds the tracker z-vector.*/
         glm::vec3 trackerzvec_;
+        /** Holds the left hand controller rotation. */
         glm::quat controller0rot_;
+        /** Holds the right hand controller rotation. */
         glm::quat controller1rot_;
+        /** Holds the tracker rotation. */
         glm::quat trackerrot_;
+        /** Holds the display positon, where the left hand controller is pointing at */
+		glm::vec2 controller0displaypos_;
+        /** Holds the display positon, where the right hand controller is pointing at */
+		glm::vec2 controller1displaypos_;
         float midDisplayPos_[3] = { 0.0f,0.0f,0.0f };
         float displayEdges_[3][3] = { { -1.7f, -0.2f, -3.0f },{ -1.7f, 1.5f, -3.0f },{ 1.8f, -0.28f, -3.0f } };
         bool initDisplay_ = true;
