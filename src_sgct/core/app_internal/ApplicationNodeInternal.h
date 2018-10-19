@@ -76,6 +76,7 @@ namespace viscom {
         virtual void RemoveTuioCursor(TUIO::TuioCursor *tcur);
 
         virtual bool InitialiseVR();
+        virtual bool InitialiseDisplayVR();
         virtual bool CalibrateVR(CalibrateMethod method);
         virtual const std::vector<DeviceInfo>& GetConnectedDevices();
         virtual const glm::vec3& GetControllerPosition(size_t trackedDeviceId);

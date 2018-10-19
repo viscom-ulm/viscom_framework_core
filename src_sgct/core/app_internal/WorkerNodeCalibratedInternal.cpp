@@ -21,7 +21,7 @@
 namespace viscom {
 
     WorkerNodeCalibratedInternal::WorkerNodeCalibratedInternal(FrameworkInternal& fwInternal) :
-        WorkerNodeCalibratedInternal{ fwInternal }
+        WorkerNodeLocalInternal{ fwInternal }
     {
     }
 
@@ -129,25 +129,27 @@ namespace viscom {
 
         LOG(DBUG) << "Calibration Initialized.";
 
-        WorkerNodeCalibratedInternal::InitOpenGL();
+        WorkerNodeLocalInternal::InitOpenGL();
     }
 
 
     void WorkerNodeCalibratedInternal::DrawFrame(FrameBuffer& fbo)
     {
+        LOG(INFO) << "DrawFrame called.";
         auto windowId = GetFramework().GetEngine()->getCurrentWindowPtr()->getId();
 
         GetFramework().GetEngine()->getCurrentWindowPtr()->getFBOPtr()->unBind();
 
         ClearBuffer(sceneFBOs_[windowId]);
 
-        WorkerNodeCalibratedInternal::DrawFrame(sceneFBOs_[windowId]);
+        WorkerNodeLocalInternal::DrawFrame(sceneFBOs_[windowId]);
     }
 
     void WorkerNodeCalibratedInternal::Draw2D(FrameBuffer& fbo)
     {
+        LOG(INFO) << "Draw2d called.";
         auto windowId = GetFramework().GetEngine()->getCurrentWindowPtr()->getId();
-        WorkerNodeCalibratedInternal::Draw2D(sceneFBOs_[windowId]);
+        WorkerNodeLocalInternal::Draw2D(sceneFBOs_[windowId]);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -185,6 +187,7 @@ namespace viscom {
 
     void WorkerNodeCalibratedInternal::CleanUp()
     {
+        LOG(INFO) << "CleamUp called.";
         if (vaoProjectorQuads_ != 0) glDeleteVertexArrays(0, &vaoProjectorQuads_);
         vaoProjectorQuads_ = 0;
         if (vboProjectorQuads_ != 0) glDeleteBuffers(0, &vboProjectorQuads_);
@@ -193,7 +196,62 @@ namespace viscom {
         if (!alphaTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(alphaTextures_.size()), alphaTextures_.data());
         alphaTextures_.clear();
 
-        WorkerNodeCalibratedInternal::CleanUp();
+        WorkerNodeLocalInternal::CleanUp();
+    }
+    bool WorkerNodeCalibratedInternal::InitialiseVR()
+    {
+        return false;
+    }
+
+    bool WorkerNodeCalibratedInternal::CalibrateVR(CalibrateMethod method)
+    {
+        return false;
+    }
+
+    const std::vector<DeviceInfo>& WorkerNodeCalibratedInternal::GetConnectedDevices()
+    {
+        std::vector<DeviceInfo> bla;
+        return bla;
+    }
+
+    const glm::vec3 & WorkerNodeCalibratedInternal::GetControllerPosition(size_t trackedDeviceId)
+    {
+        return glm::vec3();
+    }
+
+    const glm::vec3 & WorkerNodeCalibratedInternal::GetControllerZVector(size_t trackedDeviceId)
+    {
+        return glm::vec3();
+    }
+
+    const glm::quat & WorkerNodeCalibratedInternal::GetControllerRotation(size_t trackedDeviceId)
+    {
+        return glm::quat();
+    }
+
+    const glm::vec2 & WorkerNodeCalibratedInternal::GetDisplayPointerPosition(size_t trackedDeviceId)
+    {
+        return glm::vec2();
+    }
+
+    void WorkerNodeCalibratedInternal::ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    {
+    }
+
+    void WorkerNodeCalibratedInternal::ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    {
+    }
+
+    void WorkerNodeCalibratedInternal::ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    {
+    }
+
+    void WorkerNodeCalibratedInternal::ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    {
+    }
+
+    void WorkerNodeCalibratedInternal::GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2 & axisvalues, ButtonState & buttonstate)
+    {
     }
 
     void WorkerNodeCalibratedInternal::CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize)
@@ -209,7 +267,7 @@ namespace viscom {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
-        void WorkerNodeCalibratedInternal::ParseTrackingFrame() 
+    void WorkerNodeCalibratedInternal::ParseTrackingFrame()
     {
     }
 
@@ -295,21 +353,25 @@ namespace viscom {
 
     std::vector<std::string> WorkerNodeCalibratedInternal::OutputDevices()
     {
+        LOG(INFO) << "OutputDevices called in Worker.";
         return std::vector<std::string>();
     }
 
     float * WorkerNodeCalibratedInternal::GetDisplayEdges()
     {
+        LOG(INFO) << "GetDisplayEdges called in Worker.";
         return nullptr;
     }
 
     bool WorkerNodeCalibratedInternal::GetVrInitSuccess()
     {
+        LOG(INFO) << "GetVRinitSucces called in Worker.";
         return false;
     }
 
     std::vector<std::string> WorkerNodeCalibratedInternal::GetController0Buttons()
     {
+        LOG(INFO) << "GetController0Buttons called in Worker.";
         return std::vector<std::string>();
     }
 

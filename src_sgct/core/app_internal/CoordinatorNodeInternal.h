@@ -9,7 +9,6 @@
 #pragma once
 
 #include "core/app_internal/ApplicationNodeInternal.h"
-//#include <openvr.h>
 
 namespace vr {
     class IVRSystem;
@@ -51,6 +50,8 @@ namespace viscom {
         
         /** Initialises OpenVR for controller usage. */
         bool InitialiseVR() override;
+        /** Initialises the Displayedges either by file or with default values if no displayEdges txt is found */
+        bool InitialiseDisplayVR() override;
         /** Calibrates the display edges by selected method. */
         bool CalibrateVR(CalibrateMethod method) override;
         /** Returns a DeviceInfo vector with the connected devices. */
@@ -144,7 +145,8 @@ namespace viscom {
         /** Holds the display positon, where the right hand controller is pointing at */
 		glm::vec2 controller1displaypos_;
         float midDisplayPos_[3] = { 0.0f,0.0f,0.0f };
-        float displayEdges_[3][3] = { { -1.7f, -0.2f, -3.0f },{ -1.7f, 1.5f, -3.0f },{ 1.8f, -0.28f, -3.0f } };
+        /** Holds the display edges in the order lower left, upper left and lower right. */
+        float displayEdges_[3][3] = { { -1.0f, 0.0, -1.0f },{ 1.0f, 0.0f, -1.0f },{ -1.0f, 1.0f, -1.0f } };
         bool initDisplay_ = true;
         bool displayllset_ = false;
         bool displayulset_ = false;

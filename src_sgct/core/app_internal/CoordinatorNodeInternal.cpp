@@ -26,6 +26,7 @@ namespace viscom {
         // VRApplication_Scene (starts SteamVR no proper data) VRApplication_Overlay (starts SteamVR no SteamVRHome)  VRApplication_Background (doesn't start SteamVR uses SteamVRHome)
         m_pHMD_ = vr::VR_Init(&peError, vr::EVRApplicationType::VRApplication_Background);
         if (peError == vr::VRInitError_None) {
+            LOG(INFO) << "OpenVR initialised on Master";
             vrInitSucc_ = true;
 
         }
@@ -266,15 +267,36 @@ namespace viscom {
     //TODO check File
     bool CoordinatorNodeInternal::InitialiseVR()
     {
+        LOG(INFO) << "InitialiseVR called on Coordinator";
         InitDisplayFromFile();
         if (vrInitSucc_ && initDisplay_) {
             return true;
         }
         return false;
     }
-    //TODO add CalibrationMode
+    bool CoordinatorNodeInternal::InitialiseDisplayVR()
+    {
+        if (!initDisplay_) {
+            InitDisplayFromFile();
+            if (!initDisplay_) {
+                displayEdges_[0][0] = -1.0f; displayEdges_[0][1] = 0.0f; displayEdges_[0][2] = -1.0f;
+                displayEdges_[1][0] = 1.0f; displayEdges_[1][1] = 0.0f; displayEdges_[1][2] = -1.0f;
+                displayEdges_[2][0] = -1.0f; displayEdges_[2][1] = 1.0f; displayEdges_[2][2] = -1.0f;
+                displayllset_ = true;
+                displaylrset_ = true;
+                displayulset_ = true;
+                calibrate_ = false;
+                return true;
+            }
+            else {
+                return true;
+            }
+        }
+        return true;
+    }
     bool CoordinatorNodeInternal::CalibrateVR(CalibrateMethod method)
     {
+        LOG(INFO) << "CalibrateVR called on Coordinator.";
         initDisplay_ = false;
         displayllset_ = false;
         displaylrset_ = false;
@@ -299,11 +321,13 @@ namespace viscom {
 
     const std::vector<DeviceInfo>& CoordinatorNodeInternal::GetConnectedDevices()
     {
+        LOG(INFO) << "GetConnectedDevices called on Coordinator.";
         return connectedDevices_;
     }
 
     const glm::vec3& CoordinatorNodeInternal::GetControllerPosition(size_t trackedDeviceId)
     {
+        LOG(INFO) << "GetControllerPos called on Coordinator.";
         if (m_pHMD_ == nullptr) return glm::vec3();
         vr::ETrackedDeviceClass deviceClass = m_pHMD_->GetTrackedDeviceClass(trackedDeviceId);
         vr::ETrackedControllerRole controllerRole = vr::ETrackedControllerRole::TrackedControllerRole_Invalid;
@@ -400,6 +424,7 @@ namespace viscom {
 
     const glm::vec2& CoordinatorNodeInternal::GetDisplayPointerPosition(size_t trackedDeviceId)
     {
+        LOG(INFO) << "GetDisplayPointerPosition called on Coordinator.";
         if (m_pHMD_ == nullptr) return glm::vec2();
         vr::ETrackedDeviceClass deviceClass = m_pHMD_->GetTrackedDeviceClass(trackedDeviceId);
         vr::ETrackedControllerRole controllerRole = vr::ETrackedControllerRole::TrackedControllerRole_Invalid;
@@ -430,6 +455,7 @@ namespace viscom {
 
     void CoordinatorNodeInternal::ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
     {
+        LOG(INFO) << "ControllerButtonPressedCalb called on Coordinator.";
         ApplicationNodeInternal::ControllerButtonPressedCallback(trackedDeviceId, buttonid, axisvalues);
     }
 
@@ -451,6 +477,7 @@ namespace viscom {
 
     void CoordinatorNodeInternal::GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate)
     {
+        LOG(INFO) << "GetContrButSta called on Coordinator.";
         uint64_t buttonspressed = 0;
         uint64_t buttonstouched = 0;
         for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++) {
@@ -480,7 +507,7 @@ namespace viscom {
     /** Parses a OpenVR Tracking Frame by going through all connected devices. */
     void CoordinatorNodeInternal::ParseTrackingFrame()
     {
-
+        LOG(INFO) << "ParseTrackingFrame called on Coordinator.";
         vr::HmdVector3_t position;
         vr::HmdVector3_t zvector;
         vr::HmdQuaternion_t quaternion;
@@ -856,6 +883,7 @@ namespace viscom {
     *   @return true if the end of the procedure was reached.
     */
     bool CoordinatorNodeInternal::ProcessVREvent(const vr::VREvent_t & event) {
+        LOG(INFO) << "ProcessVREvent called on Coordinator.";
         switch (event.eventType)
         {
         case vr::VREvent_None:

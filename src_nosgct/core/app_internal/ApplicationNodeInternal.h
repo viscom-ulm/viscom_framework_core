@@ -12,7 +12,22 @@
 #include "core/TuioInputWrapper.h"
 #include "core/FrameworkInternal.h"
 
+namespace vr {
+    class IVRSystem;
+    struct VREvent_t;
+}
+
 namespace viscom {
+    enum class CalibrateMethod { CALIBRATE_BY_TOUCHING, CALIBRATE_BY_POINTING };
+    enum class TrackedDeviceRole { CONTROLLER_LEFT_HAND, CONTROLLER_RIGHT_HAND, GENERIC_TRACKER, INVALID };
+    enum class ButtonState { PRESSED, TOUCHED, RELEASED };
+    enum class TrackedDeviceClass { INVALID, CONTROLLER, GENERIC_TRACKER, TRACKING_REFERENCE, DISPLAY_REDIRECT, HMD };
+
+    struct DeviceInfo {
+        size_t deviceId;
+        TrackedDeviceRole deviceRole;
+        TrackedDeviceClass deviceClass;
+    };
 
     class ApplicationNodeBase;
 
@@ -61,29 +76,32 @@ namespace viscom {
 
         FrameworkInternal & GetFramework() { return fwInternal_; }
         
-        virtual void ParseTrackingFrame() override;
-        virtual glm::vec3 GetController0Pos() override;
-        virtual glm::vec3 GetController0Zvec() override;
-        virtual glm::vec3 GetController1Pos() override;
-        virtual glm::vec3 GetController1Zvec() override;
-        virtual glm::vec3 GetTrackerPos() override;
-        virtual glm::vec3 GetTrackerZvec() override;
-        virtual glm::quat GetController0Rot() override;
-        virtual glm::quat GetController1Rot() override;
-        virtual glm::quat GetTrackerRot() override;
-        virtual glm::vec2 GetDisplayPosition(bool useleftcontroller) override;
-        virtual void InitialiseDisplay(bool useLeftController) override;
-        virtual bool GetDisplayInitialised() override;
-        virtual void SetDisplayNotInitialised() override;
-        virtual bool GetDisplayInitByFloor() override;
-        virtual void SetDisplayInitByFloor(bool b) override;
-        virtual void PollAndParseNextEvent() override;
-        virtual void PollAndParseEvents() override;        
-        virtual float* GetDisplayEdges() override;
-        virtual bool GetVrInitSuccess() override;
-        virtual std::vector<std::string> OutputDevices() override;
-        virtual std::vector<std::string> GetController0Buttons() override;
-        virtual std::vector<std::string> GetController1Buttons() override;
+        /** Initialises OpenVR for controller usage. */
+        bool InitialiseVR();
+        /** Initialises the Displayedges either by file or with default values if no displayEdges txt is found. */
+        bool InitialiseDisplayVR();
+        /** Calibrates the display edges by selected method. */
+        bool CalibrateVR(CalibrateMethod method);
+        /** Returns a DeviceInfo vector with the connected devices. */
+        const std::vector<DeviceInfo>& GetConnectedDevices();
+        /** Returns the position to a given tracked device id. */
+        const glm::vec3& GetControllerPosition(size_t trackedDeviceId);
+        /** Returns the z-vector to a given tracked device id. */
+        const glm::vec3& GetControllerZVector(size_t trackedDeviceId);
+        /** Returns the rotation to a given tracked device id. */
+        const glm::quat& GetControllerRotation(size_t trackedDeviceId);
+        /** Returns the display pointing position for a given tracked device id. */
+        const glm::vec2& GetDisplayPointerPosition(size_t trackedDeviceId);
+
+        void ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
+        void ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
+        void ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
+        void ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
+
+        /** Fills buttonstate and axisvalues for a given tracked device and buttonid. */
+        void GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate);
+
+        std::vector<std::string> OutputDevices();
 
     protected:
         void SetApplicationNode(std::unique_ptr<ApplicationNodeBase> appNodeImpl) { appNodeImpl_ = std::move(appNodeImpl); }
@@ -99,37 +117,67 @@ namespace viscom {
         /** Holds the time elapsed since the last frame. */
         double elapsedTime_;
         
+        /** Fills membervariables with current data. */
+        void ParseTrackingFrame();
+        /** Polls and parses the next upcoming events. */
+        void PollAndParseNextEvent();
+        /** Polls and parses all upcoming events. */
+        void PollAndParseEvents();
+
+        void InitialiseDisplay(bool useLeftController);
+        bool GetDisplayInitialised();
+        bool GetDisplayInitByFloor();
+
         float * GetPosition(const float hmdMatrix[3][4]);
         double * GetRotation(const float matrix[3][4]);
         float * GetZVector(const float matrix[3][4]);
-        float * GetDisplayPosVector(glm::vec3 pos, glm::vec3 zvector, const float display_lowerLeftCorner[3], const float display_upperLeftCorner[3], const float display_lowerRightCorner[3]);
+        const glm::vec2& GetDisplayPosVector(const glm::vec3& pos, const glm::vec3& zvector);
         void InitDisplay(glm::vec3 dpos);
         void InitDisplayFloor(glm::vec3 cpos, glm::vec3 cz);
         void InitDisplayFromFile();
         void WriteInitDisplayToFile();
+        /** Processes a given vr event */
         bool ProcessVREvent(const vr::VREvent_t & event);
+        /** If using SGCT this method passes the tracker data as head tracked device to SGCT */
         void HandleSCGT(glm::vec3 pos, glm::quat q);
 
-        vr::IVRSystem *m_pHMD;
-        bool vrInitSucc = false;
-        glm::vec3 controller0pos;
-        glm::vec3 controller0zvec;
-        glm::vec3 controller1pos;
-        glm::vec3 controller1zvec;
-        glm::vec3 trackerpos;
-        glm::vec3 trackerzvec;
-        glm::quat controller0rot;
-        glm::quat controller1rot;
-        glm::quat trackerrot;
-        float midDisplayPos[3] = { 0.0f,0.0f,0.0f };
-        float displayEdges[3][3] = { { -1.7f, -0.2f, -3.0f },{ -1.7f, 1.5f, -3.0f },{ 1.8f, -0.28f, -3.0f } };
-        bool initDisplay = true;
-        bool displayllset = false;
-        bool displayulset = false;
-        bool displaylrset = false;
-        bool initfloor = true;
-        bool useleftcontroller;
-        std::vector<std::string> controller0buttons;
-        std::vector<std::string> controller1buttons;
+        /** Holds the IVRSystem pointer */
+        vr::IVRSystem *m_pHMD_;
+        /** Represents if the OpenVR initialisation was succesful. */
+        bool vrInitSucc_ = false;
+        /** Holds the left hand controller positon. */
+        glm::vec3 controller0pos_;
+        /** Holds the left hand controller z-vector. */
+        glm::vec3 controller0zvec_;
+        /** Holds the right hand controller positon. */
+        glm::vec3 controller1pos_;
+        /** Holds the right hand controller z-vector. */
+        glm::vec3 controller1zvec_;
+        /** Holds the tracker positon. */
+        glm::vec3 trackerpos_;
+        /** Holds the tracker z-vector.*/
+        glm::vec3 trackerzvec_;
+        /** Holds the left hand controller rotation. */
+        glm::quat controller0rot_;
+        /** Holds the right hand controller rotation. */
+        glm::quat controller1rot_;
+        /** Holds the tracker rotation. */
+        glm::quat trackerrot_;
+        /** Holds the display positon, where the left hand controller is pointing at */
+        glm::vec2 controller0displaypos_;
+        /** Holds the display positon, where the right hand controller is pointing at */
+        glm::vec2 controller1displaypos_;
+        float midDisplayPos_[3] = { 0.0f,0.0f,0.0f };
+        float displayEdges_[3][3] = { { -1.7f, -0.2f, -3.0f },{ -1.7f, 1.5f, -3.0f },{ 1.8f, -0.28f, -3.0f } };
+        bool initDisplay_ = true;
+        bool displayllset_ = false;
+        bool displayulset_ = false;
+        bool displaylrset_ = false;
+        bool initfloor_ = true;
+        bool useleftcontroller_ = true;
+        bool calibrate_ = false;
+        std::vector<std::string> controller0buttons_;
+        std::vector<std::string> controller1buttons_;
+        std::vector<DeviceInfo> connectedDevices_;
     };
 }

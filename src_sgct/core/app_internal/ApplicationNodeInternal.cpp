@@ -187,6 +187,10 @@ namespace viscom {
     {
         return false;
     }
+    bool ApplicationNodeInternal::InitialiseDisplay()
+    {
+        return false;
+    }
     bool ApplicationNodeInternal::CalibrateVR(CalibrateMethod method)
     {
         return false;

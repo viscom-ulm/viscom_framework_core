@@ -147,6 +147,73 @@ namespace viscom {
     void WorkerNodeLocalInternal::RemoveTuioCursor(TUIO::TuioCursor* tcur)
     {
     }
+    bool WorkerNodeLocalInternal::InitialiseVR()
+    {
+        LOG(INFO) << "InitVR called in Worker.";
+        return false;
+    }
+
+    bool WorkerNodeLocalInternal::InitialiseDisplayVR()
+    {
+        return false;
+    }
+
+    bool WorkerNodeLocalInternal::CalibrateVR(CalibrateMethod method)
+    {
+        LOG(INFO) << "CalibrateVR called";
+        return false;
+    }
+
+    const std::vector<DeviceInfo>& WorkerNodeLocalInternal::GetConnectedDevices()
+    {
+        LOG(INFO) << "GetConnectedDevices called in Worker.";
+        std::vector<DeviceInfo> bla;
+        return bla;
+    }
+
+    const glm::vec3 & WorkerNodeLocalInternal::GetControllerPosition(size_t trackedDeviceId)
+    {
+        LOG(INFO) << "GetControllerPos called in Worker.";
+        return glm::vec3();
+    }
+
+    const glm::vec3 & WorkerNodeLocalInternal::GetControllerZVector(size_t trackedDeviceId)
+    {
+        return glm::vec3();
+    }
+
+    const glm::quat & WorkerNodeLocalInternal::GetControllerRotation(size_t trackedDeviceId)
+    {
+        return glm::quat();
+    }
+
+    const glm::vec2 & WorkerNodeLocalInternal::GetDisplayPointerPosition(size_t trackedDeviceId)
+    {
+        LOG(INFO) << "GetDisplayPointerPosition called in Worker.";
+        return glm::vec2();
+    }
+
+    void WorkerNodeLocalInternal::ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    {
+        LOG(INFO) << "ControllerButtonPressedCallback called in Worker.";
+    }
+
+    void WorkerNodeLocalInternal::ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    {
+    }
+
+    void WorkerNodeLocalInternal::ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    {
+    }
+
+    void WorkerNodeLocalInternal::ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    {
+    }
+
+    void WorkerNodeLocalInternal::GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2 & axisvalues, ButtonState & buttonstate)
+    {
+    }
+
     void WorkerNodeLocalInternal::ParseTrackingFrame() 
     {
     }

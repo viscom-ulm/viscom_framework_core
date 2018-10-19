@@ -24,6 +24,21 @@ namespace viscom {
         void Draw2D(FrameBuffer& fbo) override;
         void CleanUp() override;
 
+        bool InitialiseVR() override;
+        bool CalibrateVR(CalibrateMethod method) override;
+        const std::vector<DeviceInfo>& GetConnectedDevices() override;
+        const glm::vec3& GetControllerPosition(size_t trackedDeviceId) override;
+        const glm::vec3& GetControllerZVector(size_t trackedDeviceId) override;
+        const glm::quat& GetControllerRotation(size_t trackedDeviceId) override;
+        const glm::vec2& GetDisplayPointerPosition(size_t trackedDeviceId) override;
+
+        void ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues) override;
+        void ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues) override;
+        void ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues) override;
+        void ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues) override;
+
+        void GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate) override;
+
     private:
         void CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize);
 

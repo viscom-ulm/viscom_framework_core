@@ -87,6 +87,8 @@ namespace viscom {
 
         /** Initailises OpenVR */
         virtual bool InitialiseVR() { return appNode_->InitialiseVR(); }
+        /** Initialises the Displayedges either by file or with default values if no displayEdges txt is found */
+        virtual bool InitialiseDisplayVR() { return appNode_->InitialiseDisplayVR(); }
         /** Calibrates OpenVR */
         virtual bool CalibrateVR(CalibrateMethod method) { return appNode_->CalibrateVR(method); }
         /** Returns a vector containing the connected Devices */
