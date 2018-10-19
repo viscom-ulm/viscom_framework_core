@@ -187,7 +187,7 @@ namespace viscom {
     {
         return false;
     }
-    bool ApplicationNodeInternal::InitialiseDisplay()
+    bool ApplicationNodeInternal::InitialiseDisplayVR()
     {
         return false;
     }
