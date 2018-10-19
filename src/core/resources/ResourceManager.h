@@ -114,9 +114,10 @@ namespace viscom {
         }
 
         /**
-         * Gets a resource from the manager.
-         * @param resId the resources id
-         * @return the resource as a shared pointer
+         *  Gets a resource from the manager.
+         *  @param resId the resources id
+         *  @param args addtitional arguments.
+         *  @return the resource as a shared pointer
          */
         template<typename... Args>
         std::shared_ptr<ResourceType> GetResource(const std::string& resId, Args&&... args)
@@ -129,9 +130,10 @@ namespace viscom {
 
 
         /**
-         * Gets a synchronized resource from the manager.
-         * @param resId the resources id
-         * @return the resource as a shared pointer
+         *  Gets a synchronized resource from the manager.
+         *  @param resId the resources id
+         *  @param args addtitional arguments.
+         *  @return the resource as a shared pointer
          */
         template<typename... Args>
         std::shared_ptr<ResourceType> GetSynchronizedResource(const std::string& resId, Args&&... args)
@@ -156,9 +158,9 @@ namespace viscom {
 
 
         /**
-         * Checks if the resource manager contains this resource.
-         * @param resId the resources id
-         * @return whether the manager contains the resource or not.
+         *  Checks if the resource manager contains this resource.
+         *  @param resId the resources id
+         *  @return whether the manager contains the resource or not.
          */
         bool HasResource(const std::string& resId) const
         {
@@ -180,6 +182,7 @@ namespace viscom {
          *  @param resId the index of the resource.
          *  @param data pointer to the resource data.
          *  @param size size of the resource data.
+         *  @param args addtitional arguments.
          */
         template<typename... Args>
         void CreateSharedResource(const std::string& resId, const void* data, std::size_t size, Args&&... args)

@@ -207,8 +207,17 @@ namespace viscom::math {
         minmax_[1] += offset;
     }
 
+    /** Internal used struct to realise matrix multiplication. */
     template<typename real, int N, typename V, int I>
     struct AABBInternal {
+
+        /**
+         *  Recursive method to multiply a N dimensional vector with a 4x4 matrix.
+         *  @param result result vector.
+         *  @param mat matrix to multiply the vector with.
+         *  @param v 4x4 vector to be filled with the data of the AABB and multiplied.
+         *  @param aabb the AABB to retrieve the data from.
+         */
         static void permuteMultiply(std::vector<V>& result, const glm::tmat4x4<real, glm::highp>& mat, const glm::tvec4<real, glm::highp>& v, const AABB<real, N, V>& aabb)
         {
             auto v0 = v;
@@ -220,8 +229,14 @@ namespace viscom::math {
         }
     };
 
+    /** Internal used struct to realise matrix multiplication. */
     template<typename real, int N, typename V>
     struct AABBInternal<real, N, V, 0> {
+
+        /**
+        *  Base method to multiply a N dimensional vector with a 4x4 matrix.
+        *  @see AABBInternal::permuteMultiply.
+        */
         static void permuteMultiply(std::vector<V>& result, const glm::tmat4x4<real, glm::highp>& mat, const glm::tvec4<real, glm::highp>& v, const AABB<real, N, V>& aabb)
         {
             auto v0 = v;
@@ -295,7 +310,8 @@ namespace viscom::math {
         for (const auto& point : points) AddPoint(point);
     }
 
-
+    /** Two dimensional AABB using floats. */
     template<typename real> using AABB2 = AABB<real, 2, glm::tvec2<real, glm::highp>>;
+    /** Three dimensional AABB using floats. */
     template<typename real> using AABB3 = AABB<real, 3, glm::tvec3<real, glm::highp>>;
 }

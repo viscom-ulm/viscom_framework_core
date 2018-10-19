@@ -17,7 +17,13 @@ namespace viscom {
     class FrameworkInternal;
     struct FWConfiguration;
 
-    std::unique_ptr<FrameworkInternal> Application_Init(const FWConfiguration&,
+    /**
+    *  Initializes the application by creating a FrameworkInternal object.
+    *  @param config the frameworks configuration object.
+    *  @param coordinatorNodeFactory the class of the coordinator to be used.
+    *  @param workerNodeFactory the class of the worker to be used.
+    */
+    std::unique_ptr<FrameworkInternal> Application_Init(const FWConfiguration& config,
         InitNodeFunc coordinatorNodeFactory,
         InitNodeFunc workerNodeFactory);
 

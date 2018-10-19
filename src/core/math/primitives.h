@@ -17,10 +17,14 @@
 
 namespace viscom::math {
 
+    /** Line for two dimensions using floats. */
     template<typename real> using Line2 = std::array<glm::tvec2<real, glm::highp>, 2>;
+    /** Line for three dimensions using floats. */
     template<typename real> using Line3 = std::array<glm::tvec3<real, glm::highp>, 2>;
 
+    /** Triangle for two dimensions using floats. */
     template<typename real> using Tri2 = std::array<glm::tvec2<real, glm::highp>, 3>;
+    /** Triangle for three dimensions using floats. */
     template<typename real> using Tri3 = std::array<glm::tvec3<real, glm::highp>, 3>;
     
     /** Holds the information defining a frustum as used for culling. */

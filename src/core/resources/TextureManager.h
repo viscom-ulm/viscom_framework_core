@@ -13,6 +13,7 @@
 
 namespace viscom {
 
+    /** Manager for handling all texture objects. */
     class TextureManager final : public ResourceManager<Texture>
     {
     public:

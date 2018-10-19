@@ -26,10 +26,32 @@ namespace viscom {
     {
     public:
         SceneMeshNode() noexcept;
+        /**
+         *  Constructor method.
+         *  @param node the ASSIMP node holding the node information.
+         *  @param parent the parent node.
+         *  @param boneMap bones of the mesh to retrieve the bone index from.
+         */
         SceneMeshNode(aiNode* node, const SceneMeshNode* parent, const std::map<std::string, unsigned int>& boneMap);
+        /**
+         *  Constructor method.
+         *  @param rhs SceneMeshNode to copy all information from.
+         */
         SceneMeshNode(const SceneMeshNode& rhs);
+        /**
+         *  Constructor method.
+         *  @param rhs SceneMeshNode to copy all information from.
+         */
         SceneMeshNode& operator=(const SceneMeshNode& rhs);
+        /**
+         *  Constructor method.
+         *  @param rhs SceneMeshNode to copy all information from.
+         */
         SceneMeshNode(SceneMeshNode&& rhs) noexcept;
+        /**
+         *  Constructor method.
+         *  @param rhs SceneMeshNode to copy all information from.
+         */
         SceneMeshNode operator=(SceneMeshNode&& rhs) noexcept;
         ~SceneMeshNode() noexcept;
 
@@ -75,6 +97,11 @@ namespace viscom {
          */
         bool GenerateBoundingBoxes(const Mesh& mesh);
 
+        /**
+         *  Transforms a AABB with a 4x4 matrix.
+         *  @param aabb the bounding box to be transformed.
+         *  @param transform the 4x4 transformation matrix.
+         */
         [[deprecated("Do we even need this anymore?")]]
         void GetBoundingBox(math::AABB3<float>& aabb, const glm::mat4& transform) const;
 

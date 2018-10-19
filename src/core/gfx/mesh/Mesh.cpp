@@ -23,14 +23,23 @@
 
 namespace viscom {
 
+    /**
+     *  Returns the color of an ASSIMP material.
+     *  @param material the ASSIMP material.
+     *  @param pKey the key to search for.
+     *  @param type specifies the type of the texture to be retrieved.
+     *  @param idx index of the texture to be retrieved.
+     */
     inline glm::vec3 GetMaterialColor(aiMaterial* material, const char* pKey, unsigned int type, unsigned int idx) {
         aiColor3D c;
         material->Get(pKey, type, idx, c);
         return glm::vec3{ c.r, c.g, c.b };
     }
 
+    /** Holds the ASSIMP flags for mesh loading. */
     constexpr unsigned int ASSIMP_FLAGS = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs;
 
+    /** Holds the ASSIMP flags for mesh loading. */
     constexpr unsigned int ASSIMP_FLAGS_FORCEGEN = aiProcess_CalcTangentSpace | aiProcess_GenNormals
         | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality | aiProcess_SplitLargeMeshes
         | aiProcess_GenUVCoords | aiProcess_SortByPType | aiProcess_FindDegenerates | aiProcess_FindInvalidData | aiProcess_FindInstances

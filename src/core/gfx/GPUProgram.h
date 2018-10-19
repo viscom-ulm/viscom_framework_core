@@ -30,6 +30,10 @@ namespace viscom {
         GPUProgram& operator=(GPUProgram&&) noexcept = delete;
         virtual ~GPUProgram() noexcept override;
 
+        /**
+        *  Initializes the GPU program by setting the shader names.
+        *  @param shaderNames shader names for the program.
+        */
         [[deprecated("Use the vector version instead.")]]
         void Initialize(std::initializer_list<std::string> shaderNames);
         /**

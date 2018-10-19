@@ -20,6 +20,7 @@
 
 namespace viscom {
 
+    /** Header inclusion depth limit. */
     constexpr unsigned int MAX_INCLUDE_RECURSION_DEPTH = 32; //-V112
 
     /**

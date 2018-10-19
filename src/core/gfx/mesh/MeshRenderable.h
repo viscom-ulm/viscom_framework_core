@@ -51,9 +51,18 @@ namespace viscom {
          */
         void Draw(const glm::mat4& modelMatrix, bool overrideBump = false) const;
 
+        /**
+         *  Gets the standart uniform locations when a mesh renderable is created.
+         *  @param program the GPU program to bind the uniforms to.
+         */
         template<class VTX> void NotifyRecompiledShader(const GPUProgram* program);
 
     protected:
+        /** Constructor method.
+         *  @param renderMesh the mesh to render.
+         *  @param vBuffer the meshs vertex buffer.
+         *  @param program the GPU program to be used with the mesh.
+         */
         MeshRenderable(const Mesh* renderMesh, GLuint vBuffer, GPUProgram* program);
 
         /**

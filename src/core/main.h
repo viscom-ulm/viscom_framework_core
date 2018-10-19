@@ -80,7 +80,7 @@ namespace viscom {
     constexpr bool SHOW_CLIENT_MOUSE_CURSOR = false;
 #endif
 
-
+    /** Defines the resource types. */
     enum class ResourceType : std::uint8_t {
         All_Resources,
         Texture,
@@ -88,6 +88,11 @@ namespace viscom {
         GPUProgram
     };
 
+    /**
+     *  Writes the resource type to a stream.
+     *  @param str stream to write to.
+     *  @param v resource type.
+     */
     inline std::ostream& operator<<(std::ostream& str, ResourceType v) {
         switch (v)
         {
