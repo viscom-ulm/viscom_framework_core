@@ -85,6 +85,12 @@ namespace viscom {
         /** Holds the standard uniform bindings. */
         std::vector<GLint> uniformLocations_;
 
+        /**
+         *  Draws a sub mesh of the mesh renderable.
+         *  @param modelMatrix the model matrix to draw the sub mesh with.
+         *  @param subMesh the sub mesh to be drawn.
+         *  @param overrideBump flag for bumb map parameters.
+         */
         void DrawSubMesh(const glm::mat4& modelMatrix, const SubMesh* subMesh, bool overrideBump = false) const;
     };
 

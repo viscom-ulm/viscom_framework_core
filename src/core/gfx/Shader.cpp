@@ -206,7 +206,7 @@ namespace viscom {
      *  licensed under MIT by Sebastian Maisch
      *  @param filename the name of the file to load.
      *  @param defines the defines to add at the beginning.
-     *  @param fileId the id of the current file.
+     *  @param node the application holding the configuration to retrieve the search paths.
      */
     std::string Shader::LoadShaderFile(const std::string& filename, const std::vector<std::string>& defines, const FrameworkInternal* node)
     {
@@ -220,6 +220,10 @@ namespace viscom {
         return shaderText;
     }
 
+    /**
+     *  Loads a shader from file and recursively adds all includes.
+     *  @see LoadShaderFile.
+     */
     std::string Shader::LoadShaderFileRecursive(const std::string & filename, const std::vector<std::string>& defines, unsigned int& fileId, unsigned int recursionDepth)
     {
 #ifdef __APPLE_CC__
@@ -290,11 +294,12 @@ namespace viscom {
     }
 
     /**
-     * Loads a shader from file and compiles it.
-     * @param filename the shader file name
-     * @param type the shader type
-     * @param strType the shader type as string
-     * @return the compiled shader if successful
+     *  Loads a shader from file and compiles it.
+     *  @param filename the shader file name.
+     *  @param shaderText the shader code as a string.
+     *  @param type the shader type.
+     *  @param strType the shader type as string.
+     *  @return the compiled shader if successful.
      */
     GLuint Shader::CompileShader(const std::string& filename, const std::string& shaderText, GLenum type, const std::string& strType)
     {

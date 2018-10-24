@@ -94,6 +94,7 @@ namespace viscom {
         virtual void LoadFromMemory(const void* data, std::size_t size) override;
 
     private:
+        /** Defining the ShaderList type as alias. */
         using ShaderList = std::vector<std::unique_ptr<Shader>>;
 
         /** Holds the program name. */
@@ -109,6 +110,11 @@ namespace viscom {
 
         template<typename T, typename SHAcc> static GLuint linkNewProgram(const std::string& name,
             const std::vector<T>& shaders, SHAcc shaderAccessor);
+
+        /**
+         *  Creates and links all shaders for the GPU program.
+         *  @param createShader function creating the shaders using the shader names.
+         */
         void LoadProgram(viscom::function_view<std::unique_ptr<Shader>(const std::string&, const FrameworkInternal*)> createShader);
     };
 }

@@ -53,7 +53,7 @@ namespace viscom {
 
         /**
          *  Initializes the Texture.
-         *  @param useSRGB defines if the texture uses sRGB.
+         *  @param useSRGB defines if the texture uses the standart RGB color space.
          */
         void Initialize(bool useSRGB = true);
 
@@ -78,9 +78,29 @@ namespace viscom {
         virtual void LoadFromMemory(const void* data, std::size_t size) override;
 
     private:
+        /**
+         *  Loads a low dynamic range image from file.
+         *  @param filename the path to the image file.
+         *  @param useSRGB defines if the texture uses the standart RGB color space.
+         */
         std::pair<void*, std::size_t> LoadImageLDR(const std::string& filename, bool useSRGB);
+        /**
+         *  Loads a high dynamic range image from file.
+         *  @param filename the path to the image file.
+         */
         std::pair<void*, std::size_t> LoadImageHDR(const std::string& filename);
+        /**
+         *  Finds the appropriate format, internal format and number of bytes per pixel for a low dynamic range image.
+         *  @param filename the path to the image file.
+         *  @param imgChannels the number of channels the image uses.
+         *  @param useSRGB defines if the texture uses the standart RGB color space.
+         */
         std::tuple<unsigned int, int, int> FindFormatLDR(const std::string& filename, int imgChannels, bool useSRGB = false) const;
+        /**
+         *  Finds the appropriate format, internal format and number of bytes per pixel for a high dynamic range image.
+         *  @param filename the path to the image file.
+         *  @param imgChannels the number of channels the image uses.
+         */
         std::tuple<unsigned int, int, int> FindFormatHDR(const std::string& filename, int imgChannels) const;
 
         /** Holds the OpenGL texture id. */

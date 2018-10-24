@@ -118,6 +118,7 @@ namespace viscom {
         bool Read(std::istream& ifs, std::unordered_map<std::uint64_t, SceneMeshNode*>& nodes);
 
     private:
+        /** Defines the type of the VersionableSerializer for the SceneMeshNode class. */
         using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'S', 'M', 'N', 1000>;
 
         /** The nodes name. */

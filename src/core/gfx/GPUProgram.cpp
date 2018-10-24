@@ -59,8 +59,7 @@ namespace viscom {
     // ReSharper disable CppDoxygenUnresolvedReference
     /**
      *  Links a new program.
-     *  @param T the type of the shaders list.
-     *  @param SHAcc the type of the shaders list accessor to the shader id.
+     *  @tparam T the type of the shaders list.
      *  @param name the name of the program.
      *  @param shaders a list of shaders used for creating the program.
      *  @param shaderAccessor function to access the shader id from the shader object in list.

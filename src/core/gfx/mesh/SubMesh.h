@@ -57,6 +57,7 @@ namespace viscom {
         bool Read(std::istream& ifs);
 
     private:
+        /** Defines the type of the VersionableSerializer for the sub mesh class. */
         using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'S', 'B', 'M', 1000>;
 
         /** Holds the sub-meshes object name. */

@@ -99,9 +99,9 @@ namespace viscom {
 
         glm::dvec2 ConvertInputCoordinates(double x, double y);
 
-        /** The function the will create a coordinator node. */
+        /** The function that will create a coordinator node. */
         InitNodeFunc coordinatorNodeFactory_;
-        /** The function the will create a worker node. */
+        /** The function that will create a worker node. */
         InitNodeFunc workerNodeFactory_;
 
         /** Holds the applications configuration. */

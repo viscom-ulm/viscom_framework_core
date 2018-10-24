@@ -72,6 +72,7 @@ namespace viscom {
         bool Read(std::istream& ifs);
 
     private:
+        /** Defines the type of the VersionableSerializer for the animation class. */
         using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'A', 'N', 'M', 1000>;
 
         /** Holds the channels (position, rotation, scaling) for each bone. */

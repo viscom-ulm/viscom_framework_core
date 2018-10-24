@@ -130,14 +130,50 @@ namespace viscom {
         virtual void LoadFromMemory(const void* data, std::size_t size) override;
 
     private:
+        /** Defines the type of the VersionableSerializer for the mesh class. */
         using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'M', 'E', 'S', 1000>;
 
+        /**
+         *  Loads a texture from the texture manager.
+         *  @param relFilename the relative path of the file.
+         *  @param node the node holding the texture manager.
+         */
         std::shared_ptr<const Texture> LoadTexture(const std::string& relFilename, FrameworkInternal* node) const;
+        /**
+         *  Loads a mesh using Assimp, converts the mesh into the frameworks format and saves it.
+         *  @param filename the path to the file.
+         *  @param binFilename the path for saving the frameworks mesh format.
+         *  @param node the framework.
+         */
         void LoadAssimpMeshFromFile(const std::string& filename, const std::string& binFilename, FrameworkInternal* node);
+        /**
+         *  Converts an Assimp scene into the frameworks mesh format.
+         *  @param scene the Assimp scene.
+         *  @param node the framework.
+         */
         void LoadAssimpMesh(const aiScene* scene, FrameworkInternal* node);
+        /**
+         *  Writes the mesh to file.
+         *  @param filename the path of the file to write to.
+         */
         void Save(const std::string& filename) const;
+        /**
+         *  Writes the mesh data to stream.
+         *  @param ofs the stream to write to.
+         */
         void Write(std::ostream& ofs) const;
+        /**
+         *  Loads a mesh of the frameworks format from file.
+         *  @param filename the path of the original file to check if the bin file is still up to date.
+         *  @param binFilename the path of the file to read from.
+         *  @param node the framework.
+         */
         bool Load(const std::string& filename, const std::string& binFilename, FrameworkInternal* node);
+        /**
+         *  Reads the mesh data from stream.
+         *  @param ifs the stream to read from.
+         *  @param node the framework.
+         */
         bool Read(std::istream& ifs, FrameworkInternal* node);
 
         void ParseBoneHierarchy(const std::map<std::string, unsigned int>& bones, const aiNode* node,
