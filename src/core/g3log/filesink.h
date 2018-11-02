@@ -14,6 +14,10 @@
 #include "g3log/logmessage.hpp"
 namespace viscom {
 
+    /**
+    *  This class is a derivation of FileSink for g3log by KjellKod.cc.
+    *  The log files are saved without the timestamp in the file name. That way the file is overwritten every time so there's only one log file at once.
+    */
     class FileSink final {
     public:
         FileSink(const std::string &log_prefix, const std::string &log_directory, bool useTimestamp = false, const std::string &logger_id = "g3log");
