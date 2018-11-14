@@ -55,7 +55,7 @@ namespace viscom {
          *  @param name the resource name.
          *  @param data the resource data.
          *  @param length the length of the resource data.
-         *  @param type the resource type
+         *  @param type the resource type.
          *  @param nodeIndex the index of the node to transfer the resource to.
          */
         void TransferResourceToNode(std::string_view name, const void* data, std::size_t length, ResourceType type, std::size_t nodeIndex);

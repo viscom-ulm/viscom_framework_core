@@ -133,9 +133,14 @@ namespace viscom {
         /** Returns the time elapsed since the last frame. */
         double GetElapsedTime() const { return elapsedTime_; }
 
+        /** Returns the internal framework. */
         FrameworkInternal & GetFramework() { return fwInternal_; }
 
     protected:
+        /**
+         * Sets the application node implementation class.
+         * @param appNodeImpl the new application node implementation.
+         */
         void SetApplicationNode(std::unique_ptr<ApplicationNodeBase> appNodeImpl) { appNodeImpl_ = std::move(appNodeImpl); }
 
     private:
