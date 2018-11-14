@@ -185,9 +185,13 @@ namespace viscom {
         /** Holds the time elapsed since the last frame. */
         double elapsedTime_;
 
+        /** Holds all data of a resource. */
         struct ResourceData {
+            /** Holds the resource type. */
             ResourceType type_ = ResourceType::All_Resources;
+            /** Holds the resource name. */
             std::string name_;
+            /** Holds the resource data. */
             std::vector<std::uint8_t> data_;
 
             bool operator==(const ResourceData& other) const { return type_ == other.type_ && name_ == other.name_; }
