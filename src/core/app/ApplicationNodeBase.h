@@ -174,7 +174,7 @@ namespace viscom {
         /** Return the camera of the scene. */
         CameraHelper* GetCamera() { return framework_->GetCamera(); }
         /**
-         *  Creates frame buffers and appropriate textures and render buffers for offscreen rendering.
+         *  Creates frame buffers, appropriate textures and render buffers for offscreen rendering.
          *  @param fboDesc descriptor holding information about the number and type of textures and render buffers.
          *  @param sizeDivisor size of the frame buffers in inverse proportion to the size of the back buffer.
          */
