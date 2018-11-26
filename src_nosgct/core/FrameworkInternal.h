@@ -213,10 +213,10 @@ namespace viscom {
          */
         static void BaseMousePosCallbackStatic(GLFWwindow* window, double x, double y);
         /**
-         *  The static base function to handle changes in cursor position.
+         *  The static base function to handle mouse wheel scrolling.
          *  @param window the window to retrieve input from.
-         *  @param xoffset horizontal movement of the mouse cursor.
-         *  @param yoffset vertical movement of the mouse cursor.
+         *  @param xoffset horizontal movement of the mouse wheel.
+         *  @param yoffset vertical movement of the mouse wheel.
          */
         static void BaseMouseScrollCallbackStatic(GLFWwindow* window, double xoffset, double yoffset);
 
@@ -235,7 +235,7 @@ namespace viscom {
         void BaseCleanUp();
 
         /**
-         *  The base function to handle keyboard input for a specified GLFW window.
+         *  The base function to handle keyboard input.
          *  @param key GLFW key code.
          *  @param scancode platform specific scancode.
          *  @param action GLFW key and button action.
@@ -261,9 +261,9 @@ namespace viscom {
          */
         void BaseMousePosCallback(double x, double y);
         /**
-         *  The base function to handle changes in cursor position.
-         *  @param xoffset horizontal movement of the mouse cursor.
-         *  @param yoffset vertical movement of the mouse cursor.
+         *  The base function to handle mouse wheel scrolling.
+         *  @param xoffset horizontal movement of the mouse wheel.
+         *  @param yoffset vertical movement of the mouse wheel.
          */
         void BaseMouseScrollCallback(double xoffset, double yoffset);
 

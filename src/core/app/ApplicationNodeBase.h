@@ -89,7 +89,7 @@ namespace viscom {
         virtual bool DataTransferStatusCallback(bool connected, int clientID);
         
         /**
-         *  This method is called once each frame to handle keyboard input.
+         *  This method is called to handle keyboard input.
          *  @param key GLFW key code.
          *  @param scancode platform specific scancode.
          *  @param action GLFW key and button action.
@@ -97,27 +97,27 @@ namespace viscom {
          */
         virtual bool KeyboardCallback(int key, int scancode, int action, int mods);
         /**
-         *  This method is called once each frame to handle keyboard character input.
+         *  This method is called to handle keyboard character input.
          *  @param character key code of the character being pressed.
          *  @param mods modifier key flags.
          */
         virtual bool CharCallback(unsigned int character, int mods);
         /**
-         *  This method is called once each frame to handle mouse button input.
+         *  This method is called to handle mouse button input.
          *  @param button GLFW mouse button code.
          *  @param action GLFW key and button action.
          */
         virtual bool MouseButtonCallback(int button, int action);
         /**
-         *  This method is called once each frame to handle the cursor position.
+         *  This method is called to handle the cursor position.
          *  @param x horizontal position of the mouse cursor.
          *  @param y vertical position of the mouse cursor.
          */
         virtual bool MousePosCallback(double x, double y);
         /**
-         *  This method is called once each frame to handle changes in cursor position.
-         *  @param xoffset horizontal movement of the mouse cursor.
-         *  @param yoffset vertical movement of the mouse cursor.
+         *  This method is called to handle mouse wheel scrolling.
+         *  @param xoffset horizontal movement of the mouse wheel.
+         *  @param yoffset vertical movement of the mouse wheel.
          */
         virtual bool MouseScrollCallback(double xoffset, double yoffset);
         

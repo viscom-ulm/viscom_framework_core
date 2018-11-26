@@ -87,27 +87,27 @@ namespace viscom {
         void DataTransferStatus(bool connected, int clientID);
 
         /**
-         *  This method is called once each frame to handle keyboard input.
+         *  This method is called to handle keyboard input.
          *  @see ApplicationNodeBase::KeyboardCallback.
          */
         virtual void KeyboardCallback(int key, int scancode, int action, int mods);
         /**
-         *  This method is called once each frame to handle keyboard character input.
+         *  This method is called to handle keyboard character input.
          *  @see ApplicationNodeBase::CharCallback.
          */
         virtual void CharCallback(unsigned int character, int mods);
         /**
-         *  This method is called once each frame to handle mouse button input.
+         *  This method is called to handle mouse button input.
          *  @see ApplicationNodeBase::MouseButtonCallback.
          */
         virtual void MouseButtonCallback(int button, int action);
         /**
-         *  This method is called once each frame to handle the cursor position.
+         *  This method is called to handle the cursor position.
          *  @see ApplicationNodeBase::MousePosCallback.
          */
         virtual void MousePosCallback(double x, double y);
         /**
-         *  This method is called once each frame to handle changes in cursor position.
+         *  This method is called to handle mouse wheel scrolling.
          *  @see ApplicationNodeBase::MouseScrollCallback.
          */
         virtual void MouseScrollCallback(double xoffset, double yoffset);
