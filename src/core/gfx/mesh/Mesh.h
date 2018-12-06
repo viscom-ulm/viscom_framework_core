@@ -29,7 +29,7 @@ namespace viscom {
     class TextureManager;
 
     /**
-     * Helper class for loading an OpenGL texture from file.
+     * Class defining a mesh.
      */
     class Mesh final : public Resource
     {

@@ -15,7 +15,7 @@ namespace viscom {
     class ApplicationNodeBase;
 
     /**
-     * Represents a camera rotating around the origin.
+     * The base class for the camera.
      */
     class CameraBase
     {
