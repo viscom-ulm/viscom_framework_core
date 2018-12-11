@@ -10,15 +10,16 @@
 
 #include "core/main.h"
 #include "core/open_gl_fwd.h"
+#include "core/resources/ResourceManager.h"
 
 namespace viscom {
 
-    class ApplicationNodeInternal;
+    class FrameworkInternal;
 
     /**
      * Exception class for shader compiler errors.
      */
-    class shader_compiler_error : public std::exception
+    class shader_compiler_error : public resource_loading_error
     {
     public:
         shader_compiler_error(const std::string& shader, const std::string& errors) noexcept;
@@ -26,7 +27,7 @@ namespace viscom {
         shader_compiler_error& operator=(const shader_compiler_error&) noexcept;
         shader_compiler_error(shader_compiler_error&&) noexcept;
         shader_compiler_error& operator=(shader_compiler_error&&) noexcept;
-        const char* what() const noexcept override;
+        const char* what() const noexcept;
 
     private:
         /** Holds the shader name. */
@@ -43,9 +44,9 @@ namespace viscom {
     class Shader final
     {
     public:
-        Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node);
-        Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node, const std::vector<std::string>& defines);
-        Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node, const std::string& shader);
+        Shader(const std::string& shaderFilename, const FrameworkInternal* node);
+        Shader(const std::string& shaderFilename, const FrameworkInternal* node, const std::vector<std::string>& defines);
+        Shader(const std::string& shaderFilename, const FrameworkInternal* node, const std::string& shader);
         Shader(const Shader& orig) = delete;
         Shader& operator=(const Shader&) = delete;
         Shader(Shader&& orig) noexcept;
@@ -71,7 +72,7 @@ namespace viscom {
         /** Holds the shaders source code. */
         std::string generatedSource_;
 
-        static std::string LoadShaderFile(const std::string &filename, const std::vector<std::string> &defines, const ApplicationNodeInternal* node);
+        static std::string LoadShaderFile(const std::string &filename, const std::vector<std::string> &defines, const FrameworkInternal* node);
         static std::string LoadShaderFileRecursive(const std::string &filename, const std::vector<std::string> &defines, unsigned int &fileId, unsigned int recursionDepth);
         static GLuint CompileShader(const std::string& filename, const std::string& shader, GLenum type, const std::string& strType);
     };

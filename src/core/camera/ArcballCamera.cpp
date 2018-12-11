@@ -59,6 +59,7 @@ namespace viscom {
      *  Handles the mouse events for the camera.
      *  @param button the mouse button the event belongs to.
      *  @param action the mouse buttons action.
+     *  @param mouseWheelDelta the change in the mousewheel rotation.
      *  @param sender the application to supply normalized screen coordinates.
      */
     bool ArcballCamera::HandleMouse(int button, int action, float mouseWheelDelta, const ApplicationNodeBase* sender)

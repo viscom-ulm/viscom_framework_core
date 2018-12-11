@@ -31,6 +31,11 @@ namespace viscom {
     class MeshRenderable
     {
     public:
+        /**
+         *  Creates a new mesh renderable.
+         *  @param renderMesh the mesh to render.
+         *  @param program the GPU program to render the mesh with.
+         */
         template<class VTX> static std::unique_ptr<MeshRenderable> create(const Mesh* renderMesh, GPUProgram* program);
 
         virtual ~MeshRenderable();
@@ -39,13 +44,33 @@ namespace viscom {
         MeshRenderable(MeshRenderable&&) noexcept;
         MeshRenderable& operator=(MeshRenderable&&) noexcept;
 
+        /**
+         *  Draws the mesh of the mesh renderable.
+         *  @param modelMatrix the model matrix to draw the mesh with.
+         *  @param overrideBump flag for bumb map parameters.
+         */
         void Draw(const glm::mat4& modelMatrix, bool overrideBump = false) const;
 
+        /**
+         *  Gets the standart uniform locations when a mesh renderable is created.
+         *  @param program the GPU program to bind the uniforms to.
+         */
         template<class VTX> void NotifyRecompiledShader(const GPUProgram* program);
 
     protected:
+        /** Constructor method.
+         *  @param renderMesh the mesh to render.
+         *  @param vBuffer the meshs vertex buffer.
+         *  @param program the GPU program to be used with the mesh.
+         */
         MeshRenderable(const Mesh* renderMesh, GLuint vBuffer, GPUProgram* program);
 
+        /**
+         *  Draws a node and all its child nodes of the mesh.
+         *  @param modelMatrix the model matrix to draw the mesh with.
+         *  @param node the node to draw.
+         *  @param overrideBump flag for bumb map parameters.
+         */
         void DrawNode(const glm::mat4& modelMatrix, const SceneMeshNode* node, bool overrideBump = false) const;
 
     private:
@@ -60,6 +85,12 @@ namespace viscom {
         /** Holds the standard uniform bindings. */
         std::vector<GLint> uniformLocations_;
 
+        /**
+         *  Draws a sub mesh of the mesh renderable.
+         *  @param modelMatrix the model matrix to draw the sub mesh with.
+         *  @param subMesh the sub mesh to be drawn.
+         *  @param overrideBump flag for bumb map parameters.
+         */
         void DrawSubMesh(const glm::mat4& modelMatrix, const SubMesh* subMesh, bool overrideBump = false) const;
     };
 

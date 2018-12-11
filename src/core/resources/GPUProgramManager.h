@@ -13,10 +13,11 @@
 
 namespace viscom {
 
+    /** Manager for handling all GPU programs. */
     class GPUProgramManager : public ResourceManager<GPUProgram>
     {
     public:
-        explicit GPUProgramManager(ApplicationNodeInternal* node);
+        explicit GPUProgramManager(FrameworkInternal* node);
         GPUProgramManager(const GPUProgramManager&);
         GPUProgramManager& operator=(const GPUProgramManager&);
         GPUProgramManager(GPUProgramManager&&) noexcept;

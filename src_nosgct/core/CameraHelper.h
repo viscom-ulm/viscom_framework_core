@@ -15,36 +15,83 @@
 
 namespace viscom {
 
+    /** Helper class for the camera. */
     class CameraHelper
     {
     public:
+        /**
+         *  Constructor method.
+         *  @param width the camera view plane width.
+         *  @param height the camera view plane height.
+         *  @param userPosition position of the user.
+         */
         CameraHelper(float width, float height, const glm::vec3& userPosition);
 
+        /** Returns the user position. */
         glm::vec3 GetUserPosition() const;
+        /** Returns the position of the camera. */
         const glm::vec3& GetPosition() const { return position_; }
+        /** Returns the orientation of the camera. */
         const glm::quat& GetOrientation() const { return cameraOrientation_; }
+        /** Returns the matrix used for picking global coordinates. */
         const glm::mat4& GetPickMatrix() const { return pickMatrix_; }
+        /**
+         *  Sets the position of the camera.
+         *  @param position new camera position.
+         */
         void SetPosition(const glm::vec3& position) { position_ = position; }
+        /**
+         *  Sets the orientation of the camera.
+         *  @param orientation new camera orientation.
+         */
         void SetOrientation(const glm::quat& orientation) { cameraOrientation_ = orientation; }
+        /**
+         *  Sets the pick matrix of the camera.
+         *  @param pickMatrix new pick matrix for the camera.
+         */
         void SetPickMatrix(const glm::mat4& pickMatrix) { pickMatrix_ = pickMatrix; }
+        /**
+         *  Sets the matrix to calculate local coordinates from global ones.
+         *  @param windowID index of the used window.
+         *  @param localCoordMatrix new local coord matrix.
+         *  @param localScreenSize size of the used screen.
+         */
         void SetLocalCoordMatrix(std::size_t windowID, const glm::mat4& localCoordMatrix, const glm::vec2& localScreenSize);
 
-        /** Get camera matrices (eye dependent). */
+        /** Returns the cameras eye dependent projection matrix. */
         const glm::mat4& GetPerspectiveMatrix() const { return projection_; }
+        /** Returns the cameras eye dependent view-projection matrix. */
         glm::mat4 GetViewPerspectiveMatrix() const;
 
-        /** Get camera matrices (eye independent). */
+        /** Returns the cameras eye independent projection matrix. */
         glm::mat4 GetCentralPerspectiveMatrix() const;
+        /** Returns the cameras eye independent view-projection matrix. */
         glm::mat4 GetCentralViewPerspectiveMatrix() const;
 
+        /**
+         *  Returns a ray for picking.
+         *  @param globalScreenCoords global screen coordinates to pick.
+         */
         math::Line3<float> GetPickRay(const glm::vec2& globalScreenCoords) const;
+        /**
+         *  Returns the picked position in world space.
+         *  @param globalScreenCoords global screen coordinates to pick.
+         */
         glm::vec3 GetPickPosition(const glm::vec2& globalScreenCoords) const;
 
+        /** Returns the cameras near plane. */
         float GetNearPlane() const { return nearPlane_; }
+        /** Returns the cameras far plane. */
         float GetFarPlane() const { return farPlane_; }
+        /**
+         *  Sets the near and far plane values;
+         *  @param near new near plane value.
+         *  @param far new far plane value.
+         */
         void SetNearFarPlane(float near, float far);
 
     private:
+        /** Calculates and returns the cameras view matrix using user and camera position and camera orientation. */
         glm::mat4 CalculateViewUpdate() const;
 
         /** Position of the camera. */

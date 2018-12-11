@@ -20,12 +20,8 @@ namespace viscom {
 
     /**
      *  Constructor.
-     *  @param theFovY the field of view in y direction.
-     *  @param theAspectRatio the screens aspect ratio.
-     *  @param theScreenSize the screen size.
-     *  @param theNearZ the near z plane
-     *  @param theFarZ the far z plane
      *  @param theCamPos the cameras initial position.
+     *  @param cameraHelper the cameraHelper object holding all information about the view frustum.
      */
     CameraBase::CameraBase(const glm::vec3& theCamPos, viscom::CameraHelper& cameraHelper) noexcept :
         cameraHelper_{ cameraHelper }

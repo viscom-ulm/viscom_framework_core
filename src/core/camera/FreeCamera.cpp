@@ -18,7 +18,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/vector_angle.hpp>
-#include "core/ApplicationNodeBase.h"
+#include "core/app/ApplicationNodeBase.h"
 
 namespace viscom {
 
@@ -43,7 +43,9 @@ namespace viscom {
     }
 
     /**
-     *  Updates the camera parameters using the internal arc-ball.
+     *  Updates the camera position and rotation.
+     *  @param elapsedTime the time elapsed since the last frame.
+     *  @param sender the application to retrieve key and mouse inputs from.
      */
     void FreeCamera::UpdateCamera(double elapsedTime, const ApplicationNodeBase* sender)
     {
@@ -83,7 +85,8 @@ namespace viscom {
     }
 
     /**
-     * Set the speed of camera movement.
+     *  Set the speed of camera movement.
+     *  @param speed new camera speed
      */
     void FreeCamera::SetMoveSpeed(double speed)
     {
@@ -91,8 +94,8 @@ namespace viscom {
     }
 
     /**
-     * Get the current speed of camera movement
-     * @return speed value
+     *  Get the current speed of camera movement
+     *  @return speed value
      */
     double FreeCamera::GetMoveSpeed()
     {

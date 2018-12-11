@@ -8,7 +8,7 @@
 
 #include "GPUProgram.h"
 #include <iostream>
-#include "core/ApplicationNodeInternal.h"
+#include "core/FrameworkInternal.h"
 #include "core/gfx/Shader.h"
 #include "core/open_gl.h"
 #include "core/utils/utils.h"
@@ -16,10 +16,12 @@
 namespace viscom {
 
     /**
-     * Constructor.
-     * @param theProgramName the name of the program used to identify during logging.
+     *  Constructor.
+     *  @param theProgramName the name of the program used to identify during logging.
+     *  @param node the application object for dependencies.
+     *  @param synchronize defines if the GPU program is a synchronized resource.
      */
-    GPUProgram::GPUProgram(const std::string& theProgramName, ApplicationNodeInternal* node, bool synchronize) :
+    GPUProgram::GPUProgram(const std::string& theProgramName, FrameworkInternal* node, bool synchronize) :
         Resource(theProgramName, ResourceType::GPUProgram, node, synchronize),
         programName_(theProgramName),
         program_(0)
@@ -57,8 +59,7 @@ namespace viscom {
     // ReSharper disable CppDoxygenUnresolvedReference
     /**
      *  Links a new program.
-     *  @param T the type of the shaders list.
-     *  @param SHAcc the type of the shaders list accessor to the shader id.
+     *  @tparam T the type of the shaders list.
      *  @param name the name of the program.
      *  @param shaders a list of shaders used for creating the program.
      *  @param shaderAccessor function to access the shader id from the shader object in list.
@@ -70,7 +71,7 @@ namespace viscom {
         auto program = glCreateProgram();
         if (program == 0) {
             std::cerr << "Could not create GPU program!";
-            throw std::runtime_error("Could not create GPU program!");
+            throw resource_loading_error(name, "Could not create GPU program!");
         }
         for (const auto& shader : shaders) {
             glAttachShader(program, shaderAccessor(shader));
@@ -106,7 +107,8 @@ namespace viscom {
      */
     void GPUProgram::recompileProgram()
     {
-        Load(std::optional<std::vector<std::uint8_t>>());
+        auto tmp = std::optional<std::vector<std::uint8_t>>();
+        Load(tmp);
     }
 
     GLint GPUProgram::getUniformLocation(const std::string& name) const
@@ -149,7 +151,7 @@ namespace viscom {
         return result;
     }
 
-    void GPUProgram::LoadProgram(viscom::function_view<std::unique_ptr<Shader>(const std::string&, const ApplicationNodeInternal*)> createShader)
+    void GPUProgram::LoadProgram(viscom::function_view<std::unique_ptr<Shader>(const std::string&, const FrameworkInternal*)> createShader)
     {
         ShaderList oldShaders = std::move(shaders_);
         GLuint oldProgram = program_;
@@ -169,7 +171,7 @@ namespace viscom {
 
     void GPUProgram::Load(std::optional<std::vector<std::uint8_t>>& data)
     {
-        LoadProgram([this](const std::string& shaderName, const ApplicationNodeInternal* node) { return std::make_unique<Shader>(shaderName, node, defines_); });
+        LoadProgram([this](const std::string& shaderName, const FrameworkInternal* node) { return std::make_unique<Shader>(shaderName, node, defines_); });
         if (data.has_value()) {
             data->clear();
 
@@ -209,6 +211,6 @@ namespace viscom {
             shaderNameMap[shaderName] = shader;
         }
 
-        LoadProgram([&shaderNameMap](const std::string& shaderName, const ApplicationNodeInternal* node) { return std::make_unique<Shader>(shaderName, node, shaderNameMap[shaderName]); });
+        LoadProgram([&shaderNameMap](const std::string& shaderName, const FrameworkInternal* node) { return std::make_unique<Shader>(shaderName, node, shaderNameMap[shaderName]); });
     }
 }

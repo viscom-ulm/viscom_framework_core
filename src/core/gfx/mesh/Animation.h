@@ -19,6 +19,7 @@
 
 namespace viscom {
 
+    /** Type alias to describe animation time values. */
     using Time = float;
 
     /**
@@ -28,8 +29,11 @@ namespace viscom {
      */
     struct Channel
     {
+        /** Nodes position at specific timestamps. */
         std::vector<std::pair<Time, glm::vec3>> positionFrames_;
+        /** Nodes rotation at specific timestamps. */
         std::vector<std::pair<Time, glm::quat>> rotationFrames_;
+        /** Nodes scale at specific timestamps. */
         std::vector<std::pair<Time, glm::vec3>> scalingFrames_;
     };
 
@@ -40,27 +44,43 @@ namespace viscom {
         Animation();
         Animation(aiAnimation* aiAnimation, const std::map<std::string, unsigned int>& boneNameToOffset);
 
+        /** Returns the number of ticks per second. */
         float GetFramesPerSecond() const;
+        /** Returns the duration of the animation in seconds. */
         float GetDuration() const;
+        /** Returns the channels for each bone. */
         const std::vector<Channel>& GetChannels() const;
+        /**
+         *  Returns the channel of one bone.
+         *  @param id id of the bone.
+         */
         const Channel& GetChannel(std::size_t id) const;
 
         Animation GetSubSequence(Time start, Time end) const;
 
         glm::mat4 ComputePoseAtTime(std::size_t id, Time time) const;
 
+        /**
+         *  Writes the channels of the animation to a stream.
+         *  @param ofs stream to write to.
+         */
         void Write(std::ostream& ofs) const;
+        /**
+         *  Reads the channels of the animation from a stream.
+         *  @param ifs stream to read from.
+         */
         bool Read(std::istream& ifs);
 
     private:
+        /** Defines the type of the VersionableSerializer for the animation class. */
         using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'A', 'N', 'M', 1000>;
 
-        /// Holds the channels (position, rotation, scaling) for each bone.
+        /** Holds the channels (position, rotation, scaling) for each bone. */
         std::vector<Channel> channels_;
-        /// Ticks per second.
-        float framesPerSecond_ = 0;
-        /// Duration of this animation.
-        float duration_ = 0;
+        /** Ticks per second. */
+        float framesPerSecond_ = 0.f;
+        /** Duration of this animation. */
+        float duration_ = 0.f;
     };
 
     inline float Animation::GetFramesPerSecond() const { return framesPerSecond_; }

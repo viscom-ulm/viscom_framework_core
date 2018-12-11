@@ -14,12 +14,13 @@
 #ifndef __APPLE_CC__
 #include <experimental/filesystem>
 #endif
-#include "core/ApplicationNodeInternal.h"
+#include "core/FrameworkInternal.h"
 #include <regex>
 #include "core/open_gl.h"
 
 namespace viscom {
 
+    /** Header inclusion depth limit. */
     constexpr unsigned int MAX_INCLUDE_RECURSION_DEPTH = 32; //-V112
 
     /**
@@ -28,6 +29,7 @@ namespace viscom {
      * @param errors the error string OpenGL returned
      */
     shader_compiler_error::shader_compiler_error(const std::string& shader, const std::string& errors) noexcept :
+        resource_loading_error(shader, errors),
         shr_(shader.size() + 1),
         errs_(errors.size() + 1),
         myWhat_(0)
@@ -69,7 +71,7 @@ namespace viscom {
      *  @param rhs the object to move.
      */
     shader_compiler_error::shader_compiler_error(shader_compiler_error&& rhs) noexcept :
-    std::exception(std::move(rhs)),
+        resource_loading_error(std::move(rhs)),
         shr_(std::move(rhs.shr_)),
         errs_(std::move(rhs.errs_)),
         myWhat_(std::move(rhs.myWhat_))
@@ -82,8 +84,8 @@ namespace viscom {
      */
     shader_compiler_error& shader_compiler_error::operator= (shader_compiler_error&& rhs) noexcept
     {
-        std::exception* tExcpt = this;
-        *tExcpt = std::move(static_cast<std::exception&&>(rhs));
+        resource_loading_error* tExcpt = this;
+        *tExcpt = std::move(static_cast<resource_loading_error&&>(rhs));
         if (this != &rhs) {
             shr_ = std::move(rhs.shr_);
             errs_ = std::move(rhs.errs_);
@@ -99,21 +101,34 @@ namespace viscom {
     }
 
     /**
-     * Constructor.
-     * @param shaderFilename the shader file name
+     *  Constructor.
+     *  @param shaderFilename the shader file name
+     *  @param node the application holding the configuration to retrieve the search paths.
      */
-    Shader::Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node) :
+    Shader::Shader(const std::string& shaderFilename, const FrameworkInternal* node) :
         Shader{ shaderFilename, node, std::vector<std::string>{} }
     {
     }
 
-    Shader::Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node, const std::vector<std::string>& defines) :
+    /**
+     *  Constructor.
+     *  @param shaderFilename the shader file name
+     *  @param node the application holding the configuration to retrieve the search paths.
+     *  @param defines the defines to be used in the shader.
+     */
+    Shader::Shader(const std::string& shaderFilename, const FrameworkInternal* node, const std::vector<std::string>& defines) :
         Shader{ shaderFilename, node, LoadShaderFile(shaderFilename, defines, node) }
     {
         defines_ = defines;
     }
 
-    Shader::Shader(const std::string& shaderFilename, const ApplicationNodeInternal* node, const std::string& shader) :
+    /**
+     *  Constructor.
+     *  @param shaderFilename the shader file name
+     *  @param node the application holding the configuration to retrieve the search paths.
+     *  @param shader source code of the shader.
+     */
+    Shader::Shader(const std::string& shaderFilename, const FrameworkInternal* node, const std::string& shader) :
         filename_{ shaderFilename },
         shader_{ 0 },
         type_{ GL_VERTEX_SHADER },
@@ -186,14 +201,14 @@ namespace viscom {
     }
 
     /**
-    * Loads a shader from file and recursively adds all includes.
-    * taken from https://github.com/dasmysh/OGLFramework_uulm/blob/c4548e84d29bc16b53360f65227597530306c686/OGLFramework_uulm/gfx/glrenderer/Shader.cpp
-    * licensed under MIT by Sebastian Maisch
-    * @param filename the name of the file to load.
-    * @param defines the defines to add at the beginning.
-    * @param fileId the id of the current file.
-    */
-    std::string Shader::LoadShaderFile(const std::string& filename, const std::vector<std::string>& defines, const ApplicationNodeInternal* node)
+     *  Loads a shader from file and recursively adds all includes.
+     *  taken from https://github.com/dasmysh/OGLFramework_uulm/blob/c4548e84d29bc16b53360f65227597530306c686/OGLFramework_uulm/gfx/glrenderer/Shader.cpp
+     *  licensed under MIT by Sebastian Maisch
+     *  @param filename the name of the file to load.
+     *  @param defines the defines to add at the beginning.
+     *  @param node the application holding the configuration to retrieve the search paths.
+     */
+    std::string Shader::LoadShaderFile(const std::string& filename, const std::vector<std::string>& defines, const FrameworkInternal* node)
     {
         auto fullFilename = Resource::FindResourceLocation("shader/" + filename, node);
         unsigned int fileId{ 0 };
@@ -205,6 +220,10 @@ namespace viscom {
         return shaderText;
     }
 
+    /**
+     *  Loads a shader from file and recursively adds all includes.
+     *  @see LoadShaderFile.
+     */
     std::string Shader::LoadShaderFileRecursive(const std::string & filename, const std::vector<std::string>& defines, unsigned int& fileId, unsigned int recursionDepth)
     {
 #ifdef __APPLE_CC__
@@ -213,7 +232,7 @@ namespace viscom {
         if (!file) {
             LOG(WARNING) << "Could not load shader file!";
             std::cerr << "Could not load shader file!";
-            throw std::runtime_error("Could not load shader file!");
+            throw resource_loading_error(filename, "Could not load shader file!");
         }
         std::string line;
         std::stringstream content;
@@ -226,7 +245,7 @@ namespace viscom {
 #else
         if (recursionDepth > MAX_INCLUDE_RECURSION_DEPTH) {
             LOG(WARNING) << L"Header inclusion depth limit reached! Cyclic header inclusion?";
-            throw std::runtime_error("Header inclusion depth limit reached! Cyclic header inclusion? File " + filename);
+            throw resource_loading_error(filename, "Header inclusion depth limit reached! Cyclic header inclusion? File " + filename);
         }
         namespace filesystem = std::experimental::filesystem;
         filesystem::path sdrFile{ filename };
@@ -248,7 +267,7 @@ namespace viscom {
                 if (!filesystem::exists(includeFile)) {
                     LOG(WARNING) << filename.c_str() << L"(" << lineCount << R"() : fatal error: cannot open include file ")"
                         << includeFile.c_str() << R"(".)";
-                    throw std::runtime_error("Cannot open include file: " + includeFile);
+                    throw resource_loading_error(filename, "Cannot open include file: " + includeFile);
                 }
                 content << "#line " << 1 << " " << nextFileId << std::endl;
                 content << LoadShaderFileRecursive(includeFile, std::vector<std::string>(), nextFileId, recursionDepth + 1);
@@ -275,11 +294,12 @@ namespace viscom {
     }
 
     /**
-     * Loads a shader from file and compiles it.
-     * @param filename the shader file name
-     * @param type the shader type
-     * @param strType the shader type as string
-     * @return the compiled shader if successful
+     *  Loads a shader from file and compiles it.
+     *  @param filename the shader file name.
+     *  @param shaderText the shader code as a string.
+     *  @param type the shader type.
+     *  @param strType the shader type as string.
+     *  @return the compiled shader if successful.
      */
     GLuint Shader::CompileShader(const std::string& filename, const std::string& shaderText, GLenum type, const std::string& strType)
     {
@@ -287,7 +307,7 @@ namespace viscom {
         if (shader == 0) {
             LOG(WARNING) << "Could not create shader!";
             std::cerr << "Could not create shader!";
-            throw std::runtime_error("Could not create shader!");
+            throw resource_loading_error(filename, "Could not create shader!");
         }
         auto shaderTextArray = shaderText.c_str();
         auto shaderLength = static_cast<int>(shaderText.length());

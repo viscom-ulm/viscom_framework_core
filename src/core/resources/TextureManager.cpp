@@ -14,7 +14,7 @@ namespace viscom {
      * Constructor.
      * @param node the application object for resolving dependencies.
      */
-    TextureManager::TextureManager(ApplicationNodeInternal* node) :
+    TextureManager::TextureManager(FrameworkInternal* node) :
         ResourceManagerBase(node)
     {
     }

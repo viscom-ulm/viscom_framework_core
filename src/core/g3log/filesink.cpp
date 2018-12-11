@@ -11,7 +11,7 @@
 #include "filesinkhelper.inl"
 #include <cassert>
 
-namespace vku {
+namespace viscom {
 
     std::string createLogFileName(const std::string& _log_prefix_backup, const std::string& logger_id, bool useTimestamp)
     {

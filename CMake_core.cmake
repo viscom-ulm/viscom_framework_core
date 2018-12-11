@@ -1,5 +1,5 @@
 set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
-set(CMAKE_DEBUGSLAVE_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
+set(CMAKE_DEBUGWORKER_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows.")
 
 set(G3_SHARED_LIB OFF CACHE BOOL "Build shared library." FORCE)
@@ -15,6 +15,8 @@ set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 add_subdirectory(extern/fwcore/extern/assimp EXCLUDE_FROM_ALL)
+
+find_package(Doxygen)
 
 set(VISCOM_CLIENTGUI ON CACHE BOOL "Use ImGui on clients.")
 set(VISCOM_SYNCINPUT ON CACHE BOOL "Synchronize input from master to clients.")
@@ -56,6 +58,7 @@ file(GLOB EXTERN_SOURCES_CORE
 
 if (${VISCOM_USE_SGCT})
     list(APPEND COMPILE_TIME_DEFS VISCOM_USE_SGCT)
+    set(VISCOM_SGCT_TAG "sgct")
     set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/extern/fwcore/src_sgct/)
 else()
     option(GLFW_BUILD_DOCS OFF)
@@ -64,6 +67,7 @@ else()
     option(GLFW_INSTALL OFF)
     add_subdirectory(extern/fwcore/extern/glfw EXCLUDE_FROM_ALL)
 
+    set(VISCOM_SGCT_TAG "nosgct")
     list(APPEND COMPILE_TIME_DEFS GLEW_STATIC)
     list(APPEND EXTERN_SOURCES_CORE extern/fwcore/src_nosgct/glew/src/glew.c)
     set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/extern/fwcore/src_nosgct/)
@@ -71,6 +75,7 @@ endif()
 
 
 file(GLOB_RECURSE SHADER_FILES_CORE ${PROJECT_SOURCE_DIR}/extern/fwcore/resources/shader/*.*)
+list(FILTER SHADER_FILES_CORE EXCLUDE REGEX ".*\.gen$")
 file(GLOB_RECURSE SRC_FILES_CORE
     ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.h
     ${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/*.cpp
@@ -83,8 +88,8 @@ source_group("shader\\core" FILES ${SHADER_FILES_CORE})
 
 if (${VISCOM_LOCAL_ONLY})
     list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/CalibrationVertices.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/SlaveNodeInternal.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/SlaveNodeInternal.cpp")
+    list(REMOVE_ITEM SRC_FILES_CORE "${VISCOM_SGCT_WRAPPER_DIR}/core/app_internal/WorkerNodeCalibratedInternal.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${VISCOM_SGCT_WRAPPER_DIR}/core/app_internal/WorkerNodeCalibratedInternal.cpp")
     list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/OpenCVParserHelper.h")
     list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/extern/fwcore/src/core/OpenCVParserHelper.cpp")
 endif()
@@ -99,6 +104,10 @@ foreach(f ${SRC_FILES_CORE})
 endforeach()
 
 
+if(UNIX)
+    set(OpenGL_GL_PREFERENCE GLVND)
+endif()
+
 if (${VISCOM_USE_SGCT})
     find_package(OpenGL REQUIRED)
     find_library(SGCT_RELEASE_LIBRARY NAMES sgct libsgct PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
@@ -109,11 +118,17 @@ if (${VISCOM_USE_SGCT})
         debug ${SGCT_DEBUG_LIBRARY}
         optimized ${SGCT_RELEASE_LIBRARY})
 
-    list(APPEND CORE_LIBS ${SGCT_LIBS} ${OPENGL_LIBRARY} ws2_32)
+    list(APPEND CORE_LIBS ${SGCT_LIBS})
+    if(MSVC)
+        list(APPEND CORE_LIBS OpenGL::GL ws2_32)
+    elseif(UNIX)
+        find_package(Threads REQUIRED)
+        list(APPEND CORE_LIBS dl OpenGL::OpenGL OpenGL::GLX X11 Xrandr Xcursor Xinerama Xxf86vm Threads::Threads)
+    endif()
     list(APPEND CORE_INCLUDE_DIRS ${SGCT_INCLUDE_DIRECTORY})
 else()
     find_package(OpenGL REQUIRED)
-    list(APPEND CORE_LIBS glfw ${GLFW_LIBRARIES} ${OPENGL_LIBRARY})
+    list(APPEND CORE_LIBS glfw ${GLFW_LIBRARIES} OpenGL::GL)
     list(APPEND CORE_INCLUDE_DIRS extern/fwcore/extern/glm extern/fwcore/extern/glfw/include)
 endif()
 
@@ -154,6 +169,18 @@ if(${VISCOM_USE_TUIO})
     list(APPEND COMPILE_TIME_DEFS VISCOM_USE_TUIO)
     list(APPEND CORE_LIBS libTUIO)
     list(APPEND CORE_INCLUDE_DIRS extern/fwcore/extern/tuio/TUIO extern/fwcore/extern/tuio/oscpack)
+endif()
+
+if(TARGET Doxygen::doxygen)
+    get_property(DOXYGEN_EXECUTABLE TARGET Doxygen::doxygen PROPERTY IMPORTED_LOCATION)
+
+    set(DOXYGEN_IN ${PROJECT_SOURCE_DIR}/extern/fwcore/doc/Doxyfile.in)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+
+    add_custom_target(doc_doxygen ALL COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/extern/fwcore/doc COMMENT "Generating API documentation with Doxygen" VERBATIM)
+    ## doxygen_add_docs(VISCOMCoreDoc extern/fwcore/src)
 endif()
 
 add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${EXTERN_SOURCES_CORE})

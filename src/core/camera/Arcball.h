@@ -21,7 +21,7 @@ namespace viscom {
     {
     public:
         Arcball(int button) noexcept;
-
+        
         bool HandleMouse(int button, int action, const ApplicationNodeBase* sender) noexcept;
         glm::quat GetWorldRotation(double elapsedTime, const glm::quat& camPosOrientation) noexcept;
 

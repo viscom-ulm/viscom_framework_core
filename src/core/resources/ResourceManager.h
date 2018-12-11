@@ -10,18 +10,58 @@
 
 #include "core/main.h"
 #include <unordered_map>
+#include <mutex>
 #include <optional>
 
-namespace viscom {
-    class ApplicationNodeInternal;
+#include "core/gfx/Texture.h"
 
+namespace viscom {
+
+    class FrameworkInternal;
+
+    /** Struct for errors occurring while loading resources. */
     struct resource_loading_error
     {
+        /**
+         *  Constructor.
+         *  @param resId the resource ID.
+         *  @param errorDesc a string holding the error description.
+         */
         resource_loading_error(const std::string& resId, const std::string& errorDesc) : resId_{resId}, errorDescription_{errorDesc} {}
         /** Holds the resource id. */
         std::string resId_;
         /** Holds the error description. */
         std::string errorDescription_;
+    };
+
+    /** Base class for the ResourceManager. */
+    class BaseResourceManager
+    {
+    public:
+        /** Constructor for resource managers. */
+        explicit BaseResourceManager(FrameworkInternal* node) : appNode_{ node } {}
+        /** Default destructor. */
+        virtual ~BaseResourceManager() = default;
+
+    protected:
+        /**
+         *  Requests a shared resource from the coordinator node.
+         *  @param name the resource name.
+         *  @param type the resource type.
+         */
+        void RequestSharedResource(std::string_view name, ResourceType type);
+        /**
+         *  Sends a shared resource to a worker node.
+         *  @param name the resource name.
+         *  @param data the resource data.
+         *  @param length the length of the resource data.
+         *  @param type the resource type.
+         *  @param nodeIndex the index of the node to transfer the resource to.
+         */
+        void TransferResourceToNode(std::string_view name, const void* data, std::size_t length, ResourceType type, std::size_t nodeIndex);
+
+        /** Holds the application base. */
+        FrameworkInternal* appNode_;
     };
 
     /**
@@ -31,7 +71,7 @@ namespace viscom {
      * @date   2014.01.03
      */
     template<typename rType>
-    class ResourceManager
+    class ResourceManager : public BaseResourceManager
     {
     protected:
         /** The resource managers resource type. */
@@ -45,10 +85,10 @@ namespace viscom {
 
     public:
         /** Constructor for resource managers. */
-        explicit ResourceManager(ApplicationNodeInternal* node) : appNode_{ node } {}
+        explicit ResourceManager(FrameworkInternal* node) : BaseResourceManager{ node } {}
 
         /** Copy constructor. */
-        ResourceManager(const ResourceManager& rhs) : ResourceManager(rhs.appNode_)
+        ResourceManager(const ResourceManager& rhs) : BaseResourceManager{ rhs }
         {
             for (const auto& res : rhs.resources_) {
                 resources_.emplace(res.first, std::weak_ptr<ResourceType>());
@@ -64,24 +104,20 @@ namespace viscom {
         }
 
         /** Default move constructor. */
-        ResourceManager(ResourceManager&& rhs) noexcept : resources_(std::move(rhs.resources_)), appNode_(rhs.appNode_) {}
+        ResourceManager(ResourceManager&& rhs) noexcept : BaseResourceManager{ std::move(rhs) }, resources_(std::move(rhs.resources_)) {}
         /** Default move assignment operator. */
         ResourceManager& operator=(ResourceManager&& rhs) noexcept
         {
-            if (this != &rhs) {
-                resources_ = std::move(rhs.resources_);
-                appNode_ = rhs.appNode_;
-            }
+            BaseResourceManager::operator=(std::move(rhs));
+            resources_ = std::move(rhs.resources_);
             return *this;
         }
 
-        /** Default destructor. */
-        virtual ~ResourceManager() = default;
-
         /**
-         * Gets a resource from the manager.
-         * @param resId the resources id
-         * @return the resource as a shared pointer
+         *  Gets a resource from the manager.
+         *  @param resId the resources id
+         *  @param args addtitional arguments.
+         *  @return the resource as a shared pointer
          */
         template<typename... Args>
         std::shared_ptr<ResourceType> GetResource(const std::string& resId, Args&&... args)
@@ -94,9 +130,10 @@ namespace viscom {
 
 
         /**
-         * Gets a synchronized resource from the manager.
-         * @param resId the resources id
-         * @return the resource as a shared pointer
+         *  Gets a synchronized resource from the manager.
+         *  @param resId the resources id
+         *  @param args addtitional arguments.
+         *  @return the resource as a shared pointer
          */
         template<typename... Args>
         std::shared_ptr<ResourceType> GetSynchronizedResource(const std::string& resId, Args&&... args)
@@ -121,15 +158,15 @@ namespace viscom {
 
 
         /**
-         * Checks if the resource manager contains this resource.
-         * @param resId the resources id
-         * @return whether the manager contains the resource or not.
+         *  Checks if the resource manager contains this resource.
+         *  @param resId the resources id
+         *  @return whether the manager contains the resource or not.
          */
         bool HasResource(const std::string& resId) const
         {
             std::lock_guard<std::mutex> accessLock{ mtx_ };
             auto rit = resources_.find(resId);
-            return (rit != resources_.end()) && !rit->expired();
+            return (rit != resources_.end()) && !rit->second.expired();
         }
 
         /** Releases a shared resource (it is not deleted if the shared pointers to it are used elsewhere). */
@@ -140,6 +177,13 @@ namespace viscom {
             if (rit != syncedResources_.end()) rit = syncedResources_.erase(rit);
         }
 
+        /**
+         *  Creates and loads a synchronized resource.
+         *  @param resId the index of the resource.
+         *  @param data pointer to the resource data.
+         *  @param size size of the resource data.
+         *  @param args addtitional arguments.
+         */
         template<typename... Args>
         void CreateSharedResource(const std::string& resId, const void* data, std::size_t size, Args&&... args)
         {
@@ -156,18 +200,26 @@ namespace viscom {
             }
         }
 
+        /**
+         *  Adds the resource with the specified id to the list of resources to wait for.
+         *  @param resId the resource id.
+         */
         void WaitForResource(const std::string& resId)
         {
             waitedResources_.push_back(syncedResources_[resId]);
         }
 
+        /**
+         *  Checks for each resource to wait for if it's loaded.
+         *  Requests the resource again if necessary.
+         */
         bool ProcessResourceWaitList()
         {
             if (waitedResources_.empty()) return false;
             std::vector<std::shared_ptr<ResourceType>> newWaitedResources;
             for (auto& waitedResource : waitedResources_) if (!waitedResource->IsLoaded()) {
                 waitedResource->IncreaseLoadCounter();
-                if (waitedResource->GetLoadCounter() > 10) appNode_->RequestSharedResource(waitedResource->GetId(), waitedResource->GetType());
+                if (waitedResource->GetLoadCounter() > 10) RequestSharedResource(waitedResource->GetId(), waitedResource->GetType());
                 newWaitedResources.emplace_back(std::move(waitedResource));
             }
 
@@ -175,27 +227,43 @@ namespace viscom {
             return !waitedResources_.empty();
         }
 
+        /**
+         *  Sends all resources to the specified node.
+         *  @param clientID index of the client to send the resources to.
+         */
         void SynchronizeAllResourcesToNode(int clientID)
         {
             std::lock_guard<std::mutex> syncAccessLock{ syncMtx_ };
 
             for (const auto& res : syncedResources_) {
-                appNode_->TransferResourceToNode(res.first, res.second->GetData().data(), res.second->GetData().size(), res.second->GetType(), clientID);
+                TransferResourceToNode(res.first, res.second->GetData().data(), res.second->GetData().size(), res.second->GetType(), clientID);
             }
         }
 
+        /**
+         *  Sends a resource to the specified node.
+         *  @param resId index of the resource to be sent.
+         *  @param clientID index of the client to send the resource to.
+         */
         void SynchronizeResourceToNode(const std::string& resId, int clientID)
         {
             std::lock_guard<std::mutex> syncAccessLock{ syncMtx_ };
 
             auto rit = syncedResources_.find(resId);
             if (rit != syncedResources_.end()) {
-                appNode_->TransferResourceToNode(rit->first, rit->second->GetData().data(), rit->second->GetData().size(), rit->second->GetType(), clientID);
+                TransferResourceToNode(rit->first, rit->second->GetData().data(), rit->second->GetData().size(), rit->second->GetType(), clientID);
             }
             else LOG(WARNING) << "Requested resource does not exist: " << resId;
         }
 
     protected:
+
+        /**
+         *  Returns the resource with the specified ID or loads the resource if non existent.
+         *  @param resId the resource ID.
+         *  @param synchronized defines if the resource is synchronized.
+         *  @param args additional arguments.
+         */
         template<typename... Args>
         std::shared_ptr<ResourceType> GetResourceInternal(const std::string& resId, bool synchronized, Args&&... args)
         {
@@ -216,6 +284,13 @@ namespace viscom {
             return wpResource.lock();
         }
 
+        /**
+         *  Loads a new resource.
+         *  @param resId the resource ID.
+         *  @param synchronized defines if the resource is synchronized.
+         *  @param spResource a shared pointer to the resource object to load.
+         *  @param args additional arguments.
+         */
         template<typename... Args>
         void LoadResource(const std::string& resId, bool synchronized, std::shared_ptr<ResourceType>& spResource, Args&&... args)
         {
@@ -244,14 +319,12 @@ namespace viscom {
 
         /** Holds the resources managed. */
         ResourceMap resources_;
-        /** Holds the application base. */
-        ApplicationNodeInternal* appNode_;
         /** Holds a map of synchronized resources (to make sure they are not deleted). */
         SyncedResourceMap syncedResources_;
         /** Holds a list of resources to wait for. */
         std::vector<std::shared_ptr<rType>> waitedResources_;
         /** Holds a mutex to the resources. */
-        std::mutex mtx_;
+        mutable std::mutex mtx_;
         /** Holds a mutex to the synced resources. */
         std::mutex syncMtx_;
     };
