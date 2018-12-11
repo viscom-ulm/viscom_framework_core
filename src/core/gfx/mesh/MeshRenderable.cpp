@@ -105,6 +105,8 @@ namespace viscom {
 
     void MeshRenderable::DrawSubMesh(const glm::mat4& modelMatrix, const SubMesh* subMesh, bool overrideBump) const
     {
+        if (subMesh->GetNumberOfIndices() == 0) return;
+
         glUniformMatrix4fv(uniformLocations_[0], 1, GL_FALSE, glm::value_ptr(modelMatrix));
         glUniformMatrix3fv(uniformLocations_[1], 1, GL_FALSE, glm::value_ptr(glm::inverseTranspose(glm::mat3(modelMatrix))));
 

@@ -49,7 +49,7 @@ namespace viscom {
             else if (!IsLoaded()) appNode_->WaitForResource(id_, type_);
         }
         else {
-            std::optional<std::vector<std::uint8_t>> optData(std::vector<std::uint8_t>{});
+            std::optional<std::vector<std::uint8_t>> optData;
             Load(optData);
             loadCounter_ = -1;
         }
