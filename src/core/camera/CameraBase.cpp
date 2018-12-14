@@ -8,8 +8,10 @@
 
 #include "CameraBase.h"
 
-#define GLM_SWIZZLE
+#define GLM_FORCE_SWIZZLE
 #include <core/open_gl.h>
+
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
