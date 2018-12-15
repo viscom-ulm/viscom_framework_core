@@ -54,7 +54,9 @@ endif()
 file(GLOB EXTERN_SOURCES_CORE
     extern/fwcore/extern/imgui/imgui.cpp
     extern/fwcore/extern/imgui/imgui_draw.cpp
-    extern/fwcore/extern/imgui/imgui_demo.cpp)
+    extern/fwcore/extern/imgui/imgui_demo.cpp
+    extern/fwcore/extern/imgui/imgui_widgets.cpp
+    extern/fwcore/extern/imgui/misc/cpp/imgui_stdlib.cpp)
 
 if (${VISCOM_USE_SGCT})
     list(APPEND COMPILE_TIME_DEFS VISCOM_USE_SGCT)
@@ -103,6 +105,9 @@ foreach(f ${SRC_FILES_CORE})
     source_group("${SRCGR}" FILES ${f})
 endforeach()
 
+file(GLOB TOP_SRC_FILES_CORE
+    extern/fwcore/extern/glm/util/glm.natvis
+    extern/fwcore/extern/imgui/misc/natvis/imgui.natvis)
 
 if(UNIX)
     set(OpenGL_GL_PREFERENCE GLVND)
@@ -138,6 +143,7 @@ list(APPEND CORE_INCLUDE_DIRS
     extern/fwcore/extern/g3log/src
     ${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/g3log/include
     extern/fwcore/extern/imgui
+    extern/fwcore/extern/imgui/misc/cpp
     extern/fwcore/extern/stb
     extern/fwcore/extern/assimp/include
     ${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/assimp/include)
@@ -183,7 +189,7 @@ if(TARGET Doxygen::doxygen)
     ## doxygen_add_docs(VISCOMCoreDoc extern/fwcore/src)
 endif()
 
-add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${EXTERN_SOURCES_CORE})
+add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${EXTERN_SOURCES_CORE} ${TOP_SRC_FILES_CORE})
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
 target_include_directories(VISCOMCore PUBLIC ${CORE_INCLUDE_DIRS})
 target_link_libraries(VISCOMCore ${CORE_LIBS})

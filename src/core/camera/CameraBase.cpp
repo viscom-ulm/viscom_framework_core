@@ -29,7 +29,7 @@ namespace viscom {
         cameraHelper_{ cameraHelper }
     {
         cameraHelper_.SetPosition(theCamPos);
-        cameraHelper_.SetOrientation(glm::quat());
+        cameraHelper_.SetOrientation(glm::quat(0.0f, 0.0f, 1.0f, 0.0f));
     }
 
     CameraBase::~CameraBase() = default;
