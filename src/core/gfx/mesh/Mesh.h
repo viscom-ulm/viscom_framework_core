@@ -231,7 +231,7 @@ namespace viscom {
         /** The root scene node. */
         std::unique_ptr<SceneMeshNode> rootNode_;
         /** The global inverse of this mesh. */
-        glm::mat4 globalInverse_;
+        glm::mat4 globalInverse_ = glm::mat4{ 1.0f };
         /** AABB for all bones */
         std::vector<math::AABB3<float>> boneBoundingBoxes_;
 

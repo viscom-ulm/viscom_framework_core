@@ -324,9 +324,9 @@ namespace viscom {
             strInfoLog.resize(static_cast<std::size_t>(infoLogLength + 1));
             glGetShaderInfoLog(shader, infoLogLength, nullptr, strInfoLog.data());
 
-            LOG(WARNING) << "Compile failure in " << strType << " shader (" << filename.c_str() << "): "
+            LOG(WARNING) << "Compile error in " << strType << " shader (" << filename.c_str() << "): "
                 << std::endl << strInfoLog;
-            std::cerr << "Compile failure in " << strType << " shader (" << filename.c_str() << "): "
+            std::cerr << "Compile error in " << strType << " shader (" << filename.c_str() << "): "
                 << std::endl << strInfoLog;
             glDeleteShader(shader);
             throw shader_compiler_error(filename, strInfoLog);
