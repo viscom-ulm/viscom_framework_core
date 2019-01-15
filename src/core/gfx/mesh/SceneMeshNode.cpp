@@ -29,6 +29,10 @@ namespace viscom {
         parent_{ parent },
         boneIndex_{ -1 }
     {
+
+        localTransform_[3][3] = 1.0; // <- Making sure this is one
+
+
         aabb_.minmax_[0] = glm::vec3(std::numeric_limits<float>::infinity());
         aabb_.minmax_[1] = glm::vec3(-std::numeric_limits<float>::infinity());
 
