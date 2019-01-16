@@ -73,7 +73,7 @@ namespace viscom {
          *  @param node the node to draw.
          *  @param overrideBump flag for bumb map parameters.
          */
-        void DrawNodeAnimated(const glm::mat4& modelMatrix, glm::mat4* bonePoses_, glm::mat4* skinned_, const SceneMeshNode* node, bool overrideBump = false) const;
+        void DrawNodeAnimated(const glm::mat4& modelMatrix, const std::array<glm::mat4, 128>& bonePoses_, const SceneMeshNode* node, bool overrideBump = false) const;
 
     private:
         /** Holds the mesh to render. */
@@ -91,11 +91,11 @@ namespace viscom {
          *  Draws a sub mesh of the mesh renderable.
          *  @param modelMatrix the model matrix to draw the sub mesh with.
          *  @param subMesh the sub mesh to be drawn.
-         *  @param overrideBump flag for bumb map parameters.
+         *  @param overrideBump flag for bump map parameters.
          */
-        void DrawSubMeshAnimated(const glm::mat4& modelMatrix, glm::mat4 bonePose_, glm::mat4* skinned_, const SubMesh* subMesh, bool overrideBump = false) const;
+        void DrawSubMeshAnimated(const glm::mat4& modelMatrix, const glm::mat4& bonePose_, const SubMesh* subMesh, bool overrideBump = false) const;
 
-        void ComputeGlobalBonePose(const SceneMeshNode* node, glm::mat4* bonePoses_) const;
+        void ComputeGlobalBonePose(const SceneMeshNode* node, std::array<glm::mat4, 128>& bonePoses_) const;
     };
 
     template <class VTX>

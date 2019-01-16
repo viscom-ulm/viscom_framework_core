@@ -49,24 +49,22 @@ namespace viscom {
 
             // Copy position data for this channel
             for (auto p = 0U; p < aiChannel->mNumPositionKeys; ++p) {
-                channel.positionFrames_.push_back(
-                    std::make_pair(static_cast<Time>(aiChannel->mPositionKeys[p].mTime),
-                                   *reinterpret_cast<glm::vec3*>(&aiChannel->mPositionKeys[p].mValue)));
+                channel.positionFrames_.emplace_back(static_cast<Time>(aiChannel->mPositionKeys[p].mTime),
+                                   *reinterpret_cast<glm::vec3*>(&aiChannel->mPositionKeys[p].mValue));
             }
 
             // Copy rotation data for this channel
             for (auto r = 0U; r < aiChannel->mNumRotationKeys; ++r) {
                 const auto& aiQuat = aiChannel->mRotationKeys[r].mValue;
 
-                channel.rotationFrames_.push_back(std::make_pair(static_cast<Time>(aiChannel->mRotationKeys[r].mTime),
-                                                                 glm::quat(aiQuat.w, aiQuat.x, aiQuat.y, aiQuat.z)));
+                channel.rotationFrames_.emplace_back(static_cast<Time>(aiChannel->mRotationKeys[r].mTime),
+                                                                 glm::quat(aiQuat.w, aiQuat.x, aiQuat.y, aiQuat.z));
             }
 
             // Copy scaling data for this channel
             for (auto s = 0U; s < aiChannel->mNumScalingKeys; ++s) {
-                channel.scalingFrames_.push_back(
-                    std::make_pair(static_cast<Time>(aiChannel->mScalingKeys[s].mTime),
-                                   *reinterpret_cast<glm::vec3*>(&aiChannel->mScalingKeys[s].mValue)));
+                channel.scalingFrames_.emplace_back(static_cast<Time>(aiChannel->mScalingKeys[s].mTime),
+                                   *reinterpret_cast<glm::vec3*>(&aiChannel->mScalingKeys[s].mValue));
             }
 
             auto boneOffsetFromName = boneNameToOffset.at(aiChannel->mNodeName.C_Str());
@@ -147,9 +145,9 @@ namespace viscom {
         const auto& rotationFrames = channel.rotationFrames_;
         const auto& scalingFrames = channel.scalingFrames_;
 
-        glm::quat rotation;
-        glm::vec3 translation;
-        glm::vec3 scale;
+        glm::quat rotation = { 0.0f, 0.0f, 0.0f, 1.0f };
+        glm::vec3 translation{ 0.0f };
+        glm::vec3 scale{ 1.0f };
 
         // There is just one frame
         if (positionFrames.size() == 1) {

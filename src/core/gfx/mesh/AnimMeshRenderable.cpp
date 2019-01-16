@@ -84,19 +84,15 @@ namespace viscom {
 
     void AnimMeshRenderable::DrawAnimated(const glm::mat4& modelMatrix, int animID, double animTime, bool overrideBump) const
     {
-        glm::mat4 bonePoses_[128];
-        glm::mat4 skinned_[128];
+        std::array<glm::mat4, 128> bonePoses_;
+        std::array<glm::mat4, 128> skinned_;
 
         const auto& invBindPoseMatrices = mesh_->GetInverseBindPoseMatrices();
 
         for (auto i = 0U; i < mesh_->GetNodes().size(); ++i) {
             std::size_t boneIndex = mesh_->GetNodes()[i]->GetBoneIndex();
 
-            if (boneIndex == -1) {
-                continue;
-            }
-
-            bonePoses_[i] = mesh_->GetAnimation(animID)->ComputePoseAtTime(boneIndex, animTime);
+            bonePoses_[i] = (boneIndex == -1) ? glm::mat4{ 1.0f } : mesh_->GetAnimation(animID)->ComputePoseAtTime(boneIndex, static_cast<Time>(animTime));
         }
 
         ComputeGlobalBonePose(mesh_->GetRootNode(), bonePoses_);
@@ -113,29 +109,29 @@ namespace viscom {
         glBindVertexArray(vao_);
         glBindBuffer(GL_ARRAY_BUFFER, vbo_);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh_->GetIndexBuffer());
-        DrawNodeAnimated(modelMatrix, bonePoses_, skinned_, mesh_->GetRootNode(), overrideBump);
+        glUniformMatrix4fv(uniformLocations_[5], static_cast<GLsizei>(skinned_.size()), GL_FALSE, glm::value_ptr(*skinned_.data()));
+        DrawNodeAnimated(modelMatrix, bonePoses_, mesh_->GetRootNode(), overrideBump);
         glBindVertexArray(0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    void AnimMeshRenderable::DrawNodeAnimated(const glm::mat4& modelMatrix, glm::mat4* bonePoses_, glm::mat4* skinned_, const SceneMeshNode* node, bool overrideBump) const
+    void AnimMeshRenderable::DrawNodeAnimated(const glm::mat4& modelMatrix, const std::array<glm::mat4, 128>& bonePoses_, const SceneMeshNode* node, bool overrideBump) const
     {
         auto localMatrix = node->GetLocalTransform() * modelMatrix;
         for (std::size_t i = 0; i < node->GetNumberOfSubMeshes(); ++i) {
             const auto* submesh = &mesh_->GetSubMeshes()[node->GetSubMeshID(i)];
-            DrawSubMeshAnimated(localMatrix, bonePoses_[node->GetSubMeshID(i)], skinned_, submesh, overrideBump);
+            DrawSubMeshAnimated(localMatrix, bonePoses_[node->GetNodeIndex()], submesh, overrideBump);
         }
-        for (std::size_t i = 0; i < node->GetNumberOfNodes(); ++i) DrawNodeAnimated(localMatrix, bonePoses_, skinned_, node->GetChild(i), overrideBump);
+        for (std::size_t i = 0; i < node->GetNumberOfNodes(); ++i) DrawNodeAnimated(localMatrix, bonePoses_, node->GetChild(i), overrideBump);
     }
 
-    void AnimMeshRenderable::DrawSubMeshAnimated(const glm::mat4& modelMatrix, glm::mat4 bonePose_, glm::mat4* skinned_, const SubMesh* subMesh, bool overrideBump) const
+    void AnimMeshRenderable::DrawSubMeshAnimated(const glm::mat4& modelMatrix, const glm::mat4& bonePose_, const SubMesh* subMesh, bool overrideBump) const
     {
         if (subMesh->GetNumberOfIndices() == 0) return;
 
         glUniformMatrix4fv(uniformLocations_[0], 1, GL_FALSE, glm::value_ptr(modelMatrix));
         glUniformMatrix3fv(uniformLocations_[1], 1, GL_FALSE, glm::value_ptr(glm::inverseTranspose(glm::mat3(modelMatrix))));
-        glUniformMatrix4fv(uniformLocations_[5], skinned_->length(), GL_FALSE, glm::value_ptr(*skinned_));
         glUniformMatrix4fv(uniformLocations_[6], 1, GL_FALSE, glm::value_ptr(glm::inverse(bonePose_)));
 
         auto mat = mesh_->GetMaterial(subMesh->GetMaterialIndex());
@@ -156,7 +152,7 @@ namespace viscom {
             (static_cast<char*> (nullptr)) + (static_cast<std::size_t>(subMesh->GetIndexOffset()) * sizeof(unsigned int)));
     }
 
-    void AnimMeshRenderable::ComputeGlobalBonePose(const SceneMeshNode* node, glm::mat4* bonePoses_) const
+    void AnimMeshRenderable::ComputeGlobalBonePose(const SceneMeshNode* node, std::array<glm::mat4, 128>& bonePoses_) const
     {
         if (node->GetParent()) {
             bonePoses_[node->GetNodeIndex()] = bonePoses_[node->GetParent()->GetNodeIndex()] * bonePoses_[node->GetNodeIndex()];
