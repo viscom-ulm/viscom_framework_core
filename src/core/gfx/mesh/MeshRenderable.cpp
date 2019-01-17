@@ -95,7 +95,9 @@ namespace viscom {
 
     void MeshRenderable::DrawNode(const glm::mat4& modelMatrix, const SceneMeshNode* node, bool overrideBump) const
     {
-        auto localMatrix = node->GetLocalTransform() * modelMatrix;
+        if (!node->HasMeshes()) return;
+
+        auto localMatrix = modelMatrix * node->GetLocalTransform();
         for (std::size_t i = 0; i < node->GetNumberOfSubMeshes(); ++i) {
             const auto* submesh = &mesh_->GetSubMeshes()[node->GetSubMeshID(i)];
             DrawSubMesh(localMatrix, submesh, overrideBump);

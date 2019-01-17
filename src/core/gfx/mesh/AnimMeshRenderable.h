@@ -12,9 +12,72 @@
 #include "Mesh.h"
 #include "core/gfx/GPUProgram.h"
 
+#include <vector>
+
 namespace viscom {
 
     class Mesh;
+
+    class AnimationState final
+    {
+    public:
+        AnimationState(const Mesh* mesh, const SubAnimationMapping& mappings, std::size_t startingAnimationIndex = 0, bool isRepeating = true);
+
+        void Play(double currentTime);
+        void Pause(double currentTime) { isPlaying_ = false; pauseTime_ = static_cast<float>(currentTime); }
+        void Stop() { isPlaying_ = false; currentPlayTime_ = 0.0f; pauseTime_ = 0.0f; }
+
+        float GetSpeed() const { return animationPlaybackSpeed_.at(animationIndex_); }
+        float GetFramesPerSecond() const { return animations_.at(animationIndex_).GetFramesPerSecond(); }
+        float GetDuration() const { return animations_.at(animationIndex_).GetDuration(); }
+        float GetTime() const { return currentPlayTime_; }
+
+        bool IsPlaying() const { return isPlaying_; }
+        bool IsRepeating() const { return isRepeating_; }
+
+        bool UpdateTime(double currentTime);
+        void ComputeAnimationsFinalBonePoses();
+
+        void SetSpeed(float speed) { animationPlaybackSpeed_[animationIndex_] = speed; }
+        void SetRepeat(bool repeat) { isRepeating_ = repeat; }
+
+        std::size_t GetCurrentAnimationIndex() const { return animationIndex_; }
+        void SetCurrentAnimationIndex(std::size_t animationIndex) { animationIndex_ = animationIndex; }
+
+        const glm::mat4& GetGlobalBonePose(std::size_t index) const { return globalBonePoses_[index]; }
+        const glm::mat4& GetLocalBonePose(std::size_t index) const { return localBonePoses_[index]; }
+        const std::vector<glm::mat4>& GetSkinningMatrices() const { return skinned_; }
+
+    private:
+        void ComputeGlobalBonePose(const SceneMeshNode* node);
+
+        /** Holds the mesh to render. */
+        const Mesh* mesh_;
+        /** The current animation id. **/
+        std::size_t animationIndex_;
+
+        /** Holds the playback speed for each AnimationState. */
+        std::vector<float> animationPlaybackSpeed_;
+        /** Holds the actual animation for each AnimationState. */
+        std::vector<Animation> animations_;
+
+
+        /** Is the animation playing. */
+        bool isPlaying_ = false;
+        /** Is the animation repeating. */
+        bool isRepeating_ = true;
+
+        float startTime_ = 0.0f;
+        float pauseTime_ = 0.0f;
+        float currentPlayTime_ = 0.0f;
+
+        /** The local bone poses. */
+        std::vector<glm::mat4> localBonePoses_;
+        /** The global bone poses. */
+        std::vector<glm::mat4> globalBonePoses_;
+        /** The skinning matrices used for rendering. */
+        std::vector<glm::mat4> skinned_;
+    };
 
     /**
      *  This class renders a mesh with a specific shader. The shader is assumed to have fixed uniform names:
@@ -47,14 +110,14 @@ namespace viscom {
         /**
         *  Draws the mesh of the mesh renderable with a specified animation clip and time.
         *  @param modelMatrix the model matrix to draw the mesh with.
-        *  @param animId the indes of the animation.
+        *  @param animId the indices of the animation.
         *  @param animTime the time of the animation.
-        *  @param overrideBump flag for bumb map parameters.
+        *  @param overrideBump flag for bump map parameters.
         */
-        void DrawAnimated(const glm::mat4& modelMatrix, int animID, double animTime, bool overrideBump = false) const;
+        void DrawAnimated(const glm::mat4& modelMatrix, const AnimationState& animState, bool overrideBump = false) const;
 
         /**
-         *  Gets the standart uniform locations when a mesh renderable is created.
+         *  Gets the standard uniform locations when a mesh renderable is created.
          *  @param program the GPU program to bind the uniforms to.
          */
         template<class VTX> void NotifyRecompiledShader(const GPUProgram* program);
@@ -62,7 +125,7 @@ namespace viscom {
     protected:
         /** Constructor method.
          *  @param renderMesh the mesh to render.
-         *  @param vBuffer the meshs vertex buffer.
+         *  @param vBuffer the meshes vertex buffer.
          *  @param program the GPU program to be used with the mesh.
          */
         AnimMeshRenderable(const Mesh* renderMesh, GLuint vBuffer, GPUProgram* program);
@@ -71,9 +134,9 @@ namespace viscom {
          *  Draws a node and all its child nodes of the mesh.
          *  @param modelMatrix the model matrix to draw the mesh with.
          *  @param node the node to draw.
-         *  @param overrideBump flag for bumb map parameters.
+         *  @param overrideBump flag for bump map parameters.
          */
-        void DrawNodeAnimated(const glm::mat4& modelMatrix, const std::array<glm::mat4, 128>& bonePoses_, const SceneMeshNode* node, bool overrideBump = false) const;
+        void DrawNodeAnimated(const glm::mat4& modelMatrix, const AnimationState& animState, const SceneMeshNode* node, bool overrideBump = false) const;
 
     private:
         /** Holds the mesh to render. */
@@ -94,8 +157,6 @@ namespace viscom {
          *  @param overrideBump flag for bump map parameters.
          */
         void DrawSubMeshAnimated(const glm::mat4& modelMatrix, const glm::mat4& bonePose_, const SubMesh* subMesh, bool overrideBump = false) const;
-
-        void ComputeGlobalBonePose(const SceneMeshNode* node, std::array<glm::mat4, 128>& bonePoses_) const;
     };
 
     template <class VTX>

@@ -177,10 +177,12 @@ namespace viscom {
         bool Read(std::istream& ifs, FrameworkInternal* node);
 
         void ParseBoneHierarchy(const std::map<std::string, unsigned int>& bones, const aiNode* node,
-            std::size_t parent, glm::mat4 parentMatrix);
+            std::size_t parent);
 
         /** Generates AABB for all bones. */
         void GenerateBoneBoundingBoxes();
+        /** Flattens all hierarchies. */
+        void FlattenHierarchies();
 
         /** Filename of this mesh. */
         std::string filename_;

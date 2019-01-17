@@ -79,7 +79,7 @@ namespace viscom {
 
         if (!Load(filename, binFilename, GetAppNode())) LoadAssimpMeshFromFile(filename, binFilename, GetAppNode());
 
-        rootNode_->FlattenNodeTree(nodes_);
+        FlattenHierarchies();
 
         glGenBuffers(1, &indexBuffer_);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer_);
@@ -138,6 +138,14 @@ namespace viscom {
 
     void Mesh::LoadAssimpMesh(const aiScene * scene, FrameworkInternal* node)
     {
+        boneOffsetMatrixIndices_.clear();
+        boneWeights_.clear();
+        indexVectors_.clear();
+        inverseBindPoseMatrices_.clear();
+        boneBoundingBoxes_.clear();
+        subMeshes_.clear();
+        animations_.clear();
+
         unsigned int maxUVChannels = 0, maxColorChannels = 0, numVertices = 0, numIndices = 0;
         std::vector<std::vector<unsigned int>> indices;
         indices.resize(static_cast<size_t>(scene->mNumMeshes));
@@ -266,17 +274,10 @@ namespace viscom {
             currentMeshIndexOffset += static_cast<unsigned int>(indices[i].size()); //-V127
         }
 
-        // Loading animations
-        if (scene->HasAnimations()) {
-            for (auto a = 0U; a < scene->mNumAnimations; ++a) {
-                animations_.emplace_back(scene->mAnimations[a], bones);
-            }
-        }
-
         // Parse parent information for each bone.
         boneParent_.resize(bones.size(), std::numeric_limits<std::size_t>::max());
         // Root node has a parent index of max value of size_t
-        ParseBoneHierarchy(bones, scene->mRootNode, std::numeric_limits<std::size_t>::max(), glm::mat4(1.0f));
+        ParseBoneHierarchy(bones, scene->mRootNode, std::numeric_limits<std::size_t>::max());
 
         // Iterate all weights for each vertex
         for (auto& weights : boneWeights) {
@@ -310,6 +311,13 @@ namespace viscom {
         rootNode_->GenerateBoundingBoxes(*this);
 
         GenerateBoneBoundingBoxes();
+
+        // Loading animations
+        if (scene->HasAnimations()) {
+            for (auto a = 0U; a < scene->mNumAnimations; ++a) {
+                animations_.emplace_back(scene->mAnimations[a]);
+            }
+        }
 
         globalInverse_ = glm::inverse(rootNode_->GetLocalTransform());
     }
@@ -461,17 +469,13 @@ namespace viscom {
     /**
      *  This function walks the hierarchy of bones and does two things:
      *  - set the parent of each bone into `boneParent_`
-     *  - update the boneOffsetMatrices_, so each matrix also includes the
-     *    transformations of the child bones.
      * 
      *  @param bones map from name of bone to index in boneOffsetMatrices_
      *  @param node current node in
      *  @param parent index of the parent in boneOffsetMatrices_
-     *  @param parentMatrix Matrix including all transformations from the parents of the
-     *         current node.
      */
     void Mesh::ParseBoneHierarchy(const std::map<std::string, unsigned int>& bones, const aiNode* node,
-        std::size_t parent, glm::mat4 parentMatrix)
+        std::size_t parent)
     {
         auto bone = bones.find(node->mName.C_Str());
         if (bone != bones.end()) {
@@ -483,7 +487,7 @@ namespace viscom {
         }
 
         for (auto i = 0U; i < node->mNumChildren; ++i) {
-            ParseBoneHierarchy(bones, node->mChildren[i], parent, parentMatrix);
+            ParseBoneHierarchy(bones, node->mChildren[i], parent);
         }
     }
 
@@ -523,5 +527,16 @@ namespace viscom {
                 << "\n"
                 << "Model-path: " << filename_ << std::endl;
         }
+    }
+
+    void Mesh::FlattenHierarchies()
+    {
+        rootNode_->FlattenNodeTree(nodes_);
+        std::map<std::string, std::size_t> nodeIndexMap;
+        for (const auto& node : nodes_) {
+            nodeIndexMap[node->GetName()] = node->GetNodeIndex();
+        }
+
+        for (auto& animation : animations_) animation.FlattenHierarchy(nodes_.size(), nodeIndexMap);
     }
 }

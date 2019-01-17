@@ -15,10 +15,110 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <cmath>
 
 #include "AnimMeshRenderable.h"
 
 namespace viscom {
+
+    AnimationState::AnimationState(const Mesh* mesh, const SubAnimationMapping& mappings, std::size_t startingAnimationIndex, bool isRepeating) :
+        mesh_{ mesh },
+        animationIndex_{ startingAnimationIndex },
+        isRepeating_{ isRepeating }
+    {
+        assert(mappings.size() > animationIndex_ && "there is no mapping for the starting-state");
+
+        skinned_.resize(mesh_->GetNumberOfBones());
+
+        for (const auto& mapping : mappings) {
+            animations_.emplace_back(mesh_->GetAnimation(mapping.animationIndex_)->GetSubSequence(mapping.startTime_, mapping.endTime_));
+            animationPlaybackSpeed_.emplace_back(mapping.playbackSpeed_);
+        }
+
+        localBonePoses_.resize(mesh_->GetNodes().size());
+        globalBonePoses_.resize(mesh_->GetNodes().size());
+        for (auto i = 0U; i < localBonePoses_.size(); ++i)
+            localBonePoses_[i] = mesh_->GetNodes()[i]->GetLocalTransform();
+
+    }
+
+    void AnimationState::Play(double currentTime)
+    {
+        isPlaying_ = true;
+        if (pauseTime_ != 0.0f) startTime_ += static_cast<float>(currentTime) - pauseTime_;
+        else startTime_ = static_cast<float>(currentTime);
+        pauseTime_ = 0.0f;
+    }
+
+    bool AnimationState::UpdateTime(double currentTime)
+    {
+        if (!isPlaying_) return false;
+
+        // Advance time
+        currentPlayTime_ = (static_cast<float>(currentTime) - startTime_) * GetFramesPerSecond() * GetSpeed();
+
+        bool didAnimationStopOrRepeat = false;
+        // Modulate time to fit within the interval of the animation
+        if (currentPlayTime_ < 0.0f) {
+            if (IsRepeating()) {
+                auto time = currentPlayTime_ / GetDuration();
+                currentPlayTime_ = (time - glm::floor(time)) * GetDuration();
+            }
+            else {
+                currentPlayTime_ = 0.0f;
+                Pause(currentTime);
+            }
+            didAnimationStopOrRepeat = true;
+        }
+        else if (currentPlayTime_ > GetDuration()) {
+
+            if (IsRepeating()) {
+                currentPlayTime_ = glm::mod(currentPlayTime_, GetDuration());
+            }
+            else {
+                currentPlayTime_ = GetDuration();
+                Pause(currentTime);
+            }
+            didAnimationStopOrRepeat = true;
+        }
+        return didAnimationStopOrRepeat;
+    }
+
+    void AnimationState::ComputeAnimationsFinalBonePoses()
+    {
+        const auto& currentAnimation = animations_[animationIndex_];
+        const auto& invBindPoseMatrices = mesh_->GetInverseBindPoseMatrices();
+
+        for (auto i = 0U; i < mesh_->GetNodes().size(); ++i) {
+            glm::mat4 pose;
+            if (currentAnimation.ComputePoseAtTime(i, currentPlayTime_, pose)) localBonePoses_[i] = pose;
+        }
+
+        ComputeGlobalBonePose(mesh_->GetRootNode());
+
+        for (const auto& node : mesh_->GetNodes()) {
+            if (node->GetBoneIndex() == -1) {
+                continue;
+            }
+            skinned_[node->GetBoneIndex()] = globalBonePoses_[node->GetNodeIndex()] * invBindPoseMatrices[node->GetBoneIndex()];
+        }
+    }
+
+    void AnimationState::ComputeGlobalBonePose(const SceneMeshNode* node)
+    {
+        if (node->GetNodeIndex() == 8) {
+            int brk = 0;
+        }
+        auto nodeParent = node->GetParent();
+        while (nodeParent && node->GetBoneIndex() != -1 && (nodeParent->GetName().empty())) nodeParent = nodeParent->GetParent();
+
+        if (!nodeParent) globalBonePoses_[node->GetNodeIndex()] = localBonePoses_[node->GetNodeIndex()];
+        else globalBonePoses_[node->GetNodeIndex()] = globalBonePoses_[nodeParent->GetNodeIndex()] * localBonePoses_[node->GetNodeIndex()];
+
+        for (auto i = 0U; i < node->GetNumberOfNodes(); ++i) {
+            ComputeGlobalBonePose(node->GetChild(i));
+        }
+    }
 
     /**
      * Constructor.
@@ -82,57 +182,42 @@ namespace viscom {
         return *this;
     }
 
-    void AnimMeshRenderable::DrawAnimated(const glm::mat4& modelMatrix, int animID, double animTime, bool overrideBump) const
+    void AnimMeshRenderable::DrawAnimated(const glm::mat4& modelMatrix, const AnimationState& animState, bool overrideBump) const
     {
-        std::array<glm::mat4, 128> bonePoses_;
-        std::array<glm::mat4, 128> skinned_;
-
-        const auto& invBindPoseMatrices = mesh_->GetInverseBindPoseMatrices();
-
-        for (auto i = 0U; i < mesh_->GetNodes().size(); ++i) {
-            std::size_t boneIndex = mesh_->GetNodes()[i]->GetBoneIndex();
-
-            bonePoses_[i] = (boneIndex == -1) ? glm::mat4{ 1.0f } : mesh_->GetAnimation(animID)->ComputePoseAtTime(boneIndex, static_cast<Time>(animTime));
-        }
-
-        ComputeGlobalBonePose(mesh_->GetRootNode(), bonePoses_);
-
-        for (const auto& node : mesh_->GetNodes()) {
-            if (node->GetBoneIndex() == -1) {
-                continue;
-            }
-            skinned_[node->GetBoneIndex()] =
-                bonePoses_[node->GetNodeIndex()] * invBindPoseMatrices[node->GetBoneIndex()];
-        }
-
+        auto& skinningMatrices = animState.GetSkinningMatrices();
         glUseProgram(drawProgram_->getProgramId());
         glBindVertexArray(vao_);
         glBindBuffer(GL_ARRAY_BUFFER, vbo_);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh_->GetIndexBuffer());
-        glUniformMatrix4fv(uniformLocations_[5], static_cast<GLsizei>(skinned_.size()), GL_FALSE, glm::value_ptr(*skinned_.data()));
-        DrawNodeAnimated(modelMatrix, bonePoses_, mesh_->GetRootNode(), overrideBump);
+        glUniformMatrix4fv(uniformLocations_[5], static_cast<GLsizei>(skinningMatrices.size()), GL_FALSE, glm::value_ptr(*skinningMatrices.data()));
+        DrawNodeAnimated(modelMatrix, animState, mesh_->GetRootNode(), overrideBump);
         glBindVertexArray(0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    void AnimMeshRenderable::DrawNodeAnimated(const glm::mat4& modelMatrix, const std::array<glm::mat4, 128>& bonePoses_, const SceneMeshNode* node, bool overrideBump) const
+    void AnimMeshRenderable::DrawNodeAnimated(const glm::mat4& modelMatrix, const AnimationState& animState, const SceneMeshNode* node, bool overrideBump) const
     {
-        auto localMatrix = node->GetLocalTransform() * modelMatrix;
+        if (!node->HasMeshes()) return;
+
+        auto nodeGlobalMatrix = animState.GetGlobalBonePose(node->GetNodeIndex());
+        auto localMatrix = modelMatrix * nodeGlobalMatrix;
+
         for (std::size_t i = 0; i < node->GetNumberOfSubMeshes(); ++i) {
             const auto* submesh = &mesh_->GetSubMeshes()[node->GetSubMeshID(i)];
-            DrawSubMeshAnimated(localMatrix, bonePoses_[node->GetNodeIndex()], submesh, overrideBump);
+            DrawSubMeshAnimated(localMatrix, nodeGlobalMatrix, submesh, overrideBump);
         }
-        for (std::size_t i = 0; i < node->GetNumberOfNodes(); ++i) DrawNodeAnimated(localMatrix, bonePoses_, node->GetChild(i), overrideBump);
+
+        for (std::size_t i = 0; i < node->GetNumberOfNodes(); ++i) DrawNodeAnimated(modelMatrix, animState, node->GetChild(i), overrideBump);
     }
 
-    void AnimMeshRenderable::DrawSubMeshAnimated(const glm::mat4& modelMatrix, const glm::mat4& bonePose_, const SubMesh* subMesh, bool overrideBump) const
+    void AnimMeshRenderable::DrawSubMeshAnimated(const glm::mat4& modelMatrix, const glm::mat4& nodePose_, const SubMesh* subMesh, bool overrideBump) const
     {
         if (subMesh->GetNumberOfIndices() == 0) return;
 
         glUniformMatrix4fv(uniformLocations_[0], 1, GL_FALSE, glm::value_ptr(modelMatrix));
         glUniformMatrix3fv(uniformLocations_[1], 1, GL_FALSE, glm::value_ptr(glm::inverseTranspose(glm::mat3(modelMatrix))));
-        glUniformMatrix4fv(uniformLocations_[6], 1, GL_FALSE, glm::value_ptr(glm::inverse(bonePose_)));
+        glUniformMatrix4fv(uniformLocations_[6], 1, GL_FALSE, glm::value_ptr(glm::inverse(nodePose_)));
 
         auto mat = mesh_->GetMaterial(subMesh->GetMaterialIndex());
         auto matTex = mesh_->GetMaterialTexture(subMesh->GetMaterialIndex());
@@ -150,16 +235,5 @@ namespace viscom {
 
         glDrawElements(GL_TRIANGLES, subMesh->GetNumberOfIndices(), GL_UNSIGNED_INT,
             (static_cast<char*> (nullptr)) + (static_cast<std::size_t>(subMesh->GetIndexOffset()) * sizeof(unsigned int)));
-    }
-
-    void AnimMeshRenderable::ComputeGlobalBonePose(const SceneMeshNode* node, std::array<glm::mat4, 128>& bonePoses_) const
-    {
-        if (node->GetParent()) {
-            bonePoses_[node->GetNodeIndex()] = bonePoses_[node->GetParent()->GetNodeIndex()] * bonePoses_[node->GetNodeIndex()];
-        }
-
-        for (auto i = 0U; i < node->GetNumberOfNodes(); ++i) {
-            ComputeGlobalBonePose(node->GetChild(i), bonePoses_);
-        }
     }
 }
