@@ -52,7 +52,8 @@ namespace viscom {
         boneIndex_(rhs.boneIndex_),
         nodeIndex_(rhs.nodeIndex_),
         subMeshBoundingBoxes_(rhs.subMeshBoundingBoxes_),
-        boundingBoxValid_(rhs.boundingBoxValid_)
+        boundingBoxValid_(rhs.boundingBoxValid_),
+        hasMeshes_(rhs.hasMeshes_)
     {
         children_.resize(rhs.children_.size());
         for (std::size_t i = 0; i < children_.size(); ++i) children_[i] = std::make_unique<SceneMeshNode>(*rhs.children_[i]);
@@ -68,7 +69,8 @@ namespace viscom {
         boneIndex_(std::move(rhs.boneIndex_)),
         nodeIndex_(std::move(rhs.nodeIndex_)),
         subMeshBoundingBoxes_(std::move(rhs.subMeshBoundingBoxes_)),
-        boundingBoxValid_(std::move(rhs.boundingBoxValid_))
+        boundingBoxValid_(std::move(rhs.boundingBoxValid_)),
+        hasMeshes_(std::move(rhs.hasMeshes_))
     {
 
     }
@@ -96,6 +98,7 @@ namespace viscom {
             nodeIndex_ = std::move(rhs.nodeIndex_);
             subMeshBoundingBoxes_ = std::move(rhs.subMeshBoundingBoxes_);
             boundingBoxValid_ = std::move(rhs.boundingBoxValid_);
+            hasMeshes_ = std::move(rhs.hasMeshes_);
         }
         return *this;
     }
