@@ -116,6 +116,9 @@ namespace viscom {
         /** Returns the global inverse matrix of the mesh. */
         glm::mat4 GetGlobalInverse() const { return globalInverse_; }
 
+        /** Returns the meshes filename (and path). */
+        std::string GetFilename() const;
+
     protected:
         /**
          *  Loads the mesh data from file.

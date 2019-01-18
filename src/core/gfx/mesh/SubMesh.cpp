@@ -7,6 +7,7 @@
  */
 
 #define GLM_FORCE_SWIZZLE
+
 #include "SubMesh.h"
 #include "Mesh.h"
 

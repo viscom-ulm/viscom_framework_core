@@ -539,4 +539,9 @@ namespace viscom {
 
         for (auto& animation : animations_) animation.FlattenHierarchy(nodes_.size(), nodeIndexMap);
     }
+
+    std::string Mesh::GetFilename() const
+    {
+        return FindResourceLocation(GetId());
+    }
 }
