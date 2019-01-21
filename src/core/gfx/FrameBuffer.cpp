@@ -297,7 +297,7 @@ namespace viscom {
         return attachment;
     }
 
-	/**
+    /**
      *  Checks if the given internal format has a depth or stencil component.
      *  @param internalFormat the internal OpenGL format of the buffer.
      */
