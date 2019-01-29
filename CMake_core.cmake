@@ -113,6 +113,11 @@ if(UNIX)
     set(OpenGL_GL_PREFERENCE GLVND)
 endif()
 
+if(MSVC)
+    list(APPEND COMPILE_TIME_DEFS _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN NOMINMAX)
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${APP_NAME})
+endif()
+
 if (${VISCOM_USE_SGCT})
     find_package(OpenGL REQUIRED)
     find_library(SGCT_RELEASE_LIBRARY NAMES sgct libsgct PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
@@ -130,7 +135,14 @@ if (${VISCOM_USE_SGCT})
         find_package(Threads REQUIRED)
         list(APPEND CORE_LIBS dl OpenGL::OpenGL OpenGL::GLX X11 Xrandr Xcursor Xinerama Xxf86vm Threads::Threads)
     endif()
-    list(APPEND CORE_INCLUDE_DIRS ${SGCT_INCLUDE_DIRECTORY})
+    add_library(SGCTWrapper ${VISCOM_SGCT_WRAPPER_DIR}/wrapper/sgct_wrapper.cpp)
+    set_property(TARGET SGCTWrapper PROPERTY CXX_STANDARD 17)
+    target_include_directories(SGCTWrapper PUBLIC ${VISCOM_SGCT_WRAPPER_DIR}/wrapper ${SGCT_INCLUDE_DIRECTORY})
+    target_link_libraries(SGCTWrapper ${CORE_LIBS})
+    target_compile_definitions(SGCTWrapper PUBLIC ${COMPILE_TIME_DEFS})
+
+    list(APPEND CORE_LIBS SGCTWrapper)
+    list(APPEND CORE_INCLUDE_DIRS extern/fwcore/extern/glm ${SGCT_INCLUDE_DIRECTORY})
 else()
     find_package(OpenGL REQUIRED)
     list(APPEND CORE_LIBS glfw ${GLFW_LIBRARIES} OpenGL::GL)
@@ -150,10 +162,6 @@ list(APPEND CORE_INCLUDE_DIRS
 
 list(APPEND CORE_LIBS g3logger assimp)
 
-if(MSVC)
-    list(APPEND COMPILE_TIME_DEFS _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN NOMINMAX)
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${APP_NAME})
-endif()
 
 if (${VISCOM_CLIENTMOUSECURSOR})
     list(APPEND COMPILE_TIME_DEFS VISCOM_CLIENTGUI VISCOM_SYNCINPUT VISCOM_CLIENTMOUSECURSOR)

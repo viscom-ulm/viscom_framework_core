@@ -59,7 +59,7 @@ namespace viscom {
         void SetLocalCoordMatrix(std::size_t windowID, const glm::mat4& localCoordMatrix, const glm::vec2& localScreenSize);
 
         /** Returns the cameras eye dependent projection matrix. */
-        const glm::mat4& GetPerspectiveMatrix() const { return projection_; }
+        inline const glm::mat4& GetPerspectiveMatrix() const { return projection_; }
         /** Returns the cameras eye dependent view-projection matrix. */
         glm::mat4 GetViewPerspectiveMatrix() const;
 
@@ -80,9 +80,9 @@ namespace viscom {
         glm::vec3 GetPickPosition(const glm::vec2& globalScreenCoords) const;
 
         /** Returns the cameras near plane. */
-        float GetNearPlane() const { return nearPlane_; }
+        inline float GetNearPlane() const { return nearPlane_; }
         /** Returns the cameras far plane. */
-        float GetFarPlane() const { return farPlane_; }
+        inline float GetFarPlane() const { return farPlane_; }
         /**
          *  Sets the near and far plane values;
          *  @param near new near plane value.

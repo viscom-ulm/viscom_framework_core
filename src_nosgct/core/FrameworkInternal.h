@@ -103,7 +103,7 @@ namespace viscom {
         void WaitForResource(const std::string& name, ResourceType type);
 
         /** Returns if the node is a coordinator. */
-        bool IsCoordinator() const { return true; }
+        inline bool IsCoordinator() const { return true; }
 
         /** Returns the applications configuration. */
         const FWConfiguration& GetConfig() const { return config_; }

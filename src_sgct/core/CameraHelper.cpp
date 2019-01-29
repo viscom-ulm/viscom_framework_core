@@ -10,6 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <sgct.h>
+#include <sgct_wrapper.h>
 
 namespace viscom {
     CameraHelper::CameraHelper(sgct::Engine * engine) :
@@ -19,7 +20,8 @@ namespace viscom {
 
     glm::vec3 CameraHelper::GetUserPosition() const
     {
-        return sgct::Engine::getDefaultUserPtr()->getPos();
+        auto userPosA = sgct_wrapper::GetDefaultUserPosition();
+        return glm::vec3{ userPosA[0], userPosA[1], userPosA[2] };
     }
 
     void CameraHelper::SetLocalCoordMatrix(std::size_t windowID, const glm::mat4& localCoordMatrix, const glm::vec2& localScreenSize)
@@ -100,13 +102,13 @@ namespace viscom {
     glm::mat4 CameraHelper::CalculateViewUpdate() const
     {
         //4. transform user back to original position
-        glm::mat4 result = glm::translate(glm::mat4(1.0f), sgct::Engine::getDefaultUserPtr()->getPos());
+        glm::mat4 result = glm::translate(glm::mat4(1.0f), GetUserPosition());
         //3. apply view rotation
         result *= glm::mat4_cast(camera_orientation_);
         //2. apply navigation translation
         result *= glm::translate(glm::mat4(1.0f), -position_);
         //1. transform user to coordinate system origin
-        result *= glm::translate(glm::mat4(1.0f), -sgct::Engine::getDefaultUserPtr()->getPos());
+        result *= glm::translate(glm::mat4(1.0f), -GetUserPosition());
         return result;
     }
 }
