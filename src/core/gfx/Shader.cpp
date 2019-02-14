@@ -12,7 +12,7 @@
 #include <sstream>
 #include <iterator>
 #ifndef __APPLE_CC__
-#include <experimental/filesystem>
+#include <filesystem>
 #endif
 #include "core/FrameworkInternal.h"
 #include <regex>
@@ -212,7 +212,14 @@ namespace viscom {
     {
         auto fullFilename = Resource::FindResourceLocation("shader/" + filename, node);
         unsigned int fileId{ 0 };
-        auto shaderText = LoadShaderFileRecursive(fullFilename, defines, fileId, 0);
+        std::string relativeParentPath = "";
+
+#ifndef __APPLE_CC__
+        std::filesystem::path sdrFile{ filename };
+        relativeParentPath = sdrFile.parent_path().string() + "/";
+#endif
+
+        auto shaderText = LoadShaderFileRecursive(fullFilename, relativeParentPath, defines, fileId, 0, node);
         std::ofstream shader_out(fullFilename + ".gen");
         shader_out << shaderText;
         shader_out.close();
@@ -224,7 +231,8 @@ namespace viscom {
      *  Loads a shader from file and recursively adds all includes.
      *  @see LoadShaderFile.
      */
-    std::string Shader::LoadShaderFileRecursive(const std::string & filename, const std::vector<std::string>& defines, unsigned int& fileId, unsigned int recursionDepth)
+    std::string Shader::LoadShaderFileRecursive(const std::string& filename, const std::string& relativeParentPath,
+        const std::vector<std::string>& defines, unsigned int& fileId, unsigned int recursionDepth, const FrameworkInternal* node)
     {
 #ifdef __APPLE_CC__
         if (!defines.empty()) LOG(WARNING) << "Defines and includes in shaders not supported on MacOS.";
@@ -247,9 +255,9 @@ namespace viscom {
             LOG(WARNING) << L"Header inclusion depth limit reached! Cyclic header inclusion?";
             throw resource_loading_error(filename, "Header inclusion depth limit reached! Cyclic header inclusion? File " + filename);
         }
-        namespace filesystem = std::experimental::filesystem;
+        namespace filesystem = std::filesystem;
         filesystem::path sdrFile{ filename };
-        auto currentPath = sdrFile.parent_path().string() + "/";
+        // auto currentPath = sdrFile.parent_path().string() + "/";
         std::ifstream file(filename.c_str(), std::ifstream::in);
         std::string line;
         std::stringstream content;
@@ -263,14 +271,16 @@ namespace viscom {
             static const std::regex re(R"(^[ ]*#[ ]*include[ ]+["<](.*)[">].*)");
             std::smatch matches;
             if (std::regex_search(line, matches, re)) {
-                auto includeFile = currentPath + matches[1].str();
+                filesystem::path relativeFilename{ relativeParentPath + matches[1].str() };
+                auto includeFile = Resource::FindResourceLocation("shader/" + relativeFilename.string(), node);
                 if (!filesystem::exists(includeFile)) {
                     LOG(WARNING) << filename.c_str() << L"(" << lineCount << R"() : fatal error: cannot open include file ")"
                         << includeFile.c_str() << R"(".)";
                     throw resource_loading_error(filename, "Cannot open include file: " + includeFile);
                 }
                 content << "#line " << 1 << " " << nextFileId << std::endl;
-                content << LoadShaderFileRecursive(includeFile, std::vector<std::string>(), nextFileId, recursionDepth + 1);
+                content << LoadShaderFileRecursive(includeFile, relativeFilename.parent_path().string(),
+                    std::vector<std::string>(), nextFileId, recursionDepth + 1, node);
                 content << "#line " << lineCount + 1 << " " << fileId << std::endl;
             }
             else {

@@ -73,7 +73,8 @@ namespace viscom {
         std::string generatedSource_;
 
         static std::string LoadShaderFile(const std::string &filename, const std::vector<std::string> &defines, const FrameworkInternal* node);
-        static std::string LoadShaderFileRecursive(const std::string &filename, const std::vector<std::string> &defines, unsigned int &fileId, unsigned int recursionDepth);
+        static std::string LoadShaderFileRecursive(const std::string &filename, const std::string& relativeParentPath,
+            const std::vector<std::string> &defines, unsigned int &fileId, unsigned int recursionDepth, const FrameworkInternal* node);
         static GLuint CompileShader(const std::string& filename, const std::string& shader, GLenum type, const std::string& strType);
     };
 }
