@@ -12,7 +12,7 @@
 #include <ostream>
 #include <vector>
 #ifndef __APPLE_CC__
-#include <experimental/filesystem>
+#include <filesystem>
 #endif
 
 namespace viscom::serializeHelper {
@@ -136,8 +136,8 @@ namespace viscom::serializeHelper {
          */
         static bool checkFileDate(const std::string& filename, const std::string& binFilename)
         {
-            auto fileLastWrite = std::experimental::filesystem::last_write_time(filename);
-            auto binLastWrite = std::experimental::filesystem::last_write_time(binFilename);
+            auto fileLastWrite = std::filesystem::last_write_time(filename);
+            auto binLastWrite = std::filesystem::last_write_time(binFilename);
             return (binLastWrite > fileLastWrite);
         }
 #endif
