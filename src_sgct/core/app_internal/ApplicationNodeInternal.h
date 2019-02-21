@@ -15,22 +15,13 @@
 #include "core/FrameworkInternal.h"
 #include "sgct/SharedDataTypes.h"
 
+#include "core/app/OpenVRControllerIfc.h"
+
 namespace viscom::tuio {
     class TuioInputWrapper;
 }
 
 namespace viscom {
-    enum class CalibrateMethod { CALIBRATE_BY_TOUCHING, CALIBRATE_BY_POINTING };
-    enum class TrackedDeviceRole { CONTROLLER_LEFT_HAND, CONTROLLER_RIGHT_HAND, GENERIC_TRACKER, INVALID };
-    enum class ButtonState { PRESSED, TOUCHED, RELEASED };
-    enum class TrackedDeviceClass { INVALID, CONTROLLER, GENERIC_TRACKER, TRACKING_REFERENCE, DISPLAY_REDIRECT, HMD };
-
-    struct DeviceInfo {
-        size_t deviceId;
-        TrackedDeviceRole deviceRole;
-        TrackedDeviceClass deviceClass;
-    };
-
 
     class ApplicationNodeBase;
 
@@ -41,7 +32,7 @@ namespace viscom {
         glm::mat4 pickMatrix_;
     };
 
-    class ApplicationNodeInternal
+    class ApplicationNodeInternal : public ovr::OpenVRControllerIfc
     {
     public:
         /**
@@ -148,21 +139,22 @@ namespace viscom {
          */
         virtual void RemoveTuioCursor(TUIO::TuioCursor *tcur);
 
-        virtual bool InitialiseVR();
-        virtual bool InitialiseDisplayVR();
-        virtual bool CalibrateVR(CalibrateMethod method);
-        virtual const std::vector<DeviceInfo>& GetConnectedDevices();
-        virtual const glm::vec3& GetControllerPosition(size_t trackedDeviceId);
-        virtual const glm::vec3& GetControllerZVector(size_t trackedDeviceId);
-        virtual const glm::quat& GetControllerRotation(size_t trackedDeviceId);
-        virtual const glm::vec2& GetDisplayPointerPosition(size_t trackedDeviceId);
+        virtual bool InitialiseVR() override;
+        virtual bool InitialiseDisplayVR() override;
+        virtual bool CalibrateVR(ovr::CalibrateMethod method) override;
+        virtual const std::vector<ovr::DeviceInfo>& GetConnectedDevices() const override;
+        virtual const glm::vec3& GetControllerPosition(std::uint32_t trackedDeviceId) const override;
+        virtual const glm::vec3& GetControllerDirection(std::uint32_t trackedDeviceId) const override;
+        virtual const glm::quat& GetControllerOrientation(std::uint32_t trackedDeviceId) const override;
+        virtual const glm::vec2& GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const override;
 
-        virtual void ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
-        virtual void ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
-        virtual void ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
-        virtual void ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues);
+        virtual bool ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues) override;
+        virtual bool ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues) override;
+        virtual bool ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues) override;
+        virtual bool ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues) override;
 
-        virtual void GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate);
+        virtual void GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ovr::ButtonState& buttonstate) const override;
+        virtual std::vector<std::string> OutputDevices() const override;
 
         /** Returns the current application time. */
         double GetCurrentAppTime() const { return syncInfoLocal_.currentTime_; }

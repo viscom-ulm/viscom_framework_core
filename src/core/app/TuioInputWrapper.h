@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "main.h"
+#include "core/main.h"
 
 #ifdef VISCOM_USE_TUIO
 #include <memory>

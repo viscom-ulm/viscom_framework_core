@@ -32,14 +32,6 @@ namespace viscom {
         currentTime_{ 0.0 },
         elapsedTime_{ 0.0 }
     {
-        vr::EVRInitError peError;
-        // VRApplication_Scene (starts SteamVR no proper data) VRApplication_Overlay (starts SteamVR no SteamVRHome)  VRApplication_Background (doesn't start SteamVR uses SteamVRHome)
-        m_pHMD_ = vr::VR_Init(&peError, vr::EVRApplicationType::VRApplication_Background);
-        if (peError == vr::VRInitError_None) {
-            LOG(INFO) << "OpenVR initialised on Master";
-            vrInitSucc_ = true;
-        }
-
         if (fwInternal_.IsCoordinator()) appNodeImpl_ = fwInternal_.GetCoordinatorNodeFactory()(this);
         else appNodeImpl_ = fwInternal_.GetWorkerNodeFactory()(this);
 #pragma warning( push )
@@ -174,226 +166,36 @@ namespace viscom {
             appNodeImpl_->RemoveTuioCursor(tcur);
         }
     }
-    
-    //TODO check File
-    bool ApplicationNodeInternal::InitialiseVR()
-    {
-        LOG(INFO) << "InitialiseVR called on Coordinator";
-        InitDisplayFromFile();
-        if (vrInitSucc_ && initDisplay_) {
-            return true;
-        }
-        return false;
-    }
-    bool ApplicationNodeInternal::InitialiseDisplayVR()
-    {
-        if (!initDisplay_) {
-            InitDisplayFromFile();
-            if (!initDisplay_) {
-                displayEdges_[0][0] = -1.0f; displayEdges_[0][1] = 0.0f; displayEdges_[0][2] = -1.0f;
-                displayEdges_[1][0] = 1.0f; displayEdges_[1][1] = 0.0f; displayEdges_[1][2] = -1.0f;
-                displayEdges_[2][0] = -1.0f; displayEdges_[2][1] = 1.0f; displayEdges_[2][2] = -1.0f;
-                displayllset_ = true;
-                displaylrset_ = true;
-                displayulset_ = true;
-                calibrate_ = false;
-                return true;
-            }
-            else {
-                return true;
-            }
-        }
-        return true;
-    }
-    //TODO add CalibrationMode
-    bool ApplicationNodeInternal::CalibrateVR(CalibrateMethod method)
-    {
-        LOG(INFO) << "CalibrateVR called on Coordinator.";
-        initDisplay_ = false;
-        displayllset_ = false;
-        displaylrset_ = false;
-        displayulset_ = false;
-        calibrate_ = true;
-        switch (method)
-        {
-        case viscom::CalibrateMethod::CALIBRATE_BY_TOUCHING:
-            initfloor_ = false;
-            return true;
-            break;
-        case viscom::CalibrateMethod::CALIBRATE_BY_POINTING:
-            initfloor_ = true;
-            return true;
-            break;
-        default:
-            calibrate_ = false;
-            return false;
-            break;
-        }
-    }
 
-    const std::vector<DeviceInfo>& ApplicationNodeInternal::GetConnectedDevices()
+    void ApplicationNodeInternal::ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
     {
-        LOG(INFO) << "GetConnectedDevices called on Coordinator.";
-        return connectedDevices_;
-    }
-
-    const glm::vec3& ApplicationNodeInternal::GetControllerPosition(size_t trackedDeviceId)
-    {
-        LOG(INFO) << "GetControllerPos called on Coordinator.";
-        if (m_pHMD_ == nullptr) return glm::vec3();
-        vr::ETrackedDeviceClass deviceClass = m_pHMD_->GetTrackedDeviceClass(trackedDeviceId);
-        vr::ETrackedControllerRole controllerRole = vr::ETrackedControllerRole::TrackedControllerRole_Invalid;
-        switch (deviceClass)
-        {
-        case vr::TrackedDeviceClass_Controller:
-            controllerRole = m_pHMD_->GetControllerRoleForTrackedDeviceIndex(trackedDeviceId);
-            switch (controllerRole)
-            {
-            case vr::TrackedControllerRole_LeftHand:
-                return controller0pos_;
-                break;
-            case vr::TrackedControllerRole_RightHand:
-                return controller1pos_;
-                break;
-            case vr::TrackedControllerRole_OptOut:
-                break;
-            default:
-                return glm::vec3();
-                break;
-            }
-            break;
-        case vr::TrackedDeviceClass_GenericTracker:
-            return trackerpos_;
-            break;
-        default:
-            return glm::vec3();
-            break;
-        }
-    }
-
-    const glm::vec3& ApplicationNodeInternal::GetControllerZVector(size_t trackedDeviceId)
-    {
-        if (m_pHMD_ == nullptr) return glm::vec3();
-        vr::ETrackedDeviceClass deviceClass = m_pHMD_->GetTrackedDeviceClass(trackedDeviceId);
-        vr::ETrackedControllerRole controllerRole = vr::ETrackedControllerRole::TrackedControllerRole_Invalid;
-        switch (deviceClass)
-        {
-        case vr::TrackedDeviceClass_Controller:
-            controllerRole = m_pHMD_->GetControllerRoleForTrackedDeviceIndex(trackedDeviceId);
-            switch (controllerRole)
-            {
-            case vr::TrackedControllerRole_LeftHand:
-                return controller0zvec_;
-                break;
-            case vr::TrackedControllerRole_RightHand:
-                return controller1zvec_;
-                break;
-            case vr::TrackedControllerRole_OptOut:
-                break;
-            default:
-                return glm::vec3();
-                break;
-            }
-            break;
-        default:
-            return glm::vec3();
-            break;
-        }
-    }
-
-    const glm::quat& ApplicationNodeInternal::GetControllerRotation(size_t trackedDeviceId)
-    {
-        if (m_pHMD_ == nullptr) return glm::quat();
-        vr::ETrackedDeviceClass deviceClass = m_pHMD_->GetTrackedDeviceClass(trackedDeviceId);
-        vr::ETrackedControllerRole controllerRole = vr::ETrackedControllerRole::TrackedControllerRole_Invalid;
-        switch (deviceClass)
-        {
-        case vr::TrackedDeviceClass_Controller:
-            controllerRole = m_pHMD_->GetControllerRoleForTrackedDeviceIndex(trackedDeviceId);
-            switch (controllerRole)
-            {
-            case vr::TrackedControllerRole_LeftHand:
-                return controller0rot_;
-                break;
-            case vr::TrackedControllerRole_RightHand:
-                return controller1rot_;
-                break;
-            case vr::TrackedControllerRole_OptOut:
-                break;
-            default:
-                return glm::quat();
-                break;
-            }
-            break;
-        case vr::TrackedDeviceClass_GenericTracker:
-            return trackerrot_;
-            break;
-        default:
-            return glm::quat();
-            break;
-        }
-    }
-
-    const glm::vec2& ApplicationNodeInternal::GetDisplayPointerPosition(size_t trackedDeviceId)
-    {
-        LOG(INFO) << "GetDisplayPointerPosition called on Coordinator.";
-        if (m_pHMD_ == nullptr) return glm::vec2();
-        vr::ETrackedDeviceClass deviceClass = m_pHMD_->GetTrackedDeviceClass(trackedDeviceId);
-        vr::ETrackedControllerRole controllerRole = vr::ETrackedControllerRole::TrackedControllerRole_Invalid;
-        switch (deviceClass)
-        {
-        case vr::TrackedDeviceClass_Controller:
-            controllerRole = m_pHMD_->GetControllerRoleForTrackedDeviceIndex(trackedDeviceId);
-            switch (controllerRole)
-            {
-            case vr::TrackedControllerRole_LeftHand:
-                return GetDisplayPosVector(controller0pos_, controller0zvec_);
-                break;
-            case vr::TrackedControllerRole_RightHand:
-                return GetDisplayPosVector(controller0pos_, controller0zvec_);
-                break;
-            case vr::TrackedControllerRole_OptOut:
-                break;
-            default:
-                return glm::vec2();
-                break;
-            }
-            break;
-        default:
-            return glm::vec2();
-            break;
-        }
-    }
-
-    void ApplicationNodeInternal::ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
-    {
-        LOG(INFO) << "ControllerButtonPressedCalb called on Coordinator.";
+        LOG(G3LOG_DEBUG) << "ControllerButtonPressedCalb called on Coordinator.";
         ApplicationNodeInternal::ControllerButtonPressedCallback(trackedDeviceId, buttonid, axisvalues);
     }
 
-    void ApplicationNodeInternal::ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    void ApplicationNodeInternal::ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
     {
         ApplicationNodeInternal::ControllerButtonTouchedCallback(trackedDeviceId, buttonid, axisvalues);
     }
 
-    void ApplicationNodeInternal::ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    void ApplicationNodeInternal::ControllerButtonUnpressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
     {
         ApplicationNodeInternal::ControllerButtonUnpressedCallback(trackedDeviceId, buttonid, axisvalues);
     }
 
-    void ApplicationNodeInternal::ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    void ApplicationNodeInternal::ControllerButtonUntouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
     {
         ApplicationNodeInternal::ControllerButtonUntouchedCallback(trackedDeviceId, buttonid, axisvalues);
     }
 
 
-    void ApplicationNodeInternal::GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate)
+    void ApplicationNodeInternal::GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate)
     {
-        LOG(INFO) << "GetContrButSta called on Coordinator.";
+        LOG(G3LOG_DEBUG) << "GetContrButSta called on Coordinator.";
         uint64_t buttonspressed = 0;
         uint64_t buttonstouched = 0;
         for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++) {
-            if (m_pHMD_ == NULL) return;
+            if (m_pHMD_ == nullptr) return;
             vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
             vr::VRControllerState_t controllerState;
             vr::VRControllerState_t *controllerState_ptr = &controllerState;
@@ -416,181 +218,9 @@ namespace viscom {
     }
 
     //TODO test
-    /** Parses a OpenVR Tracking Frame by going through all connected devices. */
-    void ApplicationNodeInternal::ParseTrackingFrame()
-    {
-        LOG(INFO) << "ParseTrackingFrame called on Coordinator.";
-        vr::HmdVector3_t position;
-        vr::HmdVector3_t zvector;
-        vr::HmdQuaternion_t quaternion;
-        connectedDevices_.clear();
-        // Process SteamVR device states
-        for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++)
-        {
-            if (m_pHMD_ == NULL) continue;
-            // if not connected just skip the rest of the routine
-            if (!m_pHMD_->IsTrackedDeviceConnected(unDevice)) continue;
+    
 
-            vr::TrackedDevicePose_t trackedDevicePose;
-            vr::TrackedDevicePose_t *devicePose = &trackedDevicePose;
-
-            vr::VRControllerState_t controllerState;
-            vr::VRControllerState_t *controllerState_ptr = &controllerState;
-
-            vr::HmdQuaternion_t quaternion;
-            DeviceInfo deviceInform;
-
-            if (!vr::VRSystem()->IsInputAvailable()) continue;
-
-            bool bPoseValid = trackedDevicePose.bPoseIsValid;
-            vr::ETrackingResult eTrackingResult;
-            deviceInform.deviceId = unDevice;
-
-            // Get what type of device it is and work with its data
-            vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
-            switch (trackedDeviceClass) {
-            case vr::ETrackedDeviceClass::TrackedDeviceClass_HMD:
-                deviceInform.deviceClass = TrackedDeviceClass::HMD;
-
-                // get pose relative to the safe bounds defined by the user (only if using TrackingUniverseStanding)
-                vr::VRSystem()->GetDeviceToAbsoluteTrackingPose(vr::TrackingUniverseStanding, 0, &trackedDevicePose, 1);
-
-                // get the position and rotation
-                position.v[0] = GetPosition(devicePose->mDeviceToAbsoluteTracking.m)[0];
-                position.v[1] = GetPosition(devicePose->mDeviceToAbsoluteTracking.m)[1];
-                position.v[2] = GetPosition(devicePose->mDeviceToAbsoluteTracking.m)[2];
-                zvector.v[0] = GetZVector(devicePose->mDeviceToAbsoluteTracking.m)[0];
-                zvector.v[1] = GetZVector(devicePose->mDeviceToAbsoluteTracking.m)[1];
-                zvector.v[2] = GetZVector(devicePose->mDeviceToAbsoluteTracking.m)[2];
-                quaternion.w = GetRotation(devicePose->mDeviceToAbsoluteTracking.m)[0];
-                quaternion.x = GetRotation(devicePose->mDeviceToAbsoluteTracking.m)[1];
-                quaternion.y = GetRotation(devicePose->mDeviceToAbsoluteTracking.m)[2];
-                quaternion.z = GetRotation(devicePose->mDeviceToAbsoluteTracking.m)[3];
-
-                eTrackingResult = trackedDevicePose.eTrackingResult;
-                bPoseValid = trackedDevicePose.bPoseIsValid;
-
-                switch (eTrackingResult) {
-
-                case vr::ETrackingResult::TrackingResult_Uninitialized:
-                    break;
-                case vr::ETrackingResult::TrackingResult_Calibrating_InProgress:
-                    break;
-                case vr::ETrackingResult::TrackingResult_Calibrating_OutOfRange:
-                    break;
-                case vr::ETrackingResult::TrackingResult_Running_OK:
-                    break;
-                case vr::ETrackingResult::TrackingResult_Running_OutOfRange:
-                    break;
-                default:
-                    break;
-                }
-                break;
-            case vr::ETrackedDeviceClass::TrackedDeviceClass_Controller:
-                deviceInform.deviceClass = TrackedDeviceClass::CONTROLLER;
-
-                vr::VRSystem()->GetControllerStateWithPose(vr::TrackingUniverseStanding, unDevice, &controllerState, sizeof(controllerState), &trackedDevicePose);
-
-                position.v[0] = GetPosition(devicePose->mDeviceToAbsoluteTracking.m)[0];
-                position.v[1] = GetPosition(devicePose->mDeviceToAbsoluteTracking.m)[1];
-                position.v[2] = GetPosition(devicePose->mDeviceToAbsoluteTracking.m)[2];
-                zvector.v[0] = GetZVector(devicePose->mDeviceToAbsoluteTracking.m)[0];
-                zvector.v[1] = GetZVector(devicePose->mDeviceToAbsoluteTracking.m)[1];
-                zvector.v[2] = GetZVector(devicePose->mDeviceToAbsoluteTracking.m)[2];
-                quaternion.w = GetRotation(devicePose->mDeviceToAbsoluteTracking.m)[0];
-                quaternion.x = GetRotation(devicePose->mDeviceToAbsoluteTracking.m)[1];
-                quaternion.y = GetRotation(devicePose->mDeviceToAbsoluteTracking.m)[2];
-                quaternion.z = GetRotation(devicePose->mDeviceToAbsoluteTracking.m)[3];
-
-                eTrackingResult = trackedDevicePose.eTrackingResult;
-                bPoseValid = trackedDevicePose.bPoseIsValid;
-                switch (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(unDevice)) {
-                case vr::TrackedControllerRole_Invalid:
-                    // invalid hand...
-                    deviceInform.deviceRole = TrackedDeviceRole::INVALID;
-                    break;
-
-
-                case vr::TrackedControllerRole_LeftHand:
-                    deviceInform.deviceRole = TrackedDeviceRole::CONTROLLER_LEFT_HAND;
-                    controller0pos_ = glm::vec3(position.v[0], position.v[1], position.v[2]);
-                    controller0zvec_ = glm::vec3(zvector.v[0], zvector.v[1], zvector.v[2]);
-                    controller0rot_ = glm::quat(quaternion.w, quaternion.x, quaternion.y, quaternion.z);
-                    controller0displaypos_ = GetDisplayPointerPosition(unDevice);
-                    break;
-
-                case vr::TrackedControllerRole_RightHand:
-                    deviceInform.deviceRole = TrackedDeviceRole::CONTROLLER_RIGHT_HAND;
-                    controller1pos_ = glm::vec3(position.v[0], position.v[1], position.v[2]);
-                    controller1zvec_ = glm::vec3(zvector.v[0], zvector.v[1], zvector.v[2]);
-                    controller1rot_ = glm::quat(quaternion.w, quaternion.x, quaternion.y, quaternion.z);
-                    controller1displaypos_ = GetDisplayPointerPosition(unDevice);
-                    break;
-
-                case vr::TrackedDeviceClass_TrackingReference:
-                    deviceInform.deviceClass = TrackedDeviceClass::TRACKING_REFERENCE;
-                    break;
-                }
-                break;
-
-            case vr::ETrackedDeviceClass::TrackedDeviceClass_GenericTracker:
-                vr::VRSystem()->GetControllerStateWithPose(vr::TrackingUniverseStanding, unDevice, &controllerState, sizeof(controllerState), &trackedDevicePose);
-
-                deviceInform.deviceClass = TrackedDeviceClass::GENERIC_TRACKER;
-                deviceInform.deviceRole = TrackedDeviceRole::GENERIC_TRACKER;
-
-                position.v[0] = GetPosition(devicePose->mDeviceToAbsoluteTracking.m)[0];
-                position.v[1] = GetPosition(devicePose->mDeviceToAbsoluteTracking.m)[1];
-                position.v[2] = GetPosition(devicePose->mDeviceToAbsoluteTracking.m)[2];
-                zvector.v[0] = GetZVector(devicePose->mDeviceToAbsoluteTracking.m)[0];
-                zvector.v[1] = GetZVector(devicePose->mDeviceToAbsoluteTracking.m)[1];
-                zvector.v[2] = GetZVector(devicePose->mDeviceToAbsoluteTracking.m)[2];
-                quaternion.w = GetRotation(devicePose->mDeviceToAbsoluteTracking.m)[0];
-                quaternion.x = GetRotation(devicePose->mDeviceToAbsoluteTracking.m)[1];
-                quaternion.y = GetRotation(devicePose->mDeviceToAbsoluteTracking.m)[2];
-                quaternion.z = GetRotation(devicePose->mDeviceToAbsoluteTracking.m)[3];
-
-                eTrackingResult = trackedDevicePose.eTrackingResult;
-                bPoseValid = trackedDevicePose.bPoseIsValid;
-                trackerpos_ = glm::vec3(position.v[0], position.v[1], position.v[2]);
-                trackerzvec_ = glm::vec3(zvector.v[0], zvector.v[1], zvector.v[2]);
-                trackerrot_ = glm::quat(quaternion.w, quaternion.x, quaternion.y, quaternion.z);
-                if (bPoseValid) {
-#ifdef VISCOM_USE_SGCT
-                    HandleSCGT(trackerpos_, trackerrot_);
-#endif // VISCOM_USE_SGCT
-                }
-                break;
-
-            case vr::ETrackedDeviceClass::TrackedDeviceClass_DisplayRedirect:
-                deviceInform.deviceClass = TrackedDeviceClass::DISPLAY_REDIRECT;
-                deviceInform.deviceRole = TrackedDeviceRole::INVALID;
-                break;
-
-            case vr::ETrackedDeviceClass::TrackedDeviceClass_TrackingReference:
-                deviceInform.deviceClass = TrackedDeviceClass::TRACKING_REFERENCE;
-                deviceInform.deviceRole = TrackedDeviceRole::INVALID;
-                break;
-
-            case vr::ETrackedDeviceClass::TrackedDeviceClass_Invalid:
-                deviceInform.deviceClass = TrackedDeviceClass::INVALID;
-                deviceInform.deviceClass = TrackedDeviceClass::INVALID;
-                deviceInform.deviceId = vr::k_unTrackedDeviceIndexInvalid;
-                break;
-
-            default:
-                deviceInform.deviceClass = TrackedDeviceClass::INVALID;
-                deviceInform.deviceClass = TrackedDeviceClass::INVALID;
-                deviceInform.deviceId = vr::k_unTrackedDeviceIndexInvalid;
-            }
-
-            if (m_pHMD_->IsTrackedDeviceConnected(unDevice)) {
-                connectedDevices_.emplace_back(deviceInform);
-            }
-        }
-    }
-
-    /** Initialises the display position
+    /** Initializes the display position
     *   @param bool use left controller as pointing or touching device
     */
     void ApplicationNodeInternal::InitialiseDisplay(bool useLeftController)
@@ -601,44 +231,6 @@ namespace viscom {
         else {
             useLeftController ? InitDisplay(controller0pos_) : InitDisplay(controller1pos_);
         }
-    }
-    /** Returns the position from a given HMD matrix.
-    *   @param hmdMatrix 3x4 containing.
-    *   @return float[3] with x y z position data.
-    */
-    float *ApplicationNodeInternal::GetPosition(const float hmdMatrix[3][4])
-    {
-        float vector[3];
-        vector[0] = hmdMatrix[0][3];
-        vector[1] = hmdMatrix[1][3];
-        vector[2] = hmdMatrix[2][3];
-        return vector;
-    }
-    /** Returns the rotation from a given HMD matrix.
-    *   @return double[4] with q x y z quaternion.
-    */
-    double *ApplicationNodeInternal::GetRotation(const float matrix[3][4])
-    {
-        double q[4];
-
-        q[0] = sqrt(fmax(0, 1 + matrix[0][0] + matrix[1][1] + matrix[2][2])) / 2;
-        q[1] = sqrt(fmax(0, 1 + matrix[0][0] - matrix[1][1] - matrix[2][2])) / 2;
-        q[2] = sqrt(fmax(0, 1 - matrix[0][0] + matrix[1][1] - matrix[2][2])) / 2;
-        q[3] = sqrt(fmax(0, 1 - matrix[0][0] - matrix[1][1] + matrix[2][2])) / 2;
-        q[1] = copysign(q[1], matrix[2][1] - matrix[1][2]);
-        q[2] = copysign(q[2], matrix[0][2] - matrix[2][0]);
-        q[3] = copysign(q[3], matrix[1][0] - matrix[0][1]);
-        return q;
-    }
-    /** Returns the z-vector from a given HMD matrix.
-    *   @return float[3] with x y z as z-vector data.
-    */
-    float *ApplicationNodeInternal::GetZVector(const float matrix[3][4]) {
-        float vector[3];
-        vector[0] = matrix[0][2];
-        vector[1] = matrix[1][2];
-        vector[2] = matrix[2][2];
-        return vector;
     }
     /** Returns the display position as x and y.
     *   @param glm::vec3 position of the controller
@@ -718,13 +310,13 @@ namespace viscom {
         calibrate_ = false;
         WriteInitDisplayToFile();
     }
-    /** Reads displayEdges.txt and initialises the display with found values. */
+    /** Reads displayEdges.txt and initializes the display with found values. */
     void ApplicationNodeInternal::InitDisplayFromFile() {
         std::ifstream myfile("displayEdges.txt");
         if (myfile.is_open()) {
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    myfile >> displayEdges_[i][j];
+            for (auto& displayEdge : displayEdges_) {
+                for (float & j : displayEdge) {
+                    myfile >> j;
                 }
             }
         }
@@ -737,47 +329,12 @@ namespace viscom {
     void ApplicationNodeInternal::WriteInitDisplayToFile() {
         std::ofstream myfile;
         myfile.open("displayEdges.txt");
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                myfile << displayEdges_[i][j] << " ";
+        for (auto & displayEdge : displayEdges_) {
+            for (float j : displayEdge) {
+                myfile << j << " ";
             }
         }
         myfile.close();
-    }
-    /** Tests which devices are connected and returns them in a string vector.
-    *   @return string vector containing the connected devices.
-    */
-    std::vector<std::string> ApplicationNodeInternal::OutputDevices() {
-        std::vector<std::string> devices;
-        if (m_pHMD_ == nullptr) {
-            return devices;
-        }
-        for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++) {
-            if (!m_pHMD_->IsTrackedDeviceConnected(unDevice))
-                continue;
-            vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
-            switch (trackedDeviceClass) {
-            case(vr::ETrackedDeviceClass::TrackedDeviceClass_Controller):
-                devices.push_back("Controller");
-                break;
-            case(vr::ETrackedDeviceClass::TrackedDeviceClass_GenericTracker):
-                devices.push_back("GenericTracker");
-                break;
-            case(vr::ETrackedDeviceClass::TrackedDeviceClass_HMD):
-                devices.push_back("HMD");
-                break;
-            case(vr::ETrackedDeviceClass::TrackedDeviceClass_TrackingReference):
-                devices.push_back("TrackingRef");
-                break;
-            case(vr::ETrackedDeviceClass::TrackedDeviceClass_DisplayRedirect):
-                devices.push_back("DisplayRedirect");
-                break;
-            case(vr::ETrackedDeviceClass::TrackedDeviceClass_Invalid):
-                devices.push_back("Invalid");
-                break;
-            }
-        }
-        return devices;
     }
 
     /** Processes a given vr event currently only handling controller buttons.
@@ -811,7 +368,7 @@ namespace viscom {
 
         case vr::VREvent_ButtonPress:
         {
-            //TODO make unicontroller conform
+            //TODO make uni-controller conform
             if (!initDisplay_ && event.data.controller.button == vr::k_EButton_SteamVR_Trigger && calibrate_) {
                 ParseTrackingFrame();
                 InitialiseDisplay(useleftcontroller_);
@@ -824,10 +381,10 @@ namespace viscom {
                 if (vr::VRSystem()->GetTrackedDeviceClass(event.trackedDeviceIndex) == vr::ETrackedDeviceClass::TrackedDeviceClass_Controller)
                 {
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand) {
-                        controller0buttons_.push_back("Button A");
+                        controller0buttons_.emplace_back("Button A");
                     }
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand) {
-                        controller1buttons_.push_back("Button A");
+                        controller1buttons_.emplace_back("Button A");
                     }
                 }
             }
@@ -837,10 +394,10 @@ namespace viscom {
                 if (vr::VRSystem()->GetTrackedDeviceClass(event.trackedDeviceIndex) == vr::ETrackedDeviceClass::TrackedDeviceClass_Controller)
                 {
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand) {
-                        controller0buttons_.push_back("AppMenu");
+                        controller0buttons_.emplace_back("AppMenu");
                     }
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand) {
-                        controller1buttons_.push_back("AppMenu");
+                        controller1buttons_.emplace_back("AppMenu");
                     }
                 }
             }
@@ -850,10 +407,10 @@ namespace viscom {
                 if (vr::VRSystem()->GetTrackedDeviceClass(event.trackedDeviceIndex) == vr::ETrackedDeviceClass::TrackedDeviceClass_Controller)
                 {
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand) {
-                        controller0buttons_.push_back("Axis0");
+                        controller0buttons_.emplace_back("Axis0");
                     }
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand) {
-                        controller1buttons_.push_back("Axis0");
+                        controller1buttons_.emplace_back("Axis0");
                     }
                 }
             }
@@ -863,10 +420,10 @@ namespace viscom {
                 if (vr::VRSystem()->GetTrackedDeviceClass(event.trackedDeviceIndex) == vr::ETrackedDeviceClass::TrackedDeviceClass_Controller)
                 {
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand) {
-                        controller0buttons_.push_back("Axis1");
+                        controller0buttons_.emplace_back("Axis1");
                     }
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand) {
-                        controller1buttons_.push_back("Axis1");
+                        controller1buttons_.emplace_back("Axis1");
                     }
                 }
             }
@@ -876,10 +433,10 @@ namespace viscom {
                 if (vr::VRSystem()->GetTrackedDeviceClass(event.trackedDeviceIndex) == vr::ETrackedDeviceClass::TrackedDeviceClass_Controller)
                 {
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand) {
-                        controller0buttons_.push_back("Axis2");
+                        controller0buttons_.emplace_back("Axis2");
                     }
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand) {
-                        controller1buttons_.push_back("Axis2");
+                        controller1buttons_.emplace_back("Axis2");
                     }
                 }
             }
@@ -889,10 +446,10 @@ namespace viscom {
                 if (vr::VRSystem()->GetTrackedDeviceClass(event.trackedDeviceIndex) == vr::ETrackedDeviceClass::TrackedDeviceClass_Controller)
                 {
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand) {
-                        controller0buttons_.push_back("Axis3");
+                        controller0buttons_.emplace_back("Axis3");
                     }
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand) {
-                        controller1buttons_.push_back("Axis3");
+                        controller1buttons_.emplace_back("Axis3");
                     }
                 }
             }
@@ -902,10 +459,10 @@ namespace viscom {
                 if (vr::VRSystem()->GetTrackedDeviceClass(event.trackedDeviceIndex) == vr::ETrackedDeviceClass::TrackedDeviceClass_Controller)
                 {
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand) {
-                        controller0buttons_.push_back("Axis4");
+                        controller0buttons_.emplace_back("Axis4");
                     }
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand) {
-                        controller1buttons_.push_back("Axis4");
+                        controller1buttons_.emplace_back("Axis4");
                     }
                 }
             }
@@ -915,10 +472,10 @@ namespace viscom {
                 if (vr::VRSystem()->GetTrackedDeviceClass(event.trackedDeviceIndex) == vr::ETrackedDeviceClass::TrackedDeviceClass_Controller)
                 {
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand) {
-                        controller0buttons_.push_back("DPadDown");
+                        controller0buttons_.emplace_back("DPadDown");
                     }
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand) {
-                        controller1buttons_.push_back("DPadDown");
+                        controller1buttons_.emplace_back("DPadDown");
                     }
                 }
             }
@@ -928,10 +485,10 @@ namespace viscom {
                 if (vr::VRSystem()->GetTrackedDeviceClass(event.trackedDeviceIndex) == vr::ETrackedDeviceClass::TrackedDeviceClass_Controller)
                 {
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand) {
-                        controller0buttons_.push_back("DPadLeft");
+                        controller0buttons_.emplace_back("DPadLeft");
                     }
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand) {
-                        controller1buttons_.push_back("DPadLeft");
+                        controller1buttons_.emplace_back("DPadLeft");
                     }
                 }
             }
@@ -941,10 +498,10 @@ namespace viscom {
                 if (vr::VRSystem()->GetTrackedDeviceClass(event.trackedDeviceIndex) == vr::ETrackedDeviceClass::TrackedDeviceClass_Controller)
                 {
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand) {
-                        controller0buttons_.push_back("DPadRight");
+                        controller0buttons_.emplace_back("DPadRight");
                     }
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand) {
-                        controller1buttons_.push_back("DPadRight");
+                        controller1buttons_.emplace_back("DPadRight");
                     }
                 }
             }
@@ -954,10 +511,10 @@ namespace viscom {
                 if (vr::VRSystem()->GetTrackedDeviceClass(event.trackedDeviceIndex) == vr::ETrackedDeviceClass::TrackedDeviceClass_Controller)
                 {
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand) {
-                        controller0buttons_.push_back("DPadUp");
+                        controller0buttons_.emplace_back("DPadUp");
                     }
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand) {
-                        controller1buttons_.push_back("DPadUp");
+                        controller1buttons_.emplace_back("DPadUp");
                     }
                 }
             }
@@ -967,10 +524,10 @@ namespace viscom {
                 if (vr::VRSystem()->GetTrackedDeviceClass(event.trackedDeviceIndex) == vr::ETrackedDeviceClass::TrackedDeviceClass_Controller)
                 {
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand) {
-                        controller0buttons_.push_back("Grip");
+                        controller0buttons_.emplace_back("Grip");
                     }
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand) {
-                        controller1buttons_.push_back("Grip");
+                        controller1buttons_.emplace_back("Grip");
                     }
                 }
             }
@@ -980,10 +537,10 @@ namespace viscom {
                 if (vr::VRSystem()->GetTrackedDeviceClass(event.trackedDeviceIndex) == vr::ETrackedDeviceClass::TrackedDeviceClass_Controller)
                 {
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand) {
-                        controller0buttons_.push_back("Max");
+                        controller0buttons_.emplace_back("Max");
                     }
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand) {
-                        controller1buttons_.push_back("Max");
+                        controller1buttons_.emplace_back("Max");
                     }
                 }
             }
@@ -993,10 +550,10 @@ namespace viscom {
                 if (vr::VRSystem()->GetTrackedDeviceClass(event.trackedDeviceIndex) == vr::ETrackedDeviceClass::TrackedDeviceClass_Controller)
                 {
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_LeftHand) {
-                        controller0buttons_.push_back("System");
+                        controller0buttons_.emplace_back("System");
                     }
                     if (vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(event.trackedDeviceIndex) == vr::TrackedControllerRole_RightHand) {
-                        controller1buttons_.push_back("System");
+                        controller1buttons_.emplace_back("System");
                     }
                 }
             }
@@ -1323,16 +880,16 @@ namespace viscom {
         return true;
     }
 
-    /** Returns a bool which shows if the display was initialised.
-    *   @return bool is display initialises.
+    /** Returns a bool which shows if the display was initialized.
+    *   @return bool is display initializes.
     */
     bool ApplicationNodeInternal::GetDisplayInitialised() {
         return initDisplay_;
     }
 
 
-    /** Returns true if the display is currently initialised by pointing at the display edges.
-    *   @return bool is display initialised by pointing at the display corners.
+    /** Returns true if the display is currently initialized by pointing at the display edges.
+    *   @return bool is display initialized by pointing at the display corners.
     */
     bool ApplicationNodeInternal::GetDisplayInitByFloor() {
         return initfloor_;

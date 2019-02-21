@@ -74,48 +74,5 @@ namespace viscom {
          *  @see ApplicationNodeBase::RemoveTuioCursor.
          */
         virtual void RemoveTuioCursor(TUIO::TuioCursor* tcur) override;
-
-        bool InitialiseVR() override;
-        bool InitialiseDisplayVR() override;
-        bool CalibrateVR(CalibrateMethod method) override;
-        const std::vector<DeviceInfo>& GetConnectedDevices() override;
-        const glm::vec3& GetControllerPosition(size_t trackedDeviceId) override;
-        const glm::vec3& GetControllerZVector(size_t trackedDeviceId) override;
-        const glm::quat& GetControllerRotation(size_t trackedDeviceId) override;
-        const glm::vec2& GetDisplayPointerPosition(size_t trackedDeviceId) override;
-
-        void ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues) override;
-        void ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues) override;
-        void ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues) override;
-        void ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues) override;
-
-        void GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate) override;
-
-         void ParseTrackingFrame();
-         glm::vec3 GetController0Pos();
-         glm::vec3 GetController0Zvec();
-         glm::vec3 GetController1Pos();
-         glm::vec3 GetController1Zvec();
-         glm::vec3 GetTrackerPos();
-         glm::vec3 GetTrackerZvec() ;
-         glm::quat GetController0Rot() ;
-         glm::quat GetController1Rot() ;
-         glm::quat GetTrackerRot() ;
-         glm::vec2 GetDisplayPointerPosition(bool useLeftController) ;
-         void InitialiseDisplay(bool useLeftController) ;
-         bool GetDisplayInitialised() ;
-         void SetDisplayNotInitialised() ;
-         bool GetDisplayInitByFloor() ;
-         void SetDisplayInitByFloor(bool b) ;
-         void PollAndParseNextEvent() ;
-         void PollAndParseEvents() ;
-         std::vector<std::string> OutputDevices() ;
-         float* GetDisplayEdges() ;
-         bool GetVrInitSuccess() ;
-         std::vector<std::string> GetController0Buttons() ;
-         std::vector<std::string> GetController1Buttons() ;
-
-
-
     };
 }

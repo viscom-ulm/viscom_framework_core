@@ -9,7 +9,7 @@
 #include "core/main.h"
 #include <sgct.h>
 #include "ApplicationNodeInternal.h"
-#include "core/TuioInputWrapper.h"
+#include "core/app/TuioInputWrapper.h"
 #include <imgui.h>
 #include "core/app/ApplicationNodeBase.h"
 #include "core/utils/utils.h"
@@ -191,50 +191,58 @@ namespace viscom {
     {
         return false;
     }
-    bool ApplicationNodeInternal::CalibrateVR(CalibrateMethod method)
+    bool ApplicationNodeInternal::CalibrateVR(ovr::CalibrateMethod method)
     {
         return false;
     }
-    const std::vector<DeviceInfo>& ApplicationNodeInternal::GetConnectedDevices()
+    const std::vector<ovr::DeviceInfo>& ApplicationNodeInternal::GetConnectedDevices() const
     {
-        return std::vector<DeviceInfo>();
+        return std::vector<ovr::DeviceInfo>();
     }
-    const glm::vec3& ApplicationNodeInternal::GetControllerPosition(size_t trackedDeviceId)
-    {
-        return glm::vec3();
-    }
-    const glm::vec3& ApplicationNodeInternal::GetControllerZVector(size_t trackedDeviceId)
+    const glm::vec3& ApplicationNodeInternal::GetControllerPosition(std::uint32_t trackedDeviceId) const
     {
         return glm::vec3();
     }
-    const glm::quat& ApplicationNodeInternal::GetControllerRotation(size_t trackedDeviceId)
+    const glm::vec3& ApplicationNodeInternal::GetControllerDirection(std::uint32_t trackedDeviceId) const
+    {
+        return glm::vec3();
+    }
+    const glm::quat& ApplicationNodeInternal::GetControllerOrientation(std::uint32_t trackedDeviceId) const
     {
         return glm::quat();
     }
-    const glm::vec2& ApplicationNodeInternal::GetDisplayPointerPosition(size_t trackedDeviceId)
+    const glm::vec2& ApplicationNodeInternal::GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const
     {
         return glm::vec2();
     }
    
-    void ApplicationNodeInternal::ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    bool ApplicationNodeInternal::ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
     {
-        appNodeImpl_->ControllerButtonPressedCallback(trackedDeviceId, buttonid, axisvalues);
-    }
-    void ApplicationNodeInternal::ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
-    {
-        appNodeImpl_->ControllerButtonTouchedCallback(trackedDeviceId, buttonid, axisvalues);
-    }
-    void ApplicationNodeInternal::ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
-    {
-        appNodeImpl_->ControllerButtonUnpressedCallback(trackedDeviceId, buttonid, axisvalues);
-    }
-    void ApplicationNodeInternal::ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
-    {
-        appNodeImpl_->ControllerButtonUntouchedCallback(trackedDeviceId, buttonid, axisvalues);
+        return appNodeImpl_->ControllerButtonPressedCallback(trackedDeviceId, buttonid, axisvalues);
     }
 
-    void ApplicationNodeInternal::GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2 & axisvalues, ButtonState & buttonstate)
+    bool ApplicationNodeInternal::ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
     {
+        return appNodeImpl_->ControllerButtonTouchedCallback(trackedDeviceId, buttonid, axisvalues);
+    }
+
+    bool ApplicationNodeInternal::ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
+    {
+        return appNodeImpl_->ControllerButtonPressReleasedCallback(trackedDeviceId, buttonid, axisvalues);
+    }
+
+    bool ApplicationNodeInternal::ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
+    {
+        return appNodeImpl_->ControllerButtonTouchReleasedCallback(trackedDeviceId, buttonid, axisvalues);
+    }
+
+    void ApplicationNodeInternal::GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ovr::ButtonState& buttonstate) const
+    {
+    }
+
+    std::vector<std::string> ApplicationNodeInternal::OutputDevices() const
+    {
+        return std::vector<std::string>();
     }
 
 }

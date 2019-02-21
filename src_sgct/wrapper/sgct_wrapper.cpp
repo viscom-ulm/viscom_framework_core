@@ -21,4 +21,16 @@ namespace sgct_wrapper {
         auto position = sgct::Engine::getDefaultUserPtr()->getPos();
         return wVec3{ position.x, position.y, position.z };
     }
+
+    void SetDefaultUserPosition(const wVec3& pos)
+    {
+        wVec3 position = pos;
+        sgct::Engine::getDefaultUserPtr()->setPos(position.data());
+    }
+
+    void SetDefaultUserOrientation(const wQuat& orientation)
+    {
+        glm::quat orient{ orientation[0], orientation[1], orientation[2], orientation[3] };
+        sgct::Engine::getDefaultUserPtr()->setOrientation(orient);
+    }
 }

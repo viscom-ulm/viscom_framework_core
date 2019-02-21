@@ -126,138 +126,28 @@ namespace viscom {
         framework_->Terminate();
     }
     
-    bool ApplicationNodeBase::ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    bool ApplicationNodeBase::ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    bool ApplicationNodeBase::ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    bool ApplicationNodeBase::ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
+    bool ApplicationNodeBase::ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
     {
         return false;
     }
 
-    void ApplicationNodeBase::GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2 & axisvalues, ButtonState & buttonstate)
+    void ApplicationNodeBase::GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ovr::ButtonState& buttonstate) const
     {
+        return appNode_->GetControllerButtonState(trackedDeviceId, buttonid, axisvalues, buttonstate);
     }
-
-
-    /*void ApplicationNodeBase::ParseTrackingFrame()
-    {
-    }
-
-    glm::vec3 ApplicationNodeBase::GetController0Pos()
-    {
-        return glm::vec3();
-    }
-
-    glm::vec3 ApplicationNodeBase::GetController0Zvec()
-    {
-        return glm::vec3();
-    }
-
-    glm::vec3 ApplicationNodeBase::GetController1Pos()
-    {
-        return glm::vec3();
-    }
-
-    glm::vec3 ApplicationNodeBase::GetController1Zvec()
-    {
-        return glm::vec3();
-    }
-
-    glm::vec3 ApplicationNodeBase::GetTrackerPos()
-    {
-        return glm::vec3();
-    }
-
-    glm::vec3 ApplicationNodeBase::GetTrackerZvec()
-    {
-        return glm::vec3();
-    }
-
-    glm::quat ApplicationNodeBase::GetController0Rot()
-    {
-        return glm::quat();
-    }
-
-    glm::quat ApplicationNodeBase::GetController1Rot()
-    {
-        return glm::quat();
-    }
-
-    glm::quat ApplicationNodeBase::GetTrackerRot()
-    {
-        return glm::quat();
-    }
-
-    glm::vec2 ApplicationNodeBase::GetDisplayPosition(bool useleftcontroller)
-    {
-        return glm::vec2();
-    }
-
-    void ApplicationNodeBase::InitialiseDisplay(bool useLeftController)
-    {
-    }
-
-    bool ApplicationNodeBase::GetDisplayInitialised()
-    {
-        return false;
-    }
-
-    void ApplicationNodeBase::SetDisplayNotInitialised()
-    {
-    }
-
-    bool ApplicationNodeBase::GetDisplayInitByFloor()
-    {
-        return false;
-    }
-
-    void ApplicationNodeBase::SetDisplayInitByFloor(bool b)
-    {
-    }
-
-    void ApplicationNodeBase::PollAndParseNextEvent()
-    {
-    }
-
-    void ApplicationNodeBase::PollAndParseEvents()
-    {
-    }
-
-    std::vector<std::string> ApplicationNodeBase::OutputDevices()
-    {
-        return std::vector<std::string>();
-    }
-
-    float * ApplicationNodeBase::GetDisplayEdges()
-    {
-        return nullptr;
-    }
-
-    bool ApplicationNodeBase::GetVrInitSuccess()
-    {
-        return false;
-    }
-
-    std::vector<std::string> ApplicationNodeBase::GetController0Buttons()
-    {
-        return std::vector<std::string>();
-    }
-
-    std::vector<std::string> ApplicationNodeBase::GetController1Buttons()
-    {
-        return std::vector<std::string>();
-    }*/
-
 }
