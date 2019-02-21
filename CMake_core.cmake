@@ -56,7 +56,9 @@ endif()
 file(GLOB EXTERN_SOURCES_CORE
     extern/fwcore/extern/imgui/imgui.cpp
     extern/fwcore/extern/imgui/imgui_draw.cpp
-    extern/fwcore/extern/imgui/imgui_demo.cpp)
+    extern/fwcore/extern/imgui/imgui_demo.cpp
+    extern/fwcore/extern/imgui/imgui_widgets.cpp
+    extern/fwcore/extern/imgui/misc/cpp/imgui_stdlib.cpp)
 
 if (${VISCOM_USE_SGCT})
     list(APPEND COMPILE_TIME_DEFS VISCOM_USE_SGCT)
@@ -105,6 +107,18 @@ foreach(f ${SRC_FILES_CORE})
     source_group("${SRCGR}" FILES ${f})
 endforeach()
 
+file(GLOB TOP_SRC_FILES_CORE
+    extern/fwcore/extern/glm/util/glm.natvis
+    extern/fwcore/extern/imgui/misc/natvis/imgui.natvis)
+
+if(UNIX)
+    set(OpenGL_GL_PREFERENCE GLVND)
+endif()
+
+if(MSVC)
+    list(APPEND COMPILE_TIME_DEFS _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN NOMINMAX)
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${APP_NAME})
+endif()
 
 if (${VISCOM_USE_SGCT})
     find_package(OpenGL REQUIRED)
@@ -116,8 +130,21 @@ if (${VISCOM_USE_SGCT})
         debug ${SGCT_DEBUG_LIBRARY}
         optimized ${SGCT_RELEASE_LIBRARY})
 
-    list(APPEND CORE_LIBS ${SGCT_LIBS} OpenGL::GL ws2_32)
-    list(APPEND CORE_INCLUDE_DIRS ${SGCT_INCLUDE_DIRECTORY})
+    list(APPEND CORE_LIBS ${SGCT_LIBS})
+    if(MSVC)
+        list(APPEND CORE_LIBS OpenGL::GL ws2_32)
+    elseif(UNIX)
+        find_package(Threads REQUIRED)
+        list(APPEND CORE_LIBS dl OpenGL::OpenGL OpenGL::GLX X11 Xrandr Xcursor Xinerama Xxf86vm Threads::Threads)
+    endif()
+    add_library(SGCTWrapper ${VISCOM_SGCT_WRAPPER_DIR}/wrapper/sgct_wrapper.cpp)
+    set_property(TARGET SGCTWrapper PROPERTY CXX_STANDARD 17)
+    target_include_directories(SGCTWrapper PUBLIC ${VISCOM_SGCT_WRAPPER_DIR}/wrapper ${SGCT_INCLUDE_DIRECTORY})
+    target_link_libraries(SGCTWrapper ${CORE_LIBS})
+    target_compile_definitions(SGCTWrapper PUBLIC ${COMPILE_TIME_DEFS})
+
+    list(APPEND CORE_LIBS SGCTWrapper)
+    list(APPEND CORE_INCLUDE_DIRS extern/fwcore/extern/glm ${SGCT_INCLUDE_DIRECTORY})
 else()
     find_package(OpenGL REQUIRED)
     list(APPEND CORE_LIBS glfw ${GLFW_LIBRARIES} OpenGL::GL)
@@ -130,6 +157,7 @@ list(APPEND CORE_INCLUDE_DIRS
     extern/fwcore/extern/g3log/src
     ${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/g3log/include
     extern/fwcore/extern/imgui
+    extern/fwcore/extern/imgui/misc/cpp
     extern/fwcore/extern/stb
     extern/fwcore/extern/assimp/include
     ${CMAKE_CURRENT_BINARY_DIR}/extern/fwcore/extern/assimp/include)
@@ -153,10 +181,6 @@ if(${OPENVR_LIB})
     #file(COPY ${ExternalSharedLibraries} DESTINATION ${CMAKE_CURRENT_BINARY_DIR} NO_SOURCE_PERMISSIONS)
 endif()    
     
-if(MSVC)
-    list(APPEND COMPILE_TIME_DEFS _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN NOMINMAX)
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${APP_NAME})
-endif()
 
 if (${VISCOM_CLIENTMOUSECURSOR})
     list(APPEND COMPILE_TIME_DEFS VISCOM_CLIENTGUI VISCOM_SYNCINPUT VISCOM_CLIENTMOUSECURSOR)
@@ -192,7 +216,7 @@ if(TARGET Doxygen::doxygen)
     ## doxygen_add_docs(VISCOMCoreDoc extern/fwcore/src)
 endif()
 
-add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${EXTERN_SOURCES_CORE})
+add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${EXTERN_SOURCES_CORE} ${TOP_SRC_FILES_CORE})
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
 target_include_directories(VISCOMCore PUBLIC ${CORE_INCLUDE_DIRS})
 target_link_libraries(VISCOMCore ${CORE_LIBS})

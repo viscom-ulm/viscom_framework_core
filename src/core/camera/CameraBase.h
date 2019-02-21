@@ -15,15 +15,17 @@ namespace viscom {
     class ApplicationNodeBase;
 
     /**
-    * Represents a camera rotating around the origin.
-    */
+     * The base class for the camera.
+     */
     class CameraBase
     {
     public:
         CameraBase(const glm::vec3& camPos, viscom::CameraHelper& cameraHelper) noexcept;
         virtual ~CameraBase();
 
+        /** Handles the mouse events for the camera. */
         virtual bool HandleMouse(int button, int action, float mouseWheelDelta, const ApplicationNodeBase* sender) = 0;
+        /** Updates the camera parameters. */
         virtual void UpdateCamera(double elapsedTime, const ApplicationNodeBase* sender) = 0;
 
         /** Returns the cameras projection matrix. */
@@ -34,8 +36,17 @@ namespace viscom {
         const glm::quat& GetOrientation() const noexcept { return cameraHelper_.GetOrientation(); }
 
     public:
+        /**
+         *  Sets the cameras orientation.
+         *  @param orientation new camera orientation.
+         */
         void SetCameraOrientation(const glm::quat& orientation);
+        /**
+         *  Sets the cameras position.
+         *  @param position new camera position.
+         */
         virtual void SetCameraPosition(const glm::vec3& position);
+        /** Returns the user position. */
         glm::vec3 GetUserPosition() const noexcept { return cameraHelper_.GetUserPosition(); }
 
     public:

@@ -29,6 +29,8 @@ namespace viscom {
         parent_{ parent },
         boneIndex_{ -1 }
     {
+        localTransform_[3][3] = 1.0; // <- Making sure this is one
+
         aabb_.minmax_[0] = glm::vec3(std::numeric_limits<float>::infinity());
         aabb_.minmax_[1] = glm::vec3(-std::numeric_limits<float>::infinity());
 
@@ -50,7 +52,8 @@ namespace viscom {
         boneIndex_(rhs.boneIndex_),
         nodeIndex_(rhs.nodeIndex_),
         subMeshBoundingBoxes_(rhs.subMeshBoundingBoxes_),
-        boundingBoxValid_(rhs.boundingBoxValid_)
+        boundingBoxValid_(rhs.boundingBoxValid_),
+        hasMeshes_(rhs.hasMeshes_)
     {
         children_.resize(rhs.children_.size());
         for (std::size_t i = 0; i < children_.size(); ++i) children_[i] = std::make_unique<SceneMeshNode>(*rhs.children_[i]);
@@ -66,7 +69,8 @@ namespace viscom {
         boneIndex_(std::move(rhs.boneIndex_)),
         nodeIndex_(std::move(rhs.nodeIndex_)),
         subMeshBoundingBoxes_(std::move(rhs.subMeshBoundingBoxes_)),
-        boundingBoxValid_(std::move(rhs.boundingBoxValid_))
+        boundingBoxValid_(std::move(rhs.boundingBoxValid_)),
+        hasMeshes_(std::move(rhs.hasMeshes_))
     {
 
     }
@@ -94,6 +98,7 @@ namespace viscom {
             nodeIndex_ = std::move(rhs.nodeIndex_);
             subMeshBoundingBoxes_ = std::move(rhs.subMeshBoundingBoxes_);
             boundingBoxValid_ = std::move(rhs.boundingBoxValid_);
+            hasMeshes_ = std::move(rhs.hasMeshes_);
         }
         return *this;
     }
@@ -107,9 +112,18 @@ namespace viscom {
 
     void SceneMeshNode::FlattenNodeTree(std::vector<const SceneMeshNode*>& nodes)
     {
+        FlattenNodeTreeInternal(nodes);
+    }
+
+    bool SceneMeshNode::FlattenNodeTreeInternal(std::vector<const SceneMeshNode*>& nodes)
+    {
+        hasMeshes_ = !subMeshIds_.empty();
         nodeIndex_ = static_cast<unsigned int>(nodes.size());
         nodes.push_back(this);
-        for (const auto& child : children_) child->FlattenNodeTree(nodes);
+        for (const auto& child : children_) {
+            hasMeshes_ = child->FlattenNodeTreeInternal(nodes) || hasMeshes_;
+        }
+        return hasMeshes_;
     }
 
     bool SceneMeshNode::GenerateBoundingBoxes(const Mesh& mesh)
@@ -198,4 +212,5 @@ namespace viscom {
         }
         return false;
     }
+
 }

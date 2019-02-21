@@ -20,19 +20,6 @@ namespace viscom {
     WorkerNodeLocalInternal::WorkerNodeLocalInternal(FrameworkInternal& fwInternal) :
         ApplicationNodeInternal{ fwInternal }
     {
-    }
-
-    WorkerNodeLocalInternal::~WorkerNodeLocalInternal() = default;
-
-    void WorkerNodeLocalInternal::PreWindow()
-    {
-        SetApplicationNode(GetFramework().GetWorkerNodeFactory()(this));
-        ApplicationNodeInternal::PreWindow();
-    }
-
-
-    void WorkerNodeLocalInternal::InitOpenGL()
-    {
         if constexpr (SHOW_CLIENT_GUI) {
             // Setup ImGui binding
             IMGUI_CHECKVERSION();
@@ -43,8 +30,25 @@ namespace viscom {
 
             ImGui::StyleColorsDark();
         }
+    }
 
-        ApplicationNodeInternal::InitOpenGL();
+    WorkerNodeLocalInternal::~WorkerNodeLocalInternal()
+    {
+        if constexpr (SHOW_CLIENT_GUI) {
+            ImGui_ImplOpenGL3_Shutdown();
+            ImGui_ImplGlfw_Shutdown();
+            ImGui::DestroyContext();
+        }
+    }
+
+    void WorkerNodeLocalInternal::InitImplementation()
+    {
+        SetApplicationNode(GetFramework().GetWorkerNodeFactory()(this));
+#pragma warning ( push )
+#pragma warning ( disable : 4996 )
+        GetApplicationNode()->PreWindow();
+        GetApplicationNode()->InitOpenGL();
+#pragma warning ( pop )
     }
 
     void WorkerNodeLocalInternal::PostSync()
@@ -99,16 +103,6 @@ namespace viscom {
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             });
         }
-    }
-
-    void WorkerNodeLocalInternal::CleanUp()
-    {
-        if constexpr (SHOW_CLIENT_GUI) {
-            ImGui_ImplOpenGL3_Shutdown();
-            ImGui_ImplGlfw_Shutdown();
-            ImGui::DestroyContext();
-        }
-        ApplicationNodeInternal::CleanUp();
     }
 
     void WorkerNodeLocalInternal::KeyboardCallback(int key, int scancode, int action, int mods)

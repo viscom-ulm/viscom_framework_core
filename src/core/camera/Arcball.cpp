@@ -7,13 +7,17 @@
  */
 
 #include "Arcball.h"
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
+
 #include <limits>
 #include "core/app/ApplicationNodeBase.h"
 #include <iostream>
 #include "core/glfw.h"
+
+#define GLM_ENABLE_EXPERIMENTAL
+
+#include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace viscom {
 
@@ -31,7 +35,7 @@ namespace viscom {
 
     /**
      *  Handles the mouse input to the arc-ball.
-     *  @param button the mouse button the event belongs to.
+     *  @param theButton the mouse button the event belongs to.
      *  @param action the mouse buttons action.
      *  @param sender the application to supply normalized screen coordinates.
      */
@@ -54,8 +58,9 @@ namespace viscom {
     }
 
     /**
-     *  Calculates the world rotation using a view matrix.
-     *  @param view the view matrix.
+     *  Calculates the world rotation using the cameras position and orientation.
+     *  @param elapsedTime the time elapsed since the last frame.
+     *  @param camPosOrientation the cameras position and orientation.
      */
     glm::quat Arcball::GetWorldRotation(double elapsedTime, const glm::quat& camPosOrientation) noexcept
     {
@@ -72,6 +77,10 @@ namespace viscom {
         return result;
     }
 
+    /**
+     *  Calculates the mouse position on the arc-ball.
+     *  @param mousePosition the mouse position in normalized device coordinates.
+     */
     glm::vec3 Arcball::MousePositionToArcball(const glm::vec2 & mousePosition) const
     {
         glm::vec3 result{ mousePosition, 0.0f };

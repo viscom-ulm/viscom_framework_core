@@ -19,10 +19,8 @@ namespace viscom {
         explicit WorkerNodeCalibratedInternal(FrameworkInternal& fwInternal);
         virtual ~WorkerNodeCalibratedInternal() override;
 
-        void InitOpenGL() override;
         void DrawFrame(FrameBuffer& fbo) override;
         void Draw2D(FrameBuffer& fbo) override;
-        void CleanUp() override;
 
         bool InitialiseVR() override;
         bool CalibrateVR(CalibrateMethod method) override;
@@ -40,6 +38,7 @@ namespace viscom {
         void GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate) override;
 
     private:
+        void InitOffscreenBuffers();
         void CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize);
 
 

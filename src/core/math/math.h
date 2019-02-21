@@ -19,7 +19,7 @@ namespace viscom { namespace math {
 
     /**
      *  2D cross product.
-     *  @param real the floating point type used.
+     *  @tparam real the floating point type used.
      *  @param v0 first vector
      *  @param v1 second vector
      *  @return the 2D cross product.
@@ -31,7 +31,7 @@ namespace viscom { namespace math {
 
     /**
      *  Checks if two segments intersect.
-     *  @param real the floating point type used.
+     *  @tparam real the floating point type used.
      *  @param seg0 first segment.
      *  @param seg1 second segment.
      *  @return <code>true</code> if an intersection occurs.
@@ -56,7 +56,7 @@ namespace viscom { namespace math {
 
     /**
      *  Tests if a point is inside a triangle.
-     *  @param real the floating point type used.
+     *  @tparam real the floating point type used.
      *  @param tri the triangle to test against.
      *  @param p the point to test.
      *  @param testVal some value for debugging (see implementation).
@@ -93,7 +93,7 @@ namespace viscom { namespace math {
 
     /**
      *  Tests if a point is inside an AABB2.
-     *  @param real the floating point type used.
+     *  @tparam real the floating point type used.
      *  @param b the AABB2.
      *  @param p the point.
      */
@@ -103,7 +103,7 @@ namespace viscom { namespace math {
 
     /**
      *  Tests if a point is inside an AABB3.
-     *  @param real the floating point type used.
+     *  @tparam real the floating point type used.
      *  @param b the AABB3.
      *  @param p the point.
      */
@@ -115,7 +115,7 @@ namespace viscom { namespace math {
 
     /**
      *  Tests if two AABB2 overlap.
-     *  @param real the floating point type used.
+     *  @tparam real the floating point type used.
      *  @param b0 the first box.
      *  @param b1 the second box.
      */
@@ -125,7 +125,7 @@ namespace viscom { namespace math {
 
     /**
      *  Tests if two AABB3 overlap.
-     *  @param real the floating point type used.
+     *  @tparam real the floating point type used.
      *  @param b0 the first box.
      *  @param b1 the second box.
      */
@@ -135,7 +135,7 @@ namespace viscom { namespace math {
 
     /**
      *  Tests if one AABB2 (b0) is completely inside the other (b1).
-     *  @param real the floating point type used.
+     *  @tparam real the floating point type used.
      *  @param b0 the first box.
      *  @param b1 the second box.
      */
@@ -145,7 +145,7 @@ namespace viscom { namespace math {
 
     /**
      *  Tests if one AABB3 (b0) is completely inside the other (b1).
-     *  @param real the floating point type used.
+     *  @tparam real the floating point type used.
      *  @param b0 the first box.
      *  @param b1 the second box.
      */
@@ -155,7 +155,7 @@ namespace viscom { namespace math {
 
     /**
      *  Tests if a AABB3 is inside or intersected by a Frustum (culling test).
-     *  @param real the floating point type used.
+     *  @tparam real the floating point type used.
      *  @param f the frustum.
      *  @param b the box.
      */

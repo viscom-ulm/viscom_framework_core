@@ -28,24 +28,8 @@ namespace viscom {
         if (peError == vr::VRInitError_None) {
             LOG(INFO) << "OpenVR initialised on Master";
             vrInitSucc_ = true;
-
         }
-    }
 
-    //CoordinatorNodeInternal::~CoordinatorNodeInternal() = default;
-    CoordinatorNodeInternal::~CoordinatorNodeInternal()
-    {
-        vr::VR_Shutdown();
-    }
-
-    void CoordinatorNodeInternal::PreWindow()
-    {
-        SetApplicationNode(GetFramework().GetCoordinatorNodeFactory()(this));
-        ApplicationNodeInternal::PreWindow();
-    }
-
-    void CoordinatorNodeInternal::InitOpenGL()
-    {
         // Setup ImGui binding
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -54,8 +38,24 @@ namespace viscom {
         ImGui_ImplOpenGL3_Init();
 
         ImGui::StyleColorsDark();
+    }
 
-        ApplicationNodeInternal::InitOpenGL();
+    CoordinatorNodeInternal::~CoordinatorNodeInternal()
+    {
+        vr::VR_Shutdown();
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+    }
+
+    void CoordinatorNodeInternal::InitImplementation()
+    {
+        SetApplicationNode(GetFramework().GetCoordinatorNodeFactory()(this));
+#pragma warning ( push )
+#pragma warning ( disable : 4996 )
+        GetApplicationNode()->PreWindow();
+        GetApplicationNode()->InitOpenGL();
+#pragma warning ( pop )
     }
 
     void CoordinatorNodeInternal::PreSync()
@@ -109,12 +109,12 @@ namespace viscom {
         syncInfoLocal_.pickMatrix_ = glm::inverse(GetFramework().GetCamera()->GetCentralViewPerspectiveMatrix()) * syncInfoLocal_.pickMatrix_;
 
         syncInfoSynced_.setVal(syncInfoLocal_);
-		
-		ParseTrackingFrame();
-		vrInfoLocal_.displayPosLeftController_ = controller0displaypos_;
-		vrInfoLocal_.displayPosRightController_ = controller1displaypos_;
-		vrInfoSynced_.setVal(vrInfoLocal_);
-        
+
+        ParseTrackingFrame();
+        vrInfoLocal_.displayPosLeftController_ = controller0displaypos_;
+        vrInfoLocal_.displayPosRightController_ = controller1displaypos_;
+        vrInfoSynced_.setVal(vrInfoLocal_);
+
         PollAndParseEvents();
 
         ApplicationNodeInternal::PreSync();
@@ -157,14 +157,6 @@ namespace viscom {
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    }
-
-    void CoordinatorNodeInternal::CleanUp()
-    {
-        ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
-        ApplicationNodeInternal::CleanUp();
     }
 
     void CoordinatorNodeInternal::KeyboardCallback(int key, int scancode, int action, int mods)
@@ -254,15 +246,15 @@ namespace viscom {
 #endif
     }
 
-	void CoordinatorNodeInternal::EncodeData()
-	{
-		sgct::SharedData::instance()->writeObj(&vrInfoSynced_);
-	}
+    void CoordinatorNodeInternal::EncodeData()
+    {
+        sgct::SharedData::instance()->writeObj(&vrInfoSynced_);
+    }
 
-	void CoordinatorNodeInternal::DecodeData()
-	{
-		sgct::SharedData::instance()->readObj(&vrInfoSynced_);
-	}
+    void CoordinatorNodeInternal::DecodeData()
+    {
+        sgct::SharedData::instance()->readObj(&vrInfoSynced_);
+    }
 
     //TODO check File
     bool CoordinatorNodeInternal::InitialiseVR()
@@ -274,6 +266,7 @@ namespace viscom {
         }
         return false;
     }
+
     bool CoordinatorNodeInternal::InitialiseDisplayVR()
     {
         if (!initDisplay_) {
@@ -294,6 +287,7 @@ namespace viscom {
         }
         return true;
     }
+
     bool CoordinatorNodeInternal::CalibrateVR(CalibrateMethod method)
     {
         LOG(INFO) << "CalibrateVR called on Coordinator.";
@@ -604,7 +598,7 @@ namespace viscom {
                     controller0pos_ = glm::vec3(position.v[0], position.v[1], position.v[2]);
                     controller0zvec_ = glm::vec3(zvector.v[0], zvector.v[1], zvector.v[2]);
                     controller0rot_ = glm::quat(quaternion.w, quaternion.x, quaternion.y, quaternion.z);
-					controller0displaypos_ = GetDisplayPointerPosition(unDevice);
+                    controller0displaypos_ = GetDisplayPointerPosition(unDevice);
                     break;
 
                 case vr::TrackedControllerRole_RightHand:
@@ -612,7 +606,7 @@ namespace viscom {
                     controller1pos_ = glm::vec3(position.v[0], position.v[1], position.v[2]);
                     controller1zvec_ = glm::vec3(zvector.v[0], zvector.v[1], zvector.v[2]);
                     controller1rot_ = glm::quat(quaternion.w, quaternion.x, quaternion.y, quaternion.z);
-					controller1displaypos_ = GetDisplayPointerPosition(unDevice);
+                    controller1displaypos_ = GetDisplayPointerPosition(unDevice);
                     break;
 
                 case vr::TrackedDeviceClass_TrackingReference:
@@ -620,9 +614,9 @@ namespace viscom {
                     break;
                 }
                 break;
-				
-			case vr::ETrackedDeviceClass::TrackedDeviceClass_GenericTracker:
-				vr::VRSystem()->GetControllerStateWithPose(vr::TrackingUniverseStanding, unDevice, &controllerState, sizeof(controllerState), &trackedDevicePose);
+
+                case vr::ETrackedDeviceClass::TrackedDeviceClass_GenericTracker:
+                    vr::VRSystem()->GetControllerStateWithPose(vr::TrackingUniverseStanding, unDevice, &controllerState, sizeof(controllerState), &trackedDevicePose);
 
                 deviceInform.deviceClass = TrackedDeviceClass::GENERIC_TRACKER;
                 deviceInform.deviceRole = TrackedDeviceRole::GENERIC_TRACKER;
@@ -689,6 +683,7 @@ namespace viscom {
             useLeftController ? InitDisplay(controller0pos_) : InitDisplay(controller1pos_);
         }
     }
+
     /** Returns the position from a given HMD matrix.
     *   @param hmdMatrix 3x4 containing.
     *   @return float[3] with x y z position data.
@@ -701,6 +696,7 @@ namespace viscom {
         vector[2] = hmdMatrix[2][3];
         return vector;
     }
+
     /** Returns the rotation from a given HMD matrix.
     *   @return double[4] with q x y z quaternion.
     */
@@ -717,6 +713,7 @@ namespace viscom {
         q[3] = copysign(q[3], matrix[1][0] - matrix[0][1]);
         return q;
     }
+
     /** Returns the z-vector from a given HMD matrix.
     *   @return float[3] with x y z as z-vector data.
     */
@@ -727,6 +724,7 @@ namespace viscom {
         vector[2] = matrix[2][2];
         return vector;
     }
+
     /** Returns the display position as x and y.
     *   @param glm::vec3 position of the controller
     *   @param glm::vec3 z-vector of the used controller.
@@ -746,6 +744,7 @@ namespace viscom {
         midDisplayPos_[2] = d1[2] + 0.5f * d2[2] + 0.5f * d3[2];
         return result;
     }
+
     /** Sets the display to the given position vector.
     *   @param position of the controller.
     */
@@ -774,6 +773,7 @@ namespace viscom {
         calibrate_ = false;
         WriteInitDisplayToFile();
     }
+
     /** Sets a display to the point where a controller points.
     *   @param position of the controller.
     *   @param z-vector of the controller.
@@ -805,6 +805,7 @@ namespace viscom {
         calibrate_ = false;
         WriteInitDisplayToFile();
     }
+
     /** Reads displayEdges.txt and initialises the display with found values. */
     void CoordinatorNodeInternal::InitDisplayFromFile() {
         std::ifstream myfile("displayEdges.txt");
@@ -820,6 +821,7 @@ namespace viscom {
         displaylrset_ = true;
         initDisplay_ = true;
     }
+
     /** Writes the current display edges to displayEdges.txt */
     void CoordinatorNodeInternal::WriteInitDisplayToFile() {
         std::ofstream myfile;
@@ -831,6 +833,7 @@ namespace viscom {
         }
         myfile.close();
     }
+
     /** Passes the tracker position and rotation to sgct for head tracking 
     *   @param postion of the tracker
     *   @param tracker rotation
@@ -843,6 +846,7 @@ namespace viscom {
         GetFramework().GetEngine()->getDefaultUserPtr()->setPos(pos);
         GetFramework().GetEngine()->getDefaultUserPtr()->setOrientation(q);
     }
+
     /** Tests which devices are connected and returns them in a string vector.
     *   @return string vector containing the connected devices.
     */
@@ -1429,7 +1433,6 @@ namespace viscom {
         return initDisplay_;
     }
 
-
     /** Returns true if the display is currently initialised by pointing at the display edges.
     *   @return bool is display initialised by pointing at the display corners.
     */
@@ -1446,6 +1449,7 @@ namespace viscom {
             ProcessVREvent(event);
         }
     }
+
     /** Polls and parses all vr events in queue */
     void CoordinatorNodeInternal::PollAndParseEvents()
     {
@@ -1455,6 +1459,5 @@ namespace viscom {
         {
             ProcessVREvent(event);
         }
-
     }
 }

@@ -18,6 +18,10 @@ namespace viscom {
     struct RenderBufferDescriptor
     {
         // ReSharper disable once CppNonExplicitConvertingConstructor
+        /**
+         *  Constructor method.
+         *  @param internalFormat internal OpneGL format.
+         */
         explicit RenderBufferDescriptor(GLenum internalFormat) : internalFormat_{ internalFormat } {}
 
         /** Holds the internal format of the render buffer. */
@@ -27,7 +31,16 @@ namespace viscom {
     /** Describes a texture render target for frame buffers. */
     struct FrameBufferTextureDescriptor
     {
+        /**
+        *  Constructor method.
+        *  @param internalFormat internal OpneGL format.
+        */
         explicit FrameBufferTextureDescriptor(GLenum internalFormat);
+        /**
+        *  Constructor method.
+        *  @param internalFormat internal OpneGL format.
+        *  @param texType OpenGL texture type.
+        */
         FrameBufferTextureDescriptor(GLenum internalFormat, GLenum texType);
 
         /** The texture descriptor. */
@@ -40,6 +53,11 @@ namespace viscom {
     struct FrameBufferDescriptor
     {
         FrameBufferDescriptor() = default;
+        /**
+         *  Constructor for the frame buffer descriptor.
+         *  @param tex list of the descriptions of all textures used.
+         *  @param rb list of the descriptions of all render buffers used.
+         */
         FrameBufferDescriptor(const std::vector<FrameBufferTextureDescriptor>& tex, const std::vector<RenderBufferDescriptor>& rb) : texDesc_(tex), rbDesc_(rb), numSamples_(1) {}
 
         /** Holds descriptions for all textures used. */
@@ -50,10 +68,23 @@ namespace viscom {
         unsigned int numSamples_ = 1;
     };
 
+    /** Describes a viewport to be used by the frame buffer. */
     struct Viewport
     {
         Viewport() noexcept : position_{ 0 }, size_{ 0 } {}
+        /**
+         *  Viewport constructor.
+         *  @param position lower left viewport position.
+         *  @param size viewport size.
+         */
         Viewport(const glm::ivec2& position, const glm::uvec2& size) : position_{ position }, size_{ size } {}
+        /**
+        *  Viewport constructor.
+        *  @param x left viewport position.
+        *  @param y lower viewport position.
+        *  @param sizex horizontal viewport size.
+        *  @param sizey vertical viewport size.
+        */
         Viewport(int x, int y, unsigned int sizex, unsigned int sizey) : position_{ x, y }, size_{ sizex, sizey } {}
 
         /** Holds the viewport lower left position. */
@@ -86,13 +117,28 @@ namespace viscom {
         inline void DrawToFBO(const std::vector<std::size_t>& drawBufferIndices, viscom::function_view<void()> drawFn) const;
 
         void Resize(unsigned int fbWidth, unsigned int fbHeight);
+        /** Returns the textures the frame buffer uses. */
         const std::vector<GLuint>& GetTextures() const { return textures_; }
+        /**
+         *  Sets the frame buffers standart viewport.
+         *  @param vp the viewport to be used.
+         */
         void SetStandardViewport(const Viewport& vp) { standardViewport_ = vp; }
+        /**
+         *  Sets the frame buffers standart viewport.
+         *  @param x the horizontal component of the viewports lower left corner.
+         *  @param y the vertical component of the viewports lower left corner.
+         *  @param sizex the viewports horizontal size.
+         *  @param sizey the viewports vertical size.
+         */
         void SetStandardViewport(int x, int y, unsigned int sizex, unsigned int sizey) { standardViewport_.position_ = glm::ivec2(x, y); standardViewport_.size_ = glm::ivec2(sizex, sizey); }
 
         // void SetWidth(unsigned int width) { standardViewport_.size_.x = width; }
         // void SetHeight(unsigned int height) { standardViewport_.size_ = height; }
+
+        /** Returns the frame buffers width. */
         unsigned int GetWidth() const { return width_; };
+        /** Returns the frame buffers height. */
         unsigned int GetHeight() const { return height_; };
 
     private:
@@ -119,12 +165,21 @@ namespace viscom {
         unsigned int height_;
     };
 
+    /**
+     *  Uses the frame buffer object as target for rendering and draws as specified in the lambda expression.
+     *  @param drawFn the lambda expression drawing to the frame buffer.
+     */
     inline void viscom::FrameBuffer::DrawToFBO(viscom::function_view<void()> drawFn) const
     {
         UseAsRenderTarget();
         drawFn();
     }
 
+    /**
+     *  Uses the frame buffer object as target for rendering, selects the draw buffers used and draws as specified in the lambda expression.
+     *  @param drawBufferIndices the indices in the draw buffer to be used.
+     *  @param drawFn the lambda expression drawing to the frame buffer.
+     */
     inline void viscom::FrameBuffer::DrawToFBO(const std::vector<std::size_t>& drawBufferIndices, viscom::function_view<void()> drawFn) const
     {
         UseAsRenderTarget(drawBufferIndices);

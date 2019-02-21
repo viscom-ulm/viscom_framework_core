@@ -40,12 +40,36 @@ namespace viscom::tuio {
         TuioInputWrapper(int port);
         virtual ~TuioInputWrapper() override;
 
+        /**
+         *  Sets the callback function called when adding a cursor.
+         *  @param fn the add cursor callback function to be used.
+         */
         void SetAddCursorCallback(std::function<void(TUIO::TuioCursor*)> fn);
+        /**
+         *  Sets the callback function called when updating a cursor.
+         *  @param fn the update cursor callback function to be used.
+         */
         void SetUpdateCursorCallback(std::function<void(TUIO::TuioCursor*)> fn);
+        /**
+         *  Sets the callback function called when removing a cursor.
+         *  @param fn the remove cursor callback function to be used.
+         */
         void SetRemoveCursorCallback(std::function<void(TUIO::TuioCursor*)> fn);
 
+        /**
+         *  Adds a cursor to the touch screen.
+         *  @param tcur cursor to be added.
+         */
         void addTuioCursor(TUIO::TuioCursor *tcur) override;
+        /**
+         *  Updates a cursor.
+         *  @param tcur cursor to be updated.
+         */
         void updateTuioCursor(TUIO::TuioCursor *tcur) override;
+        /**
+         *  Removes a cursor from the touch screen.
+         *  @param tcur cursor to be removed.
+         */
         void removeTuioCursor(TUIO::TuioCursor *tcur) override;
 
         //////////////////////////////////////////////////////////////////////////

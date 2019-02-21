@@ -23,14 +23,23 @@
 
 namespace viscom {
 
+    /**
+     *  Returns the color of an ASSIMP material.
+     *  @param material the ASSIMP material.
+     *  @param pKey the key to search for.
+     *  @param type specifies the type of the texture to be retrieved.
+     *  @param idx index of the texture to be retrieved.
+     */
     inline glm::vec3 GetMaterialColor(aiMaterial* material, const char* pKey, unsigned int type, unsigned int idx) {
         aiColor3D c;
         material->Get(pKey, type, idx, c);
         return glm::vec3{ c.r, c.g, c.b };
     }
 
+    /** Holds the ASSIMP flags for mesh loading. */
     constexpr unsigned int ASSIMP_FLAGS = aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs;
 
+    /** Holds the ASSIMP flags for mesh loading. */
     constexpr unsigned int ASSIMP_FLAGS_FORCEGEN = aiProcess_CalcTangentSpace | aiProcess_GenNormals
         | aiProcess_JoinIdenticalVertices | aiProcess_ImproveCacheLocality | aiProcess_SplitLargeMeshes
         | aiProcess_GenUVCoords | aiProcess_SortByPType | aiProcess_FindDegenerates | aiProcess_FindInvalidData | aiProcess_FindInstances
@@ -38,8 +47,10 @@ namespace viscom {
         | aiProcess_RemoveRedundantMaterials | aiProcess_FlipUVs;
 
     /**
-     * Constructor, creates a mesh from file.
-     * @param meshFilename the filename of the mesh file.
+     *  Constructor, creates a mesh from file.
+     *  @param meshFilename the filename of the mesh file.
+     *  @param node the application object for dependencies.
+     *  @param synchronize defines if the mesh is a synchronized resource.
      */
     Mesh::Mesh(const std::string& meshFilename, FrameworkInternal* node, bool synchronize) :
         Resource(meshFilename, ResourceType::Mesh, node, synchronize),
@@ -68,7 +79,7 @@ namespace viscom {
 
         if (!Load(filename, binFilename, GetAppNode())) LoadAssimpMeshFromFile(filename, binFilename, GetAppNode());
 
-        rootNode_->FlattenNodeTree(nodes_);
+        FlattenHierarchies();
 
         glGenBuffers(1, &indexBuffer_);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer_);
@@ -127,6 +138,14 @@ namespace viscom {
 
     void Mesh::LoadAssimpMesh(const aiScene * scene, FrameworkInternal* node)
     {
+        boneOffsetMatrixIndices_.clear();
+        boneWeights_.clear();
+        indexVectors_.clear();
+        inverseBindPoseMatrices_.clear();
+        boneBoundingBoxes_.clear();
+        subMeshes_.clear();
+        animations_.clear();
+
         unsigned int maxUVChannels = 0, maxColorChannels = 0, numVertices = 0, numIndices = 0;
         std::vector<std::vector<unsigned int>> indices;
         indices.resize(static_cast<size_t>(scene->mNumMeshes));
@@ -187,7 +206,7 @@ namespace viscom {
         }
 
         unsigned int currentMeshIndexOffset = 0;
-        unsigned int currentMeshVertexOffset = 0;
+        std::size_t currentMeshVertexOffset = 0;
 
         // using Bone = unsigned int;
 
@@ -246,7 +265,8 @@ namespace viscom {
             }
 
             if (!indices[i].empty()) {
-                std::transform(indices[i].begin(), indices[i].end(), &indices_[currentMeshIndexOffset], [currentMeshVertexOffset](unsigned int idx) { return idx + currentMeshVertexOffset; }); //-V108
+                std::transform(indices[i].begin(), indices[i].end(), &indices_[currentMeshIndexOffset],
+                    [currentMeshVertexOffset](unsigned int idx) { return static_cast<unsigned int>(idx + currentMeshVertexOffset); }); //-V108
             }
 
             subMeshes_.emplace_back(this, mesh->mName.C_Str(), currentMeshIndexOffset, static_cast<unsigned int>(indices[i].size()), mesh->mMaterialIndex);
@@ -254,17 +274,10 @@ namespace viscom {
             currentMeshIndexOffset += static_cast<unsigned int>(indices[i].size()); //-V127
         }
 
-        // Loading animations
-        if (scene->HasAnimations()) {
-            for (auto a = 0U; a < scene->mNumAnimations; ++a) {
-                animations_.emplace_back(scene->mAnimations[a], bones);
-            }
-        }
-
         // Parse parent information for each bone.
         boneParent_.resize(bones.size(), std::numeric_limits<std::size_t>::max());
         // Root node has a parent index of max value of size_t
-        ParseBoneHierarchy(bones, scene->mRootNode, std::numeric_limits<std::size_t>::max(), glm::mat4(1.0f));
+        ParseBoneHierarchy(bones, scene->mRootNode, std::numeric_limits<std::size_t>::max());
 
         // Iterate all weights for each vertex
         for (auto& weights : boneWeights) {
@@ -299,22 +312,32 @@ namespace viscom {
 
         GenerateBoneBoundingBoxes();
 
+        // Loading animations
+        if (scene->HasAnimations()) {
+            for (auto a = 0U; a < scene->mNumAnimations; ++a) {
+                animations_.emplace_back(scene->mAnimations[a]);
+            }
+        }
+
         globalInverse_ = glm::inverse(rootNode_->GetLocalTransform());
     }
 
     std::shared_ptr<const Texture> Mesh::LoadTexture(const std::string& relFilename, FrameworkInternal* node) const
     {
-        auto path = filename_.substr(0, filename_.find_last_of('/') + 1);
-        std::shared_ptr<const Texture> texture;
-        try {
-            auto texFilename = path + relFilename;
-            texture = std::move(node->GetTextureManager().GetResource(texFilename));
-        } catch (resource_loading_error&) {
-            auto textureFilename = relFilename.substr(relFilename.find_last_of("/") + 1);
-            auto texFilename = path + textureFilename;
-
-            texture = std::move(node->GetTextureManager().GetResource(texFilename));
+#ifndef __APPLE_CC__
+        namespace fs = std::filesystem;
+        std::string fullTexFilename;
+        if (fs::exists(relFilename)) fullTexFilename = relFilename;
+        else {
+            auto path = fs::path(filename_).parent_path();
+            if (auto relFilePath = path / relFilename; fs::exists(relFilePath))
+                fullTexFilename = relFilePath.string();
+            else fullTexFilename = (path / fs::path(relFilename).filename()).string();
         }
+#else
+        auto fullTexFilename = filename_.substr(0, filename_.find_last_of('/') + 1) + relFilename;
+#endif
+        std::shared_ptr<const Texture> texture = std::move(node->GetTextureManager().GetResource(fullTexFilename));
 
         glBindTexture(GL_TEXTURE_2D, texture->getTextureId());
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -443,20 +466,16 @@ namespace viscom {
         return true;
     }
 
-    ///
-    /// This function walks the hierarchy of bones and does two things:
-    /// - set the parent of each bone into `boneParent_`
-    /// - update the boneOffsetMatrices_, so each matrix also includes the
-    ///   transformations of the child bones.
-    ///
-    /// \param map from name of bone to index in boneOffsetMatrices_
-    /// \param current node in
-    /// \param index of the parent in boneOffsetMatrices_
-    /// \param Matrix including all transformations from the parents of the
-    ///        current node.
-    ///
+    /**
+     *  This function walks the hierarchy of bones and does two things:
+     *  - set the parent of each bone into `boneParent_`
+     * 
+     *  @param bones map from name of bone to index in boneOffsetMatrices_
+     *  @param node current node in
+     *  @param parent index of the parent in boneOffsetMatrices_
+     */
     void Mesh::ParseBoneHierarchy(const std::map<std::string, unsigned int>& bones, const aiNode* node,
-        std::size_t parent, glm::mat4 parentMatrix)
+        std::size_t parent)
     {
         auto bone = bones.find(node->mName.C_Str());
         if (bone != bones.end()) {
@@ -468,13 +487,11 @@ namespace viscom {
         }
 
         for (auto i = 0U; i < node->mNumChildren; ++i) {
-            ParseBoneHierarchy(bones, node->mChildren[i], parent, parentMatrix);
+            ParseBoneHierarchy(bones, node->mChildren[i], parent);
         }
     }
 
-    ///
-    /// Generate all BoundingBoxes for the bones.
-    ///
+    /** Generate all BoundingBoxes for the bones. */
     void Mesh::GenerateBoneBoundingBoxes()
     {
         if (inverseBindPoseMatrices_.empty()) {
@@ -510,5 +527,21 @@ namespace viscom {
                 << "\n"
                 << "Model-path: " << filename_ << std::endl;
         }
+    }
+
+    void Mesh::FlattenHierarchies()
+    {
+        rootNode_->FlattenNodeTree(nodes_);
+        std::map<std::string, std::size_t> nodeIndexMap;
+        for (const auto& node : nodes_) {
+            nodeIndexMap[node->GetName()] = node->GetNodeIndex();
+        }
+
+        for (auto& animation : animations_) animation.FlattenHierarchy(nodes_.size(), nodeIndexMap);
+    }
+
+    std::string Mesh::GetFilename() const
+    {
+        return FindResourceLocation(GetId());
     }
 }

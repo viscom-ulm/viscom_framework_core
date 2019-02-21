@@ -15,94 +15,104 @@
 
 #include "animation_convert_helpers.h"
 
+#include "core/main.h"
+
 namespace viscom {
 
-    ///
-    /// Default constructor for animations.
-    ///
+    /** Default constructor for animations. */
     Animation::Animation() = default;
 
-    ///
-    /// Constructor for animations.
-    ///
-    /// Takes an assimp animation and converts the data into our data-structure.
-    ///
-    /// \param Assimp animation
-    /// \param Mapping between bone/node-names to offsets
-    ///
-    Animation::Animation(aiAnimation* aiAnimation, const std::map<std::string, unsigned int>& boneNameToOffset)
+    /**
+     *  Constructor for animations.
+     * 
+     *  Takes an assimp animation and converts the data into our data-structure.
+     * 
+     *  @param aiAnimation Assimp animation
+     *  @param boneNameToOffset Mapping between bone/node-names to offsets
+     */
+    Animation::Animation(aiAnimation* aiAnimation)
         : framesPerSecond_{aiAnimation->mTicksPerSecond > 0.0 ? static_cast<float>(aiAnimation->mTicksPerSecond)
                                                               : 24.0f},
           duration_{static_cast<float>(aiAnimation->mDuration)}
     {
-        channels_.resize(boneNameToOffset.size());
-
         for (auto c = 0U; c < aiAnimation->mNumChannels; ++c) {
-
             const auto aiChannel = aiAnimation->mChannels[c];
-
-            auto newBoneOffset = boneNameToOffset.find(aiChannel->mNodeName.C_Str());
-            if (newBoneOffset == boneNameToOffset.end()) {
-                // there is no channel for this bone!
-                continue;
-            }
 
             auto channel = Channel();
 
             // Copy position data for this channel
             for (auto p = 0U; p < aiChannel->mNumPositionKeys; ++p) {
-                channel.positionFrames_.push_back(
-                    std::make_pair(static_cast<Time>(aiChannel->mPositionKeys[p].mTime),
-                                   *reinterpret_cast<glm::vec3*>(&aiChannel->mPositionKeys[p].mValue)));
+                channel.positionFrames_.emplace_back(static_cast<Time>(aiChannel->mPositionKeys[p].mTime),
+                                   *reinterpret_cast<glm::vec3*>(&aiChannel->mPositionKeys[p].mValue));
             }
 
             // Copy rotation data for this channel
             for (auto r = 0U; r < aiChannel->mNumRotationKeys; ++r) {
                 const auto& aiQuat = aiChannel->mRotationKeys[r].mValue;
 
-                channel.rotationFrames_.push_back(std::make_pair(static_cast<Time>(aiChannel->mRotationKeys[r].mTime),
-                                                                 glm::quat(aiQuat.w, aiQuat.x, aiQuat.y, aiQuat.z)));
+                channel.rotationFrames_.emplace_back(static_cast<Time>(aiChannel->mRotationKeys[r].mTime),
+                                                                 glm::quat(aiQuat.w, aiQuat.x, aiQuat.y, aiQuat.z));
             }
 
             // Copy scaling data for this channel
             for (auto s = 0U; s < aiChannel->mNumScalingKeys; ++s) {
-                channel.scalingFrames_.push_back(
-                    std::make_pair(static_cast<Time>(aiChannel->mScalingKeys[s].mTime),
-                                   *reinterpret_cast<glm::vec3*>(&aiChannel->mScalingKeys[s].mValue)));
+                channel.scalingFrames_.emplace_back(static_cast<Time>(aiChannel->mScalingKeys[s].mTime),
+                                   *reinterpret_cast<glm::vec3*>(&aiChannel->mScalingKeys[s].mValue));
             }
 
-            auto boneOffsetFromName = boneNameToOffset.at(aiChannel->mNodeName.C_Str());
-
-            channels_[boneOffsetFromName] = channel;
+            channelMap_[aiChannel->mNodeName.C_Str()] = channel;
         }
     }
 
-    ///
-    /// Returns a sub-sequence of this animation.
-    ///
-    /// Timestamps of the new animations are normalized in the following way:
-    ///
-    ///          Original animation
-    ///                v
-    /// x                                     y
-    /// |-------------------------------------|
-    ///
-    ///      |-------|
-    ///      a       b
-    ///         ^
-    ///   Desired subsequence
-    ///
-    ///
-    /// New (sub-)animation:
-    ///
-    /// 0     (b-a)
-    /// |-------|
-    ///
-    /// \param Start-time of the sub-sequence
-    /// \param End-time of the sub-sequence
-    ///
-    /// \return New animation
-    ///
+    void Animation::FlattenHierarchy(std::size_t numNodes, const std::map<std::string, std::size_t>& nodeNamesMap)
+    {
+        channels_.resize(numNodes);
+
+        for (const auto& node : nodeNamesMap) {
+            auto nodeChannelIndex = channelMap_.find(node.first);
+            if (nodeChannelIndex != channelMap_.end()) {
+                channels_[node.second] = channelMap_[node.first];
+            }
+        }
+        // auto newBoneOffset = nodeNameToOffset.find(aiChannel->mNodeName.C_Str());
+        // if (newBoneOffset == nodeNameToOffset.end()) {
+        //     LOG(WARNING) << "Channel name not in node list!";
+        //     continue;
+        // }
+
+            // auto nodeOffsetFromName = nodeNameToOffset.at(aiChannel->mNodeName.C_Str());
+            // 
+            // channels_[nodeOffsetFromName] = channel;
+
+        channelMap_.clear();
+    }
+
+    /**
+     *  Returns a sub-sequence of this animation.
+     * 
+     *  Timestamps of the new animations are normalized in the following way:
+     *  \verbatim
+     *           Original animation
+     *                 v
+     *  x                                     y
+     *  |-------------------------------------|
+     * 
+     *       |-------|
+     *       a       b
+     *          ^
+     *    Desired subsequence
+     * 
+     * 
+     *  New (sub-)animation:
+     * 
+     *  0     (b-a)
+     *  |-------|
+     *  \endverbatim
+     *  @param start Start-time of the sub-sequence
+     *  @param end End-time of the sub-sequence
+     * 
+     *  @return New animation
+     */
     Animation Animation::GetSubSequence(Time start, Time end) const
     {
         assert(start < end && "Start time must be less then stop time");
@@ -131,15 +141,16 @@ namespace viscom {
         return subSequence;
     }
 
-    ///
-    /// Computes the transformation of a given bone/node, at a given time.
-    ///
-    /// \param Index of the bone/node
-    /// \param Desired time
-    ///
-    /// \return Transform of this bone/node.
-    ///
-    glm::mat4 Animation::ComputePoseAtTime(std::size_t id, Time time) const
+    /**
+     *  Computes the transformation of a given bone/node, at a given time.
+     * 
+     *  @param id Index of the bone/node
+     *  @param time Desired time
+     *  @param pose Transform of this bone/node.
+     *
+     *  @return true if there is an animation.
+     */
+    bool Animation::ComputePoseAtTime(std::size_t id, Time time, glm::mat4& pose) const
     {
         time = glm::clamp(time, 0.0f, duration_);
 
@@ -149,9 +160,11 @@ namespace viscom {
         const auto& rotationFrames = channel.rotationFrames_;
         const auto& scalingFrames = channel.scalingFrames_;
 
-        glm::quat rotation;
-        glm::vec3 translation;
-        glm::vec3 scale;
+        glm::quat rotation = { 0.0f, 0.0f, 0.0f, 1.0f };
+        glm::vec3 translation{ 0.0f };
+        glm::vec3 scale{ 1.0f };
+
+        if (positionFrames.empty() || rotationFrames.empty() || scalingFrames.empty()) return false;
 
         // There is just one frame
         if (positionFrames.size() == 1) {
@@ -189,22 +202,23 @@ namespace viscom {
         }
 
 
-        glm::mat4 poseTransform = glm::mat4_cast(rotation);
-        poseTransform[0] *= scale.x;
-        poseTransform[1] *= scale.y;
-        poseTransform[2] *= scale.z;
-        poseTransform[3] = glm::vec4(translation, 1);
-        return poseTransform;
+        pose = glm::mat4_cast(rotation);
+        pose[0] *= scale.x;
+        pose[1] *= scale.y;
+        pose[2] *= scale.z;
+        pose[3] = glm::vec4(translation, 1);
+        return true;
     }
 
     void Animation::Write(std::ostream& ofs) const
     {
         VersionableSerializerType::writeHeader(ofs);
-        serializeHelper::write(ofs, channels_.size());
-        for (const auto& channel : channels_) {
-            serializeHelper::writeV(ofs, channel.positionFrames_);
-            serializeHelper::writeV(ofs, channel.rotationFrames_);
-            serializeHelper::writeV(ofs, channel.scalingFrames_);
+        serializeHelper::write(ofs, channelMap_.size());
+        for (const auto& channel : channelMap_) {
+            serializeHelper::write(ofs, channel.first);
+            serializeHelper::writeV(ofs, channel.second.positionFrames_);
+            serializeHelper::writeV(ofs, channel.second.rotationFrames_);
+            serializeHelper::writeV(ofs, channel.second.scalingFrames_);
         }
         serializeHelper::write(ofs, framesPerSecond_);
         serializeHelper::write(ofs, duration_);
@@ -218,11 +232,13 @@ namespace viscom {
         if (correctHeader) {
             std::size_t numChannels;
             serializeHelper::read(ifs, numChannels);
-            channels_.resize(numChannels);
-            for (auto& channel : channels_) {
-                serializeHelper::readV(ifs, channel.positionFrames_);
-                serializeHelper::readV(ifs, channel.rotationFrames_);
-                serializeHelper::readV(ifs, channel.scalingFrames_);
+            channelMap_.clear();
+            for (std::size_t i = 0; i < numChannels; ++i) {
+                std::string channelName;
+                serializeHelper::read(ifs, channelName);
+                serializeHelper::readV(ifs, channelMap_[channelName].positionFrames_);
+                serializeHelper::readV(ifs, channelMap_[channelName].rotationFrames_);
+                serializeHelper::readV(ifs, channelMap_[channelName].scalingFrames_);
             }
             serializeHelper::read(ifs, framesPerSecond_);
             serializeHelper::read(ifs, duration_);

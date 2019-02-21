@@ -45,6 +45,10 @@ namespace viscom {
             }
         }
 
+        /**
+         *  Checks if a file exists.
+         *  @param name path to the file.
+         */
         static bool file_exists(const std::string& name) {
             if (FILE *file = fopen(name.c_str(), "r")) {
                 fclose(file);
@@ -55,6 +59,10 @@ namespace viscom {
             }
         }
 
+        /**
+         *  Checks if an asynchronous operation is ready.
+         *  @param f the future object provided by the asynchronous operation.
+         */
         template<typename R>
         bool is_ready(std::future<R> const& f) {
             return f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
@@ -78,6 +86,11 @@ namespace viscom {
             return s.substr(strBegin, strRange);
         }
 
+        /**
+         *  Splits a string using a delimiter.
+         *  @param s the string to split.
+         *  @param delim the delimitation character.
+         */
         static std::vector<std::string> split(const std::string &s, char delim) {
             std::stringstream ss(s);
             std::string item;
@@ -88,6 +101,12 @@ namespace viscom {
             return tokens;
         }
 
+        /**
+         *  Copies data from a source to a destination.
+         *  @param dest the pointer to the destination location.
+         *  @param src the pointer to the source location.
+         *  @param size the size of the data.
+         */
         static void memcpyfaster(void* dest, const void* src, std::size_t size) {
             std::size_t offset = 0;
             std::size_t stride = 4096;

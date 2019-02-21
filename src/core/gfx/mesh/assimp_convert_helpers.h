@@ -1,9 +1,9 @@
-///
-/// \file   assimp_convert_helpers.h
-/// \author Christian van Onzenoodt
-/// \date   09.05.2017
-/// \brief  Helper functions for converting assimp data types into glm data types.
-///
+/**
+ *  @file   assimp_convert_helpers.h
+ *  @author Christian van Onzenoodt
+ *  @date   09.05.2017
+ *  @brief  Helper functions for converting assimp data types into glm data types.
+ */
 #pragma once
 
 #include <assimp/matrix4x4.h>
@@ -11,13 +11,13 @@
 
 namespace viscom {
 
-    ///
-    /// Converts a assimp aiMatrix4x4 into a glm::mat4.
-    ///
-    /// \param Matrix to convert.
-    ///
-    /// \return Converted Matrix.
-    ///
+    /**
+     *  Converts a assimp aiMatrix4x4 into a glm::mat4.
+     * 
+     *  @param from Matrix to convert.
+     * 
+     *  @return Converted Matrix.
+     */
     static glm::mat4 AiMatrixToGLM(const aiMatrix4x4& from)
     {
         glm::mat4 to;
@@ -42,13 +42,13 @@ namespace viscom {
         return to;
     }
 
-    ///
-    /// Converts a glm::mat4 into a assimp aiMatrix4x4.
-    ///
-    /// \param Matrix to convert.
-    ///
-    /// \return Converted Matrix.
-    ///
+    /**
+     *  Converts a glm::mat4 into a assimp aiMatrix4x4.
+     * 
+     *  @param from Matrix to convert.
+     * 
+     *  @return Converted Matrix.
+     */
     static aiMatrix4x4 GLMToAiMatrix(const glm::mat4& from)
     {
         aiMatrix4x4 to;

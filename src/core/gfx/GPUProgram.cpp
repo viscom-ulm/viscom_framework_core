@@ -16,8 +16,10 @@
 namespace viscom {
 
     /**
-     * Constructor.
-     * @param theProgramName the name of the program used to identify during logging.
+     *  Constructor.
+     *  @param theProgramName the name of the program used to identify during logging.
+     *  @param node the application object for dependencies.
+     *  @param synchronize defines if the GPU program is a synchronized resource.
      */
     GPUProgram::GPUProgram(const std::string& theProgramName, FrameworkInternal* node, bool synchronize) :
         Resource(theProgramName, ResourceType::GPUProgram, node, synchronize),
@@ -57,8 +59,7 @@ namespace viscom {
     // ReSharper disable CppDoxygenUnresolvedReference
     /**
      *  Links a new program.
-     *  @param T the type of the shaders list.
-     *  @param SHAcc the type of the shaders list accessor to the shader id.
+     *  @tparam T the type of the shaders list.
      *  @param name the name of the program.
      *  @param shaders a list of shaders used for creating the program.
      *  @param shaderAccessor function to access the shader id from the shader object in list.
@@ -84,7 +85,7 @@ namespace viscom {
             glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
 
             std::string strInfoLog;
-            strInfoLog.resize(static_cast<std::size_t>(infoLogLength + 1));
+            strInfoLog.resize(static_cast<std::size_t>(infoLogLength) + 1);
             glGetProgramInfoLog(program, infoLogLength, nullptr, strInfoLog.data());
             std::cerr << "Linker failure: " << strInfoLog;
 
@@ -106,7 +107,8 @@ namespace viscom {
      */
     void GPUProgram::recompileProgram()
     {
-        Load(std::optional<std::vector<std::uint8_t>>());
+        auto tmp = std::optional<std::vector<std::uint8_t>>();
+        Load(tmp);
     }
 
     GLint GPUProgram::getUniformLocation(const std::string& name) const

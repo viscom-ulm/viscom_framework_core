@@ -19,6 +19,7 @@
 
 namespace viscom {
 
+    /** Type alias to describe animation time values. */
     using Time = float;
 
     /**
@@ -28,47 +29,93 @@ namespace viscom {
      */
     struct Channel
     {
+        /** Nodes position at specific timestamps. */
         std::vector<std::pair<Time, glm::vec3>> positionFrames_;
+        /** Nodes rotation at specific timestamps. */
         std::vector<std::pair<Time, glm::quat>> rotationFrames_;
+        /** Nodes scale at specific timestamps. */
         std::vector<std::pair<Time, glm::vec3>> scalingFrames_;
     };
+
+    /**
+     *  Information about the animation.
+     */
+    struct AnimationInfo
+    {
+        AnimationInfo() = default;
+
+        AnimationInfo(float start, float end, float playback = 1.0f)
+            : startTime_{ start }, endTime_{ end }, playbackSpeed_{ playback }
+        {
+        }
+
+        AnimationInfo(std::size_t animationIndex, float start, float end, float playback = 1.0f)
+            : animationIndex_{animationIndex}, startTime_ { start }, endTime_{ end }, playbackSpeed_{ playback }
+        {
+        }
+
+        /** Index of the animation. */
+        std::size_t animationIndex_ = 0;
+        /** Start time of the animation. */
+        float startTime_ = 0.0f;
+        /** End time of the animation. */
+        float endTime_ = 1.0f;
+        /** Playback speed of the animation. */
+        float playbackSpeed_ = 1.0f;
+    };
+
+    /**
+     *  Mapping between AnimationState and AnimationInfo.
+     */
+    using SubAnimationMapping = std::vector<AnimationInfo>;
+
+
 
     /** An animation for a model. */
     class Animation
     {
     public:
         Animation();
-        Animation(aiAnimation* aiAnimation, const std::map<std::string, unsigned int>& boneNameToOffset);
+        Animation(aiAnimation* aiAnimation);
 
+        void FlattenHierarchy(std::size_t numNodes, const std::map<std::string, std::size_t>& nodeNamesMap);
+
+        /** Returns the number of ticks per second. */
         float GetFramesPerSecond() const;
+        /** Returns the duration of the animation in seconds. */
         float GetDuration() const;
-        const std::vector<Channel>& GetChannels() const;
-        const Channel& GetChannel(std::size_t id) const;
 
         Animation GetSubSequence(Time start, Time end) const;
 
-        glm::mat4 ComputePoseAtTime(std::size_t id, Time time) const;
+        bool ComputePoseAtTime(std::size_t id, Time time, glm::mat4& pose) const;
 
+        /**
+         *  Writes the channels of the animation to a stream.
+         *  @param ofs stream to write to.
+         */
         void Write(std::ostream& ofs) const;
+        /**
+         *  Reads the channels of the animation from a stream.
+         *  @param ifs stream to read from.
+         */
         bool Read(std::istream& ifs);
 
     private:
-        using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'A', 'N', 'M', 1000>;
+        /** Defines the type of the VersionableSerializer for the animation class. */
+        using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'A', 'N', 'M', 1001>;
 
-        /// Holds the channels (position, rotation, scaling) for each bone.
+        /** Holds the channels during loading. */
+        std::map<std::string, Channel> channelMap_;
+        /** Holds the channels (position, rotation, scaling) for each node. */
         std::vector<Channel> channels_;
-        /// Ticks per second.
-        float framesPerSecond_ = 0;
-        /// Duration of this animation.
-        float duration_ = 0;
+        /** Ticks per second. */
+        float framesPerSecond_ = 0.f;
+        /** Duration of this animation. */
+        float duration_ = 0.f;
     };
 
     inline float Animation::GetFramesPerSecond() const { return framesPerSecond_; }
 
     inline float Animation::GetDuration() const { return duration_; }
-
-    inline const std::vector<Channel>& Animation::GetChannels() const { return channels_; }
-
-    inline const Channel& Animation::GetChannel(std::size_t id) const { return channels_.at(id); }
 
 } // namespace get

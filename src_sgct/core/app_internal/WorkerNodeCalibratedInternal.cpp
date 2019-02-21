@@ -23,11 +23,21 @@ namespace viscom {
     WorkerNodeCalibratedInternal::WorkerNodeCalibratedInternal(FrameworkInternal& fwInternal) :
         WorkerNodeLocalInternal{ fwInternal }
     {
+        InitOffscreenBuffers();
     }
 
-    WorkerNodeCalibratedInternal::~WorkerNodeCalibratedInternal() = default;
+    WorkerNodeCalibratedInternal::~WorkerNodeCalibratedInternal()
+    {
+        if (vaoProjectorQuads_ != 0) glDeleteVertexArrays(0, &vaoProjectorQuads_);
+        vaoProjectorQuads_ = 0;
+        if (vboProjectorQuads_ != 0) glDeleteBuffers(0, &vboProjectorQuads_);
+        vboProjectorQuads_ = 0;
 
-    void WorkerNodeCalibratedInternal::InitOpenGL()
+        if (!alphaTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(alphaTextures_.size()), alphaTextures_.data());
+        alphaTextures_.clear();
+    }
+
+    void WorkerNodeCalibratedInternal::InitOffscreenBuffers()
     {
         LOG(DBUG) << "Initializing calibration data.";
         // init shaders
@@ -128,8 +138,6 @@ namespace viscom {
         glBindVertexArray(0);
 
         LOG(DBUG) << "Calibration Initialized.";
-
-        WorkerNodeLocalInternal::InitOpenGL();
     }
 
 
@@ -185,19 +193,7 @@ namespace viscom {
         });
     }
 
-    void WorkerNodeCalibratedInternal::CleanUp()
-    {
         LOG(INFO) << "CleamUp called.";
-        if (vaoProjectorQuads_ != 0) glDeleteVertexArrays(0, &vaoProjectorQuads_);
-        vaoProjectorQuads_ = 0;
-        if (vboProjectorQuads_ != 0) glDeleteBuffers(0, &vboProjectorQuads_);
-        vboProjectorQuads_ = 0;
-
-        if (!alphaTextures_.empty()) glDeleteTextures(static_cast<GLsizei>(alphaTextures_.size()), alphaTextures_.data());
-        alphaTextures_.clear();
-
-        WorkerNodeLocalInternal::CleanUp();
-    }
     bool WorkerNodeCalibratedInternal::InitialiseVR()
     {
         return false;
@@ -253,7 +249,6 @@ namespace viscom {
     void WorkerNodeCalibratedInternal::GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2 & axisvalues, ButtonState & buttonstate)
     {
     }
-
     void WorkerNodeCalibratedInternal::CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize)
     {
         FrameBufferDescriptor fbDesc;

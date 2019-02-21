@@ -28,24 +28,46 @@ namespace viscom {
         StaticFullscreenQuad();
         ~StaticFullscreenQuad();
 
+        /** Generates the dummy vertex array object. */
         void Initialize();
 
         /** The dummy vertex array object needed for rendering. */
         GLuint dummyVAO_;
     };
 
+    /** Fullscreen quad for rendering as used in deferred shading or various post effects. */
     class FullscreenQuad
     {
     public:
+        /**
+         *  Constructor method.
+         *  @param fragmentProgram file name of the fragment program.
+         *  @param appNode the application node object.
+         */
         FullscreenQuad(const std::string& fragmentProgram, FrameworkInternal* appNode);
+        /**
+        *  Constructor method.
+        *  @param fragmentProgram file name of the fragment program.
+        *  @param appNode the application node object.
+        */
         FullscreenQuad(const std::string& fragmentProgram, ApplicationNodeBase* appNode);
+        /**
+        *  Constructor method using defines.
+        *  @param shaderName the fragment programs resource name to be used.
+        *  @param fragmentProgram file name of the fragment program.
+        *  @param defines list of defines to be used in the fragment program.
+        *  @param appNode the application node object.
+        */
         FullscreenQuad(const std::string& shaderName, const std::string& fragmentProgram,
             const std::vector<std::string>& defines, ApplicationNodeBase* appNode);
         ~FullscreenQuad();
 
+        /** Generates the static dummy vertex array object. */
         static void InitializeStatic();
 
+        /** Renders using the fullscreen quad. */
         void Draw() const;
+        /** Returns the GPU program of the fullscreen quad. */
         const GPUProgram* GetGPUProgram() const { return gpuProgram_.get(); }
 
     private:

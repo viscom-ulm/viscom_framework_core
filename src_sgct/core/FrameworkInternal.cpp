@@ -11,6 +11,7 @@
 #include "core/utils/utils.h"
 #include <imgui.h>
 #include <sgct.h>
+#include "sgct_wrapper.h"
 #include "core/app_internal/CoordinatorNodeInternal.h"
 #include "core/app_internal/WorkerNodeInternal.h"
 #include "core/app/ApplicationNodeBase.h"
@@ -114,10 +115,6 @@ namespace viscom {
 
     void FrameworkInternal::BasePreWindow()
     {
-        if (engine_->isMaster()) appNodeInternal_ = std::make_unique<CoordinatorNodeInternal>(*this);
-        else appNodeInternal_ = std::make_unique<WorkerNodeInternal>(*this);
-
-        appNodeInternal_->PreWindow();
     }
 
     void FrameworkInternal::BaseInitOpenGL()
@@ -142,9 +139,15 @@ namespace viscom {
             framebuffers_.emplace_back();
             framebuffers_.back().Resize(projectorSize.x, projectorSize.y);
 
-            glm::vec2 vpLocalLowerLeft = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::LowerLeft));
-            glm::vec2 vpLocalUpperLeft = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::UpperLeft));
-            glm::vec2 vpLocalUpperRight = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::UpperRight));
+            auto vpLocalLowerLeftA = sgct_wrapper::GetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::LowerLeft);
+            glm::vec2 vpLocalLowerLeft{ vpLocalLowerLeftA[0], vpLocalLowerLeftA[1] };
+            auto vpLocalUpperLeftA = sgct_wrapper::GetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::UpperLeft);
+            glm::vec2 vpLocalUpperLeft{ vpLocalUpperLeftA[0], vpLocalUpperLeftA[1] };
+            auto vpLocalUpperRightA = sgct_wrapper::GetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::UpperRight);
+            glm::vec2 vpLocalUpperRight{ vpLocalUpperRightA[0], vpLocalUpperRightA[1] };
+            // glm::vec2 vpLocalLowerLeft = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::LowerLeft));
+            // glm::vec2 vpLocalUpperLeft = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::UpperLeft));
+            // glm::vec2 vpLocalUpperRight = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::UpperRight));
             glm::vec2 vpLocalSize = vpLocalUpperRight - vpLocalLowerLeft;
             glm::vec2 vpTotalSize = 2.0f * GetConfig().nearPlaneSize_;
 
@@ -172,7 +175,13 @@ namespace viscom {
         FullscreenQuad::InitializeStatic();
         RequestSharedResources();
 
-        appNodeInternal_->InitOpenGL();
+        if (engine_->isMaster()) appNodeInternal_ = std::make_unique<CoordinatorNodeInternal>(*this);
+        else appNodeInternal_ = std::make_unique<WorkerNodeInternal>(*this);
+#pragma warning( push )
+#pragma warning( disable: 4996 )
+        appNodeInternal_->PreWindow();
+#pragma warning( pop )
+        appNodeInternal_->InitImplementation();
     }
 
     void FrameworkInternal::BasePreSync()
@@ -215,10 +224,14 @@ namespace viscom {
 
     void FrameworkInternal::BaseCleanUp()
     {
+#pragma warning( push )
+#pragma warning( disable: 4996 )
+        appNodeInternal_->CleanUp();
+#pragma warning( pop )
+        appNodeInternal_ = nullptr;
+
         std::lock_guard<std::mutex> lock{ instanceMutex_ };
         instance_ = nullptr;
-
-        appNodeInternal_->CleanUp();
 
         initialized_ = false;
     }
@@ -481,7 +494,7 @@ namespace viscom {
         }
     }
 
-    bool FrameworkInternal::IsMaster() const
+    bool FrameworkInternal::IsCoordinator() const
     {
         return engine_->isMaster();
     }

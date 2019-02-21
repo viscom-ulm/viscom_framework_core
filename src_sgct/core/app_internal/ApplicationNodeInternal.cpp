@@ -35,21 +35,22 @@ namespace viscom {
         tuio_->SetAddCursorCallback([this](TUIO::TuioCursor* tcur) { AddTuioCursor(tcur); });
         tuio_->SetUpdateCursorCallback([this](TUIO::TuioCursor* tcur) { UpdateTuioCursor(tcur); });
         tuio_->SetRemoveCursorCallback([this](TUIO::TuioCursor* tcur) { RemoveTuioCursor(tcur); });
+        lastFrameTime_ = sgct::Engine::getTime();
+        syncInfoLocal_.currentTime_ = lastFrameTime_;
     }
 
-    ApplicationNodeInternal::~ApplicationNodeInternal() = default;
+    ApplicationNodeInternal::~ApplicationNodeInternal()
+    {
+#pragma warning ( push )
+#pragma warning ( disable : 4996 )
+        appNodeImpl_->CleanUp();
+#pragma warning ( pop )
+
+        appNodeImpl_ = nullptr;
+    }
 
     void ApplicationNodeInternal::PreWindow()
     {
-        lastFrameTime_ = sgct::Engine::getTime();
-        syncInfoLocal_.currentTime_ = lastFrameTime_;
-
-        appNodeImpl_->PreWindow();
-    }
-
-    void ApplicationNodeInternal::InitOpenGL()
-    {
-        appNodeImpl_->InitOpenGL();
     }
 
     void ApplicationNodeInternal::PreSync()
@@ -100,7 +101,6 @@ namespace viscom {
 
     void ApplicationNodeInternal::CleanUp()
     {
-        appNodeImpl_->CleanUp();
     }
 
     void ApplicationNodeInternal::KeyboardCallback(int key, int scancode, int action, int mods)

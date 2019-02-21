@@ -39,7 +39,7 @@ namespace viscom {
      * Creates a new FrameBuffer with given width and height. It is initialized as back buffer as default.
      * @param fbWidth the frame buffers width
      * @param fbHeight the frame buffers height.
-     * @param d the frame buffers description.
+     * @param desc the frame buffers description.
      */
     FrameBuffer::FrameBuffer(unsigned int fbWidth, unsigned int fbHeight, const FrameBufferDescriptor& desc) :
         fbo_(0),
@@ -248,7 +248,10 @@ namespace viscom {
     {
         assert(!isBackbuffer_);
         std::vector<GLenum> drawBuffersReduced(drawBuffers_.size());
-        for (std::size_t i = 0; i < drawBufferIndices.size(); ++i) drawBuffersReduced[i] = drawBuffers_[drawBufferIndices[i]];
+        for (std::size_t i = 0; i < drawBufferIndices.size(); ++i) {
+            if (drawBufferIndices[i] >= drawBuffers_.size()) drawBuffersReduced[i] = GL_NONE;
+            else drawBuffersReduced[i] = drawBuffers_[drawBufferIndices[i]];
+        }
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
         glDrawBuffers(static_cast<GLsizei>(drawBuffersReduced.size()), drawBuffersReduced.data());
@@ -256,6 +259,12 @@ namespace viscom {
         glScissor(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
     }
 
+    /**
+     *  Returns the adequate attachment given an internal OpenGL format.
+     *  @param internalFormat the internal OpenGL format of the buffer.
+     *  @param colorAtt the index of the color attachment
+     *  @param drawBuffers the list of the draw buffers used.
+     */
     unsigned int FrameBuffer::findAttachment(GLenum internalFormat, unsigned int& colorAtt, std::vector<GLenum> &drawBuffers)
     {
         GLenum attachment;
@@ -288,6 +297,10 @@ namespace viscom {
         return attachment;
     }
 
+    /**
+     *  Checks if the given internal format has a depth or stencil component.
+     *  @param internalFormat the internal OpenGL format of the buffer.
+     */
     bool FrameBuffer::isDepthStencil(GLenum internalFormat)
     {
         switch (internalFormat)

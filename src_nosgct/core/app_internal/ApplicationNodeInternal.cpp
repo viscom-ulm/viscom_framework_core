@@ -39,20 +39,33 @@ namespace viscom {
             LOG(INFO) << "OpenVR initialised on Master";
             vrInitSucc_ = true;
         }
+
+        if (fwInternal_.IsCoordinator()) appNodeImpl_ = fwInternal_.GetCoordinatorNodeFactory()(this);
+        else appNodeImpl_ = fwInternal_.GetWorkerNodeFactory()(this);
+#pragma warning( push )
+#pragma warning( disable: 4996 )
+        appNodeImpl_->PreWindow();
+        appNodeImpl_->InitOpenGL();
+#pragma warning( pop )
     }
 
-    ApplicationNodeInternal::~ApplicationNodeInternal() = default;
+    ApplicationNodeInternal::~ApplicationNodeInternal()
+    {
+#pragma warning( push )
+#pragma warning( disable: 4996 )
+        appNodeImpl_->CleanUp();
+#pragma warning( pop )
+        appNodeImpl_ = nullptr;
+    }
 
     void ApplicationNodeInternal::PreWindow()
     {
-        if (fwInternal_.IsMaster()) appNodeImpl_ = fwInternal_.GetCoordinatorNodeFactory()(this);
-        else appNodeImpl_ = fwInternal_.GetWorkerNodeFactory()(this);
-        appNodeImpl_->PreWindow();
+        // nothing to do anymore.
     }
 
     void ApplicationNodeInternal::InitOpenGL()
     {
-        appNodeImpl_->InitOpenGL();
+        // nothing to do anymore.
     }
 
     void ApplicationNodeInternal::PreSync()
@@ -96,7 +109,6 @@ namespace viscom {
 
     void ApplicationNodeInternal::CleanUp()
     {
-        appNodeImpl_->CleanUp();
     }
 
     void ApplicationNodeInternal::KeyboardCallback(int key, int scancode, int action, int mods)

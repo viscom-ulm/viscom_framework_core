@@ -6,12 +6,10 @@
  * @brief  Implementation of the sub mesh class.
  */
 
-#define GLM_SWIZZLE
+#define GLM_FORCE_SWIZZLE
+
 #include "SubMesh.h"
 #include "Mesh.h"
-
-#undef min
-#undef max
 
 namespace viscom {
 

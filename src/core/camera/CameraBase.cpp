@@ -8,8 +8,10 @@
 
 #include "CameraBase.h"
 
-#define GLM_SWIZZLE
+#define GLM_FORCE_SWIZZLE
 #include <core/open_gl.h>
+
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
@@ -20,18 +22,14 @@ namespace viscom {
 
     /**
      *  Constructor.
-     *  @param theFovY the field of view in y direction.
-     *  @param theAspectRatio the screens aspect ratio.
-     *  @param theScreenSize the screen size.
-     *  @param theNearZ the near z plane
-     *  @param theFarZ the far z plane
      *  @param theCamPos the cameras initial position.
+     *  @param cameraHelper the cameraHelper object holding all information about the view frustum.
      */
     CameraBase::CameraBase(const glm::vec3& theCamPos, viscom::CameraHelper& cameraHelper) noexcept :
         cameraHelper_{ cameraHelper }
     {
         cameraHelper_.SetPosition(theCamPos);
-        cameraHelper_.SetOrientation(glm::quat());
+        cameraHelper_.SetOrientation(glm::quat(0.0f, 0.0f, 1.0f, 0.0f));
     }
 
     CameraBase::~CameraBase() = default;

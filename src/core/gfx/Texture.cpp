@@ -17,8 +17,10 @@
 namespace viscom {
 
     /**
-     * Constructor, creates a texture from file.
-     * @param texFilename the filename of the texture file.
+     *  Constructor, creates a texture from file.
+     *  @param texFilename the filename of the texture file.
+     *  @param node the application object for dependencies.
+     *  @param synchronize defines if the resource is synchronized.
      */
     Texture::Texture(const std::string& texFilename, FrameworkInternal* node, bool synchronize) :
         Resource(texFilename, ResourceType::Texture, node, synchronize),
@@ -106,8 +108,11 @@ namespace viscom {
 
     std::pair<void*, std::size_t> Texture::LoadImageLDR(const std::string& filename, bool useSRGB)
     {
-        auto imgWidth = 0, imgHeight = 0, imgChannels = 0;
-        auto image = stbi_load(filename.c_str(), &imgWidth, &imgHeight, &imgChannels, 0);
+        auto imgWidth = 0, imgHeight = 0, imgChannels = 0, imgForceChannels = 0;
+        stbi_info(filename.c_str(), &imgWidth, &imgHeight, &imgChannels);
+        if (imgChannels == 3) imgForceChannels = 4;
+        auto image = stbi_load(filename.c_str(), &imgWidth, &imgHeight, &imgChannels, imgForceChannels);
+        if (imgForceChannels != 0) imgChannels = imgForceChannels;
         if (!image) {
             LOG(WARNING) << "Failed to load texture (" << filename << ").";
             throw resource_loading_error(filename, "Failed to load texture.");
@@ -122,8 +127,11 @@ namespace viscom {
 
     std::pair<void*, std::size_t> Texture::LoadImageHDR(const std::string& filename)
     {
-        auto imgWidth = 0, imgHeight = 0, imgChannels = 0;
-        auto image = stbi_loadf(filename.c_str(), &imgWidth, &imgHeight, &imgChannels, 0);
+        auto imgWidth = 0, imgHeight = 0, imgChannels = 0, imgForceChannels = 0;
+        stbi_info(filename.c_str(), &imgWidth, &imgHeight, &imgChannels);
+        if (imgChannels == 3) imgForceChannels = 4;
+        auto image = stbi_loadf(filename.c_str(), &imgWidth, &imgHeight, &imgChannels, imgForceChannels);
+        if (imgForceChannels != 0) imgChannels = imgForceChannels;
         if (!image) {
             LOG(WARNING) << "Failed to load texture (" << filename << ").";
             throw resource_loading_error(filename, "Failed to load texture.");

@@ -18,6 +18,9 @@ namespace viscom {
     /**
      * Constructor.
      * @param resourceId the resource id to use
+     * @param type defines if the resource is a mesh, texture or GPU program.
+     * @param appNode the application object for dependencies.
+     * @param synchronize defines if the resource is synchronized.
      */
     Resource::Resource(const std::string& resourceId, ResourceType type, FrameworkInternal* appNode, bool synchronize) :
         id_{ resourceId },
@@ -35,7 +38,7 @@ namespace viscom {
     void Resource::LoadResource()
     {
         if (synchronized_) {
-            if (appNode_->IsMaster()) {
+            if (appNode_->IsCoordinator()) {
                 std::optional<std::vector<std::uint8_t>> optData(std::vector<std::uint8_t>{});
                 Load(optData);
                 data_.swap(*optData);
@@ -46,7 +49,7 @@ namespace viscom {
             else if (!IsLoaded()) appNode_->WaitForResource(id_, type_);
         }
         else {
-            std::optional<std::vector<std::uint8_t>> optData(std::vector<std::uint8_t>{});
+            std::optional<std::vector<std::uint8_t>> optData;
             Load(optData);
             loadCounter_ = -1;
         }
@@ -56,6 +59,18 @@ namespace viscom {
     {
         LoadFromMemory(data, size);
         loadCounter_ = -1;
+    }
+
+    std::string Resource::FindResourceLocation(const std::string& localFilename, const FWConfiguration* config, const std::string& resourceId)
+    {
+        for (const auto& dir : config->resourceSearchPaths_) {
+            auto filename = dir + "/" + localFilename;
+            if (dir.empty()) filename = localFilename;
+            if (utils::file_exists(filename)) return filename;
+        }
+
+        LOG(WARNING) << "Cannot find local resource file \"" << localFilename.c_str() << "\".";
+        throw resource_loading_error(resourceId, "Cannot find local resource file (" + localFilename + ").");
     }
 
     std::string Resource::FindResourceLocation(const std::string& localFilename, const FrameworkInternal* appNode, const std::string& resourceId)
