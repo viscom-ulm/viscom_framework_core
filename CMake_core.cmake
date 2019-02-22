@@ -222,6 +222,12 @@ target_include_directories(VISCOMCore PUBLIC ${CORE_INCLUDE_DIRS})
 target_link_libraries(VISCOMCore ${CORE_LIBS})
 target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS})
 
+if(MSVC)
+    target_compile_options(VISCOMCore PUBLIC "/WX")
+else()
+    target_compile_options(VISCOMCore PUBLIC "-Werror")
+endif()
+
 macro(copy_core_lib_dlls APP_NAME)
     if (${VISCOM_USE_TUIO})
         add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:libTUIO> ${PROJECT_BINARY_DIR})

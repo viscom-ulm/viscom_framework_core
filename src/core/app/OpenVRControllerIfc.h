@@ -41,6 +41,12 @@ namespace viscom::ovr {
         virtual void GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate) const = 0;
 
         virtual std::vector<std::string> OutputDevices() const = 0;
+
+    protected:
+        static const std::vector<DeviceInfo> noDeviceInfo_;
+        static const glm::vec3 zeroVec3_;
+        static const glm::vec2 zeroVec2_;
+        static const glm::quat identityQuat_;
     };
 
     class OpenVRControllerDummy : public OpenVRControllerIfc
@@ -48,11 +54,11 @@ namespace viscom::ovr {
         virtual bool InitialiseVR() override { return false; }
         virtual bool InitialiseDisplayVR() override { return false; }
         virtual bool CalibrateVR(CalibrateMethod method) override { return false; }
-        virtual const std::vector<DeviceInfo>& GetConnectedDevices() const override { return std::vector<DeviceInfo>(); }
-        virtual const glm::vec3& GetControllerPosition(std::uint32_t trackedDeviceId) const override { return glm::vec3{ 0.0f }; }
-        virtual const glm::vec3& GetControllerDirection(std::uint32_t trackedDeviceId) const override { return glm::vec3{ 0.0f }; }
-        virtual const glm::quat& GetControllerOrientation(std::uint32_t trackedDeviceId) const override { return glm::quat{ 0.0f, 0.0f, 1.0f, 0.0f }; }
-        virtual const glm::vec2& GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const override { return glm::vec2{ 0.0f }; }
+        virtual const std::vector<DeviceInfo>& GetConnectedDevices() const override { return noDeviceInfo_; }
+        virtual const glm::vec3& GetControllerPosition(std::uint32_t trackedDeviceId) const override { return zeroVec3_; }
+        virtual const glm::vec3& GetControllerDirection(std::uint32_t trackedDeviceId) const override { return zeroVec3_; }
+        virtual const glm::quat& GetControllerOrientation(std::uint32_t trackedDeviceId) const override { return identityQuat_; }
+        virtual const glm::vec2& GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const override { return zeroVec2_; }
 
         virtual bool ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues) override { return false; }
         virtual bool ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues) override { return false; }

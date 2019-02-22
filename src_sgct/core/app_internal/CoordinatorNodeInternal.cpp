@@ -102,8 +102,8 @@ namespace viscom {
         syncInfoSynced_.setVal(syncInfoLocal_);
 
         ParseTrackingFrame();
-        vrInfoLocal_.displayPosLeftController_ = controller0displaypos_;
-        vrInfoLocal_.displayPosRightController_ = controller1displaypos_;
+        vrInfoLocal_.displayPosLeftController_ = GetLeftControllerDisplayPosition();
+        vrInfoLocal_.displayPosRightController_ = GetRightControllerDisplayPosition();
         vrInfoSynced_.setVal(vrInfoLocal_);
 
         PollAndParseEvents();

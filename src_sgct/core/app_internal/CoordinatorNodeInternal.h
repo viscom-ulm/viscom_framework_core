@@ -14,8 +14,8 @@
 namespace viscom {
 
     struct VrSyncedInfo {
-        glm::vec2 displayPosLeftController_;
-        glm::vec2 displayPosRightController_;
+        glm::vec2 displayPosLeftController_ = glm::vec2{ 0.0f };
+        glm::vec2 displayPosRightController_ = glm::vec2{ 0.0f };
     };
 
     

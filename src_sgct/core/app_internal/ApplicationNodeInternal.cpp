@@ -197,23 +197,23 @@ namespace viscom {
     }
     const std::vector<ovr::DeviceInfo>& ApplicationNodeInternal::GetConnectedDevices() const
     {
-        return std::vector<ovr::DeviceInfo>();
+        return noDeviceInfo_;
     }
     const glm::vec3& ApplicationNodeInternal::GetControllerPosition(std::uint32_t trackedDeviceId) const
     {
-        return glm::vec3();
+        return zeroVec3_;
     }
     const glm::vec3& ApplicationNodeInternal::GetControllerDirection(std::uint32_t trackedDeviceId) const
     {
-        return glm::vec3();
+        return zeroVec3_;
     }
     const glm::quat& ApplicationNodeInternal::GetControllerOrientation(std::uint32_t trackedDeviceId) const
     {
-        return glm::quat();
+        return identityQuat_;
     }
     const glm::vec2& ApplicationNodeInternal::GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const
     {
-        return glm::vec2();
+        return zeroVec2_;
     }
    
     bool ApplicationNodeInternal::ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)

@@ -225,6 +225,11 @@ namespace viscom::ovr {
             controllerStates_[unDevice].orientation_ = GetOrientationFromHmdMatrix34(trackedDevicePose.mDeviceToAbsoluteTracking);
             controllerDisplayPositions_[unDevice] = GetDisplayPosition(controllerStates_[unDevice].position_, controllerStates_[unDevice].direction_);
 
+            if (deviceInfo.deviceClass_ == TrackedDeviceClass::CONTROLLER) {
+                if (deviceInfo.deviceRole_ == TrackedDeviceRole::CONTROLLER_LEFT_HAND) leftControllerDeviceId_ = unDevice;
+                else if (deviceInfo.deviceRole_ == TrackedDeviceRole::CONTROLLER_RIGHT_HAND) rightControllerDeviceId_ = unDevice;
+            }
+
             if (deviceInfo.deviceClass_ == TrackedDeviceClass::GENERIC_TRACKER && trackedDevicePose.bPoseIsValid) {
 #ifdef VISCOM_USE_SGCT
                 HandleSCGT(controllerStates_[unDevice].position_, controllerStates_[unDevice].orientation_);

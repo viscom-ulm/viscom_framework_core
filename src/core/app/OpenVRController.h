@@ -20,7 +20,6 @@ namespace viscom::ovr {
         OpenVRController();
         ~OpenVRController();
 
-
         virtual bool InitialiseVR() override;
         virtual bool InitialiseDisplayVR() override;
         virtual bool CalibrateVR(CalibrateMethod method) override;
@@ -35,6 +34,9 @@ namespace viscom::ovr {
         virtual std::vector<std::string> OutputDevices() const override;
 
     protected:
+        const glm::vec2& GetLeftControllerDisplayPosition() const { return controllerDisplayPositions_[leftControllerDeviceId_]; }
+        const glm::vec2& GetRightControllerDisplayPosition() const { return controllerDisplayPositions_[rightControllerDeviceId_]; }
+
         /** Fills member variables with current data. */
         void ParseTrackingFrame();
         /** Polls and parses all upcoming events. */
@@ -53,35 +55,20 @@ namespace viscom::ovr {
         bool ProcessVREvent(const vr::VREvent_t& event);
 
         std::unique_ptr<CalibrationController> calibration_;
-        /** Polls and parses the next upcoming events. */
-        // void PollAndParseNextEvent();
-
-        
-        // bool GetDisplayInitialised();
-        // bool GetDisplayInitByFloor();
-
 
         /** Holds the IVRSystem pointer */
-        vr::IVRSystem* pHMD_;
+        vr::IVRSystem* pHMD_ = nullptr;
         /** Holds the controller states. */
         std::vector<ControllerState> controllerStates_;
         /** Holds the display position, where the controllers are pointing at. */
         std::vector<glm::vec2> controllerDisplayPositions_;
+        /** The left controllers device id. */
+        std::uint32_t leftControllerDeviceId_ = 0;
+        /** The right controllers device id. */
+        std::uint32_t rightControllerDeviceId_ = 0;
 
         DisplayPlane displayPlane_;
 
-        // float midDisplayPos_[3] = { 0.0f,0.0f,0.0f };
-        // float displayEdges_[3][3] = { { -1.7f, -0.2f, -3.0f },{ -1.7f, 1.5f, -3.0f },{ 1.8f, -0.28f, -3.0f } };
-        // bool initDisplay_ = true;
-        // bool displayllset_ = false;
-        // bool displayulset_ = false;
-        // bool displaylrset_ = false;
-        // bool initfloor_ = true;
-        // CalibrateMethod calibrationMethod_ = CalibrateMethod::CALIBRATE_BY_POINTING;
-        // bool useleftcontroller_ = true;
-        // bool calibrate_ = false;
-        // std::vector<std::string> controller0buttons_;
-        // std::vector<std::string> controller1buttons_;
         std::vector<DeviceInfo> connectedDevices_;
     };
 }
