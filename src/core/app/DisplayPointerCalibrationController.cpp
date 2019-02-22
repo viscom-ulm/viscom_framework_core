@@ -74,8 +74,8 @@ namespace viscom::ovr {
                 if (calibratedPositions_.size() == 2) ImGui::Text("Point at the upper left corner and press the trigger.");
             } else  {
                 if (calibratedPositions_.empty()) ImGui::Text("Touch the lower left corner and press the trigger.");
-                if (calibratedPositions_.size() == 1) ImGui::Text("Touch the upper left corner and press the trigger.");
-                if (calibratedPositions_.size() == 2) ImGui::Text("Touch the lower right corner and press the trigger.");
+                if (calibratedPositions_.size() == 1) ImGui::Text("Touch the lower right corner and press the trigger.");
+                if (calibratedPositions_.size() == 2) ImGui::Text("Touch the upper left corner and press the trigger.");
             }
         }
         ImGui::End();
