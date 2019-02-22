@@ -22,24 +22,9 @@ namespace viscom {
         void DrawFrame(FrameBuffer& fbo) override;
         void Draw2D(FrameBuffer& fbo) override;
 
-        bool InitialiseVR() override;
-        bool CalibrateVR(CalibrateMethod method) override;
-        const std::vector<DeviceInfo>& GetConnectedDevices() override;
-        const glm::vec3& GetControllerPosition(size_t trackedDeviceId) override;
-        const glm::vec3& GetControllerZVector(size_t trackedDeviceId) override;
-        const glm::quat& GetControllerRotation(size_t trackedDeviceId) override;
-        const glm::vec2& GetDisplayPointerPosition(size_t trackedDeviceId) override;
-
-        void ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues) override;
-        void ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues) override;
-        void ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues) override;
-        void ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues) override;
-
-        void GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate) override;
-
     private:
         void InitOffscreenBuffers();
-        void CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize);
+        void CreateProjectorFBO(std::size_t windowId, const glm::ivec2& fboSize);
 
 
         /** Holds the viewport for rendering directly to the projector. */
@@ -63,29 +48,5 @@ namespace viscom {
         std::vector<FrameBuffer> sceneFBOs_;
         /** Holds the alpha textures. */
         std::vector<GLuint> alphaTextures_;
-        
-        void ParseTrackingFrame();
-        glm::vec3 GetController0Pos();
-        glm::vec3 GetController0Zvec();
-        glm::vec3 GetController1Pos();
-        glm::vec3 GetController1Zvec();
-        glm::vec3 GetTrackerPos();
-        glm::vec3 GetTrackerZvec();
-        glm::quat GetController0Rot();
-        glm::quat GetController1Rot();
-        glm::quat GetTrackerRot();
-        glm::vec2 GetDisplayPointerPosition(bool useLeftController);
-        void InitialiseDisplay(bool useLeftController);
-        bool GetDisplayInitialised();
-        void SetDisplayNotInitialised();
-        bool GetDisplayInitByFloor();
-        void SetDisplayInitByFloor(bool b);
-        void PollAndParseNextEvent();
-        void PollAndParseEvents();
-        std::vector<std::string> OutputDevices();
-        float* GetDisplayEdges();
-        bool GetVrInitSuccess();
-        std::vector<std::string> GetController0Buttons();
-        std::vector<std::string> GetController1Buttons();
     };
 }

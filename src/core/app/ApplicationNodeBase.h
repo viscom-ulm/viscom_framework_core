@@ -247,28 +247,28 @@ namespace viscom {
         * @param buttonid identifies the button ( using the OpenVR button ids).
         * @param axisvalues for buttons having axis this will be filled with the axis values.
         */
-        virtual bool ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues) override;
+        virtual bool ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
         /**
         * Callback for a button touch on a controller.
         * @param trackedDeviceId identifies the device.
         * @param buttonid identifies the button ( using the OpenVR button ids).
         * @param axisvalues for buttons having axis this will be filled with the axis values.
         */
-        virtual bool ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues) override;
+        virtual bool ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
         /**
         * Callback if a button on a controller is not pressed anymore.
         * @param trackedDeviceId identifies the device.
         * @param buttonid identifies the button ( using the OpenVR button ids).
         * @param axisvalues for buttons having axis this will be filled with the axis values.
         */
-        virtual bool ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues) override;
+        virtual bool ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
         /**
         * Callback if a button on a controller is not touched anymore.
         * @param trackedDeviceId identifies the device.
         * @param buttonid identifies the button ( using the OpenVR button ids).
         * @param axisvalues for buttons having axis this will be filled with the axis values.
         */
-        virtual bool ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues) override;
+        virtual bool ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
 
         /**
         * Immediate method to get the buttonstate of a controller.

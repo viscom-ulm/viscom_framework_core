@@ -11,6 +11,7 @@
 #include "core/main.h"
 #include "core/app/TuioInputWrapper.h"
 #include "core/FrameworkInternal.h"
+#include "core/app/OpenVRController.h"
 
 namespace viscom {
 
@@ -23,7 +24,7 @@ namespace viscom {
         glm::mat4 pickMatrix_;
     };
 
-    class ApplicationNodeInternal : public viscom::tuio::TuioInputWrapper
+    class ApplicationNodeInternal : public viscom::tuio::TuioInputWrapper, public ovr::OpenVRController
     {
     public:
         /**
@@ -127,6 +128,11 @@ namespace viscom {
          *  @see ApplicationNodeBase::RemoveTuioCursor.
          */
         void removeTuioCursor(TUIO::TuioCursor *tcur) override;
+
+        virtual bool ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
+        virtual bool ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
+        virtual bool ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
+        virtual bool ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
 
         /** Returns the current application time. */
         double GetCurrentAppTime() const { return currentTime_; }

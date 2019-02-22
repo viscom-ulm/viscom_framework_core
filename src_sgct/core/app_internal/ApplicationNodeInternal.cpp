@@ -216,22 +216,22 @@ namespace viscom {
         return zeroVec2_;
     }
    
-    bool ApplicationNodeInternal::ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
+    bool ApplicationNodeInternal::ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues)
     {
         return appNodeImpl_->ControllerButtonPressedCallback(trackedDeviceId, buttonid, axisvalues);
     }
 
-    bool ApplicationNodeInternal::ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
+    bool ApplicationNodeInternal::ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues)
     {
         return appNodeImpl_->ControllerButtonTouchedCallback(trackedDeviceId, buttonid, axisvalues);
     }
 
-    bool ApplicationNodeInternal::ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
+    bool ApplicationNodeInternal::ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues)
     {
         return appNodeImpl_->ControllerButtonPressReleasedCallback(trackedDeviceId, buttonid, axisvalues);
     }
 
-    bool ApplicationNodeInternal::ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2 axisvalues)
+    bool ApplicationNodeInternal::ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues)
     {
         return appNodeImpl_->ControllerButtonTouchReleasedCallback(trackedDeviceId, buttonid, axisvalues);
     }

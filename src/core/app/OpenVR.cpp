@@ -11,7 +11,7 @@
 
 namespace viscom::ovr {
 
-    inline TrackedDeviceRole GetTrackedDeviceRoleFromTrackedControllerRole(const vr::ETrackedControllerRole& role)
+    TrackedDeviceRole GetTrackedDeviceRoleFromTrackedControllerRole(const vr::ETrackedControllerRole& role)
     {
         switch (role)
         {
@@ -21,12 +21,12 @@ namespace viscom::ovr {
         }
     }
 
-    inline glm::vec3 GetPositionFromHmdMatrix34(const vr::HmdMatrix34_t& m)
+    glm::vec3 GetPositionFromHmdMatrix34(const vr::HmdMatrix34_t& m)
     {
         return glm::vec3{ m.m[0][3], m.m[1][3], m.m[2][3] };
     }
 
-    inline glm::quat GetOrientationFromHmdMatrix34(const vr::HmdMatrix34_t& m)
+    glm::quat GetOrientationFromHmdMatrix34(const vr::HmdMatrix34_t& m)
     {
         glm::quat result{
             glm::sqrt(glm::max(0.0f, 1.0f + m.m[0][0] + m.m[1][1] + m.m[2][2])) / 2.0f,
@@ -40,7 +40,7 @@ namespace viscom::ovr {
         return result;
     }
 
-    inline glm::vec3 GetDirectionFromHmdMatrix34(const vr::HmdMatrix34_t& m)
+    glm::vec3 GetDirectionFromHmdMatrix34(const vr::HmdMatrix34_t& m)
     {
         return glm::vec3{ m.m[0][2], m.m[1][2], m.m[2][2] };
     }

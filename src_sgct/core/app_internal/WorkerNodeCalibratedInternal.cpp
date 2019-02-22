@@ -6,7 +6,7 @@
  * @brief  Implementation of the ApplicationNodeInternal for calibrated workers.
  */
 
-#define GLM_SWIZZLE
+#define GLM_FORCE_SWIZZLE
 
 #include "core/main.h"
 #include <sgct.h>
@@ -17,6 +17,7 @@
 #include <experimental/filesystem>
 #include "core/open_gl.h"
 #include "core/app/ApplicationNodeBase.h"
+#include "sgct_wrapper.h"
 
 namespace viscom {
 
@@ -81,10 +82,17 @@ namespace viscom {
             for (const auto& v : viewportv2) viewport.emplace_back(v, 0.0f);
             for (auto j = 0U; j < screenQuadCoords.size(); ++j) quadCoordsProjector_.emplace_back(screenQuadCoords[j], screenQuadTexCoords[j]);
 
-            GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::LowerLeft, viewport[3]);
-            GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperLeft, viewport[0]);
-            GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperRight, viewport[1]);
+            auto window = GetFramework().GetEngine()->getWindowPtr(i);
+            sgct_wrapper::wVec3 vpLocalLowerLeft{ viewport[3].x, viewport[3].y, viewport[3].z };
+            sgct_wrapper::SetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::LowerLeft, vpLocalLowerLeft);
+            sgct_wrapper::wVec3 vpLocalUpperLeft{ viewport[0].x, viewport[0].y, viewport[0].z };
+            sgct_wrapper::SetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::UpperLeft, vpLocalUpperLeft);
+            sgct_wrapper::wVec3 vpLocalUpperRight{ viewport[1].x, viewport[1].y, viewport[1].z };
+            sgct_wrapper::SetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::UpperRight, vpLocalUpperRight);
 
+            // GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::LowerLeft, viewport[3]);
+            // GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperLeft, viewport[0]);
+            // GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperRight, viewport[1]);
 
             auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling));
             glm::vec3 vpSize(GetFramework().GetConfig().nearPlaneSize_.x, GetFramework().GetConfig().nearPlaneSize_.y, 1.0f);
@@ -143,7 +151,6 @@ namespace viscom {
 
     void WorkerNodeCalibratedInternal::DrawFrame(FrameBuffer& fbo)
     {
-        LOG(INFO) << "DrawFrame called.";
         auto windowId = GetFramework().GetEngine()->getCurrentWindowPtr()->getId();
 
         GetFramework().GetEngine()->getCurrentWindowPtr()->getFBOPtr()->unBind();
@@ -155,7 +162,6 @@ namespace viscom {
 
     void WorkerNodeCalibratedInternal::Draw2D(FrameBuffer& fbo)
     {
-        LOG(INFO) << "Draw2d called.";
         auto windowId = GetFramework().GetEngine()->getCurrentWindowPtr()->getId();
         WorkerNodeLocalInternal::Draw2D(sceneFBOs_[windowId]);
 
@@ -193,63 +199,7 @@ namespace viscom {
         });
     }
 
-        LOG(INFO) << "CleamUp called.";
-    bool WorkerNodeCalibratedInternal::InitialiseVR()
-    {
-        return false;
-    }
-
-    bool WorkerNodeCalibratedInternal::CalibrateVR(CalibrateMethod method)
-    {
-        return false;
-    }
-
-    const std::vector<DeviceInfo>& WorkerNodeCalibratedInternal::GetConnectedDevices()
-    {
-        std::vector<DeviceInfo> bla;
-        return bla;
-    }
-
-    const glm::vec3 & WorkerNodeCalibratedInternal::GetControllerPosition(size_t trackedDeviceId)
-    {
-        return glm::vec3();
-    }
-
-    const glm::vec3 & WorkerNodeCalibratedInternal::GetControllerZVector(size_t trackedDeviceId)
-    {
-        return glm::vec3();
-    }
-
-    const glm::quat & WorkerNodeCalibratedInternal::GetControllerRotation(size_t trackedDeviceId)
-    {
-        return glm::quat();
-    }
-
-    const glm::vec2 & WorkerNodeCalibratedInternal::GetDisplayPointerPosition(size_t trackedDeviceId)
-    {
-        return glm::vec2();
-    }
-
-    void WorkerNodeCalibratedInternal::ControllerButtonPressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
-    {
-    }
-
-    void WorkerNodeCalibratedInternal::ControllerButtonTouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
-    {
-    }
-
-    void WorkerNodeCalibratedInternal::ControllerButtonUnpressedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
-    {
-    }
-
-    void WorkerNodeCalibratedInternal::ControllerButtonUntouchedCallback(size_t trackedDeviceId, size_t buttonid, glm::vec2 axisvalues)
-    {
-    }
-
-    void WorkerNodeCalibratedInternal::GetControllerButtonState(size_t trackedDeviceId, size_t buttonid, glm::vec2 & axisvalues, ButtonState & buttonstate)
-    {
-    }
-    void WorkerNodeCalibratedInternal::CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize)
+    void WorkerNodeCalibratedInternal::CreateProjectorFBO(std::size_t windowId, const glm::ivec2& fboSize)
     {
         FrameBufferDescriptor fbDesc;
         fbDesc.texDesc_.emplace_back(GL_RGBA8, GL_TEXTURE_2D);
@@ -261,118 +211,6 @@ namespace viscom {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    }
-    void WorkerNodeCalibratedInternal::ParseTrackingFrame()
-    {
-    }
-
-    glm::vec3 WorkerNodeCalibratedInternal::GetController0Pos()
-    {
-        return glm::vec3();
-    }
-
-    glm::vec3 WorkerNodeCalibratedInternal::GetController0Zvec()
-    {
-        return glm::vec3();
-    }
-
-    glm::vec3 WorkerNodeCalibratedInternal::GetController1Pos()
-    {
-        return glm::vec3();
-    }
-
-    glm::vec3 WorkerNodeCalibratedInternal::GetController1Zvec()
-    {
-        return glm::vec3();
-    }
-
-    glm::vec3 WorkerNodeCalibratedInternal::GetTrackerPos()
-    {
-        return glm::vec3();
-    }
-
-    glm::vec3 WorkerNodeCalibratedInternal::GetTrackerZvec()
-    {
-        return glm::vec3();
-    }
-
-    glm::quat WorkerNodeCalibratedInternal::GetController0Rot()
-    {
-        return glm::quat();
-    }
-
-    glm::quat WorkerNodeCalibratedInternal::GetController1Rot()
-    {
-        return glm::quat();
-    }
-
-    glm::quat WorkerNodeCalibratedInternal::GetTrackerRot()
-    {
-        return glm::quat();
-    }
-
-    glm::vec2 WorkerNodeCalibratedInternal::GetDisplayPointerPosition(bool useLeftController)
-    {
-        return glm::vec2();
-    }
-
-    void WorkerNodeCalibratedInternal::InitialiseDisplay(bool useLeftController)
-    {
-    }
-
-    bool WorkerNodeCalibratedInternal::GetDisplayInitialised()
-    {
-        return false;
-    }
-
-    void WorkerNodeCalibratedInternal::SetDisplayNotInitialised()
-    {
-    }
-
-    bool WorkerNodeCalibratedInternal::GetDisplayInitByFloor()
-    {
-        return false;
-    }
-
-    void WorkerNodeCalibratedInternal::SetDisplayInitByFloor(bool b)
-    {
-    }
-
-    void WorkerNodeCalibratedInternal::PollAndParseNextEvent()
-    {
-    }
-
-    void WorkerNodeCalibratedInternal::PollAndParseEvents()
-    {
-    }
-
-    std::vector<std::string> WorkerNodeCalibratedInternal::OutputDevices()
-    {
-        LOG(INFO) << "OutputDevices called in Worker.";
-        return std::vector<std::string>();
-    }
-
-    float * WorkerNodeCalibratedInternal::GetDisplayEdges()
-    {
-        LOG(INFO) << "GetDisplayEdges called in Worker.";
-        return nullptr;
-    }
-
-    bool WorkerNodeCalibratedInternal::GetVrInitSuccess()
-    {
-        LOG(INFO) << "GetVRinitSucces called in Worker.";
-        return false;
-    }
-
-    std::vector<std::string> WorkerNodeCalibratedInternal::GetController0Buttons()
-    {
-        LOG(INFO) << "GetController0Buttons called in Worker.";
-        return std::vector<std::string>();
-    }
-
-    std::vector<std::string> WorkerNodeCalibratedInternal::GetController1Buttons()
-    {
-        return std::vector<std::string>();
     }
 
 }
