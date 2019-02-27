@@ -31,7 +31,7 @@ namespace viscom {
         return userPosition_;
     }
 
-    void CameraHelper::SetLocalCoordMatrix(std::size_t windowID, const glm::mat4& localCoordMatrix, const glm::vec2& localScreenSize)
+    void CameraHelper::SetLocalCoordMatrix(std::size_t, const glm::mat4& localCoordMatrix, const glm::vec2& localScreenSize)
     {
         localCoordsMatrix_.first = localCoordMatrix;
         localCoordsMatrix_.second = localScreenSize;

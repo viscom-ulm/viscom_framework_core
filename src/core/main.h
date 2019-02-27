@@ -126,3 +126,18 @@ namespace viscom {
         }
     }
 }
+
+#ifdef _MSC_VER
+#define PUSH_DISABLE_DEPRECATED_WARNINGS __pragma(warning( push )) \
+__pragma(warning( disable: 4996 ))
+#define POP_WARNINGS __pragma(warning( pop ))
+#elif __GNUC__
+#define PUSH_DISABLE_DEPRECATED_WARNINGS _Pragma("GCC diagnostic push") \
+_Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+#define POP_WARNINGS _Pragma("GCC diagnostic pop")
+#elif __clang__
+#define PUSH_DISABLE_DEPRECATED_WARNINGS _Pragma("clang diagnostic push") \
+_Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
+#define POP_WARNINGS _Pragma("clang diagnostic pop")
+#endif
+

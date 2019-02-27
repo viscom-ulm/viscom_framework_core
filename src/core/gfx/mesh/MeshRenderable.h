@@ -99,7 +99,7 @@ namespace viscom {
     {
         std::unique_ptr<MeshRenderable> result{ new MeshRenderable(renderMesh, VTX::CreateVertexBuffer(renderMesh), program) };
         result->NotifyRecompiledShader<VTX>(program);
-        return std::move(result);
+        return result;
     }
 
     template<class VTX> void MeshRenderable::NotifyRecompiledShader(const GPUProgram* program)

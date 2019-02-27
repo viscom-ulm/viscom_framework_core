@@ -20,8 +20,15 @@
 
 namespace viscom {
 
+#ifdef __APPLE_CC__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-const-variable"
+#endif
     /** Header inclusion depth limit. */
     constexpr unsigned int MAX_INCLUDE_RECURSION_DEPTH = 32; //-V112
+#ifdef __APPLE_CC__
+#pragma clang diagnostic pop
+#endif
 
     /**
      * Constructor.
@@ -128,7 +135,7 @@ namespace viscom {
      *  @param node the application holding the configuration to retrieve the search paths.
      *  @param shader source code of the shader.
      */
-    Shader::Shader(const std::string& shaderFilename, const FrameworkInternal* node, const std::string& shader) :
+    Shader::Shader(const std::string& shaderFilename, const FrameworkInternal*, const std::string& shader) :
         filename_{ shaderFilename },
         shader_{ 0 },
         type_{ GL_VERTEX_SHADER },
@@ -227,6 +234,10 @@ namespace viscom {
         return shaderText;
     }
 
+#ifdef __APPLE_CC__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
     /**
      *  Loads a shader from file and recursively adds all includes.
      *  @see LoadShaderFile.
@@ -235,7 +246,9 @@ namespace viscom {
         const std::vector<std::string>& defines, unsigned int& fileId, unsigned int recursionDepth, const FrameworkInternal* node)
     {
 #ifdef __APPLE_CC__
-        if (!defines.empty()) LOG(WARNING) << "Defines and includes in shaders not supported on MacOS.";
+        if (!defines.empty()) {
+            LOG(WARNING) << "Defines and includes in shaders not supported on MacOS.";
+        }
         std::ifstream file(filename.c_str(), std::ifstream::in);
         if (!file) {
             LOG(WARNING) << "Could not load shader file!";
@@ -302,6 +315,9 @@ namespace viscom {
         return content.str();
 #endif
     }
+#ifdef __APPLE_CC__
+#pragma clang diagnostic pop
+#endif
 
     /**
      *  Loads a shader from file and compiles it.

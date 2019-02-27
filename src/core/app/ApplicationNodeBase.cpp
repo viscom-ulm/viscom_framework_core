@@ -48,7 +48,7 @@ namespace viscom {
     {
     }
 
-    void ApplicationNodeBase::Draw2D(FrameBuffer& fbo)
+    void ApplicationNodeBase::Draw2D(FrameBuffer&)
     {
     }
 
@@ -56,57 +56,57 @@ namespace viscom {
     {
     }
 
-    bool ApplicationNodeBase::DataTransferCallback(void * receivedData, int receivedLength, std::uint16_t packageID, int clientID)
+    bool ApplicationNodeBase::DataTransferCallback(void*, int, std::uint16_t, int)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::DataAcknowledgeCallback(std::uint16_t packageID, int clientID)
+    bool ApplicationNodeBase::DataAcknowledgeCallback(std::uint16_t, int)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::DataTransferStatusCallback(bool connected, int clientID)
+    bool ApplicationNodeBase::DataTransferStatusCallback(bool, int)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::KeyboardCallback(int key, int scancode, int action, int mods)
+    bool ApplicationNodeBase::KeyboardCallback(int, int, int, int)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::CharCallback(unsigned int character, int mods)
+    bool ApplicationNodeBase::CharCallback(unsigned int, int)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::MouseButtonCallback(int button, int action)
+    bool ApplicationNodeBase::MouseButtonCallback(int, int)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::MousePosCallback(double x, double y)
+    bool ApplicationNodeBase::MousePosCallback(double, double)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::MouseScrollCallback(double xoffset, double yoffset)
+    bool ApplicationNodeBase::MouseScrollCallback(double, double)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::AddTuioCursor(TUIO::TuioCursor* tcur)
+    bool ApplicationNodeBase::AddTuioCursor(TUIO::TuioCursor*)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::UpdateTuioCursor(TUIO::TuioCursor* tcur)
+    bool ApplicationNodeBase::UpdateTuioCursor(TUIO::TuioCursor*)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::RemoveTuioCursor(TUIO::TuioCursor* tcur)
+    bool ApplicationNodeBase::RemoveTuioCursor(TUIO::TuioCursor*)
     {
         return false;
     }
