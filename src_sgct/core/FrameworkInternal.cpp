@@ -177,10 +177,9 @@ namespace viscom {
 
         if (engine_->isMaster()) appNodeInternal_ = std::make_unique<CoordinatorNodeInternal>(*this);
         else appNodeInternal_ = std::make_unique<WorkerNodeInternal>(*this);
-#pragma warning( push )
-#pragma warning( disable: 4996 )
+PUSH_DISABLE_DEPRECATED_WARNINGS
         appNodeInternal_->PreWindow();
-#pragma warning( pop )
+POP_WARNINGS
         appNodeInternal_->InitImplementation();
     }
 
@@ -224,10 +223,9 @@ namespace viscom {
 
     void FrameworkInternal::BaseCleanUp()
     {
-#pragma warning( push )
-#pragma warning( disable: 4996 )
+PUSH_DISABLE_DEPRECATED_WARNINGS
         appNodeInternal_->CleanUp();
-#pragma warning( pop )
+POP_WARNINGS
         appNodeInternal_ = nullptr;
 
         std::lock_guard<std::mutex> lock{ instanceMutex_ };
@@ -317,7 +315,7 @@ namespace viscom {
         if (!initialized_) return;
         auto splitID = reinterpret_cast<std::uint16_t*>(&packageID);
 
-        if (splitID[0] == -1) appNodeInternal_->DataAcknowledge(splitID[1], clientID);
+        if (splitID[0] == static_cast<std::uint16_t>(-1)) appNodeInternal_->DataAcknowledge(splitID[1], clientID);
         auto internalID = reinterpret_cast<std::uint8_t*>(&splitID[0]);
         switch (static_cast<InternalTransferType>(internalID[0])) {
         case InternalTransferType::ResourceTransfer:
@@ -388,7 +386,9 @@ namespace viscom {
         // we can just reduce the node index by 1 when on master ...
         // and check that we do not connect to other nodes on slaves.
         if (engine_->isMaster()) nodeIndex -= 1;
-        else if (nodeIndex != 0) LOG(WARNING) << "SGCT does not allow inter-node connections (nodeIndex: " << nodeIndex << ").";
+        else if (nodeIndex != 0) {
+            LOG(WARNING) << "SGCT does not allow inter-node connections (nodeIndex: " << nodeIndex << ").";
+        }
         engine_->transferDataToNode(data, static_cast<int>(length), completePackageId, nodeIndex);
     }
 
@@ -403,7 +403,9 @@ namespace viscom {
         // As connections only exist between masters and slaves (no direct inter-node connection possible, thanks documentation, not)
         // we can just reduce the node index by 1 when on master ...
         // and check that we do not connect to other nodes on slaves.
-        if (!engine_->isMaster()) LOG(WARNING) << "SGCT does not allow inter-node connections (all nodes).";
+        if (!engine_->isMaster()) {
+            LOG(WARNING) << "SGCT does not allow inter-node connections (all nodes).";
+        }
         engine_->transferDataBetweenNodes(data, static_cast<int>(length), completePackageId);
     }
 
@@ -424,7 +426,9 @@ namespace viscom {
             // As connections only exist between masters and slaves (no direct inter-node connection possible, thanks documentation, not)
             // we can just reduce the node index by 1 when on master ...
             // and check that we do not connect to other nodes on slaves.
-            if (!engine_->isMaster()) LOG(WARNING) << "SGCT does not allow inter-node connections (all nodes).";
+            if (!engine_->isMaster()) {
+                LOG(WARNING) << "SGCT does not allow inter-node connections (all nodes).";
+            }
             engine_->transferDataBetweenNodes(transferedData.data(), static_cast<int>(transferedData.size()), completePackageId);
         }
     }
@@ -444,7 +448,9 @@ namespace viscom {
             // we can just reduce the node index by 1 when on master ...
             // and check that we do not connect to other nodes on slaves.
             if (engine_->isMaster()) nodeIndex -= 1;
-            else if (nodeIndex != 0) LOG(WARNING) << "SGCT does not allow inter-node connections (nodeIndex: " << nodeIndex << ").";
+            else if (nodeIndex != 0) {
+                LOG(WARNING) << "SGCT does not allow inter-node connections (nodeIndex: " << nodeIndex << ").";
+            }
             engine_->transferDataToNode(transferedData.data(), static_cast<int>(transferedData.size()), completePackageId, nodeIndex);
         }
     }

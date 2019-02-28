@@ -44,11 +44,10 @@ namespace viscom {
     void WorkerNodeLocalInternal::InitImplementation()
     {
         SetApplicationNode(GetFramework().GetWorkerNodeFactory()(this));
-#pragma warning ( push )
-#pragma warning ( disable : 4996 )
+PUSH_DISABLE_DEPRECATED_WARNINGS
         GetApplicationNode()->PreWindow();
         GetApplicationNode()->InitOpenGL();
-#pragma warning ( pop )
+POP_WARNINGS
     }
 
     void WorkerNodeLocalInternal::PostSync()
