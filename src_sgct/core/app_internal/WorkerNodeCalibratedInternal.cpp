@@ -149,7 +149,7 @@ namespace viscom {
     }
 
 
-    void WorkerNodeCalibratedInternal::DrawFrame(FrameBuffer& fbo)
+    void WorkerNodeCalibratedInternal::DrawFrame(FrameBuffer&)
     {
         auto windowId = GetFramework().GetEngine()->getCurrentWindowPtr()->getId();
 
