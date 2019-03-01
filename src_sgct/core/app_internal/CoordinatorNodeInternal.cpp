@@ -39,11 +39,10 @@ namespace viscom {
     void CoordinatorNodeInternal::InitImplementation()
     {
         SetApplicationNode(GetFramework().GetCoordinatorNodeFactory()(this));
-#pragma warning ( push )
-#pragma warning ( disable : 4996 )
+PUSH_DISABLE_DEPRECATED_WARNINGS
         GetApplicationNode()->PreWindow();
         GetApplicationNode()->InitOpenGL();
-#pragma warning ( pop )
+POP_WARNINGS
     }
 
     void CoordinatorNodeInternal::PreSync()

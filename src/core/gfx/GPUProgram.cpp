@@ -85,7 +85,7 @@ namespace viscom {
             glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infoLogLength);
 
             std::string strInfoLog;
-            strInfoLog.resize(static_cast<std::size_t>(infoLogLength + 1));
+            strInfoLog.resize(static_cast<std::size_t>(infoLogLength) + 1);
             glGetProgramInfoLog(program, infoLogLength, nullptr, strInfoLog.data());
             std::cerr << "Linker failure: " << strInfoLog;
 

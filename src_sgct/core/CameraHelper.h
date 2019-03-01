@@ -100,11 +100,11 @@ namespace viscom {
         sgct::Engine* engine_;
 
         /** Position of the camera. */
-        glm::vec3 position_;
+        glm::vec3 position_ = glm::vec3{ 0.0f };
         /** Orientation of the camera. */
-        glm::quat camera_orientation_;
+        glm::quat camera_orientation_ = glm::quat{ 0.0f, 0.0f, 1.0f, 0.0f };
         /** The matrix used for picking global coordinates. */
-        glm::mat4 pickMatrix_;
+        glm::mat4 pickMatrix_ = glm::mat4{ 1.0f };
         /** The matrices to calculate local coordinates from global ones. */
         std::vector<std::pair<glm::mat4, glm::vec2>> localCoordsMatrices_;
     };

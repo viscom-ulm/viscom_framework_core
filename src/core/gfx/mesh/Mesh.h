@@ -116,6 +116,9 @@ namespace viscom {
         /** Returns the global inverse matrix of the mesh. */
         glm::mat4 GetGlobalInverse() const { return globalInverse_; }
 
+        /** Returns the meshes filename (and path). */
+        std::string GetFilename() const;
+
     protected:
         /**
          *  Loads the mesh data from file.
@@ -177,10 +180,12 @@ namespace viscom {
         bool Read(std::istream& ifs, FrameworkInternal* node);
 
         void ParseBoneHierarchy(const std::map<std::string, unsigned int>& bones, const aiNode* node,
-            std::size_t parent, glm::mat4 parentMatrix);
+            std::size_t parent);
 
         /** Generates AABB for all bones. */
         void GenerateBoneBoundingBoxes();
+        /** Flattens all hierarchies. */
+        void FlattenHierarchies();
 
         /** Filename of this mesh. */
         std::string filename_;
@@ -231,7 +236,7 @@ namespace viscom {
         /** The root scene node. */
         std::unique_ptr<SceneMeshNode> rootNode_;
         /** The global inverse of this mesh. */
-        glm::mat4 globalInverse_;
+        glm::mat4 globalInverse_ = glm::mat4{ 1.0f };
         /** AABB for all bones */
         std::vector<math::AABB3<float>> boneBoundingBoxes_;
 

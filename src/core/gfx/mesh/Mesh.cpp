@@ -18,8 +18,8 @@
 #include <iostream>
 #ifndef __APPLE_CC__
 #include <filesystem>
-#include <fstream>
 #endif
+#include <fstream>
 
 namespace viscom {
 
@@ -79,7 +79,7 @@ namespace viscom {
 
         if (!Load(filename, binFilename, GetAppNode())) LoadAssimpMeshFromFile(filename, binFilename, GetAppNode());
 
-        rootNode_->FlattenNodeTree(nodes_);
+        FlattenHierarchies();
 
         glGenBuffers(1, &indexBuffer_);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer_);
@@ -138,6 +138,14 @@ namespace viscom {
 
     void Mesh::LoadAssimpMesh(const aiScene * scene, FrameworkInternal* node)
     {
+        boneOffsetMatrixIndices_.clear();
+        boneWeights_.clear();
+        indexVectors_.clear();
+        inverseBindPoseMatrices_.clear();
+        boneBoundingBoxes_.clear();
+        subMeshes_.clear();
+        animations_.clear();
+
         unsigned int maxUVChannels = 0, maxColorChannels = 0, numVertices = 0, numIndices = 0;
         std::vector<std::vector<unsigned int>> indices;
         indices.resize(static_cast<size_t>(scene->mNumMeshes));
@@ -266,17 +274,10 @@ namespace viscom {
             currentMeshIndexOffset += static_cast<unsigned int>(indices[i].size()); //-V127
         }
 
-        // Loading animations
-        if (scene->HasAnimations()) {
-            for (auto a = 0U; a < scene->mNumAnimations; ++a) {
-                animations_.emplace_back(scene->mAnimations[a], bones);
-            }
-        }
-
         // Parse parent information for each bone.
         boneParent_.resize(bones.size(), std::numeric_limits<std::size_t>::max());
         // Root node has a parent index of max value of size_t
-        ParseBoneHierarchy(bones, scene->mRootNode, std::numeric_limits<std::size_t>::max(), glm::mat4(1.0f));
+        ParseBoneHierarchy(bones, scene->mRootNode, std::numeric_limits<std::size_t>::max());
 
         // Iterate all weights for each vertex
         for (auto& weights : boneWeights) {
@@ -311,6 +312,13 @@ namespace viscom {
 
         GenerateBoneBoundingBoxes();
 
+        // Loading animations
+        if (scene->HasAnimations()) {
+            for (auto a = 0U; a < scene->mNumAnimations; ++a) {
+                animations_.emplace_back(scene->mAnimations[a]);
+            }
+        }
+
         globalInverse_ = glm::inverse(rootNode_->GetLocalTransform());
     }
 
@@ -329,24 +337,26 @@ namespace viscom {
 #else
         auto fullTexFilename = filename_.substr(0, filename_.find_last_of('/') + 1) + relFilename;
 #endif
-        std::shared_ptr<const Texture> texture = std::move(node->GetTextureManager().GetResource(fullTexFilename));
+        std::shared_ptr<const Texture> texture = node->GetTextureManager().GetResource(fullTexFilename);
 
         glBindTexture(GL_TEXTURE_2D, texture->getTextureId());
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        return std::move(texture);
+        return texture;
     }
 
+#ifdef __APPLE_CC__
+    void Mesh::Save(const std::string&) const {}
+#else
     void Mesh::Save(const std::string& filename) const
     {
-#ifndef __APPLE_CC__
         std::ofstream ofs(filename, std::ios::out | std::ios::binary);
         VersionableSerializerType::writeHeader(ofs);
         Write(ofs);
-#endif
     }
+#endif
 
     void Mesh::Write(std::ostream& ofs) const
     {
@@ -386,10 +396,12 @@ namespace viscom {
         rootNode_->Write(ofs);
     }
 
+#ifdef __APPLE_CC__
+    bool Mesh::Load(const std::string&, const std::string&, FrameworkInternal*) { return false; }
+#else
     bool Mesh::Load(const std::string& filename, const std::string& binFilename, FrameworkInternal* node)
     {
-#ifndef __APPLE_CC__
-        if (std::experimental::filesystem::exists(binFilename)) {
+        if (std::filesystem::exists(binFilename)) {
             if (!VersionableSerializerType::checkFileDate(filename, binFilename)) return false;
 
             std::ifstream inBinFile(binFilename, std::ios::binary);
@@ -400,9 +412,9 @@ namespace viscom {
                 if (correctHeader) return Read(inBinFile, node);
             }
         }
-#endif
         return false;
     }
+#endif
 
     bool Mesh::Read(std::istream& ifs, FrameworkInternal* node)
     {
@@ -461,17 +473,13 @@ namespace viscom {
     /**
      *  This function walks the hierarchy of bones and does two things:
      *  - set the parent of each bone into `boneParent_`
-     *  - update the boneOffsetMatrices_, so each matrix also includes the
-     *    transformations of the child bones.
      * 
      *  @param bones map from name of bone to index in boneOffsetMatrices_
      *  @param node current node in
      *  @param parent index of the parent in boneOffsetMatrices_
-     *  @param parentMatrix Matrix including all transformations from the parents of the
-     *         current node.
      */
     void Mesh::ParseBoneHierarchy(const std::map<std::string, unsigned int>& bones, const aiNode* node,
-        std::size_t parent, glm::mat4 parentMatrix)
+        std::size_t parent)
     {
         auto bone = bones.find(node->mName.C_Str());
         if (bone != bones.end()) {
@@ -483,7 +491,7 @@ namespace viscom {
         }
 
         for (auto i = 0U; i < node->mNumChildren; ++i) {
-            ParseBoneHierarchy(bones, node->mChildren[i], parent, parentMatrix);
+            ParseBoneHierarchy(bones, node->mChildren[i], parent);
         }
     }
 
@@ -523,5 +531,21 @@ namespace viscom {
                 << "\n"
                 << "Model-path: " << filename_ << std::endl;
         }
+    }
+
+    void Mesh::FlattenHierarchies()
+    {
+        rootNode_->FlattenNodeTree(nodes_);
+        std::map<std::string, std::size_t> nodeIndexMap;
+        for (const auto& node : nodes_) {
+            nodeIndexMap[node->GetName()] = node->GetNodeIndex();
+        }
+
+        for (auto& animation : animations_) animation.FlattenHierarchy(nodes_.size(), nodeIndexMap);
+    }
+
+    std::string Mesh::GetFilename() const
+    {
+        return FindResourceLocation(GetId());
     }
 }

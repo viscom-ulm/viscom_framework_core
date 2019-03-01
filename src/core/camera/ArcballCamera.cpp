@@ -6,10 +6,13 @@
  * @brief  Implementation of an arcball camera.
  */
 
+#define GLM_FORCE_SWIZZLE
+
 #include "ArcballCamera.h"
 
-#define GLM_SWIZZLE
 #include "core/glfw.h"
+
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_access.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>

@@ -31,19 +31,17 @@ namespace viscom {
     {
         if (fwInternal_.IsCoordinator()) appNodeImpl_ = fwInternal_.GetCoordinatorNodeFactory()(this);
         else appNodeImpl_ = fwInternal_.GetWorkerNodeFactory()(this);
-#pragma warning( push )
-#pragma warning( disable: 4996 )
+PUSH_DISABLE_DEPRECATED_WARNINGS
         appNodeImpl_->PreWindow();
         appNodeImpl_->InitOpenGL();
-#pragma warning( pop )
+POP_WARNINGS
     }
 
     ApplicationNodeInternal::~ApplicationNodeInternal()
     {
-#pragma warning( push )
-#pragma warning( disable: 4996 )
+PUSH_DISABLE_DEPRECATED_WARNINGS
         appNodeImpl_->CleanUp();
-#pragma warning( pop )
+POP_WARNINGS
         appNodeImpl_ = nullptr;
     }
 

@@ -7,13 +7,17 @@
  */
 
 #include "Arcball.h"
-#include <glm/gtx/rotate_vector.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
+
 #include <limits>
 #include "core/app/ApplicationNodeBase.h"
 #include <iostream>
 #include "core/glfw.h"
+
+#define GLM_ENABLE_EXPERIMENTAL
+
+#include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace viscom {
 

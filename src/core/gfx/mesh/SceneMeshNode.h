@@ -85,6 +85,8 @@ namespace viscom {
         const std::vector<math::AABB3<float>>& GetSubMeshBoundingBoxes() const { return subMeshBoundingBoxes_; }
         /** Returns if the AABB is valid. */
         bool IsBoundingBoxValid() const noexcept { return boundingBoxValid_; }
+        /** Returns if the subtree of this node has meshes. */
+        bool HasMeshes() const noexcept { return hasMeshes_; }
 
         /**
          *  Flattens the tree of the node and its child nodes to a vector.
@@ -121,6 +123,13 @@ namespace viscom {
         /** Defines the type of the VersionableSerializer for the SceneMeshNode class. */
         using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'S', 'M', 'N', 1000>;
 
+        /**
+         *  Flattens the tree of the node and its child nodes to a vector and checks if the subtree has meshes.
+         *  @param nodes list of nodes that will contain the flattened tree.
+         *  @return whether the subtree has meshes.
+         */
+        bool FlattenNodeTreeInternal(std::vector<const SceneMeshNode*>& nodes);
+
         /** The nodes name. */
         std::string nodeName_;
         /** The nodes children. */
@@ -132,14 +141,16 @@ namespace viscom {
         /** The nodes parent. */
         const SceneMeshNode* parent_;
         /** Bone index. */
-        int boneIndex_;
+        int boneIndex_ = -1;
         /** Node index. */
-        unsigned int nodeIndex_;
+        unsigned int nodeIndex_ = 0;
         /** The nodes local AABB. */
         math::AABB3<float> aabb_;
         /** Bounding boxes for this nodes sub meshes. */
         std::vector<math::AABB3<float>> subMeshBoundingBoxes_;
         /** Flag if the bounding box is valid. */
         bool boundingBoxValid_ = false;
+        /** Flag if the subtree of this node contains any meshes. */
+        bool hasMeshes_ = false;
     };
 }

@@ -11,6 +11,7 @@
 #include "core/utils/utils.h"
 #include <imgui.h>
 #include <sgct.h>
+#include "sgct_wrapper.h"
 #include "core/app_internal/CoordinatorNodeInternal.h"
 #include "core/app_internal/WorkerNodeInternal.h"
 #include "core/app/ApplicationNodeBase.h"
@@ -138,9 +139,15 @@ namespace viscom {
             framebuffers_.emplace_back();
             framebuffers_.back().Resize(projectorSize.x, projectorSize.y);
 
-            glm::vec2 vpLocalLowerLeft = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::LowerLeft));
-            glm::vec2 vpLocalUpperLeft = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::UpperLeft));
-            glm::vec2 vpLocalUpperRight = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::UpperRight));
+            auto vpLocalLowerLeftA = sgct_wrapper::GetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::LowerLeft);
+            glm::vec2 vpLocalLowerLeft{ vpLocalLowerLeftA[0], vpLocalLowerLeftA[1] };
+            auto vpLocalUpperLeftA = sgct_wrapper::GetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::UpperLeft);
+            glm::vec2 vpLocalUpperLeft{ vpLocalUpperLeftA[0], vpLocalUpperLeftA[1] };
+            auto vpLocalUpperRightA = sgct_wrapper::GetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::UpperRight);
+            glm::vec2 vpLocalUpperRight{ vpLocalUpperRightA[0], vpLocalUpperRightA[1] };
+            // glm::vec2 vpLocalLowerLeft = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::LowerLeft));
+            // glm::vec2 vpLocalUpperLeft = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::UpperLeft));
+            // glm::vec2 vpLocalUpperRight = glm::vec2(window->getViewport(0)->getProjectionPlane()->getCoordinate(sgct_core::SGCTProjectionPlane::UpperRight));
             glm::vec2 vpLocalSize = vpLocalUpperRight - vpLocalLowerLeft;
             glm::vec2 vpTotalSize = 2.0f * GetConfig().nearPlaneSize_;
 
@@ -170,10 +177,9 @@ namespace viscom {
 
         if (engine_->isMaster()) appNodeInternal_ = std::make_unique<CoordinatorNodeInternal>(*this);
         else appNodeInternal_ = std::make_unique<WorkerNodeInternal>(*this);
-#pragma warning( push )
-#pragma warning( disable: 4996 )
+PUSH_DISABLE_DEPRECATED_WARNINGS
         appNodeInternal_->PreWindow();
-#pragma warning( pop )
+POP_WARNINGS
         appNodeInternal_->InitImplementation();
     }
 
@@ -217,10 +223,9 @@ namespace viscom {
 
     void FrameworkInternal::BaseCleanUp()
     {
-#pragma warning( push )
-#pragma warning( disable: 4996 )
+PUSH_DISABLE_DEPRECATED_WARNINGS
         appNodeInternal_->CleanUp();
-#pragma warning( pop )
+POP_WARNINGS
         appNodeInternal_ = nullptr;
 
         std::lock_guard<std::mutex> lock{ instanceMutex_ };
@@ -310,7 +315,7 @@ namespace viscom {
         if (!initialized_) return;
         auto splitID = reinterpret_cast<std::uint16_t*>(&packageID);
 
-        if (splitID[0] == -1) appNodeInternal_->DataAcknowledge(splitID[1], clientID);
+        if (splitID[0] == static_cast<std::uint16_t>(-1)) appNodeInternal_->DataAcknowledge(splitID[1], clientID);
         auto internalID = reinterpret_cast<std::uint8_t*>(&splitID[0]);
         switch (static_cast<InternalTransferType>(internalID[0])) {
         case InternalTransferType::ResourceTransfer:
@@ -381,7 +386,9 @@ namespace viscom {
         // we can just reduce the node index by 1 when on master ...
         // and check that we do not connect to other nodes on slaves.
         if (engine_->isMaster()) nodeIndex -= 1;
-        else if (nodeIndex != 0) LOG(WARNING) << "SGCT does not allow inter-node connections (nodeIndex: " << nodeIndex << ").";
+        else if (nodeIndex != 0) {
+            LOG(WARNING) << "SGCT does not allow inter-node connections (nodeIndex: " << nodeIndex << ").";
+        }
         engine_->transferDataToNode(data, static_cast<int>(length), completePackageId, nodeIndex);
     }
 
@@ -396,7 +403,9 @@ namespace viscom {
         // As connections only exist between masters and slaves (no direct inter-node connection possible, thanks documentation, not)
         // we can just reduce the node index by 1 when on master ...
         // and check that we do not connect to other nodes on slaves.
-        if (!engine_->isMaster()) LOG(WARNING) << "SGCT does not allow inter-node connections (all nodes).";
+        if (!engine_->isMaster()) {
+            LOG(WARNING) << "SGCT does not allow inter-node connections (all nodes).";
+        }
         engine_->transferDataBetweenNodes(data, static_cast<int>(length), completePackageId);
     }
 
@@ -417,7 +426,9 @@ namespace viscom {
             // As connections only exist between masters and slaves (no direct inter-node connection possible, thanks documentation, not)
             // we can just reduce the node index by 1 when on master ...
             // and check that we do not connect to other nodes on slaves.
-            if (!engine_->isMaster()) LOG(WARNING) << "SGCT does not allow inter-node connections (all nodes).";
+            if (!engine_->isMaster()) {
+                LOG(WARNING) << "SGCT does not allow inter-node connections (all nodes).";
+            }
             engine_->transferDataBetweenNodes(transferedData.data(), static_cast<int>(transferedData.size()), completePackageId);
         }
     }
@@ -437,7 +448,9 @@ namespace viscom {
             // we can just reduce the node index by 1 when on master ...
             // and check that we do not connect to other nodes on slaves.
             if (engine_->isMaster()) nodeIndex -= 1;
-            else if (nodeIndex != 0) LOG(WARNING) << "SGCT does not allow inter-node connections (nodeIndex: " << nodeIndex << ").";
+            else if (nodeIndex != 0) {
+                LOG(WARNING) << "SGCT does not allow inter-node connections (nodeIndex: " << nodeIndex << ").";
+            }
             engine_->transferDataToNode(transferedData.data(), static_cast<int>(transferedData.size()), completePackageId, nodeIndex);
         }
     }

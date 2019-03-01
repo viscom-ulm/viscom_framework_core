@@ -135,8 +135,8 @@ namespace viscom {
         viewportQuadSize_[0] = projectorSize;
         viewportScaling_[0] = glm::vec2(projectorSize) / config_.virtualScreenSize_;
 
-        glm::vec2 relPosScale = 1.0f / glm::vec2(viewportQuadSize_[0]);
-        glm::vec2 scaledRelPos = (glm::vec2(viewportScreen_[0].position_) / glm::vec2(viewportScreen_[0].size_)) * relPosScale;
+        // glm::vec2 relPosScale = 1.0f / glm::vec2(viewportQuadSize_[0]);
+        // glm::vec2 scaledRelPos = (glm::vec2(viewportScreen_[0].position_) / glm::vec2(viewportScreen_[0].size_)) * relPosScale;
 
         glm::mat4 glbToLcMatrix = glm::mat4{ 1.0f };
         // correct local matrix:
@@ -158,11 +158,10 @@ namespace viscom {
 
         FullscreenQuad::InitializeStatic();
         appNodeInternal_ = std::make_unique<CoordinatorNodeInternal>(*this);
-#pragma warning( push )
-#pragma warning( disable: 4996 )
+PUSH_DISABLE_DEPRECATED_WARNINGS
         appNodeInternal_->PreWindow();
         appNodeInternal_->InitOpenGL();
-#pragma warning( pop )
+POP_WARNINGS
     }
 
     void FrameworkInternal::PostSyncFunction()
@@ -202,7 +201,7 @@ namespace viscom {
 
         appNodeInternal_->Draw2D(backBuffer_);
 
-        backBuffer_.DrawToFBO([this]() {
+        backBuffer_.DrawToFBO([]() {
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         });
@@ -213,16 +212,15 @@ namespace viscom {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
-#pragma warning( push )
-#pragma warning( disable: 4996 )
+PUSH_DISABLE_DEPRECATED_WARNINGS
         appNodeInternal_->CleanUp();
-#pragma warning( pop )
+POP_WARNINGS
         appNodeInternal_ = nullptr;
     }
 
     bool FrameworkInternal::IsMouseButtonPressed(int button) const noexcept
     {
-        return glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+        return glfwGetMouseButton(window_, button) == GLFW_PRESS;
     }
 
     bool FrameworkInternal::IsKeyPressed(int key) const noexcept
@@ -250,7 +248,7 @@ namespace viscom {
         app->BaseCharCallback(character, 0);
     }
 
-    void FrameworkInternal::BaseMouseButtonCallbackStatic(GLFWwindow* window, int button, int action, int mods)
+    void FrameworkInternal::BaseMouseButtonCallbackStatic(GLFWwindow* window, int button, int action, int)
     {
         auto app = reinterpret_cast<FrameworkInternal*>(glfwGetWindowUserPointer(window));
         app->BaseMouseButtonCallback(button, action);
@@ -325,37 +323,37 @@ namespace viscom {
         glfwSetInputMode(window_, GLFW_CURSOR, mode);
     }
 
-    void FrameworkInternal::TransferDataToNode(const void* data, std::size_t length, std::uint16_t packageId, std::size_t nodeIndex)
+    void FrameworkInternal::TransferDataToNode(const void*, std::size_t, std::uint16_t, std::size_t)
     {
         LOG(INFO) << "TransferDataToNode(...) not implemented in local mode.";
     }
 
-    void FrameworkInternal::TransferData(const void* data, std::size_t length, std::uint16_t packageId)
+    void FrameworkInternal::TransferData(const void*, std::size_t, std::uint16_t)
     {
         LOG(INFO) << "TransferData(...) not implemented in local mode.";
     }
 
-    void FrameworkInternal::TransferResource(std::string_view name, const void* data, std::size_t length, ResourceType type)
+    void FrameworkInternal::TransferResource(std::string_view, const void*, std::size_t, ResourceType)
     {
         LOG(INFO) << "TransferResource(...) not implemented in local mode.";
     }
 
-    void FrameworkInternal::TransferResourceToNode(std::string_view name, const void* data, std::size_t length, ResourceType type, std::size_t nodeIndex)
+    void FrameworkInternal::TransferResourceToNode(std::string_view, const void*, std::size_t, ResourceType, std::size_t)
     {
         LOG(INFO) << "TransferResourceToNode(...) not implemented in local mode.";
     }
 
-    void FrameworkInternal::TransferReleaseResource(std::string_view name, ResourceType type)
+    void FrameworkInternal::TransferReleaseResource(std::string_view, ResourceType)
     {
         LOG(INFO) << "TransferReleaseResource(...) not implemented in local mode.";
     }
 
-    void FrameworkInternal::RequestSharedResource(std::string_view name, ResourceType type)
+    void FrameworkInternal::RequestSharedResource(std::string_view, ResourceType)
     {
         LOG(INFO) << "RequestSharedResource(...) not implemented in local mode.";
     }
 
-    void FrameworkInternal::WaitForResource(const std::string& name, ResourceType type)
+    void FrameworkInternal::WaitForResource(const std::string&, ResourceType)
     {
         LOG(INFO) << "WaitForResource(...) not implemented in local mode.";
     }
@@ -374,7 +372,7 @@ namespace viscom {
         glfwSetWindowShouldClose(window_, 1);
     }
 
-    std::vector<FrameBuffer> FrameworkInternal::CreateOffscreenBuffers(const FrameBufferDescriptor & fboDesc, int sizeDivisor) const
+    std::vector<FrameBuffer> FrameworkInternal::CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc, int sizeDivisor) const
     {
         std::vector<FrameBuffer> result;
         glm::ivec2 fboSize(config_.virtualScreenSize_.x / sizeDivisor, config_.virtualScreenSize_.y / sizeDivisor);

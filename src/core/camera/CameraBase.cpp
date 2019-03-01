@@ -8,8 +8,10 @@
 
 #include "CameraBase.h"
 
-#define GLM_SWIZZLE
+#define GLM_FORCE_SWIZZLE
 #include <core/open_gl.h>
+
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
@@ -27,7 +29,7 @@ namespace viscom {
         cameraHelper_{ cameraHelper }
     {
         cameraHelper_.SetPosition(theCamPos);
-        cameraHelper_.SetOrientation(glm::quat());
+        cameraHelper_.SetOrientation(glm::quat(0.0f, 0.0f, 1.0f, 0.0f));
     }
 
     CameraBase::~CameraBase() = default;

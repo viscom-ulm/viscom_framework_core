@@ -13,9 +13,12 @@
 
 namespace viscom {
     CameraHelper::CameraHelper(float width, float height, const glm::vec3& userPosition) :
+        position_{ 0.0f },
+        cameraOrientation_{ 0.0f, 0.0f, 1.0f, 0.0f },
         userPosition_{ userPosition },
         userView_{ glm::lookAt(userPosition_, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f)) },
         projection_{ glm::perspectiveFov(2.0f * glm::atan(height, userPosition_.z), width, height, 0.1f, 100.0f) },
+        pickMatrix_{ 1.0f },
         width_{ width },
         height_{ height },
         nearPlane_{ 0.1f },
@@ -28,7 +31,7 @@ namespace viscom {
         return userPosition_;
     }
 
-    void CameraHelper::SetLocalCoordMatrix(std::size_t windowID, const glm::mat4& localCoordMatrix, const glm::vec2& localScreenSize)
+    void CameraHelper::SetLocalCoordMatrix(std::size_t, const glm::mat4& localCoordMatrix, const glm::vec2& localScreenSize)
     {
         localCoordsMatrix_.first = localCoordMatrix;
         localCoordsMatrix_.second = localScreenSize;
