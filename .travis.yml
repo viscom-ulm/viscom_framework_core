@@ -8,6 +8,7 @@ notifications:
 matrix:
   include:
     - name: Windows, no-SGCT
+      if: branch IN (develop, master)
       os: windows
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" CMAKE_BUILDER="Visual Studio 15 2017 Win64"
     - name: Windows, SGCT, local only
@@ -26,10 +27,12 @@ matrix:
         - dir
         - cd ../../..
     - name: Windows, SGCT
+      if: branch = master
       os: windows
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" CMAKE_BUILDER="Visual Studio 15 2017 Win64" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="" LIB_ENDING="lib"
       before_script: *sgctbefore_script
     - name: Linux (GCC), no-SGCT
+      if: branch IN (develop, master)
       os: linux
       dist: xenial
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" LIB_PREFIX="lib" LIB_ENDING="a"
@@ -54,6 +57,7 @@ matrix:
       before_install: &linuxbefore_install
         - eval "${VISCOM_COMPILER_ENV}"
     - name: Linux (GCC), SGCT, local only
+      if: branch = master
       os: linux
       dist: xenial
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
@@ -68,12 +72,14 @@ matrix:
       before_install: *linuxbefore_install
       before_script: *sgctbefore_script
     - name: Linux (clang), no-SGCT
+      if: branch IN (develop, master)
       os: linux
       dist: xenial
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-7 && CXX=clang++-7" CMAKE_BUILDER="Unix Makefiles"
       addons: *linuxaddons
       before_install: *linuxbefore_install
     - name: Linux (clang), SGCT, local only
+      if: branch = master
       os: linux
       dist: xenial
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-7 && CXX=clang++-7" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
@@ -81,6 +87,7 @@ matrix:
       before_install: *linuxbefore_install
       before_script: *sgctbefore_script
     - name: Linux (clang), SGCT
+      if: branch = master
       os: linux
       dist: xenial
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" VISCOM_COMPILER_ENV="CC=clang-7 && CXX=clang++-7" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
