@@ -18,8 +18,8 @@
 #include <iostream>
 #ifndef __APPLE_CC__
 #include <filesystem>
-#include <fstream>
 #endif
+#include <fstream>
 
 namespace viscom {
 
@@ -337,24 +337,26 @@ namespace viscom {
 #else
         auto fullTexFilename = filename_.substr(0, filename_.find_last_of('/') + 1) + relFilename;
 #endif
-        std::shared_ptr<const Texture> texture = std::move(node->GetTextureManager().GetResource(fullTexFilename));
+        std::shared_ptr<const Texture> texture = node->GetTextureManager().GetResource(fullTexFilename);
 
         glBindTexture(GL_TEXTURE_2D, texture->getTextureId());
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        return std::move(texture);
+        return texture;
     }
 
+#ifdef __APPLE_CC__
+    void Mesh::Save(const std::string&) const {}
+#else
     void Mesh::Save(const std::string& filename) const
     {
-#ifndef __APPLE_CC__
         std::ofstream ofs(filename, std::ios::out | std::ios::binary);
         VersionableSerializerType::writeHeader(ofs);
         Write(ofs);
-#endif
     }
+#endif
 
     void Mesh::Write(std::ostream& ofs) const
     {
@@ -394,10 +396,12 @@ namespace viscom {
         rootNode_->Write(ofs);
     }
 
+#ifdef __APPLE_CC__
+    bool Mesh::Load(const std::string&, const std::string&, FrameworkInternal*) { return false; }
+#else
     bool Mesh::Load(const std::string& filename, const std::string& binFilename, FrameworkInternal* node)
     {
-#ifndef __APPLE_CC__
-        if (std::experimental::filesystem::exists(binFilename)) {
+        if (std::filesystem::exists(binFilename)) {
             if (!VersionableSerializerType::checkFileDate(filename, binFilename)) return false;
 
             std::ifstream inBinFile(binFilename, std::ios::binary);
@@ -408,9 +412,9 @@ namespace viscom {
                 if (correctHeader) return Read(inBinFile, node);
             }
         }
-#endif
         return false;
     }
+#endif
 
     bool Mesh::Read(std::istream& ifs, FrameworkInternal* node)
     {

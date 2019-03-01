@@ -127,6 +127,6 @@ namespace viscom {
         }
 
         glDrawElements(GL_TRIANGLES, subMesh->GetNumberOfIndices(), GL_UNSIGNED_INT,
-            (static_cast<char*> (nullptr)) + (static_cast<std::size_t>(subMesh->GetIndexOffset()) * sizeof(unsigned int)));
+            reinterpret_cast<char*>(static_cast<std::size_t>(subMesh->GetIndexOffset()) * sizeof(unsigned int)));
     }
 }

@@ -48,9 +48,9 @@ namespace viscom {
         subMeshIds_(rhs.subMeshIds_),
         localTransform_(rhs.localTransform_),
         parent_(rhs.parent_),
-        aabb_(rhs.aabb_),
         boneIndex_(rhs.boneIndex_),
         nodeIndex_(rhs.nodeIndex_),
+        aabb_(rhs.aabb_),
         subMeshBoundingBoxes_(rhs.subMeshBoundingBoxes_),
         boundingBoxValid_(rhs.boundingBoxValid_),
         hasMeshes_(rhs.hasMeshes_)
@@ -65,9 +65,9 @@ namespace viscom {
         subMeshIds_(std::move(rhs.subMeshIds_)),
         localTransform_(std::move(rhs.localTransform_)),
         parent_(std::move(rhs.parent_)),
-        aabb_(std::move(rhs.aabb_)),
         boneIndex_(std::move(rhs.boneIndex_)),
         nodeIndex_(std::move(rhs.nodeIndex_)),
+        aabb_(std::move(rhs.aabb_)),
         subMeshBoundingBoxes_(std::move(rhs.subMeshBoundingBoxes_)),
         boundingBoxValid_(std::move(rhs.boundingBoxValid_)),
         hasMeshes_(std::move(rhs.hasMeshes_))
@@ -170,7 +170,7 @@ namespace viscom {
         serializeHelper::write(ofs, boundingBoxValid_);
 
         std::vector<std::uint64_t> nodeWriteIds(children_.size());
-        for (auto i = 0; i < children_.size(); ++i) nodeWriteIds[i] = reinterpret_cast<std::uint64_t>(children_[i].get());
+        for (std::size_t i = 0; i < children_.size(); ++i) nodeWriteIds[i] = reinterpret_cast<std::uint64_t>(children_[i].get());
         serializeHelper::writeV(ofs, nodeWriteIds);
 
         for (auto & i : children_) i->Write(ofs);

@@ -1,0 +1,105 @@
+language: cpp
+sudo: required
+git:
+  depth: 1
+notifications:
+  email: false
+
+matrix:
+  include:
+    - name: Windows, no-SGCT
+      if: branch IN (develop, master)
+      os: windows
+      env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" CMAKE_BUILDER="Visual Studio 15 2017 Win64"
+    - name: Windows, SGCT, local only
+      os: windows
+      env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" CMAKE_BUILDER="Visual Studio 15 2017 Win64" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="" LIB_ENDING="lib"
+      before_script: &sgctbefore_script
+        - mkdir -p deps/sgct
+        - cd deps/sgct
+        - git clone --recursive https://github.com/opensgct/sgct.git .
+        - git checkout c487fe9d778a730125b72027b2da5588a664d01b
+        - mkdir build && cd build
+        - cmake -G "${CMAKE_BUILDER}" -D JPEG_TURBO_WITH_SIMD=OFF -D SGCT_INSTALL=ON -D CMAKE_INSTALL_PREFIX="../../sgct_install" ..
+        - cmake --build . --target install
+        - cd ../../..
+        - cd deps/sgct_install/lib
+        - dir
+        - cd ../../..
+    - name: Windows, SGCT
+      if: branch = master
+      os: windows
+      env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" CMAKE_BUILDER="Visual Studio 15 2017 Win64" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="" LIB_ENDING="lib"
+      before_script: *sgctbefore_script
+    - name: Linux (GCC), no-SGCT
+      if: branch IN (develop, master)
+      os: linux
+      dist: xenial
+      env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" LIB_PREFIX="lib" LIB_ENDING="a"
+      addons: &linuxaddons
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-xenial-7
+          packages:
+            - g++-8
+            - clang-7
+            - libc++-7-dev
+            - libc++abi-7-dev
+            - libgl1-mesa-dev
+            - libxcb-glx0-dev
+            - libglu-dev
+            - libxi-dev
+            - libxcursor-dev
+            - libxrandr-dev
+            - libxinerama-dev
+            - libxxf86vm-dev
+      before_install: &linuxbefore_install
+        - eval "${VISCOM_COMPILER_ENV}"
+    - name: Linux (GCC), SGCT, local only
+      if: branch = master
+      os: linux
+      dist: xenial
+      env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
+      addons: *linuxaddons
+      before_install: *linuxbefore_install
+      before_script: *sgctbefore_script
+    - name: Linux (GCC), SGCT
+      os: linux
+      dist: xenial
+      env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
+      addons: *linuxaddons
+      before_install: *linuxbefore_install
+      before_script: *sgctbefore_script
+    - name: Linux (clang), no-SGCT
+      if: branch IN (develop, master)
+      os: linux
+      dist: xenial
+      env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-7 && CXX=clang++-7" CMAKE_BUILDER="Unix Makefiles"
+      addons: *linuxaddons
+      before_install: *linuxbefore_install
+    - name: Linux (clang), SGCT, local only
+      if: branch = master
+      os: linux
+      dist: xenial
+      env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-7 && CXX=clang++-7" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
+      addons: *linuxaddons
+      before_install: *linuxbefore_install
+      before_script: *sgctbefore_script
+    - name: Linux (clang), SGCT
+      if: branch = master
+      os: linux
+      dist: xenial
+      env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" VISCOM_COMPILER_ENV="CC=clang-7 && CXX=clang++-7" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
+      addons: *linuxaddons
+      before_install: *linuxbefore_install
+      before_script: *sgctbefore_script
+    - name: MacOS X, no-SGCT
+      os: osx
+      osx_image: xcode10.1
+      env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" CMAKE_BUILDER="Xcode"
+
+script:
+  - mkdir build && cd build
+  - cmake -G "${CMAKE_BUILDER}" -D VISCOM_USE_SGCT:BOOL=${VISCOM_SGCT} -D VISCOM_LOCAL_ONLY:BOOL=${VISCOM_LOCAL} -D SGCT_INCLUDE_DIRECTORY="${SGCT_ROOT_DIR}/include" -D SGCT_DEBUG_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgctd.${LIB_ENDING}" -D SGCT_RELEASE_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgct.${LIB_ENDING}" ..
+  - cmake --build .

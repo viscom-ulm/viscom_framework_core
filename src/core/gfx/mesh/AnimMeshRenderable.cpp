@@ -106,9 +106,6 @@ namespace viscom {
 
     void AnimationState::ComputeGlobalBonePose(const SceneMeshNode* node)
     {
-        if (node->GetNodeIndex() == 8) {
-            int brk = 0;
-        }
         auto nodeParent = node->GetParent();
         while (nodeParent && node->GetBoneIndex() != -1 && (nodeParent->GetName().empty())) nodeParent = nodeParent->GetParent();
 
@@ -234,6 +231,6 @@ namespace viscom {
         }
 
         glDrawElements(GL_TRIANGLES, subMesh->GetNumberOfIndices(), GL_UNSIGNED_INT,
-            (static_cast<char*> (nullptr)) + (static_cast<std::size_t>(subMesh->GetIndexOffset()) * sizeof(unsigned int)));
+            reinterpret_cast<char*>(static_cast<std::size_t>(subMesh->GetIndexOffset()) * sizeof(unsigned int)));
     }
 }

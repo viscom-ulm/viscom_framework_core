@@ -108,7 +108,7 @@ namespace viscom {
         /** Returns the applications configuration. */
         const FWConfiguration& GetConfig() const { return config_; }
         /** Returns the applications back buffer. */
-        FrameBuffer& GetFramebuffer(std::size_t windowId) { return backBuffer_; }
+        FrameBuffer& GetFramebuffer(std::size_t) { return backBuffer_; }
         /** Returns the applications window id. */
         std::size_t GetCurrentWindowID() const { return 0; }
         /**
@@ -306,8 +306,8 @@ namespace viscom {
         MeshManager meshManager_;
 
         /** Holds the current mouse position. */
-        glm::vec2 mousePosition_;
+        glm::vec2 mousePosition_ = glm::vec2{ 0.0f };
         /** Holds the current normalized mouse position. */
-        glm::vec2 mousePositionNormalized_;
+        glm::vec2 mousePositionNormalized_ = glm::vec2{ 0.0f };
     };
 }

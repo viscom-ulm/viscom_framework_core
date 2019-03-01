@@ -40,7 +40,7 @@ namespace viscom {
     {
     }
 
-    bool FreeCamera::HandleMouse(int button, int action, float mouseWheelDelta, const ApplicationNodeBase* sender)
+    bool FreeCamera::HandleMouse(int, int, float, const ApplicationNodeBase*)
     {
         return false;
     }

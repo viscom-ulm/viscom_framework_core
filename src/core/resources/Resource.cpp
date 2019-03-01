@@ -25,8 +25,8 @@ namespace viscom {
     Resource::Resource(const std::string& resourceId, ResourceType type, FrameworkInternal* appNode, bool synchronize) :
         id_{ resourceId },
         type_{ type },
-        appNode_{ appNode },
-        synchronized_{ synchronize }
+        synchronized_{ synchronize },
+        appNode_{ appNode }
     {
     }
 

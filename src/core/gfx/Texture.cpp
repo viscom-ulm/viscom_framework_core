@@ -9,7 +9,16 @@
 #include "Texture.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+
+#ifdef __APPLE_CC__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
 #include <stb_image.h>
+#ifdef __APPLE_CC__
+#pragma clang diagnostic pop
+#endif
+
 #include "core/FrameworkInternal.h"
 #include "core/resources/ResourceManager.h"
 #include "core/open_gl.h"
@@ -32,7 +41,6 @@ namespace viscom {
     {
         // Bind Texture and Set Filtering Levels
         glGenTextures(1, &textureId_);
-        auto e = glGetError();
         glBindTexture(GL_TEXTURE_2D, textureId_);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -89,8 +97,9 @@ namespace viscom {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    void Texture::LoadFromMemory(const void* data, std::size_t size)
+    void Texture::LoadFromMemory(const void* data, std::size_t)
     {
+        // TODO: implement size check
         auto dataptr = reinterpret_cast<const std::uint8_t*>(data);
         descriptor_ = *reinterpret_cast<const TextureDescriptor*>(dataptr);
         dataptr += sizeof(TextureDescriptor);

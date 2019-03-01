@@ -41,10 +41,9 @@ namespace viscom {
 
     ApplicationNodeInternal::~ApplicationNodeInternal()
     {
-#pragma warning ( push )
-#pragma warning ( disable : 4996 )
+PUSH_DISABLE_DEPRECATED_WARNINGS
         appNodeImpl_->CleanUp();
-#pragma warning ( pop )
+POP_WARNINGS
 
         appNodeImpl_ = nullptr;
     }
