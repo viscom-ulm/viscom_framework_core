@@ -6,7 +6,7 @@
  * @brief  Implementation of the ApplicationNodeInternal for calibrated workers.
  */
 
-#define GLM_SWIZZLE
+#define GLM_FORCE_SWIZZLE
 
 #include "core/main.h"
 #include <sgct.h>
@@ -17,6 +17,7 @@
 #include <experimental/filesystem>
 #include "core/open_gl.h"
 #include "core/app/ApplicationNodeBase.h"
+#include "sgct_wrapper.h"
 
 namespace viscom {
 
@@ -81,10 +82,17 @@ namespace viscom {
             for (const auto& v : viewportv2) viewport.emplace_back(v, 0.0f);
             for (auto j = 0U; j < screenQuadCoords.size(); ++j) quadCoordsProjector_.emplace_back(screenQuadCoords[j], screenQuadTexCoords[j]);
 
-            GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::LowerLeft, viewport[3]);
-            GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperLeft, viewport[0]);
-            GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperRight, viewport[1]);
+            auto window = GetFramework().GetEngine()->getWindowPtr(i);
+            sgct_wrapper::wVec3 vpLocalLowerLeft{ viewport[3].x, viewport[3].y, viewport[3].z };
+            sgct_wrapper::SetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::LowerLeft, vpLocalLowerLeft);
+            sgct_wrapper::wVec3 vpLocalUpperLeft{ viewport[0].x, viewport[0].y, viewport[0].z };
+            sgct_wrapper::SetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::UpperLeft, vpLocalUpperLeft);
+            sgct_wrapper::wVec3 vpLocalUpperRight{ viewport[1].x, viewport[1].y, viewport[1].z };
+            sgct_wrapper::SetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::UpperRight, vpLocalUpperRight);
 
+            // GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::LowerLeft, viewport[3]);
+            // GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperLeft, viewport[0]);
+            // GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperRight, viewport[1]);
 
             auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling));
             glm::vec3 vpSize(GetFramework().GetConfig().nearPlaneSize_.x, GetFramework().GetConfig().nearPlaneSize_.y, 1.0f);

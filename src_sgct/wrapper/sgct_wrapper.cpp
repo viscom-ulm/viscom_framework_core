@@ -16,9 +16,27 @@ namespace sgct_wrapper {
         return wVec3{ corner.x, corner.y, corner.z };
     }
 
+    void SetProjectionPlaneCoordinate(sgct::SGCTWindow* window, std::size_t viewportId, sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner planeCorner, const wVec3& coord)
+    {
+        glm::vec3 glmCoord{ coord[0], coord[1], coord[2] };
+        window->getViewport(viewportId)->getProjectionPlane()->setCoordinate(planeCorner, glmCoord);
+    }
+
     wVec3 GetDefaultUserPosition()
     {
         auto position = sgct::Engine::getDefaultUserPtr()->getPos();
         return wVec3{ position.x, position.y, position.z };
+    }
+
+    void SetDefaultUserPosition(const wVec3& pos)
+    {
+        wVec3 position = pos;
+        sgct::Engine::getDefaultUserPtr()->setPos(position.data());
+    }
+
+    void SetDefaultUserOrientation(const wQuat& orientation)
+    {
+        glm::quat orient{ orientation[0], orientation[1], orientation[2], orientation[3] };
+        sgct::Engine::getDefaultUserPtr()->setOrientation(orient);
     }
 }
