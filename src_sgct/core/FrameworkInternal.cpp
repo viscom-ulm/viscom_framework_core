@@ -158,8 +158,8 @@ namespace viscom {
             viewportQuadSize_[wId] = projectorSize;
             viewportScaling_[wId] = totalScreenSize / config_.virtualScreenSize_;
 
-            glm::vec2 relPosScale = 1.0f / glm::vec2(viewportQuadSize_[wId]);
-            glm::vec2 scaledRelPos = (glm::vec2(viewportScreen_[wId].position_) / glm::vec2(viewportScreen_[wId].size_)) * relPosScale;
+            // glm::vec2 relPosScale = 1.0f / glm::vec2(viewportQuadSize_[wId]);
+            // glm::vec2 scaledRelPos = (glm::vec2(viewportScreen_[wId].position_) / glm::vec2(viewportScreen_[wId].size_)) * relPosScale;
             
             glm::mat4 glbToLcMatrix = glm::mat4{ 1.0f };
             // correct local matrix:
@@ -658,10 +658,10 @@ POP_WARNINGS
     {
         if (static_cast<unsigned int>(nodeId) >= startNode_) {
             unsigned int current_projector = 0;
-            for (int i = startNode_; i < sgct_core::ClusterManager::instance()->getNumberOfNodes(); i++) {
+            for (std::size_t i = startNode_; i < sgct_core::ClusterManager::instance()->getNumberOfNodes(); i++) {
                 auto currNode = sgct_core::ClusterManager::instance()->getNodePtr(i);
-                for (auto j = 0; j < currNode->getNumberOfWindows(); j++) {
-                    if (i == nodeId && j == windowId) return current_projector;
+                for (std::size_t j = 0; j < currNode->getNumberOfWindows(); j++) {
+                    if (i == static_cast<std::size_t>(nodeId) && j == static_cast<std::size_t>(windowId)) return current_projector;
 
                     current_projector += 1;
                 }

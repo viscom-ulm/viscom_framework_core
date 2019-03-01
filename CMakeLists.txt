@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.9)
 PROJECT("VISCOMCore")
 
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_compile_options(-stdlib=libc++ -isystem /usr/include/c++/v1)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+endif()
+
 set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_DEBUGWORKER_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows.")
@@ -13,6 +18,9 @@ set(USE_DYNAMIC_LOGGING_LEVELS ON CACHE BOOL "Turn ON/OFF log levels. An disable
 set(CHANGE_G3LOG_DEBUG_TO_DBUG ON CACHE BOOL "Use DBUG logging level instead of DEBUG. By default DEBUG is the debugging level" FORCE)
 set(VERSION "1.3.160-0")
 add_subdirectory(extern/g3log EXCLUDE_FROM_ALL)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    target_compile_options(g3logger PUBLIC -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
 
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
@@ -40,27 +48,28 @@ set(VISCOM_OPENGL_PROFILE "3.3" CACHE STRING "OpenGL profile version to use.")
 set(VISCOM_USE_TUIO ON CACHE BOOL "Use TUIO input library")
 set(VISCOM_TUIO_PORT 3333 CACHE STRING "UDP Port for TUIO to listen on")
 
-# Build-flags.
-if(UNIX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -Wno-unused-function -Wno-unused-parameter -Wextra -Wpedantic")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
-  # add compiler-options for AppleClang to ignore linker warnings from assimp on macOS
-  # also the c++ standard seems to be not set correctly by cmake.
-  if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
-    add_compile_options(-fvisibility=hidden -fvisibility-inlines-hidden -ferror-limit=0)
-  elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    # clang does not work well with gcc-stdlib, so this is necessary o_0
-    add_compile_options(-stdlib=libc++ -isystem /usr/include/c++/v1 -Wno-unused-command-line-argument)
-    list(APPEND CORE_LIBS c++experimental c++abi)
-    # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
-  else()
+# Build-flags.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    list(APPEND CORE_LIBS c++experimental c++abi c++fs)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     list(APPEND CORE_LIBS stdc++fs)
-  endif()
-elseif(MSVC)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3 /EHsc /MP")
 endif()
+
+macro(set_build_flags TARGET_NAME)
+    if(UNIX)
+        target_compile_options(${TARGET_NAME} PUBLIC -Werror -O0 -Wall -Wno-unused-function -Wno-unused-parameter -Wextra -Wpedantic)
+        if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+            target_compile_options(${TARGET_NAME} PUBLIC -stdlib=libc++ -Wno-unused-command-line-argument)
+            target_include_directories(${TARGET_NAME} SYSTEM BEFORE PUBLIC /usr/include/c++/v1)
+        elseif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+            target_compile_options(${TARGET_NAME} PUBLIC -fvisibility=hidden -fvisibility-inlines-hidden -Wno-unused-function -ferror-limit=0 -Wno-gnu)
+            target_compile_definitions(${TARGET_NAME} PUBLIC GLM_FORCE_SILENT_WARNINGS)
+        endif()
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        target_compile_options(${TARGET_NAME} PUBLIC /WX /W3 /EHsc /MP)
+    endif()
+endmacro()
 
 file(GLOB EXTERN_SOURCES_CORE
     extern/imgui/imgui.cpp
@@ -152,9 +161,11 @@ if (${VISCOM_USE_SGCT})
     endif()
     add_library(SGCTWrapper ${VISCOM_SGCT_WRAPPER_DIR}/wrapper/sgct_wrapper.cpp)
     set_property(TARGET SGCTWrapper PROPERTY CXX_STANDARD 17)
-    target_include_directories(SGCTWrapper PUBLIC ${VISCOM_SGCT_WRAPPER_DIR}/wrapper ${SGCT_INCLUDE_DIRECTORY})
+    target_include_directories(SGCTWrapper PUBLIC ${VISCOM_SGCT_WRAPPER_DIR}/wrapper)
+    target_include_directories(SGCTWrapper SYSTEM PUBLIC ${SGCT_INCLUDE_DIRECTORY})
     target_link_libraries(SGCTWrapper ${CORE_LIBS})
     target_compile_definitions(SGCTWrapper PUBLIC ${COMPILE_TIME_DEFS})
+    set_build_flags(SGCTWrapper)
 
     list(APPEND CORE_LIBS SGCTWrapper)
     list(APPEND CORE_INCLUDE_DIRS extern/glm ${SGCT_INCLUDE_DIRECTORY})
@@ -174,7 +185,6 @@ else()
 endif()
 
 list(APPEND CORE_INCLUDE_DIRS
-    src
     ${VISCOM_SGCT_WRAPPER_DIR}
     extern/g3log/src
     ${CMAKE_CURRENT_BINARY_DIR}/extern/g3log/include
@@ -223,19 +233,11 @@ endif()
 
 add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${EXTERN_SOURCES_CORE} ${TOP_SRC_FILES_CORE})
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
-target_include_directories(VISCOMCore PUBLIC ${CORE_INCLUDE_DIRS})
-target_link_libraries(VISCOMCore ${CORE_LIBS})
+target_include_directories(VISCOMCore PUBLIC src)
+target_include_directories(VISCOMCore SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
+target_link_libraries(VISCOMCore PUBLIC ${CORE_LIBS})
 target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS})
-
-if(MSVC)
-    target_compile_options(VISCOMCore PUBLIC "/WX")
-else()
-    if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
-      target_compile_options(VISCOMCore PUBLIC "-Wno-gnu")
-      target_compile_definitions(VISCOMCore PUBLIC "GLM_FORCE_SILENT_WARNINGS")
-    endif()
-    target_compile_options(VISCOMCore PUBLIC "-Werror")
-endif()
+set_build_flags(VISCOMCore)
 
 macro(copy_core_lib_dlls APP_NAME)
     if (${VISCOM_USE_TUIO})

@@ -195,6 +195,7 @@ namespace viscom {
 
     void GPUProgram::LoadFromMemory(const void* data, std::size_t size)
     {
+        _unused(size);
         std::unordered_map<std::string, std::string> shaderNameMap;
         std::size_t totalSize = 0;
         auto dataPtr = reinterpret_cast<const std::uint8_t*>(data);
