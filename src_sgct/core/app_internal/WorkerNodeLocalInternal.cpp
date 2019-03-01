@@ -97,7 +97,7 @@ POP_WARNINGS
         ApplicationNodeInternal::Draw2D(fbo);
 
         if constexpr (SHOW_CLIENT_GUI) {
-            fbo.DrawToFBO([this]() {
+            fbo.DrawToFBO([]() {
                 ImGui::Render();
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             });
@@ -109,7 +109,7 @@ POP_WARNINGS
         if constexpr (SHOW_CLIENT_GUI) ImGui_ImplGlfw_KeyCallback(key, scancode, action, mods);
     }
 
-    void WorkerNodeLocalInternal::CharCallback(unsigned int character, int mods)
+    void WorkerNodeLocalInternal::CharCallback(unsigned int character, int)
     {
         if constexpr (SHOW_CLIENT_GUI) ImGui_ImplGlfw_CharCallback(character);
     }
@@ -129,15 +129,15 @@ POP_WARNINGS
         if constexpr (SHOW_CLIENT_GUI) ImGui_ImplGlfw_ScrollCallback(xoffset, yoffset);
     }
 
-    void WorkerNodeLocalInternal::AddTuioCursor(TUIO::TuioCursor* tcur)
+    void WorkerNodeLocalInternal::AddTuioCursor(TUIO::TuioCursor*)
     {
     }
 
-    void WorkerNodeLocalInternal::UpdateTuioCursor(TUIO::TuioCursor* tcur)
+    void WorkerNodeLocalInternal::UpdateTuioCursor(TUIO::TuioCursor*)
     {
     }
 
-    void WorkerNodeLocalInternal::RemoveTuioCursor(TUIO::TuioCursor* tcur)
+    void WorkerNodeLocalInternal::RemoveTuioCursor(TUIO::TuioCursor*)
     {
     }
 
