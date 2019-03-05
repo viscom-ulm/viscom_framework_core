@@ -36,7 +36,7 @@ namespace viscom {
         if (1 != Parse<int>(element->FirstChildElement("cols"))) throw std::runtime_error("Too many columns.");
         std::string dtStr = element->FirstChildElement("dt")->GetText();
         if ("f" != dtStr) throw std::runtime_error("Wrong type.");
-        auto rowsVal = element->FirstChildElement("rows");
+        auto rowsVal = element->FirstChildElement("rows"); _unused(rowsVal);
         result.resize(Parse<size_t>(element->FirstChildElement("rows")));
 
         std::stringstream dataStream(element->FirstChildElement("data")->GetText());

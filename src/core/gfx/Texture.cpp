@@ -19,6 +19,9 @@
 #pragma clang diagnostic pop
 #endif
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
+
 #include "core/FrameworkInternal.h"
 #include "core/resources/ResourceManager.h"
 #include "core/open_gl.h"
