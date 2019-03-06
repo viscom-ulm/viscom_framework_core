@@ -231,6 +231,8 @@ if(TARGET Doxygen::doxygen)
     ## doxygen_add_docs(VISCOMCoreDoc src)
 endif()
 
+list(APPEND CORE_INCLUDE_DIRS extern/openvr/headers)
+
 add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${EXTERN_SOURCES_CORE} ${TOP_SRC_FILES_CORE})
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
 target_include_directories(VISCOMCore PUBLIC src)
