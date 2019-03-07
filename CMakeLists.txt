@@ -47,6 +47,7 @@ set(VISCOM_OPENGL_PROFILE "3.3" CACHE STRING "OpenGL profile version to use.")
 # This could be changed to "off" if the default target doesn't need the tuio library
 set(VISCOM_USE_TUIO ON CACHE BOOL "Use TUIO input library")
 set(VISCOM_TUIO_PORT 3333 CACHE STRING "UDP Port for TUIO to listen on")
+set(VISCOM_USE_OPEN_VR ON CACHE BOOL "Use OpenVR library")
 
 
 # Build-flags.
@@ -231,7 +232,10 @@ if(TARGET Doxygen::doxygen)
     ## doxygen_add_docs(VISCOMCoreDoc src)
 endif()
 
-list(APPEND CORE_INCLUDE_DIRS extern/openvr/headers)
+if (${VISCOM_USE_OPEN_VR})
+    list(APPEND CORE_INCLUDE_DIRS extern/openvr/headers)
+    list(APPEND CORE_LIBS extern/openvr/lib/win64/openvr_api)
+endif()
 
 add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${EXTERN_SOURCES_CORE} ${TOP_SRC_FILES_CORE})
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
