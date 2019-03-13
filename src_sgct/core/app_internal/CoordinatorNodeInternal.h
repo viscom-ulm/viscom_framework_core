@@ -100,6 +100,14 @@ namespace viscom {
             return ApplicationNodeInternal::ControllerButtonTouchReleasedCallback(trackedDeviceId, buttonid, axisvalues);
         }
 
+        bool InitialiseVR() override {
+            return OpenVRController::InitialiseVR();
+        }
+
+        bool InitialiseDisplayVR() override {
+            return OpenVRController::InitialiseDisplayVR();
+        }
+
     protected:
         /** Holds the synchronized object (local). */
         VrSyncedInfo vrInfoLocal_;
