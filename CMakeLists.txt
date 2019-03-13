@@ -236,7 +236,7 @@ set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
 target_include_directories(VISCOMCore PUBLIC src)
 target_include_directories(VISCOMCore SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
 target_link_libraries(VISCOMCore PUBLIC ${CORE_LIBS})
-target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS})
+target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
 set_build_flags(VISCOMCore)
 
 macro(copy_core_lib_dlls APP_NAME)
