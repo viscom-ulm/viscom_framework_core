@@ -11,6 +11,8 @@
 #include "core/app_internal/ApplicationNodeInternal.h"
 #include "core/FrameworkInternal.h"
 
+struct GLFWwindow;
+
 namespace viscom {
 
     class FrameworkInternal;
@@ -213,6 +215,8 @@ namespace viscom {
         ApplicationNodeInternal* GetApplication() const { return appNode_; }
         /** Returns the current window id. */
         std::size_t GetCurrentWindowID() const { return framework_->GetCurrentWindowID(); }
+        /** Returns the main window of the current node (for shared contexts). */
+        GLFWwindow* GetCurrentNodeMainWindow() const { return framework_->GetCurrentNodeMainWindow(); }
         /**
          *  Returns the viewport for the specified window.
          *  @param windowId the window id.

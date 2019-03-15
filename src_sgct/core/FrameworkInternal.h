@@ -19,7 +19,9 @@
 #include "core/gfx/FrameBuffer.h"
 #include "core/CameraHelper.h"
 #include "core/gfx/FullscreenQuad.h"
-#include "sgct/SharedDataTypes.h"
+#include <sgct/SharedDataTypes.h>
+
+struct GLFWwindow;
 
 namespace viscom {
 
@@ -128,6 +130,8 @@ namespace viscom {
         FrameBuffer& GetFramebuffer(std::size_t windowId) { return framebuffers_[windowId]; }
         /** Returns the applications window id. */
         std::size_t GetCurrentWindowID() const;
+        /** Returns the main window of the current node (for shared contexts). */
+        GLFWwindow* GetCurrentNodeMainWindow() const;
         /**
          *  Returns the viewport for the specified window.
          *  @param windowId the window id.

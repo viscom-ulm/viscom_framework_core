@@ -510,6 +510,11 @@ POP_WARNINGS
         return static_cast<std::size_t>(engine_->getCurrentWindowPtr()->getId());
     }
 
+    GLFWwindow* FrameworkInternal::GetCurrentNodeMainWindow() const
+    {
+        return engine_->getThisNodePtr(0)->getWindowPtr(0)->getWindowHandle();
+    }
+
     void FrameworkInternal::Terminate() const
     {
         engine_->terminate();
