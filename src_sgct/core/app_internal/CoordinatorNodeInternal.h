@@ -101,11 +101,43 @@ namespace viscom {
         }
 
         bool InitialiseVR() override {
-            return OpenVRController::InitialiseVR();
+            return ovr::OpenVRController::InitialiseVR();
         }
 
         bool InitialiseDisplayVR() override {
-            return OpenVRController::InitialiseDisplayVR();
+            return ovr::OpenVRController::InitialiseDisplayVR();
+        }
+
+        bool CalibrateVR(ovr::CalibrateMethod method) override {
+            return ovr::OpenVRController::CalibrateVR(method);
+        }
+
+        const std::vector<ovr::DeviceInfo>& GetConnectedDevices() const override {
+            return ovr::OpenVRController::GetConnectedDevices();
+        }
+
+        const glm::vec3& GetControllerPosition(std::uint32_t trackedDeviceId) const override {
+            return ovr::OpenVRController::GetControllerPosition(trackedDeviceId);
+        }
+
+        const glm::vec3& GetControllerDirection(std::uint32_t trackedDeviceId) const override {
+            return ovr::OpenVRController::GetControllerDirection(trackedDeviceId);
+        }
+
+        const glm::quat& GetControllerOrientation(std::uint32_t trackedDeviceId) const override {
+            return ovr::OpenVRController::GetControllerOrientation(trackedDeviceId);
+        }
+
+        const glm::vec2& GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const override {
+            return ovr::OpenVRController::GetDisplayPointerPosition(trackedDeviceId);
+        }
+
+        void GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ovr::ButtonState& buttonstate) const override {
+            return ovr::OpenVRController::GetControllerButtonState(trackedDeviceId, buttonid, axisvalues, buttonstate);
+        }
+
+        std::vector<std::string> OutputDevices() const override {
+            return ovr::OpenVRController::OutputDevices();
         }
 
     protected:
