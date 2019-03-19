@@ -10,6 +10,7 @@
 
 #include <openvr.h>
 #include <fstream>
+#include <windows.h>
 
 #include "DisplayPointerCalibrationController.h"
 
@@ -17,7 +18,13 @@
 #include <sgct_wrapper.h>
 #endif
 
+//#define MOCKING
+
 namespace viscom::ovr {
+
+#ifdef MOCKING
+    static glm::vec2 value;
+#endif
 
     OpenVRController::OpenVRController()
     {
@@ -123,7 +130,17 @@ namespace viscom::ovr {
     const glm::vec2& OpenVRController::GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const
     {
         LOG(G3LOG_DEBUG) << "GetDisplayPointerPosition called.";
+
+#ifndef MOCKING
         return controllerDisplayPositions_[trackedDeviceId];
+#endif
+
+#ifdef MOCKING
+        double time = 0.001 * GetTickCount();
+        value = glm::vec2(0.5 * sin(0.3 * time) + 0.5, 0.5 * cos(time) + 0.5);
+    
+        return value;
+#endif
     }
 
     void OpenVRController::GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate) const
