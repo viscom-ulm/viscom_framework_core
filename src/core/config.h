@@ -60,6 +60,8 @@ namespace viscom {
         std::vector<std::string> resourceSearchPaths_;
         /** Defines the OpenGL Version. */
         std::string openglProfile_;
+        /** A prefix for the shader search path in the resource directory. */
+        std::string shaderSearchPrefix = "shader";
     };
 
     /**

@@ -217,7 +217,7 @@ namespace viscom {
      */
     std::string Shader::LoadShaderFile(const std::string& filename, const std::vector<std::string>& defines, const FrameworkInternal* node)
     {
-        auto fullFilename = Resource::FindResourceLocation("shader/" + filename, node);
+        auto fullFilename = Resource::FindResourceLocation(node->GetConfig().shaderSearchPrefix + "/" + filename, node);
         unsigned int fileId{ 0 };
         std::string relativeParentPath = "";
 
