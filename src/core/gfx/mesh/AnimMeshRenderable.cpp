@@ -21,6 +21,13 @@
 
 namespace viscom {
 
+    /**
+     *  Constructor of AnimationState.
+     *  @param mesh the mesh containing animation data.
+     *  @param mappings the animation mapping to use.
+     *  @param startingAnimationIndex the starting index of the animation.
+     *  @param isRepeating whether the animation should be repeating.
+     */
     AnimationState::AnimationState(const Mesh* mesh, const SubAnimationMapping& mappings, std::size_t startingAnimationIndex, bool isRepeating) :
         mesh_{ mesh },
         animationIndex_{ startingAnimationIndex },
@@ -42,6 +49,10 @@ namespace viscom {
 
     }
 
+    /**
+     *  Starts animation playback (again).
+     *  @param currentTime the current timestamp.
+     */
     void AnimationState::Play(double currentTime)
     {
         isPlaying_ = true;
@@ -50,6 +61,10 @@ namespace viscom {
         pauseTime_ = 0.0f;
     }
 
+    /**
+     *  Updates the animation state.
+     *  @param currentTime the current timestamp.
+     */
     bool AnimationState::UpdateTime(double currentTime)
     {
         if (!isPlaying_) return false;
@@ -84,6 +99,9 @@ namespace viscom {
         return didAnimationStopOrRepeat;
     }
 
+    /**
+     *  Computes the final bone poses for an animation.
+     */
     void AnimationState::ComputeAnimationsFinalBonePoses()
     {
         const auto& currentAnimation = animations_[animationIndex_];

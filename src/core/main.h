@@ -141,5 +141,6 @@ _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
 #define POP_WARNINGS _Pragma("clang diagnostic pop")
 #endif
 
+/** Macro to mark unused parameters. */
 #define _unused(x) ((void)(x))
 

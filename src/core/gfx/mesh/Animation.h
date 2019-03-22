@@ -44,11 +44,24 @@ namespace viscom {
     {
         AnimationInfo() = default;
 
+        /**
+         *  Constructor taking start, end and playback time.
+         *  @param start the start time of the animation.
+         *  @param end the end time of the animation.
+         *  @param playback the playback time (speed) of the animation.
+         */
         AnimationInfo(float start, float end, float playback = 1.0f)
             : startTime_{ start }, endTime_{ end }, playbackSpeed_{ playback }
         {
         }
 
+        /**
+         *  Constructor taking start, end and playback time and an index if multiple animations are present.
+         *  @param animationIndex animation index if multiple animations are present.
+         *  @param start the start time of the animation.
+         *  @param end the end time of the animation.
+         *  @param playback the playback time (speed) of the animation.
+         */
         AnimationInfo(std::size_t animationIndex, float start, float end, float playback = 1.0f)
             : animationIndex_{animationIndex}, startTime_ { start }, endTime_{ end }, playbackSpeed_{ playback }
         {

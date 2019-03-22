@@ -28,7 +28,6 @@ namespace viscom {
      *  Takes an assimp animation and converts the data into our data-structure.
      * 
      *  @param aiAnimation Assimp animation
-     *  @param boneNameToOffset Mapping between bone/node-names to offsets
      */
     Animation::Animation(aiAnimation* aiAnimation)
         : framesPerSecond_{aiAnimation->mTicksPerSecond > 0.0 ? static_cast<float>(aiAnimation->mTicksPerSecond)
@@ -64,6 +63,11 @@ namespace viscom {
         }
     }
 
+    /**
+     *  Flattens the node hierarchy for animation channels.
+     *  @param numNodes the number of nodes in the mesh.
+     *  @param nodeNamesMap the mapping from node names to node indices.
+     */
     void Animation::FlattenHierarchy(std::size_t numNodes, const std::map<std::string, std::size_t>& nodeNamesMap)
     {
         channels_.resize(numNodes);
@@ -74,15 +78,6 @@ namespace viscom {
                 channels_[node.second] = channelMap_[node.first];
             }
         }
-        // auto newBoneOffset = nodeNameToOffset.find(aiChannel->mNodeName.C_Str());
-        // if (newBoneOffset == nodeNameToOffset.end()) {
-        //     LOG(WARNING) << "Channel name not in node list!";
-        //     continue;
-        // }
-
-            // auto nodeOffsetFromName = nodeNameToOffset.at(aiChannel->mNodeName.C_Str());
-            // 
-            // channels_[nodeOffsetFromName] = channel;
 
         channelMap_.clear();
     }

@@ -53,9 +53,9 @@ namespace viscom {
         /** TUIO port for touch screen. */
         int tuioPort_ = 3333;
         /** Virtual size of the screen. If only one screen exists the virtual screen size is the actual size of this screen. */
-        glm::vec2 virtualScreenSize_;
+        glm::vec2 virtualScreenSize_ = glm::vec2{ 0.0f };
         /** Relative size of the near plane. Y is always 1.0 while X is set to match the screens aspect ratio. */
-        glm::vec2 nearPlaneSize_;
+        glm::vec2 nearPlaneSize_ = glm::vec2{ 0.0f };
         /** All paths that should be searched in for resource loading. */
         std::vector<std::string> resourceSearchPaths_;
         /** Defines the OpenGL Version. */
