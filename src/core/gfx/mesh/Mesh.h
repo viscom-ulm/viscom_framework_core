@@ -85,6 +85,8 @@ namespace viscom {
         /** Returns the OpenGL index buffer. */
         GLuint GetIndexBuffer() const noexcept { return indexBuffer_; }
 
+        /** Returns the number of animations this mesh has. */
+        std::size_t GetNumAnimations() const { return animations_.size(); }
         /**
          *  Returns an animation of the mesh.
          *  @param animationIndex index of the animation to return.
