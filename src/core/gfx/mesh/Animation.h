@@ -45,13 +45,27 @@ namespace viscom {
         AnimationInfo() = default;
 
         /**
-         *  Constructor taking start, end and playback time.
+         *  Constructor taking start, end and playback time and an index if multiple animations are present.
+         *  @param name name for the animation (used for introspection only).
+         *  @param animationIndex animation index if multiple animations are present.
          *  @param start the start time of the animation.
          *  @param end the end time of the animation.
          *  @param playback the playback time (speed) of the animation.
          */
-        AnimationInfo(float start, float end, float playback = 1.0f)
-            : startTime_{ start }, endTime_{ end }, playbackSpeed_{ playback }
+        AnimationInfo(const std::string& name, std::size_t animationIndex, float start, float end, float playback = 1.0f)
+            : name_{ name }, animationIndex_ { animationIndex }, startTime_{ start }, endTime_{ end }, playbackSpeed_{ playback }
+        {
+        }
+
+        /**
+         *  Constructor taking start, end and playback time.
+         *  @param name name for the animation (used for introspection only).
+         *  @param start the start time of the animation.
+         *  @param end the end time of the animation.
+         *  @param playback the playback time (speed) of the animation.
+         */
+        AnimationInfo(const std::string& name, float start, float end, float playback = 1.0f)
+            : AnimationInfo{name, 0, start, end, playback }
         {
         }
 
@@ -63,10 +77,23 @@ namespace viscom {
          *  @param playback the playback time (speed) of the animation.
          */
         AnimationInfo(std::size_t animationIndex, float start, float end, float playback = 1.0f)
-            : animationIndex_{animationIndex}, startTime_ { start }, endTime_{ end }, playbackSpeed_{ playback }
+            : AnimationInfo{ "", animationIndex, start, end, playback }
         {
         }
 
+        /**
+         *  Constructor taking start, end and playback time.
+         *  @param start the start time of the animation.
+         *  @param end the end time of the animation.
+         *  @param playback the playback time (speed) of the animation.
+         */
+        AnimationInfo(float start, float end, float playback = 1.0f)
+            : AnimationInfo{ "", 0, start, end, playback }
+        {
+        }
+
+        /** Holds the animations name. */
+        std::string name_;
         /** Index of the animation. */
         std::size_t animationIndex_ = 0;
         /** Start time of the animation. */
@@ -97,8 +124,10 @@ namespace viscom {
         float GetFramesPerSecond() const;
         /** Returns the duration of the animation in seconds. */
         float GetDuration() const;
+        /** Returns the animations name. */
+        const std::string& GetName() const { return name_; }
 
-        Animation GetSubSequence(Time start, Time end) const;
+        Animation GetSubSequence(const std::string& name, Time start, Time end) const;
 
         bool ComputePoseAtTime(std::size_t id, Time time, glm::mat4& pose) const;
 
@@ -115,8 +144,10 @@ namespace viscom {
 
     private:
         /** Defines the type of the VersionableSerializer for the animation class. */
-        using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'A', 'N', 'M', 1001>;
+        using VersionableSerializerType = serializeHelper::VersionableSerializer<'V', 'A', 'N', 'M', 1002>;
 
+        /** Holds the animations name. */
+        std::string name_;
         /** Holds the channels during loading. */
         std::map<std::string, Channel> channelMap_;
         /** Holds the channels (position, rotation, scaling) for each node. */

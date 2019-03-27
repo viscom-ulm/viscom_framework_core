@@ -29,7 +29,7 @@ namespace viscom {
         skinned_.resize(mesh_->GetNumberOfBones());
 
         for (const auto& mapping : mappings) {
-            animations_.emplace_back(mesh_->GetAnimation(mapping.animationIndex_)->GetSubSequence(mapping.startTime_, mapping.endTime_));
+            animations_.emplace_back(mesh_->GetAnimation(mapping.animationIndex_)->GetSubSequence(mapping.name_, mapping.startTime_, mapping.endTime_));
             animationPlaybackSpeed_.emplace_back(mapping.playbackSpeed_);
         }
 
