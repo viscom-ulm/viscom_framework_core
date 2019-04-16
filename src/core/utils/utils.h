@@ -10,6 +10,7 @@
 
 #include <cstring>
 #include <string>
+#include <sstream>
 #include <future>
 #include <vector>
 
@@ -91,12 +92,12 @@ namespace viscom {
          *  @param s the string to split.
          *  @param delim the delimitation character.
          */
-        static std::vector<std::string> split(const std::string &s, char delim) {
+        static std::vector<std::string> split(const std::string& s, char delim) {
             std::stringstream ss(s);
             std::string item;
             std::vector<std::string> tokens;
-            while (getline(ss, item, delim)) {
-                tokens.push_back(item);
+            while (std::getline(ss, item, delim)) {
+                tokens.emplace_back(item);
             }
             return tokens;
         }

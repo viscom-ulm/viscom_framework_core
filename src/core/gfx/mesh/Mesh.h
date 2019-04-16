@@ -44,8 +44,9 @@ namespace viscom {
         /**
          *  Initializes the mesh by setting the force generating normals flag.
          *  @param forceGenNormals force generating normals.
+         *  @param flipTextures flips the textures on load.
          */
-        void Initialize(bool forceGenNormals = false);
+        void Initialize(bool forceGenNormals = false, bool flipTextures = true);
 
         /**
          *  Accessor to the meshes sub-meshes. This can be used to render more complicated meshes (with multiple sets
@@ -244,5 +245,7 @@ namespace viscom {
 
         /** Holds the OpenGL index buffer. */
         GLuint indexBuffer_;
+        /** Flip the textures on load. */
+        bool flipTextures_ = true;
     };
 }

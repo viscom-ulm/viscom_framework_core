@@ -62,9 +62,10 @@ namespace viscom {
         }
     }
 
-    void Texture::Initialize(bool useSRGB)
+    void Texture::Initialize(bool useSRGB, bool flipTexture)
     {
         sRGB_ = useSRGB;
+        flipTexture_ = flipTexture;
         InitializeFinished();
     }
 
@@ -72,7 +73,8 @@ namespace viscom {
     {
         auto fullFilename = FindResourceLocation(GetId());
 
-        stbi_set_flip_vertically_on_load(1);
+        if (flipTexture_) stbi_set_flip_vertically_on_load(1);
+        else stbi_set_flip_vertically_on_load(0);
 
         std::pair<void*, std::size_t> image = std::make_pair(nullptr, 0);
         if (stbi_is_hdr(fullFilename.c_str()) != 0) image = LoadImageHDR(fullFilename);

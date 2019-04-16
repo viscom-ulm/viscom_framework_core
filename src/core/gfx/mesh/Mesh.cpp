@@ -66,9 +66,10 @@ namespace viscom {
         indexBuffer_ = 0;
     }
 
-    void Mesh::Initialize(bool forceGenNormals)
+    void Mesh::Initialize(bool forceGenNormals, bool flipTextures)
     {
         forceGenNormals_ = forceGenNormals;
+        flipTextures_ = flipTextures;
         InitializeFinished();
     }
 
@@ -337,7 +338,7 @@ namespace viscom {
 #else
         auto fullTexFilename = filename_.substr(0, filename_.find_last_of('/') + 1) + relFilename;
 #endif
-        std::shared_ptr<const Texture> texture = node->GetTextureManager().GetResource(fullTexFilename);
+        std::shared_ptr<const Texture> texture = node->GetTextureManager().GetResource(fullTexFilename, true, flipTextures_);
 
         glBindTexture(GL_TEXTURE_2D, texture->getTextureId());
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
