@@ -82,6 +82,14 @@ namespace viscom {
         return glm::vec3(postProjPos) / postProjPos.w;
     }
 
+    glm::mat4 CameraHelper::GetLocalCoordMatrix() const
+    {
+        glm::mat4 localCoordMatrix = glm::mat4(1.0f);
+        localCoordMatrix[0][0] = 9.0f / 16.0f; // TODO: Devide by the actual screen ratio
+
+        return localCoordMatrix;
+    }
+
 #undef near
 #undef far
 
