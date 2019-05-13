@@ -129,17 +129,17 @@ POP_WARNINGS
 
     void ApplicationNodeInternal::DataTransfer(void* receivedData, int receivedLength, std::uint16_t packageID, int clientID)
     {
-        appNodeImpl_->DataTransferCallback(receivedData, receivedLength, packageID, clientID);
+        if (this != nullptr && appNodeImpl_) appNodeImpl_->DataTransferCallback(receivedData, receivedLength, packageID, clientID);
     }
 
     void ApplicationNodeInternal::DataAcknowledge(std::uint16_t packageID, int clientID)
     {
-        appNodeImpl_->DataAcknowledgeCallback(packageID, clientID);
+        if (this != nullptr && appNodeImpl_) appNodeImpl_->DataAcknowledgeCallback(packageID, clientID);
     }
 
     void ApplicationNodeInternal::DataTransferStatus(bool connected, int clientID)
     {
-        appNodeImpl_->DataTransferStatusCallback(connected, clientID);
+        if (this != nullptr && appNodeImpl_) appNodeImpl_->DataTransferStatusCallback(connected, clientID);
     }
 
     void ApplicationNodeInternal::EncodeData()

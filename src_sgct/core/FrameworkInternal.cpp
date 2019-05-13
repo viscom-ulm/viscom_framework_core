@@ -246,7 +246,7 @@ POP_WARNINGS
 
     void FrameworkInternal::BaseKeyboardCallback(int key, int scancode, int action, int mods)
     {
-        if (!initialized_) return;
+        if (!initialized_ || !appNodeInternal_) return;
         keyPressedState_[key] = (action == GLFW_RELEASE) ? false : true;
 
         appNodeInternal_->KeyboardCallback(key, scancode, action, mods);
@@ -254,14 +254,14 @@ POP_WARNINGS
 
     void FrameworkInternal::BaseCharCallback(unsigned int character, int mods)
     {
-        if (!initialized_) return;
+        if (!initialized_ || !appNodeInternal_) return;
 
         appNodeInternal_->CharCallback(character, mods);
     }
 
     void FrameworkInternal::BaseMouseButtonCallback(int button, int action)
     {
-        if (!initialized_) return;
+        if (!initialized_ || !appNodeInternal_) return;
         mousePressedState_[button] = (action == GLFW_RELEASE) ? false : true;
 
         appNodeInternal_->MouseButtonCallback(button, action);
@@ -269,7 +269,7 @@ POP_WARNINGS
 
     void FrameworkInternal::BaseMousePosCallback(double x, double y)
     {
-        if (!initialized_) return;
+        if (!initialized_ || !appNodeInternal_) return;
         auto mousePos = ConvertInputCoordinatesLocalToGlobal(glm::dvec2(x, y));
         mousePosition_ = glm::vec2(mousePos.x, mousePos.y);
         mousePositionNormalized_.x = (2.0f * mousePosition_.x - 1.0f);
@@ -280,13 +280,13 @@ POP_WARNINGS
 
     void FrameworkInternal::BaseMouseScrollCallback(double xoffset, double yoffset)
     {
-        if (!initialized_) return;
+        if (!initialized_ || !appNodeInternal_) return;
         appNodeInternal_->MouseScrollCallback(xoffset, yoffset);
     }
 
     void FrameworkInternal::BaseDataTransferCallback(void* receivedData, int receivedLength, int packageID, int clientID)
     {
-        if (!initialized_) return;
+        if (!initialized_ || !appNodeInternal_) return;
         auto splitID = reinterpret_cast<std::uint16_t*>(&packageID);
 
         if (splitID[0] == static_cast<std::uint16_t>(InternalTransferTypeLarge::UserData)) {
@@ -312,7 +312,7 @@ POP_WARNINGS
 
     void FrameworkInternal::BaseDataAcknowledgeCallback(int packageID, int clientID)
     {
-        if (!initialized_) return;
+        if (!initialized_ || !appNodeInternal_) return;
         auto splitID = reinterpret_cast<std::uint16_t*>(&packageID);
 
         if (splitID[0] == static_cast<std::uint16_t>(-1)) appNodeInternal_->DataAcknowledge(splitID[1], clientID);
@@ -332,7 +332,7 @@ POP_WARNINGS
 
     void FrameworkInternal::BaseDataTransferStatusCallback(bool connected, int clientID)
     {
-        if (!initialized_) return;
+        if (!initialized_ || !appNodeInternal_) return;
         appNodeInternal_->DataTransferStatus(connected, clientID);
     }
 

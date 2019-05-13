@@ -48,7 +48,12 @@ namespace viscom {
         /** Checks whether the animation is repeating. */
         bool IsRepeating() const { return isRepeating_; }
 
+        /** Updates the current time. */
         bool UpdateTime(double currentTime);
+        /** Sets the current play time (internal animation time). */
+        void SetCurrentPlayTime(float currentPlayTime) { currentPlayTime_ = currentPlayTime; }
+        /** Sets the current relative frame (internal animation time relative to the duration). */
+        void SetCurrentFrameRelative(float relativeFrame) { currentPlayTime_ = relativeFrame * GetDuration(); }
         void ComputeAnimationsFinalBonePoses();
 
         /**
