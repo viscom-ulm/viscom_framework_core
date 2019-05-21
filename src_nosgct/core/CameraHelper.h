@@ -80,11 +80,11 @@ namespace viscom {
         glm::vec3 GetPickPosition(const glm::vec2& globalScreenCoords) const;
 
         /** Returns the matrix to calculate local coordinates from global ones. */
-        glm::mat4 GetLocalCoordMatrix() const;
+        glm::mat4 GetLocalCoordMatrix(float nearPlaneRatio) const;
 
-        /** Returns the cameras near plane. */
+        /** Returns the camera's near plane. */
         inline float GetNearPlane() const { return nearPlane_; }
-        /** Returns the cameras far plane. */
+        /** Returns the camera's far plane. */
         inline float GetFarPlane() const { return farPlane_; }
         /**
          *  Sets the near and far plane values;
