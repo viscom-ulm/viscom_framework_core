@@ -103,6 +103,11 @@ namespace viscom {
          *  @param materialIndex index of the material to return the texture from.
          */
         const MaterialTextures* GetMaterialTexture(std::size_t materialIndex) const { return &materialTextures_[materialIndex]; }
+        /**
+         *  Returns a material texture of the mesh.
+         *  @param materialIndex index of the material to return the texture from.
+         */
+        MaterialTextures* GetMaterialTexture(std::size_t materialIndex) { return &materialTextures_[materialIndex]; }
 
         /** Returns the offset matrices for all bones. */
         const std::vector<glm::mat4>& GetInverseBindPoseMatrices() const noexcept { return inverseBindPoseMatrices_; }
