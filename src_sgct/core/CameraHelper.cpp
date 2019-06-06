@@ -84,14 +84,14 @@ namespace viscom {
         return glm::vec3(postProjPos) / postProjPos.w;
     }
 
-    glm::mat4 CameraHelper::GetLocalCoordMatrix(float nearPlaneRatio) const
+    glm::mat4 CameraHelper::GetLocalCoordMatrix() const
     {
         // to local screen coordinates.
         auto& localProps = localCoordsMatrices_[engine_->getCurrentWindowPtr()->getId()];
 
         glm::mat4 localCoordMatrix = glm::mat4(1.0f);
-        localCoordMatrix[0][0] = 0.5f / nearPlaneRatio;
-        localCoordMatrix[1][1] = 1.0f / 2.0f;
+        localCoordMatrix[0][0] = 0.5f;
+        localCoordMatrix[1][1] = 0.5f;
         localCoordMatrix[3][0] = 0.5f;
         localCoordMatrix[3][1] = 0.5f;
         localCoordMatrix = localProps.first * localCoordMatrix;
