@@ -18,6 +18,8 @@
 #include <sgct_wrapper.h>
 #endif
 
+#include <iostream>
+
 //#define MOCKING
 
 namespace viscom::ovr {
@@ -287,7 +289,7 @@ namespace viscom::ovr {
         {
             //TODO: make uni-controller conform -->?????
             if (calibration_ && event.data.controller.button == vr::k_EButton_SteamVR_Trigger) {
-                calibration_->DoNextCalibrationStep();
+                calibration_->DoNextCalibrationStep(event.trackedDeviceIndex);
                 if (calibration_->IsFinished()) {
                     displayPlane_ = calibration_->GetDisplayPlane();
                     calibration_ = nullptr;

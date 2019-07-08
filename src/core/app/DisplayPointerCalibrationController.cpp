@@ -13,21 +13,10 @@
 
 namespace viscom::ovr {
 
-    void viscom::ovr::CalibrationController::DoNextCalibrationStep()
+    void viscom::ovr::CalibrationController::DoNextCalibrationStep(std::uint32_t unDevice)
     {
-
-        for (vr::TrackedDeviceIndex_t unDevice = 0; unDevice < vr::k_unMaxTrackedDeviceCount; unDevice++) {
-            // if not connected just skip the rest of the routine
-            if (!vr::VRSystem()->IsTrackedDeviceConnected(unDevice)) continue;
-
             vr::TrackedDevicePose_t trackedDevicePose;
             vr::VRControllerState_t controllerState;
-
-            vr::ETrackedDeviceClass trackedDeviceClass = vr::VRSystem()->GetTrackedDeviceClass(unDevice);
-            if (trackedDeviceClass != vr::TrackedDeviceClass_Controller) continue;
-
-            auto controllerRole = vr::VRSystem()->GetControllerRoleForTrackedDeviceIndex(unDevice);
-            if (controllerRole != vr::TrackedControllerRole_LeftHand) continue;
 
             vr::VRSystem()->GetControllerStateWithPose(vr::TrackingUniverseStanding, unDevice, &controllerState, sizeof(controllerState), &trackedDevicePose);
             auto position = GetPositionFromHmdMatrix34(trackedDevicePose.mDeviceToAbsoluteTracking);
@@ -56,7 +45,6 @@ namespace viscom::ovr {
             }
 
             return;
-        }
     }
 
     void CalibrationController::DisplayCalibrationGUI() const
@@ -72,7 +60,8 @@ namespace viscom::ovr {
                 if (calibratedPositions_.empty()) ImGui::Text("Point at the lower left corner and press the trigger.");
                 if (calibratedPositions_.size() == 1) ImGui::Text("Point at the lower right corner and press the trigger.");
                 if (calibratedPositions_.size() == 2) ImGui::Text("Point at the upper left corner and press the trigger.");
-            } else  {
+            }
+            else {
                 if (calibratedPositions_.empty()) ImGui::Text("Touch the lower left corner and press the trigger.");
                 if (calibratedPositions_.size() == 1) ImGui::Text("Touch the lower right corner and press the trigger.");
                 if (calibratedPositions_.size() == 2) ImGui::Text("Touch the upper left corner and press the trigger.");

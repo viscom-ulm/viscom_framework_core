@@ -20,7 +20,7 @@ namespace viscom::ovr {
 
         void DisplayCalibrationGUI() const;
         bool IsFinished() { return calibratedPositions_.size() >= 3; }
-        void DoNextCalibrationStep();
+        void DoNextCalibrationStep(std::uint32_t unDevice);
 
         DisplayPlane GetDisplayPlane() const;
 
