@@ -153,11 +153,25 @@ namespace viscom::ovr {
         vr::VRControllerState_t controllerState;
         vr::VRSystem()->GetControllerState(trackedDeviceId, &controllerState, sizeof(vr::VRControllerState_t));
 
-        axisvalues.x = controllerState.rAxis->x;
-        axisvalues.y = controllerState.rAxis->y;
-        if (1 == ((controllerState.ulButtonPressed >> buttonid) & 1)) buttonstate = ButtonState::PRESSED;
-        if (1 == ((controllerState.ulButtonPressed >> buttonid) & 1)) buttonstate = ButtonState::TOUCHED;
-        if (!(1 == ((controllerState.ulButtonPressed >> buttonid) & 1) && !(1 == ((controllerState.ulButtonTouched >> buttonid) & 1)))) buttonstate = ButtonState::RELEASED;
+        auto pressed = controllerState.ulButtonPressed;
+        auto touched = controllerState.ulButtonTouched;
+
+        if (buttonid == 32) {
+            axisvalues.x = controllerState.rAxis[0].x;
+            axisvalues.y = controllerState.rAxis[0].y;
+        }
+        else if (buttonid == 33) {
+            axisvalues.x = controllerState.rAxis[1].x;
+            axisvalues.y = controllerState.rAxis[1].y;
+        }
+        else {
+            axisvalues.x = 0.0f;
+            axisvalues.y = 0.0f;
+        }
+
+        buttonstate = ButtonState::RELEASED;
+        if (((touched >> buttonid) & 1) == 1) buttonstate = ButtonState::TOUCHED;
+        if (((pressed >> buttonid) & 1) == 1) buttonstate = ButtonState::PRESSED;
     }
 
     /**
