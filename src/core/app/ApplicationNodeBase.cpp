@@ -126,22 +126,22 @@ namespace viscom {
         framework_->Terminate();
     }
     
-    bool ApplicationNodeBase::ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues)
+    bool ApplicationNodeBase::ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues)
+    bool ApplicationNodeBase::ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues)
+    bool ApplicationNodeBase::ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid)
     {
         return false;
     }
 
-    bool ApplicationNodeBase::ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues)
+    bool ApplicationNodeBase::ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid)
     {
         return false;
     }

@@ -156,6 +156,21 @@ namespace viscom::ovr {
         auto pressed = controllerState.ulButtonPressed;
         auto touched = controllerState.ulButtonTouched;
 
+
+        int triggerID = 0;
+        int trackPadID = 0;
+
+        for (int i = 0; i < vr::k_unControllerStateAxisCount; i++)
+        {
+            int deviceProperty = pHMD_->GetInt32TrackedDeviceProperty(trackedDeviceId, (vr::ETrackedDeviceProperty)(vr::Prop_Axis0Type_Int32 + i));
+
+            if (deviceProperty == vr::k_eControllerAxis_Trigger)
+                triggerID = i;
+            else if (deviceProperty == vr::k_eControllerAxis_TrackPad)
+                trackPadID = i;
+        }
+
+
         if (buttonid == 32) {
             axisvalues.x = controllerState.rAxis[0].x;
             axisvalues.y = controllerState.rAxis[0].y;
@@ -297,6 +312,7 @@ namespace viscom::ovr {
     bool OpenVRController::ProcessVREvent(const vr::VREvent_t& event)
     {
         LOG(INFO) << "ProcessVREvent called on Coordinator.";
+
         switch (event.eventType)
         {
         case vr::VREvent_ButtonPress:
@@ -309,20 +325,20 @@ namespace viscom::ovr {
                     calibration_ = nullptr;
                     WriteCalibrationToFile();
                 }
-            } else ControllerButtonPressedCallback(event.trackedDeviceIndex, event.data.controller.button, glm::vec2(event.data.dualAnalog.x, event.data.dualAnalog.y));
+            } else ControllerButtonPressedCallback(event.trackedDeviceIndex, event.data.controller.button);
         }
         break;
 
         case vr::VREvent_ButtonTouch:
-            ControllerButtonTouchedCallback(event.trackedDeviceIndex, event.data.controller.button, glm::vec2(event.data.dualAnalog.x, event.data.dualAnalog.y));
+            ControllerButtonTouchedCallback(event.trackedDeviceIndex, event.data.controller.button);
             break;
 
         case vr::VREvent_ButtonUnpress:
-            ControllerButtonPressReleasedCallback(event.trackedDeviceIndex, event.data.controller.button, glm::vec2(event.data.dualAnalog.x, event.data.dualAnalog.y));
+            ControllerButtonPressReleasedCallback(event.trackedDeviceIndex, event.data.controller.button);
             break;
 
         case vr::VREvent_ButtonUntouch:
-            ControllerButtonTouchReleasedCallback(event.trackedDeviceIndex, event.data.controller.button, glm::vec2(event.data.dualAnalog.x, event.data.dualAnalog.y));
+            ControllerButtonTouchReleasedCallback(event.trackedDeviceIndex, event.data.controller.button);
             break;
 
         case (vr::VREvent_Quit):

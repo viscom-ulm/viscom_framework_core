@@ -148,10 +148,10 @@ namespace viscom {
         virtual const glm::quat& GetControllerOrientation(std::uint32_t trackedDeviceId) const override;
         virtual const glm::vec2& GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const override;
 
-        virtual bool ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
-        virtual bool ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
-        virtual bool ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
-        virtual bool ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
+        virtual bool ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override;
+        virtual bool ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override;
+        virtual bool ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override;
+        virtual bool ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override;
 
         virtual void GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ovr::ButtonState& buttonstate) const override;
         virtual std::vector<std::string> OutputDevices() const override;

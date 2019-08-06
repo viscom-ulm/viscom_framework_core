@@ -129,10 +129,10 @@ namespace viscom {
          */
         void removeTuioCursor(TUIO::TuioCursor *tcur) override;
 
-        virtual bool ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
-        virtual bool ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
-        virtual bool ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
-        virtual bool ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues) override;
+        virtual bool ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override;
+        virtual bool ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override;
+        virtual bool ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override;
+        virtual bool ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override;
 
         /** Returns the current application time. */
         double GetCurrentAppTime() const { return currentTime_; }

@@ -165,24 +165,24 @@ POP_WARNINGS
         }
     }
 
-    bool ApplicationNodeInternal::ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues)
+    bool ApplicationNodeInternal::ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid)
     {
-        return appNodeImpl_->ControllerButtonPressedCallback(trackedDeviceId, buttonid, axisvalues);
+        return appNodeImpl_->ControllerButtonPressedCallback(trackedDeviceId, buttonid);
     }
 
-    bool ApplicationNodeInternal::ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues)
+    bool ApplicationNodeInternal::ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid)
     {
-        return appNodeImpl_->ControllerButtonTouchedCallback(trackedDeviceId, buttonid, axisvalues);
+        return appNodeImpl_->ControllerButtonTouchedCallback(trackedDeviceId, buttonid);
     }
 
-    bool ApplicationNodeInternal::ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues)
+    bool ApplicationNodeInternal::ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid)
     {
-        return appNodeImpl_->ControllerButtonPressReleasedCallback(trackedDeviceId, buttonid, axisvalues);
+        return appNodeImpl_->ControllerButtonPressReleasedCallback(trackedDeviceId, buttonid);
     }
 
-    bool ApplicationNodeInternal::ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid, const glm::vec2& axisvalues)
+    bool ApplicationNodeInternal::ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid)
     {
-        return appNodeImpl_->ControllerButtonTouchReleasedCallback(trackedDeviceId, buttonid, axisvalues);
+        return appNodeImpl_->ControllerButtonTouchReleasedCallback(trackedDeviceId, buttonid);
     }
 
 }
