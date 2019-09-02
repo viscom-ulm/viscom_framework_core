@@ -103,6 +103,12 @@ namespace viscom {
         return localCoordMatrix;
     }
 
+    glm::ivec2 CameraHelper::GetGlobalScreenSize() const
+    {
+        auto& localProps = localCoordsMatrices_[engine_->getCurrentWindowPtr()->getId()];
+        return glm::ivec2(localProps.first[0][0], localProps.first[1][1]);
+    }
+
     float CameraHelper::GetNearPlane() const
     {
         return engine_->getNearClippingPlane();

@@ -147,7 +147,7 @@ namespace viscom::ovr {
 
     void OpenVRController::GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate) const
     {
-        LOG(G3LOG_DEBUG) << "GetControllerButtonState called.";
+        //LOG(G3LOG_DEBUG) << "GetControllerButtonState called.";
         if (!pHMD_) return;
 
         vr::VRControllerState_t controllerState;

@@ -84,6 +84,9 @@ namespace viscom {
         /** Returns the matrix to calculate local coordinates from global ones. */
         glm::mat4 GetLocalCoordMatrix() const;
 
+        /** Returns the size of the global screen. **/
+        glm::ivec2 GetGlobalScreenSize() const;
+
         /** Returns the camera's near plane. */
         float GetNearPlane() const;
         /** Returns the camera's far plane. */

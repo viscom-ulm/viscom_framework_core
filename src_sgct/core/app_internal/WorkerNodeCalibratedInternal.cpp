@@ -19,6 +19,8 @@
 #include "core/app/ApplicationNodeBase.h"
 #include "sgct_wrapper.h"
 
+#include <iostream>
+
 namespace viscom {
 
     WorkerNodeCalibratedInternal::WorkerNodeCalibratedInternal(FrameworkInternal& fwInternal) :
@@ -101,6 +103,28 @@ namespace viscom {
             GetFramework().GetViewportScreen(i).size_ = glm::uvec2(glm::floor(totalScreenSize));
             GetFramework().GetViewportQuadSize(i) = fboSize;
             GetFramework().GetViewportScaling(i) = totalScreenSize / GetFramework().GetConfig().virtualScreenSize_;
+
+
+            glm::vec2 vpLocalSize = glm::vec2(vpLocalUpperRight[0], vpLocalUpperRight[1]) - glm::vec2(vpLocalLowerLeft[0], vpLocalLowerLeft[1]);
+            glm::vec2 vpTotalSize = 2.0f * GetFramework().GetConfig().nearPlaneSize_;
+
+            glm::ivec2 projectorViewportPosition = ((glm::vec2(vpLocalLowerLeft[0], vpLocalLowerLeft[1]) + GetFramework().GetConfig().nearPlaneSize_) / vpTotalSize) * totalScreenSize;
+
+            glm::mat4 glbToLcMatrix = glm::mat4{ 1.0f };
+            // correct local matrix:
+            // xlocal = xglobal*totalScreenSize - viewportScreen_[wId].position_
+            // xlocal = xglobal*(xPixelSizeQuad / xRelSizeQuad) - ((xRelPosQuad*xPixelSizeQuad) / xRelSizeQuad)
+            glbToLcMatrix[0][0] = totalScreenSize.x;
+            glbToLcMatrix[1][1] = totalScreenSize.y;
+            glbToLcMatrix[3][0] = -static_cast<float>(projectorViewportPosition.x);
+            glbToLcMatrix[3][1] = -static_cast<float>(projectorViewportPosition.y);
+            GetFramework().GetCamera()->SetLocalCoordMatrix(i, glbToLcMatrix, glm::vec2(GetFramework().GetViewportQuadSize(i)));
+
+            LOG(DBUG) << "WORKER NODE CALIBRATED INTERNAL:\n";
+            LOG(DBUG) << "Total.x: " << totalScreenSize.x << "\nTotal.y: " << totalScreenSize.y << "\n\n";
+            LOG(DBUG) << "Position.x: " << projectorViewportPosition.x << "\nPosition.y: " << projectorViewportPosition.y << "\n\n";
+            LOG(DBUG) << "Projector.x: " << projectorSize.x << "\nProjector.y: " << projectorSize.y << "\n\n";
+
 
             CreateProjectorFBO(i, fboSize);
 

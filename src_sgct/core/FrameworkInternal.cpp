@@ -20,6 +20,8 @@
 #include "core/OpenCVParserHelper.h"
 #endif
 
+#include <iostream>
+
 namespace viscom {
 
     enum class InternalTransferType : std::uint8_t {
@@ -118,7 +120,7 @@ namespace viscom {
     }
 
     void FrameworkInternal::BaseInitOpenGL()
-    {
+     {
         keyPressedState_.resize(GLFW_KEY_LAST, false);
         mousePressedState_.resize(GLFW_MOUSE_BUTTON_LAST, false);
 
@@ -170,6 +172,11 @@ namespace viscom {
             glbToLcMatrix[3][0] = -static_cast<float>(viewportScreen_[wId].position_.x);
             glbToLcMatrix[3][1] = -static_cast<float>(viewportScreen_[wId].position_.y);
             camHelper_.SetLocalCoordMatrix(wId, glbToLcMatrix, glm::vec2(projectorSize));
+
+            LOG(DBUG) << "FRAMEWORK INTERNAL:\n";
+            LOG(DBUG) << "Total.x: " << totalScreenSize.x << "\nTotal.y: " << totalScreenSize.y << "\n\n";
+            LOG(DBUG) << "Position.x: " << viewportScreen_[wId].position_.x << "\nPosition.y: " << viewportScreen_[wId].position_.y << "\n\n";
+            LOG(DBUG) << "Projector.x: " << projectorSize.x << "\nProjector.y: " << projectorSize.y << "\n\n";
         }
 
         FullscreenQuad::InitializeStatic();
