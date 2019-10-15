@@ -124,7 +124,7 @@ namespace viscom {
         {
             std::lock_guard<std::mutex> accessLock{ mtx_ };
             auto resPtr = GetResourceInternal(resId, false, std::forward<Args>(args)...);
-            resPtr->LoadResource();
+            if (!resPtr->IsLoaded()) resPtr->LoadResource();
             return resPtr;
         }
 
