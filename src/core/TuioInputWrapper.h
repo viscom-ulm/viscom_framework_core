@@ -98,7 +98,7 @@ namespace viscom::tuio {
     class TuioInputWrapper
     {
     public:
-        TuioInputWrapper(int port);
+        TuioInputWrapper(int);
         virtual ~TuioInputWrapper();
 
         void SetAddCursorCallback(std::function<void(TUIO::TuioCursor*)>) {}
