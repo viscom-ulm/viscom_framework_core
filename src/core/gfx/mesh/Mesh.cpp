@@ -16,7 +16,7 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <iostream>
-#ifndef __APPLE_CC__
+#ifndef VISCOM_NO_FILESYSTEM
 #include <filesystem>
 #endif
 #include <fstream>
@@ -324,7 +324,7 @@ namespace viscom {
 
     std::shared_ptr<const Texture> Mesh::LoadTexture(const std::string& relFilename, FrameworkInternal* node) const
     {
-#ifndef __APPLE_CC__
+#ifndef VISCOM_NO_FILESYSTEM
         namespace fs = std::filesystem;
         std::string fullTexFilename;
         if (fs::exists(relFilename)) fullTexFilename = relFilename;
@@ -347,7 +347,7 @@ namespace viscom {
         return texture;
     }
 
-#ifdef __APPLE_CC__
+#ifdef VISCOM_NO_FILESYSTEM
     void Mesh::Save(const std::string&) const {}
 #else
     void Mesh::Save(const std::string& filename) const
@@ -396,7 +396,7 @@ namespace viscom {
         rootNode_->Write(ofs);
     }
 
-#ifdef __APPLE_CC__
+#ifdef VISCOM_NO_FILESYSTEM
     bool Mesh::Load(const std::string&, const std::string&, FrameworkInternal*) { return false; }
 #else
     bool Mesh::Load(const std::string& filename, const std::string& binFilename, FrameworkInternal* node)
@@ -473,7 +473,7 @@ namespace viscom {
     /**
      *  This function walks the hierarchy of bones and does two things:
      *  - set the parent of each bone into `boneParent_`
-     * 
+     *
      *  @param bones map from name of bone to index in boneOffsetMatrices_
      *  @param node current node in
      *  @param parent index of the parent in boneOffsetMatrices_

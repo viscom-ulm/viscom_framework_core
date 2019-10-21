@@ -11,7 +11,7 @@
 #include <istream>
 #include <ostream>
 #include <vector>
-#ifndef __APPLE_CC__
+#ifndef VISCOM_NO_FILESYSTEM
 #include <filesystem>
 #endif
 
@@ -127,7 +127,7 @@ namespace viscom::serializeHelper {
         static const unsigned int VERSION = V;
 
     public:
-#ifndef __APPLE_CC__
+#ifndef VISCOM_NO_FILESYSTEM
         /**
          *  Checks if the original file is older than the binary file.
          *  @param filename the name of the original file.
@@ -158,7 +158,7 @@ namespace viscom::serializeHelper {
         }
 
         /**
-         *  Writes the file header with tag and version. 
+         *  Writes the file header with tag and version.
          *  @param ofs the stream to write the header to.
          */
         static void writeHeader(std::ostream& ofs)
