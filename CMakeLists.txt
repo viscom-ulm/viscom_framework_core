@@ -74,6 +74,9 @@ macro(set_build_flags TARGET_NAME)
         elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
             if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
                 target_compile_definitions(${TARGET_NAME} PUBLIC VISCOM_NO_FILESYSTEM)
+            elseif (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 9.2)
+                # can be removed if ImGUI is updated to a version newer than may 19th 2019 (commit f242cd4d8a516b8993fb55d61445b03cfde7fe78).
+                target_compile_options(${TARGET_NAME} PUBLIC -Wno-class-memaccess)
             endif()
         endif()
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -101,7 +104,7 @@ else()
 
     set(VISCOM_SGCT_TAG "nosgct")
     list(APPEND COMPILE_TIME_DEFS GLEW_STATIC)
-    list(APPEND EXTERN_SOURCES_CORE src_nosgct/glew/src/glew.c)
+    list(APPEND EXTERN_SOURCES_CORE src_nosgct/glew/src/glew.cc)
     set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/src_nosgct/)
 endif()
 
