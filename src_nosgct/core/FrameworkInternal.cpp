@@ -360,9 +360,9 @@ POP_WARNINGS
 
     glm::dvec2 FrameworkInternal::ConvertInputCoordinates(double x, double y)
     {
-        glm::dvec2 result{ x, static_cast<double>(viewportScreen_[0].size_.y) - y };
+        glm::dvec2 result{x, static_cast<double>(config_.virtualScreenSize_.y) - y};
         result += viewportScreen_[0].position_;
-        result /= viewportScreen_[0].size_;
+        result /= config_.virtualScreenSize_;
         result.y = 1.0 - result.y;
         return result;
     }
@@ -375,7 +375,8 @@ POP_WARNINGS
     std::vector<FrameBuffer> FrameworkInternal::CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc, int sizeDivisor) const
     {
         std::vector<FrameBuffer> result;
-        glm::ivec2 fboSize(config_.virtualScreenSize_.x / sizeDivisor, config_.virtualScreenSize_.y / sizeDivisor);
+        glm::ivec2 fboSize(static_cast<float>(viewportScreen_[0].size_.x) / sizeDivisor,
+                           static_cast<float>(viewportScreen_[0].size_.y) / sizeDivisor);
         result.emplace_back(fboSize.x, fboSize.y, fboDesc);
         return result;
     }
