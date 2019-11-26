@@ -7,6 +7,7 @@ out vec4 color;
 // Texture samplers
 uniform sampler2D tex;
 uniform sampler2D alphaTex;
+uniform vec3 calibrationColor;
 
 void main()
 {
@@ -19,7 +20,7 @@ void main()
     vec4 colorTexture = texture(tex, coord);
     vec4 alpha = texture(alphaTex, screenCoords);
     
-    alpha = vec4(vec3(pow(alpha.r, gamma)), 1.0f);
+    alpha = vec4(pow(calibrationColor * alpha.r, vec3(gamma)), 1.0f);
 
     color = vec4(colorTexture.rgb * alpha.rgb, 1.0f);
 }

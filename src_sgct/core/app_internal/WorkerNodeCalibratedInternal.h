@@ -39,6 +39,8 @@ namespace viscom {
         GLint calibrationAlphaTexLoc_ = -1;
         /** Holds the location of the use alpha test flag. */
         GLint calibrationSceneTexLoc_ = -1;
+        /** Holds the location of the color for the projector calibration. */
+        GLint calibrationColorLoc_ = -1;
 
         /** Holds the vertex buffer for the projector quads. */
         GLuint vboProjectorQuads_ = 0;
@@ -48,5 +50,9 @@ namespace viscom {
         std::vector<FrameBuffer> sceneFBOs_;
         /** Holds the alpha textures. */
         std::vector<GLuint> alphaTextures_;
+        /** Holds the calibration colors. */
+        std::vector<glm::vec3> calibrationColors_;
+        /** Holds the calibration brightness. */
+        float calibrationBrightness_;
     };
 }

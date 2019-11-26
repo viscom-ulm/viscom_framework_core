@@ -47,6 +47,7 @@ namespace viscom {
         calibrationProgram_ = GetFramework().GetGPUProgramManager().GetResource("calibrationRendering", std::vector<std::string>{ "calibrationRendering.vert", "calibrationRendering.frag" });
         calibrationAlphaTexLoc_ = calibrationProgram_->getUniformLocation("alphaTex");
         calibrationSceneTexLoc_ = calibrationProgram_->getUniformLocation("tex");
+        calibrationColorLoc_ = calibrationProgram_->getUniformLocation("calibrationColor");
 
         LOG(DBUG) << "Loading projector data.";
         tinyxml2::XMLDocument doc;
@@ -121,15 +122,9 @@ namespace viscom {
             GetFramework().GetCamera()->SetLocalCoordMatrix(i, glbToLcMatrix, glm::vec2(GetFramework().GetViewportQuadSize(i)));
 
             LOG(DBUG) << "WORKER NODE CALIBRATED INTERNAL:\n";
-            LOG(DBUG) << "Total.x: " << totalScreenSize.x << "\nTotal.y: " << totalScreenSize.y << "\n\n";
-            LOG(DBUG) << "Position.x: " << projectorViewportPosition.x << "\nPosition.y: " << projectorViewportPosition.y << "\n\n";
-            LOG(DBUG) << "Projector.x: " << projectorSize.x << "\nProjector.y: " << projectorSize.y << "\n\n";
-
 
             CreateProjectorFBO(i, fboSize);
 
-            LOG(DBUG) << "VP Pos: " << projectorViewport_[i].position_.x << ", " << projectorViewport_[i].position_.y;
-            LOG(DBUG) << "VP Size: " << GetFramework().GetViewportQuadSize(i).x << ", " << GetFramework().GetViewportQuadSize(i).y;
             sceneFBOs_[i].SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, GetFramework().GetViewportQuadSize(i).x, GetFramework().GetViewportQuadSize(i).y);
             GetFramework().GetFramebuffer(i).SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, projectorViewport_[i].size_.x, projectorViewport_[i].size_.y);
 
@@ -155,6 +150,22 @@ namespace viscom {
             glBindTexture(GL_TEXTURE_2D, 0);
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         }
+
+        // Values will be read from file...
+        calibrationBrightness_ = 0.5;
+        calibrationColors_.push_back(glm::vec3(1.99188, 1.5457, 1.6412));
+        calibrationColors_.push_back(glm::vec3(1.55022, 1.44884, 1.65997));
+        calibrationColors_.push_back(glm::vec3(1.33095, 1.20614, 1.26985));
+        calibrationColors_.push_back(glm::vec3(1.55028, 1.30606, 1.3091));
+        calibrationColors_.push_back(glm::vec3(1.09928, 1.07617, 1.03748));
+        calibrationColors_.push_back(glm::vec3(2.39557, 1.99465, 2.28219));
+        calibrationColors_.push_back(glm::vec3(1, 1, 1));
+        calibrationColors_.push_back(glm::vec3(1.40377, 1.27996, 1.28276));
+        calibrationColors_.push_back(glm::vec3(2.46275, 1.48012, 1.51808));
+        calibrationColors_.push_back(glm::vec3(1.10986, 1.08598, 1.07654));
+        calibrationColors_.push_back(glm::vec3(2.15185, 1.69028, 1.80059));
+        calibrationColors_.push_back(glm::vec3(1.56791, 1.36063, 1.36432));
+
 
         LOG(DBUG) << "Creating VBOs.";
         glGenBuffers(1, &vboProjectorQuads_);
@@ -211,6 +222,10 @@ namespace viscom {
 
                 glUniform1i(calibrationSceneTexLoc_, 0);
                 glUniform1i(calibrationAlphaTexLoc_, 1);
+
+                size_t nodeID = sgct_core::ClusterManager::instance()->getThisNodeId();
+                size_t projectorID = 2 * (nodeID - 1) + windowId;
+                glUniform3f(calibrationColorLoc_, calibrationColors_[projectorID].x * calibrationBrightness_, calibrationColors_[projectorID].y * calibrationBrightness_, calibrationColors_[projectorID].z * calibrationBrightness_);
 
                 glBindVertexArray(vaoProjectorQuads_);
                 glDrawArrays(GL_TRIANGLE_FAN, 4 * windowId, 4);
