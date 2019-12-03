@@ -32,6 +32,7 @@ namespace viscom {
             else if (str == "PROGRAM_PROPERTIES=") ifs >> config.programProperties_;
             else if (str == "SGCT_CONFIG=") ifs >> config.sgctConfig_;
             else if (str == "PROJECTOR_DATA=") ifs >> config.projectorData_;
+            else if (str == "PROJECTOR_COLOR_DATA=") ifs >> config.projectorColorData_;
             else if (str == "LOCAL=") ifs >> config.sgctLocal_;
             else if (str == "--slave") config.sgctSlave_ = true;
             else if (str == "TUIO_PORT=") ifs >> config.tuioPort_;

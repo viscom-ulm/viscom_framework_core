@@ -46,6 +46,8 @@ namespace viscom {
         std::string sgctConfig_;
         /** The path to the projector data file. */
         std::string projectorData_;
+        /** The path to the projector colors data file. */
+        std::string projectorColorData_;
         /** Index to node to use settings from. */
         std::string sgctLocal_;
         /** Defines if the node is a worker or coordinator. */

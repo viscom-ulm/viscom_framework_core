@@ -57,12 +57,34 @@ namespace viscom {
 
         LOG(DBUG) << "Initializing viewports.";
         auto slaveId = sgct_core::ClusterManager::instance()->getThisNodeId();
+        auto numSlaves = sgct_core::ClusterManager::instance()->getNumberOfNodes();
         auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
         projectorViewport_.resize(numWindows);
         sceneFBOs_.reserve(numWindows);
         alphaTextures_.resize(numWindows, 0);
 
         glGenTextures(static_cast<GLsizei>(numWindows), alphaTextures_.data());
+
+        // Read Color Correction File
+        std::ifstream colorCorrectionFile;
+        colorCorrectionFile.open(GetFramework().GetConfig().projectorColorData_);
+
+        std::string line;
+        if (std::getline(colorCorrectionFile, line)){
+            calibrationBrightness_ = float(std::atof(line.c_str()));
+        }
+
+        for (auto i = 0U; i < numSlaves * numWindows; ++i) {
+            if (std::getline(colorCorrectionFile, line)){
+                float r = float(std::atof(line.substr(0, line.find(' ')).c_str()));
+                line = line.substr(line.find(' ') + 1, line.length());
+                float g = float(std::atof(line.substr(0, line.find(' ')).c_str()));
+                line = line.substr(line.find(' ') + 1, line.length());
+                float b = float(std::atof(line.c_str()));
+
+                calibrationColors_.push_back(glm::vec3(r, g, b));
+            }
+        }
 
         for (auto i = 0U; i < numWindows; ++i) {
             LOG(DBUG) << "Initializing viewport: " << i;
@@ -152,7 +174,7 @@ namespace viscom {
         }
 
         // Values will be read from file...
-        calibrationBrightness_ = 0.5;
+        /*calibrationBrightness_ = 0.5;
         calibrationColors_.push_back(glm::vec3(1.99188, 1.5457, 1.6412));
         calibrationColors_.push_back(glm::vec3(1.55022, 1.44884, 1.65997));
         calibrationColors_.push_back(glm::vec3(1.33095, 1.20614, 1.26985));
@@ -164,7 +186,7 @@ namespace viscom {
         calibrationColors_.push_back(glm::vec3(2.46275, 1.48012, 1.51808));
         calibrationColors_.push_back(glm::vec3(1.10986, 1.08598, 1.07654));
         calibrationColors_.push_back(glm::vec3(2.15185, 1.69028, 1.80059));
-        calibrationColors_.push_back(glm::vec3(1.56791, 1.36063, 1.36432));
+        calibrationColors_.push_back(glm::vec3(1.56791, 1.36063, 1.36432));*/
 
 
         LOG(DBUG) << "Creating VBOs.";
