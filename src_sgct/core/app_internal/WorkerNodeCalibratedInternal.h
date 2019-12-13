@@ -22,6 +22,8 @@ namespace viscom {
         void DrawFrame(FrameBuffer& fbo) override;
         void Draw2D(FrameBuffer& fbo) override;
 
+        void SetCalibrationColors(std::vector<glm::vec3> calibrationColors, float calibrationBrightness);
+
     private:
         void InitOffscreenBuffers();
         void CreateProjectorFBO(std::size_t windowId, const glm::ivec2& fboSize);

@@ -168,25 +168,9 @@ namespace viscom {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
             }
 
-
             glBindTexture(GL_TEXTURE_2D, 0);
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         }
-
-        // Values will be read from file...
-        /*calibrationBrightness_ = 0.5;
-        calibrationColors_.push_back(glm::vec3(1.99188, 1.5457, 1.6412));
-        calibrationColors_.push_back(glm::vec3(1.55022, 1.44884, 1.65997));
-        calibrationColors_.push_back(glm::vec3(1.33095, 1.20614, 1.26985));
-        calibrationColors_.push_back(glm::vec3(1.55028, 1.30606, 1.3091));
-        calibrationColors_.push_back(glm::vec3(1.09928, 1.07617, 1.03748));
-        calibrationColors_.push_back(glm::vec3(2.39557, 1.99465, 2.28219));
-        calibrationColors_.push_back(glm::vec3(1, 1, 1));
-        calibrationColors_.push_back(glm::vec3(1.40377, 1.27996, 1.28276));
-        calibrationColors_.push_back(glm::vec3(2.46275, 1.48012, 1.51808));
-        calibrationColors_.push_back(glm::vec3(1.10986, 1.08598, 1.07654));
-        calibrationColors_.push_back(glm::vec3(2.15185, 1.69028, 1.80059));
-        calibrationColors_.push_back(glm::vec3(1.56791, 1.36063, 1.36432));*/
 
 
         LOG(DBUG) << "Creating VBOs.";
@@ -272,6 +256,12 @@ namespace viscom {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
+
+    void WorkerNodeCalibratedInternal::SetCalibrationColors(std::vector<glm::vec3> calibrationColors, float calibrationBrightness)
+    {
+        calibrationColors_ = calibrationColors;
+        calibrationBrightness_ = calibrationBrightness;
     }
 
 }
