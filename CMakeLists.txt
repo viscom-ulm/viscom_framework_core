@@ -58,7 +58,7 @@ endif()
 
 macro(set_build_flags TARGET_NAME)
     if(UNIX)
-        target_compile_options(${TARGET_NAME} PUBLIC -Werror -O0 -Wall -Wno-unused-function -Wno-unused-parameter -Wextra -Wpedantic)
+        target_compile_options(${TARGET_NAME} PUBLIC -Werror -O0 -Wall -Wno-unused-function -Wno-unused-parameter -Wextra -Wpedantic -Wconversion)
         if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             target_compile_options(${TARGET_NAME} PUBLIC -stdlib=libc++ -Wno-unused-command-line-argument)
             target_include_directories(${TARGET_NAME} SYSTEM BEFORE PUBLIC /usr/include/c++/v1)
