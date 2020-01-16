@@ -375,8 +375,8 @@ POP_WARNINGS
     std::vector<FrameBuffer> FrameworkInternal::CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc, int sizeDivisor) const
     {
         std::vector<FrameBuffer> result;
-        glm::ivec2 fboSize(static_cast<int>(static_cast<float>(viewportScreen_[0].size_.x) / sizeDivisor),
-                           static_cast<int>(static_cast<float>(viewportScreen_[0].size_.y) / sizeDivisor));
+        glm::ivec2 fboSize(static_cast<int>(static_cast<float>(viewportScreen_[0].size_.x) / static_cast<float>(sizeDivisor)),
+                           static_cast<int>(static_cast<float>(viewportScreen_[0].size_.y) / static_cast<float>(sizeDivisor)));
         result.emplace_back(fboSize.x, fboSize.y, fboDesc);
         return result;
     }

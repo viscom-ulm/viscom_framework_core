@@ -100,7 +100,9 @@ namespace viscom {
             if (node->GetBoneIndex() == -1) {
                 continue;
             }
-            skinned_[node->GetBoneIndex()] = globalBonePoses_[node->GetNodeIndex()] * invBindPoseMatrices[node->GetBoneIndex()];
+            skinned_ [static_cast<std::size_t>(node->GetBoneIndex())] =
+                globalBonePoses_[node->GetNodeIndex()]
+                * invBindPoseMatrices[static_cast<std::size_t>(node->GetBoneIndex())];
         }
     }
 
@@ -230,7 +232,7 @@ namespace viscom {
             if (!overrideBump) glUniform1f(uniformLocations_[4], mat->bumpMultiplier);
         }
 
-        glDrawElements(GL_TRIANGLES, subMesh->GetNumberOfIndices(), GL_UNSIGNED_INT,
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(subMesh->GetNumberOfIndices()), GL_UNSIGNED_INT,
             reinterpret_cast<char*>(static_cast<std::size_t>(subMesh->GetIndexOffset()) * sizeof(unsigned int)));
     }
 }

@@ -39,7 +39,7 @@ namespace viscom::serializeHelper {
     *  @param ofs stream to write to.
     *  @param value string to be written.
     **/
-    template<> inline void write<std::string>(std::ostream& ofs, const std::string& value) { write(ofs, static_cast<uint64_t>(value.size())); ofs.write(value.data(), value.size()); }
+    template<> inline void write<std::string>(std::ostream& ofs, const std::string& value) { write(ofs, static_cast<uint64_t>(value.size())); ofs.write(value.data(), static_cast<std::streamsize>(value.size())); }
 
     /**
     *  Writes a data vector to a stream.
@@ -78,7 +78,8 @@ namespace viscom::serializeHelper {
     **/
     template<> inline void read<std::string>(std::istream& ifs, std::string& value) {
         uint64_t strLength; ifs.read(reinterpret_cast<char*>(&strLength), sizeof(strLength));
-        value.resize(strLength); if (strLength != 0) ifs.read(const_cast<char*>(value.c_str()), strLength);
+        value.resize(strLength);
+        if (strLength != 0) ifs.read(const_cast<char*>(value.c_str()), static_cast<std::streamsize>(strLength));
     }
 
     /**
