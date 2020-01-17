@@ -92,7 +92,7 @@ namespace viscom {
             auto hint = filename.substr(filename.find_last_of(".") + 1);
             auto hintSize = hint.size() * sizeof(std::remove_reference_t<decltype(hint)>::value_type);
             std::ifstream meshFile(filename, std::ios::binary | std::ios::ate);
-            std::size_t meshFileSize = meshFile.tellg();
+            std::size_t meshFileSize = static_cast<std::size_t>(meshFile.tellg());
             data->resize(sizeof(std::size_t) + hintSize + sizeof(bool) + meshFileSize);
 
             reinterpret_cast<std::size_t*>(data->data())[0] = hint.size();
@@ -103,7 +103,7 @@ namespace viscom {
             dataptr += sizeof(bool);
 
             meshFile.seekg(0);
-            meshFile.read(reinterpret_cast<char*>(dataptr), meshFileSize);
+            meshFile.read(reinterpret_cast<char*>(dataptr), static_cast<std::streamsize>(meshFileSize));
         }
     }
 
@@ -295,7 +295,7 @@ namespace viscom {
             glm::uvec4 newIndices;
             glm::vec4 newWeights;
             float sumWeights = 0.0f;
-            for (auto i = 0U; i < weights.size(); ++i) {
+            for (auto i = 0; i < static_cast<glm::length_t>(weights.size()); ++i) {
                 newIndices[i] = weights[i].first;
                 newWeights[i] = weights[i].second;
                 sumWeights += newWeights[i];

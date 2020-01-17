@@ -178,7 +178,7 @@ if (${VISCOM_USE_SGCT})
     target_include_directories(SGCTWrapper SYSTEM PUBLIC ${SGCT_INCLUDE_DIRECTORY})
     target_link_libraries(SGCTWrapper ${CORE_LIBS})
     target_compile_definitions(SGCTWrapper PUBLIC ${COMPILE_TIME_DEFS})
-    set_build_flags(SGCTWrapper 1)
+    set_build_flags(SGCTWrapper 0)
 
     list(APPEND CORE_LIBS SGCTWrapper)
     list(APPEND CORE_INCLUDE_DIRS extern/glm ${SGCT_INCLUDE_DIRECTORY})
