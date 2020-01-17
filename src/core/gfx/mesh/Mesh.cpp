@@ -296,8 +296,8 @@ namespace viscom {
             glm::vec4 newWeights;
             float sumWeights = 0.0f;
             for (auto i = 0; i < static_cast<glm::length_t>(weights.size()); ++i) {
-                newIndices[i] = weights[i].first;
-                newWeights[i] = weights[i].second;
+                newIndices[i] = weights[static_cast<std::size_t>(i)].first;
+                newWeights[i] = weights[static_cast<std::size_t>(i)].second;
                 sumWeights += newWeights[i];
             }
 
