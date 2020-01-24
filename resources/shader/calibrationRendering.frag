@@ -20,7 +20,7 @@ void main()
     vec4 colorTexture = texture(tex, coord);
     vec4 alpha = texture(alphaTex, screenCoords);
     
-    alpha = vec4(pow(vec3(1.0) * alpha.r, vec3(gamma)), 1.0f); // <- calibrationColor
+    alpha = vec4(pow(calibrationColor * alpha.r, vec3(gamma)), 1.0f);
 
     color = vec4(colorTexture.rgb * alpha.rgb, 1.0f);
 }

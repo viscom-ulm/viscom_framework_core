@@ -65,8 +65,12 @@ namespace viscom {
 
         glGenTextures(static_cast<GLsizei>(numWindows), alphaTextures_.data());
 
-        // Read Color Correction File
-        std::ifstream colorCorrectionFile;
+        // Color Calibration
+        for (int i = 0; i < 24; i++) {
+            calibrationColors_.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+        }
+
+        /*std::ifstream colorCorrectionFile;
         colorCorrectionFile.open(GetFramework().GetConfig().projectorColorData_);
 
         std::string line;
@@ -74,17 +78,46 @@ namespace viscom {
             calibrationBrightness_ = float(std::atof(line.c_str()));
         }
 
+        LOG(DBUG) << numSlaves << "\n";
+        LOG(DBUG) << numWindows << "\n";
+
         for (auto i = 0U; i < numSlaves * numWindows; ++i) {
-            if (std::getline(colorCorrectionFile, line)){
+            /*if (std::getline(colorCorrectionFile, line)){
                 float r = float(std::atof(line.substr(0, line.find(' ')).c_str()));
                 line = line.substr(line.find(' ') + 1, line.length());
                 float g = float(std::atof(line.substr(0, line.find(' ')).c_str()));
                 line = line.substr(line.find(' ') + 1, line.length());
                 float b = float(std::atof(line.c_str()));
 
-                calibrationColors_.push_back(glm::vec3(r, g, b));
-            }
+                calibrationColors_.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+            //}
+        }*/
+
+        // Read Color Correction File
+        std::ifstream colorCorrectionFile;
+        colorCorrectionFile.open(GetFramework().GetConfig().projectorColorData_);
+
+        std::string line;
+        if (std::getline(colorCorrectionFile, line))
+        {
+            calibrationBrightness_ = float(std::atof(line.c_str()));
         }
+
+        while (std::getline(colorCorrectionFile, line)) {
+
+            int projectorNo = int(std::atoi(line.substr(0, line.find(' ')).c_str()));
+            line = line.substr(line.find(' ') + 1, line.length());
+            float r = float(std::atof(line.substr(0, line.find(' ')).c_str()));
+            line = line.substr(line.find(' ') + 1, line.length());
+            float g = float(std::atof(line.substr(0, line.find(' ')).c_str()));
+            line = line.substr(line.find(' ') + 1, line.length());
+            float b = float(std::atof(line.c_str()));
+
+            calibrationColors_[projectorNo] = glm::vec3(r, g, b);
+        }
+
+        colorCorrectionFile.close();
+
 
         for (auto i = 0U; i < numWindows; ++i) {
             LOG(DBUG) << "Initializing viewport: " << i;
@@ -97,6 +130,8 @@ namespace viscom {
             auto resolutionScalingName = FWConfiguration::CALIBRATION_QUAD_RESOLUTION_SCALING_NAME + std::to_string(projectorNo);
             auto viewportName = FWConfiguration::CALIBRATION_VIEWPORT_NAME + std::to_string(projectorNo);
             auto texAlphaFilename = alphaTexturePath.string() + "/" + FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo) + ".bin";
+
+            LOG(DBUG) << projectorNo << "\n";
 
             auto screenQuadCoords = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadCornersName.c_str()));
             auto screenQuadTexCoords = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadTexCoordsName.c_str()));
@@ -127,7 +162,6 @@ namespace viscom {
             GetFramework().GetViewportQuadSize(i) = fboSize;
             GetFramework().GetViewportScaling(i) = totalScreenSize / GetFramework().GetConfig().virtualScreenSize_;
 
-
             glm::vec2 vpLocalSize = glm::vec2(vpLocalUpperRight[0], vpLocalUpperRight[1]) - glm::vec2(vpLocalLowerLeft[0], vpLocalLowerLeft[1]);
             glm::vec2 vpTotalSize = 2.0f * GetFramework().GetConfig().nearPlaneSize_;
 
@@ -145,10 +179,13 @@ namespace viscom {
 
             LOG(DBUG) << "WORKER NODE CALIBRATED INTERNAL:\n";
 
+            LOG(DBUG) << projectorViewportPosition.x << ", " << projectorViewportPosition.y << "\n";
+
             CreateProjectorFBO(i, fboSize);
 
             sceneFBOs_[i].SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, GetFramework().GetViewportQuadSize(i).x, GetFramework().GetViewportQuadSize(i).y);
             GetFramework().GetFramebuffer(i).SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, projectorViewport_[i].size_.x, projectorViewport_[i].size_.y);
+
 
             {
                 std::ifstream texAlphaFile(texAlphaFilename, std::ios::binary);
@@ -156,8 +193,19 @@ namespace viscom {
                 std::vector<float> texAlphaData(projectorSize.x * projectorSize.y);
 
                 texAlphaFile.read(reinterpret_cast<char*>(&textureSize), sizeof(textureSize));
-                assert(textureSize.x == projectorSize.x && textureSize.y == projectorSize.y);
-                texAlphaFile.read(reinterpret_cast<char*>(texAlphaData.data()), sizeof(float) * texAlphaData.size());
+
+                if (textureSize.x == projectorSize.x && textureSize.y == projectorSize.y) {
+
+                    texAlphaFile.read(reinterpret_cast<char*>(texAlphaData.data()), sizeof(float) * texAlphaData.size());
+
+                }else{
+
+                    std::fill(texAlphaData.begin(), texAlphaData.end(), 1.0f);
+
+                    LOG(WARNING) << "Alpha textures for the projectors not found or wrong size!\n";
+                }
+
+             
 
                 glBindTexture(GL_TEXTURE_2D, alphaTextures_[i]);
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, projectorSize.x, projectorSize.y, 0, GL_RED, GL_FLOAT, texAlphaData.data());
@@ -229,9 +277,11 @@ namespace viscom {
                 glUniform1i(calibrationSceneTexLoc_, 0);
                 glUniform1i(calibrationAlphaTexLoc_, 1);
 
-                size_t nodeID = sgct_core::ClusterManager::instance()->getThisNodeId();
-                size_t projectorID = 2 * (nodeID - 1) + windowId;
-                glUniform3f(calibrationColorLoc_, calibrationColors_[projectorID].x * calibrationBrightness_, calibrationColors_[projectorID].y * calibrationBrightness_, calibrationColors_[projectorID].z * calibrationBrightness_);
+                int slaveId = sgct_core::ClusterManager::instance()->getThisNodeId();
+                int windowId = int(GetFramework().GetCurrentWindowID());
+                int projectorNo = GetFramework().GetGlobalProjectorId(slaveId, windowId);
+                //glUniform3f(calibrationColorLoc_, calibrationColors_[projectorNo].x * calibrationBrightness_, calibrationColors_[projectorNo].y * calibrationBrightness_, calibrationColors_[projectorNo].z * calibrationBrightness_);
+                glUniform3f(calibrationColorLoc_, 1.0, 1.0, 1.0);
 
                 glBindVertexArray(vaoProjectorQuads_);
                 glDrawArrays(GL_TRIANGLE_FAN, 4 * windowId, 4);
