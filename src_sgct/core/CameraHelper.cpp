@@ -69,7 +69,7 @@ namespace viscom {
     glm::vec3 CameraHelper::GetPickPosition(const glm::vec2& globalScreenCoords) const
     {
         // to local screen coordinates.
-        auto& localProps = localCoordsMatrices_[engine_->getCurrentWindowPtr()->getId()];
+        auto& localProps = localCoordsMatrices_[static_cast<std::size_t>(engine_->getCurrentWindowPtr()->getId())];
         glm::vec4 screenCoords = localProps.first * glm::vec4{ globalScreenCoords, 0.0f, 1.0 };
         glm::ivec2 iScreenCoords(screenCoords.x, screenCoords.y);
         screenCoords.x = screenCoords.x / localProps.second.x;

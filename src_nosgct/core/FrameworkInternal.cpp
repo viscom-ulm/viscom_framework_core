@@ -129,7 +129,7 @@ namespace viscom {
         glfwGetFramebufferSize(window_, &fbWidth, &fbHeight);
         auto projectorSize = glm::ivec2(fbWidth, fbHeight);
 
-        backBuffer_.Resize(projectorSize.x, projectorSize.y);
+        backBuffer_.Resize(static_cast<unsigned int>(projectorSize.x), static_cast<unsigned int>(projectorSize.y));
         viewportScreen_[0].position_ = glm::ivec2(0);
         viewportScreen_[0].size_ = projectorSize;
         viewportQuadSize_[0] = projectorSize;
