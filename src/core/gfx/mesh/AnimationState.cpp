@@ -109,7 +109,7 @@ namespace viscom {
             if (node->GetBoneIndex() == -1) {
                 continue;
             }
-            skinned_[node->GetBoneIndex()] = globalBonePoses_[node->GetNodeIndex()] * invBindPoseMatrices[node->GetBoneIndex()];
+            skinned_[static_cast<std::size_t>(node->GetBoneIndex())] = globalBonePoses_[node->GetNodeIndex()] * invBindPoseMatrices[static_cast<std::size_t>(node->GetBoneIndex())];
         }
     }
 
