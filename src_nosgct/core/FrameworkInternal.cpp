@@ -129,7 +129,7 @@ namespace viscom {
         glfwGetFramebufferSize(window_, &fbWidth, &fbHeight);
         auto projectorSize = glm::ivec2(fbWidth, fbHeight);
 
-        backBuffer_.Resize(projectorSize.x, projectorSize.y);
+        backBuffer_.Resize(static_cast<unsigned int>(projectorSize.x), static_cast<unsigned int>(projectorSize.y));
         viewportScreen_[0].position_ = glm::ivec2(0);
         viewportScreen_[0].size_ = projectorSize;
         viewportQuadSize_[0] = projectorSize;
@@ -360,9 +360,9 @@ POP_WARNINGS
 
     glm::dvec2 FrameworkInternal::ConvertInputCoordinates(double x, double y)
     {
-        glm::dvec2 result{ x, static_cast<double>(viewportScreen_[0].size_.y) - y };
+        glm::dvec2 result{x, static_cast<double>(config_.virtualScreenSize_.y) - y};
         result += viewportScreen_[0].position_;
-        result /= viewportScreen_[0].size_;
+        result /= config_.virtualScreenSize_;
         result.y = 1.0 - result.y;
         return result;
     }
@@ -375,7 +375,8 @@ POP_WARNINGS
     std::vector<FrameBuffer> FrameworkInternal::CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc, int sizeDivisor) const
     {
         std::vector<FrameBuffer> result;
-        glm::ivec2 fboSize(config_.virtualScreenSize_.x / sizeDivisor, config_.virtualScreenSize_.y / sizeDivisor);
+        glm::ivec2 fboSize(static_cast<int>(static_cast<float>(viewportScreen_[0].size_.x) / static_cast<float>(sizeDivisor)),
+                           static_cast<int>(static_cast<float>(viewportScreen_[0].size_.y) / static_cast<float>(sizeDivisor)));
         result.emplace_back(fboSize.x, fboSize.y, fboDesc);
         return result;
     }

@@ -6,8 +6,6 @@
  * @brief  Implementation of the sub mesh class.
  */
 
-#define GLM_FORCE_SWIZZLE
-
 #include "SubMesh.h"
 #include "Mesh.h"
 
@@ -24,10 +22,10 @@ namespace viscom {
         if (numIndices_ == 0) return;
         auto& vertices = mesh->GetVertices();
         auto& indices = mesh->GetIndices();
-        aabb_.minmax_[0] = aabb_.minmax_[1] = vertices[indices[indexOffset_]].xyz(); //-V108
+        aabb_.minmax_[0] = aabb_.minmax_[1] = vertices[indices[indexOffset_]]; //-V108
         for (auto i = indexOffset_; i < indexOffset_ + numIndices_; ++i) {
-            aabb_.minmax_[0] = glm::min(aabb_.minmax_[0], vertices[indices[i]].xyz()); //-V108
-            aabb_.minmax_[1] = glm::max(aabb_.minmax_[1], vertices[indices[i]].xyz()); //-V108
+            aabb_.minmax_[0] = glm::min(aabb_.minmax_[0], vertices[indices[i]]); //-V108
+            aabb_.minmax_[1] = glm::max(aabb_.minmax_[1], vertices[indices[i]]); //-V108
         }
     }
 

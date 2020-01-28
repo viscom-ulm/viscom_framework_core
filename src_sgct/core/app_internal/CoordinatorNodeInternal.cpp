@@ -102,7 +102,7 @@ POP_WARNINGS
 
     void CoordinatorNodeInternal::Draw2D(FrameBuffer& fbo)
     {
-        auto windowId = GetFramework().GetEngine()->getCurrentWindowPtr()->getId();
+        auto windowId = static_cast<std::size_t>(GetFramework().GetEngine()->getCurrentWindowPtr()->getId());
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame(-GetFramework().GetViewportScreen(windowId).position_,
             GetFramework().GetViewportQuadSize(windowId), GetFramework().GetViewportScreen(windowId).size_,

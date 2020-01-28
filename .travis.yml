@@ -19,6 +19,7 @@ matrix:
         - cd deps/sgct
         - git clone --recursive https://github.com/opensgct/sgct.git .
         - git checkout c487fe9d778a730125b72027b2da5588a664d01b
+        - git submodule update --init --recursive
         - mkdir build && cd build
         - cmake -E env CXXFLAGS="${VCXXFLAGS}" LDFLAGS="${VLDFLAGS}" cmake -G "${CMAKE_BUILDER}" -D JPEG_TURBO_WITH_SIMD=OFF -D SGCT_INSTALL=ON -D CMAKE_INSTALL_PREFIX="../../sgct_install" ..
         - cmake --build . --target install

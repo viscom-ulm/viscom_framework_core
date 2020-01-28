@@ -16,7 +16,7 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <iostream>
-#ifndef __APPLE_CC__
+#ifndef VISCOM_NO_FILESYSTEM
 #include <filesystem>
 #endif
 #include <fstream>
@@ -93,7 +93,7 @@ namespace viscom {
             auto hint = filename.substr(filename.find_last_of(".") + 1);
             auto hintSize = hint.size() * sizeof(std::remove_reference_t<decltype(hint)>::value_type);
             std::ifstream meshFile(filename, std::ios::binary | std::ios::ate);
-            std::size_t meshFileSize = meshFile.tellg();
+            std::size_t meshFileSize = static_cast<std::size_t>(meshFile.tellg());
             data->resize(sizeof(std::size_t) + hintSize + sizeof(bool) + meshFileSize);
 
             reinterpret_cast<std::size_t*>(data->data())[0] = hint.size();
@@ -104,7 +104,7 @@ namespace viscom {
             dataptr += sizeof(bool);
 
             meshFile.seekg(0);
-            meshFile.read(reinterpret_cast<char*>(dataptr), meshFileSize);
+            meshFile.read(reinterpret_cast<char*>(dataptr), static_cast<std::streamsize>(meshFileSize));
         }
     }
 
@@ -296,9 +296,9 @@ namespace viscom {
             glm::uvec4 newIndices;
             glm::vec4 newWeights;
             float sumWeights = 0.0f;
-            for (auto i = 0U; i < weights.size(); ++i) {
-                newIndices[i] = weights[i].first;
-                newWeights[i] = weights[i].second;
+            for (auto i = 0; i < static_cast<glm::length_t>(weights.size()); ++i) {
+                newIndices[i] = weights[static_cast<std::size_t>(i)].first;
+                newWeights[i] = weights[static_cast<std::size_t>(i)].second;
                 sumWeights += newWeights[i];
             }
 
@@ -325,7 +325,7 @@ namespace viscom {
 
     std::shared_ptr<const Texture> Mesh::LoadTexture(const std::string& relFilename, FrameworkInternal* node) const
     {
-#ifndef __APPLE_CC__
+#ifndef VISCOM_NO_FILESYSTEM
         namespace fs = std::filesystem;
         std::string fullTexFilename;
         if (fs::exists(relFilename)) fullTexFilename = relFilename;
@@ -348,7 +348,7 @@ namespace viscom {
         return texture;
     }
 
-#ifdef __APPLE_CC__
+#ifdef VISCOM_NO_FILESYSTEM
     void Mesh::Save(const std::string&) const {}
 #else
     void Mesh::Save(const std::string& filename) const
@@ -397,7 +397,7 @@ namespace viscom {
         rootNode_->Write(ofs);
     }
 
-#ifdef __APPLE_CC__
+#ifdef VISCOM_NO_FILESYSTEM
     bool Mesh::Load(const std::string&, const std::string&, FrameworkInternal*) { return false; }
 #else
     bool Mesh::Load(const std::string& filename, const std::string& binFilename, FrameworkInternal* node)
@@ -474,7 +474,7 @@ namespace viscom {
     /**
      *  This function walks the hierarchy of bones and does two things:
      *  - set the parent of each bone into `boneParent_`
-     * 
+     *
      *  @param bones map from name of bone to index in boneOffsetMatrices_
      *  @param node current node in
      *  @param parent index of the parent in boneOffsetMatrices_

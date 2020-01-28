@@ -6,8 +6,6 @@
  * @brief  Implementation of the free flight camera.
  */
 
-#define GLM_FORCE_SWIZZLE
-
 #include "FreeCamera.h"
 
 #include <core/open_gl.h>

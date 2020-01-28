@@ -98,26 +98,26 @@ namespace viscom::tuio {
     class TuioInputWrapper
     {
     public:
-        TuioInputWrapper(int port);
+        TuioInputWrapper(int);
         virtual ~TuioInputWrapper();
 
-        void SetAddCursorCallback(std::function<void(TUIO::TuioCursor*)> fn) {}
-        void SetUpdateCursorCallback(std::function<void(TUIO::TuioCursor*)> fn) {}
-        void SetRemoveCursorCallback(std::function<void(TUIO::TuioCursor*)> fn) {}
+        void SetAddCursorCallback(std::function<void(TUIO::TuioCursor*)>) {}
+        void SetUpdateCursorCallback(std::function<void(TUIO::TuioCursor*)>) {}
+        void SetRemoveCursorCallback(std::function<void(TUIO::TuioCursor*)>) {}
 
-        virtual void addTuioCursor(TUIO::TuioCursor *tcur) {}
-        virtual void updateTuioCursor(TUIO::TuioCursor *tcur) {}
-        virtual void removeTuioCursor(TUIO::TuioCursor *tcur) {}
+        virtual void addTuioCursor(TUIO::TuioCursor *) {}
+        virtual void updateTuioCursor(TUIO::TuioCursor *) {}
+        virtual void removeTuioCursor(TUIO::TuioCursor *) {}
 
-        virtual void addTuioObject(TUIO::TuioObject *tobj) {}
-        virtual void updateTuioObject(TUIO::TuioObject *tobj) {}
-        virtual void removeTuioObject(TUIO::TuioObject *tobj) {}
+        virtual void addTuioObject(TUIO::TuioObject *) {}
+        virtual void updateTuioObject(TUIO::TuioObject *) {}
+        virtual void removeTuioObject(TUIO::TuioObject *) {}
 
-        virtual void addTuioBlob(TUIO::TuioBlob *tblb) {}
-        virtual void updateTuioBlob(TUIO::TuioBlob *tblb) {}
-        virtual void removeTuioBlob(TUIO::TuioBlob *tblb) {}
+        virtual void addTuioBlob(TUIO::TuioBlob *) {}
+        virtual void updateTuioBlob(TUIO::TuioBlob *) {}
+        virtual void removeTuioBlob(TUIO::TuioBlob *) {}
 
-        virtual void refresh(TUIO::TuioTime frameTime) {}
+        virtual void refresh(TUIO::TuioTime) {}
     };
 
 #endif
