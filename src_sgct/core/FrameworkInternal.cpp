@@ -139,7 +139,7 @@ namespace viscom {
             auto window = GetEngine()->getWindowPtr(wId);
             window->getFinalFBODimensions(projectorSize.x, projectorSize.y);
             framebuffers_.emplace_back();
-            framebuffers_.back().Resize(projectorSize.x, projectorSize.y);
+            framebuffers_.back().Resize(static_cast<unsigned int>(projectorSize.x), static_cast<unsigned int>(projectorSize.y));
 
             auto vpLocalLowerLeftA = sgct_wrapper::GetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::LowerLeft);
             glm::vec2 vpLocalLowerLeft{ vpLocalLowerLeftA[0], vpLocalLowerLeftA[1] };
@@ -162,7 +162,7 @@ namespace viscom {
 
             // glm::vec2 relPosScale = 1.0f / glm::vec2(viewportQuadSize_[wId]);
             // glm::vec2 scaledRelPos = (glm::vec2(viewportScreen_[wId].position_) / glm::vec2(viewportScreen_[wId].size_)) * relPosScale;
-            
+
             glm::mat4 glbToLcMatrix = glm::mat4{ 1.0f };
             // correct local matrix:
             // xlocal = xglobal*totalScreenSize - viewportScreen_[wId].position_
@@ -243,40 +243,40 @@ POP_WARNINGS
 
     bool FrameworkInternal::IsMouseButtonPressed(int button) const noexcept
     {
-        return mousePressedState_[button];
+        return mousePressedState_[static_cast<std::size_t>(button)];
     }
 
     bool FrameworkInternal::IsKeyPressed(int key) const noexcept
     {
-        return keyPressedState_[key];
+        return keyPressedState_[static_cast<std::size_t>(key)];
     }
 
     void FrameworkInternal::BaseKeyboardCallback(int key, int scancode, int action, int mods)
     {
-        if (!initialized_) return;
-        keyPressedState_[key] = (action == GLFW_RELEASE) ? false : true;
+        if (!initialized_ || !appNodeInternal_) return;
+        keyPressedState_[static_cast<std::size_t>(key)] = (action == GLFW_RELEASE) ? false : true;
 
         appNodeInternal_->KeyboardCallback(key, scancode, action, mods);
     }
 
     void FrameworkInternal::BaseCharCallback(unsigned int character, int mods)
     {
-        if (!initialized_) return;
+        if (!initialized_ || !appNodeInternal_) return;
 
         appNodeInternal_->CharCallback(character, mods);
     }
 
     void FrameworkInternal::BaseMouseButtonCallback(int button, int action)
     {
-        if (!initialized_) return;
-        mousePressedState_[button] = (action == GLFW_RELEASE) ? false : true;
+        if (!initialized_ || !appNodeInternal_) return;
+        mousePressedState_[static_cast<std::size_t>(button)] = (action == GLFW_RELEASE) ? false : true;
 
         appNodeInternal_->MouseButtonCallback(button, action);
     }
 
     void FrameworkInternal::BaseMousePosCallback(double x, double y)
     {
-        if (!initialized_) return;
+        if (!initialized_ || !appNodeInternal_) return;
         auto mousePos = ConvertInputCoordinatesLocalToGlobal(glm::dvec2(x, y));
         mousePosition_ = glm::vec2(mousePos.x, mousePos.y);
         mousePositionNormalized_.x = (2.0f * mousePosition_.x - 1.0f);
@@ -287,13 +287,13 @@ POP_WARNINGS
 
     void FrameworkInternal::BaseMouseScrollCallback(double xoffset, double yoffset)
     {
-        if (!initialized_) return;
+        if (!initialized_ || !appNodeInternal_) return;
         appNodeInternal_->MouseScrollCallback(xoffset, yoffset);
     }
 
     void FrameworkInternal::BaseDataTransferCallback(void* receivedData, int receivedLength, int packageID, int clientID)
     {
-        if (!initialized_) return;
+        if (!initialized_ || !appNodeInternal_) return;
         auto splitID = reinterpret_cast<std::uint16_t*>(&packageID);
 
         if (splitID[0] == static_cast<std::uint16_t>(InternalTransferTypeLarge::UserData)) {
@@ -303,13 +303,16 @@ POP_WARNINGS
         auto internalID = reinterpret_cast<std::uint8_t*>(&splitID[0]);
         switch (static_cast<InternalTransferType>(internalID[0])) {
         case InternalTransferType::ResourceTransfer:
-            CreateSynchronizedResource(static_cast<ResourceType>(internalID[1]), receivedData, receivedLength);
+            CreateSynchronizedResource(static_cast<ResourceType>(internalID[1]), receivedData, static_cast<std::size_t>(receivedLength));
             break;
         case InternalTransferType::ResourceReleaseTransfer:
-            ReleaseSynchronizedResource(static_cast<ResourceType>(internalID[1]), std::string_view(reinterpret_cast<char*>(receivedData), receivedLength));
+            ReleaseSynchronizedResource(
+                static_cast<ResourceType>(internalID[1]),
+                std::string_view(reinterpret_cast<char*>(receivedData), static_cast<std::size_t>(receivedLength)));
             break;
         case InternalTransferType::ResourceRequest:
-            SendResourcesToNode(static_cast<ResourceType>(internalID[1]), receivedData, receivedLength, clientID);
+            SendResourcesToNode(static_cast<ResourceType>(internalID[1]), receivedData,
+                                static_cast<std::size_t>(receivedLength), clientID);
             break;
         default:
             LOG(WARNING) << "Unknown InternalTransferType: " << internalID[0];
@@ -319,7 +322,7 @@ POP_WARNINGS
 
     void FrameworkInternal::BaseDataAcknowledgeCallback(int packageID, int clientID)
     {
-        if (!initialized_) return;
+        if (!initialized_ || !appNodeInternal_) return;
         auto splitID = reinterpret_cast<std::uint16_t*>(&packageID);
 
         if (splitID[0] == static_cast<std::uint16_t>(-1)) appNodeInternal_->DataAcknowledge(splitID[1], clientID);
@@ -339,7 +342,7 @@ POP_WARNINGS
 
     void FrameworkInternal::BaseDataTransferStatusCallback(bool connected, int clientID)
     {
-        if (!initialized_) return;
+        if (!initialized_ || !appNodeInternal_) return;
         appNodeInternal_->DataTransferStatus(connected, clientID);
     }
 
@@ -517,6 +520,11 @@ POP_WARNINGS
         return static_cast<std::size_t>(engine_->getCurrentWindowPtr()->getId());
     }
 
+    GLFWwindow* FrameworkInternal::GetCurrentNodeMainWindow() const
+    {
+        return engine_->getThisNodePtr(0)->getWindowPtr(0)->getWindowHandle();
+    }
+
     void FrameworkInternal::Terminate() const
     {
         engine_->terminate();
@@ -530,14 +538,14 @@ POP_WARNINGS
             result.emplace_back(fboSize.x, fboSize.y, fboDesc);
             LOG(DBUG) << "Offscreen FBO VP Pos: " << 0.0f << ", " << 0.0f;
             LOG(DBUG) << "Offscreen FBO VP Size: " << fboSize.x << ", " << fboSize.y;
-            result.back().SetStandardViewport(0, 0, fboSize.x, fboSize.y);
+            result.back().SetStandardViewport(0, 0, static_cast<unsigned int>(fboSize.x), static_cast<unsigned int>(fboSize.y));
         }
         return result;
     }
 
     const FrameBuffer* FrameworkInternal::SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const
     {
-        return &offscreenBuffers[engine_->getCurrentWindowPtr()->getId()];
+        return &offscreenBuffers[static_cast<std::size_t>(engine_->getCurrentWindowPtr()->getId())];
     }
 
     std::unique_ptr<FullscreenQuad> FrameworkInternal::CreateFullscreenQuad(const std::string& fragmentShader)

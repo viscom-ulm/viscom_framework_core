@@ -11,7 +11,7 @@
 #include <iostream>
 #include <sstream>
 #include <iterator>
-#ifndef __APPLE_CC__
+#ifndef VISCOM_NO_FILESYSTEM
 #include <filesystem>
 #endif
 #include "core/FrameworkInternal.h"
@@ -217,11 +217,11 @@ namespace viscom {
      */
     std::string Shader::LoadShaderFile(const std::string& filename, const std::vector<std::string>& defines, const FrameworkInternal* node)
     {
-        auto fullFilename = Resource::FindResourceLocation("shader/" + filename, node);
+        auto fullFilename = Resource::FindResourceLocation(node->GetConfig().shaderSearchPrefix + "/" + filename, node);
         unsigned int fileId{ 0 };
         std::string relativeParentPath = "";
 
-#ifndef __APPLE_CC__
+#ifndef VISCOM_NO_FILESYSTEM
         std::filesystem::path sdrFile{ filename };
         relativeParentPath = sdrFile.parent_path().string() + "/";
 #endif
@@ -245,7 +245,7 @@ namespace viscom {
     std::string Shader::LoadShaderFileRecursive(const std::string& filename, const std::string& relativeParentPath,
         const std::vector<std::string>& defines, unsigned int& fileId, unsigned int recursionDepth, const FrameworkInternal* node)
     {
-#ifdef __APPLE_CC__
+#ifdef VISCOM_NO_FILESYSTEM
         if (!defines.empty()) {
             LOG(WARNING) << "Defines and includes in shaders not supported on MacOS.";
         }

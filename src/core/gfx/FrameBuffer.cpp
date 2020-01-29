@@ -175,18 +175,21 @@ namespace viscom {
             }
 
             if (desc_.texDesc_[i].texType_ == GL_TEXTURE_CUBE_MAP) {
-                for (auto i = 0; i < 6; ++i) {
-                    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, desc_.texDesc_[i].internalFormat_, width_, height_, 0, GL_RGBA, GL_FLOAT, nullptr);
+                for (auto j = 0u; j < 6; ++j) {
+                    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + j, 0, static_cast<GLint>(desc_.texDesc_[i].internalFormat_), static_cast<GLsizei>(width_), static_cast<GLsizei>(height_), 0, GL_RGBA, GL_FLOAT, nullptr);
                 }
             } else {
-                if (desc_.numSamples_ == 1) { glTexImage2D(desc_.texDesc_[i].texType_, 0, desc_.texDesc_[i].internalFormat_, width_, height_, 0, fmt, tp, nullptr); }
+                if (desc_.numSamples_ == 1) {
+                    glTexImage2D(desc_.texDesc_[i].texType_, 0, static_cast<GLint>(desc_.texDesc_[i].internalFormat_),
+                                 static_cast<GLsizei>(width_), static_cast<GLsizei>(height_), 0, fmt, tp, nullptr);
+                }
                 else { glTexImage2DMultisample(desc_.texDesc_[i].texType_, desc_.numSamples_, desc_.texDesc_[i].internalFormat_, width_, height_, GL_TRUE); }
             }
 
             if (desc_.texDesc_[i].texType_ == GL_TEXTURE_CUBE_MAP) {
-                for (auto i = 0; i < 6; ++i) {
+                for (auto j = 0u; j < 6; ++j) {
                     auto attachment = findAttachment(desc_.texDesc_[i].internalFormat_, colorAtt, drawBuffers_);
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, textures_[i], 0);
+                    glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + j, textures_[i], 0);
                 }
             }
             else {
@@ -236,8 +239,9 @@ namespace viscom {
             glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
             glDrawBuffers(static_cast<GLsizei>(drawBuffers_.size()), drawBuffers_.data());
         }
-        glViewport(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
-        glScissor(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
+        glViewport(standardViewport_.position_.x, standardViewport_.position_.y, static_cast<GLsizei>(standardViewport_.size_.x), static_cast<GLsizei>(standardViewport_.size_.y));
+        glScissor(standardViewport_.position_.x, standardViewport_.position_.y,
+                  static_cast<GLsizei>(standardViewport_.size_.x), static_cast<GLsizei>(standardViewport_.size_.y));
     }
 
     /**
@@ -255,8 +259,10 @@ namespace viscom {
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_);
         glDrawBuffers(static_cast<GLsizei>(drawBuffersReduced.size()), drawBuffersReduced.data());
-        glViewport(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
-        glScissor(standardViewport_.position_.x, standardViewport_.position_.y, standardViewport_.size_.x, standardViewport_.size_.y);
+        glViewport(standardViewport_.position_.x, standardViewport_.position_.y,
+                   static_cast<GLsizei>(standardViewport_.size_.x), static_cast<GLsizei>(standardViewport_.size_.y));
+        glScissor(standardViewport_.position_.x, standardViewport_.position_.y,
+                  static_cast<GLsizei>(standardViewport_.size_.x), static_cast<GLsizei>(standardViewport_.size_.y));
     }
 
     /**

@@ -16,17 +16,19 @@
 
 namespace viscom::tuio {
 
+#if VISCOM_USE_TUIO
     TuioInputWrapper::TuioInputWrapper(int port)
     {
-#if VISCOM_USE_TUIO
         receiver_ = std::make_unique<TUIO::UdpReceiver>(port);
 
         tuioClient_ = std::make_unique<TUIO::TuioClient>(receiver_.get());
         tuioClient_->addTuioListener(this);
         tuioClient_->connect();
         tuioClient_->disconnect();
-#endif
     }
+#else
+    TuioInputWrapper::TuioInputWrapper(int) {}
+#endif
 
     TuioInputWrapper::~TuioInputWrapper()
     {

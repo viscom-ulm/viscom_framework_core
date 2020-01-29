@@ -28,12 +28,12 @@ namespace viscom {
      *  Takes an assimp animation and converts the data into our data-structure.
      * 
      *  @param aiAnimation Assimp animation
-     *  @param boneNameToOffset Mapping between bone/node-names to offsets
      */
-    Animation::Animation(aiAnimation* aiAnimation)
-        : framesPerSecond_{aiAnimation->mTicksPerSecond > 0.0 ? static_cast<float>(aiAnimation->mTicksPerSecond)
+    Animation::Animation(aiAnimation* aiAnimation) :
+        name_{ aiAnimation->mName.C_Str() },
+        framesPerSecond_{aiAnimation->mTicksPerSecond > 0.0 ? static_cast<float>(aiAnimation->mTicksPerSecond)
                                                               : 24.0f},
-          duration_{static_cast<float>(aiAnimation->mDuration)}
+        duration_{static_cast<float>(aiAnimation->mDuration)}
     {
         for (auto c = 0U; c < aiAnimation->mNumChannels; ++c) {
             const auto aiChannel = aiAnimation->mChannels[c];
@@ -64,6 +64,11 @@ namespace viscom {
         }
     }
 
+    /**
+     *  Flattens the node hierarchy for animation channels.
+     *  @param numNodes the number of nodes in the mesh.
+     *  @param nodeNamesMap the mapping from node names to node indices.
+     */
     void Animation::FlattenHierarchy(std::size_t numNodes, const std::map<std::string, std::size_t>& nodeNamesMap)
     {
         channels_.resize(numNodes);
@@ -74,15 +79,6 @@ namespace viscom {
                 channels_[node.second] = channelMap_[node.first];
             }
         }
-        // auto newBoneOffset = nodeNameToOffset.find(aiChannel->mNodeName.C_Str());
-        // if (newBoneOffset == nodeNameToOffset.end()) {
-        //     LOG(WARNING) << "Channel name not in node list!";
-        //     continue;
-        // }
-
-            // auto nodeOffsetFromName = nodeNameToOffset.at(aiChannel->mNodeName.C_Str());
-            // 
-            // channels_[nodeOffsetFromName] = channel;
 
         channelMap_.clear();
     }
@@ -113,11 +109,12 @@ namespace viscom {
      * 
      *  @return New animation
      */
-    Animation Animation::GetSubSequence(Time start, Time end) const
+    Animation Animation::GetSubSequence(const std::string& name, Time start, Time end) const
     {
         assert(start < end && "Start time must be less then stop time");
 
         Animation subSequence;
+        subSequence.name_ = name;
         subSequence.framesPerSecond_ = framesPerSecond_;
         subSequence.duration_ = end - start;
 
@@ -213,6 +210,7 @@ namespace viscom {
     void Animation::Write(std::ostream& ofs) const
     {
         VersionableSerializerType::writeHeader(ofs);
+        serializeHelper::write(ofs, name_);
         serializeHelper::write(ofs, channelMap_.size());
         for (const auto& channel : channelMap_) {
             serializeHelper::write(ofs, channel.first);
@@ -229,7 +227,10 @@ namespace viscom {
         bool correctHeader;
         unsigned int actualVersion;
         std::tie(correctHeader, actualVersion) = VersionableSerializerType::checkHeader(ifs);
-        if (correctHeader) {
+        if (correctHeader || actualVersion > 1000) {
+            if (actualVersion >= 1002) {
+                serializeHelper::read(ifs, name_);
+            }
             std::size_t numChannels;
             serializeHelper::read(ifs, numChannels);
             channelMap_.clear();

@@ -11,7 +11,7 @@
 #include <istream>
 #include <ostream>
 #include <vector>
-#ifndef __APPLE_CC__
+#ifndef VISCOM_NO_FILESYSTEM
 #include <filesystem>
 #endif
 
@@ -39,7 +39,7 @@ namespace viscom::serializeHelper {
     *  @param ofs stream to write to.
     *  @param value string to be written.
     **/
-    template<> inline void write<std::string>(std::ostream& ofs, const std::string& value) { write(ofs, static_cast<uint64_t>(value.size())); ofs.write(value.data(), value.size()); }
+    template<> inline void write<std::string>(std::ostream& ofs, const std::string& value) { write(ofs, static_cast<uint64_t>(value.size())); ofs.write(value.data(), static_cast<std::streamsize>(value.size())); }
 
     /**
     *  Writes a data vector to a stream.
@@ -49,7 +49,7 @@ namespace viscom::serializeHelper {
     template<class T> void writeV(std::ostream& ofs, const std::vector<T>& value)
     {
         write(ofs, static_cast<uint64_t>(value.size()));
-        ofs.write(reinterpret_cast<const char*>(value.data()), value.size() * sizeof(T));
+        ofs.write(reinterpret_cast<const char*>(value.data()), static_cast<std::streamsize>(value.size() * sizeof(T)));
     }
     /**
     *  Writes a vector of strings to a stream.
@@ -78,7 +78,8 @@ namespace viscom::serializeHelper {
     **/
     template<> inline void read<std::string>(std::istream& ifs, std::string& value) {
         uint64_t strLength; ifs.read(reinterpret_cast<char*>(&strLength), sizeof(strLength));
-        value.resize(strLength); if (strLength != 0) ifs.read(const_cast<char*>(value.c_str()), strLength);
+        value.resize(strLength);
+        if (strLength != 0) ifs.read(const_cast<char*>(value.c_str()), static_cast<std::streamsize>(strLength));
     }
 
     /**
@@ -88,7 +89,8 @@ namespace viscom::serializeHelper {
     **/
     template<class T> void readV(std::istream& ifs, std::vector<T>& value) {
         uint64_t vecLength; ifs.read(reinterpret_cast<char*>(&vecLength), sizeof(vecLength));
-        value.resize(vecLength); if (vecLength != 0) ifs.read(reinterpret_cast<char*>(value.data()), vecLength * sizeof(T));
+        value.resize(vecLength);
+        if (vecLength != 0) ifs.read(reinterpret_cast<char*>(value.data()), static_cast<std::streamsize>(vecLength * sizeof(T)));
     }
     /**
     *  Reads a vector of strings from a stream.
@@ -127,7 +129,7 @@ namespace viscom::serializeHelper {
         static const unsigned int VERSION = V;
 
     public:
-#ifndef __APPLE_CC__
+#ifndef VISCOM_NO_FILESYSTEM
         /**
          *  Checks if the original file is older than the binary file.
          *  @param filename the name of the original file.
@@ -158,7 +160,7 @@ namespace viscom::serializeHelper {
         }
 
         /**
-         *  Writes the file header with tag and version. 
+         *  Writes the file header with tag and version.
          *  @param ofs the stream to write the header to.
          */
         static void writeHeader(std::ostream& ofs)

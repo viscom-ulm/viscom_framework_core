@@ -19,7 +19,9 @@
 #include "core/gfx/FrameBuffer.h"
 #include "core/CameraHelper.h"
 #include "core/gfx/FullscreenQuad.h"
-#include "sgct/SharedDataTypes.h"
+#include <sgct/SharedDataTypes.h>
+
+struct GLFWwindow;
 
 namespace viscom {
 
@@ -128,6 +130,8 @@ namespace viscom {
         FrameBuffer& GetFramebuffer(std::size_t windowId) { return framebuffers_[windowId]; }
         /** Returns the applications window id. */
         std::size_t GetCurrentWindowID() const;
+        /** Returns the main window of the current node (for shared contexts). */
+        GLFWwindow* GetCurrentNodeMainWindow() const;
         /**
          *  Returns the viewport for the specified window.
          *  @param windowId the window id.
@@ -277,13 +281,13 @@ namespace viscom {
          *  @param yoffset vertical movement of the mouse cursor.
          */
         void BaseMouseScrollCallback(double xoffset, double yoffset);
-        
+
         /** Base function for synchronizing the framework by encoding and sending all synchronized data to the other nodes. */
         void BaseEncodeData();
         /** Base class for synchronizing the framework by receiving and decoding synchronized data from other nodes. */
         void BaseDecodeData();
-    
-        
+
+
         /**
          *  Converts local screen coordinates to global coordinates.
          *  @param p point in local coordinates to convert.
@@ -352,9 +356,9 @@ namespace viscom {
         MeshManager meshManager_;
 
         /** Holds the current mouse position. */
-        glm::vec2 mousePosition_;
+        glm::vec2 mousePosition_ = glm::vec2{0.0f, 0.0f};
         /** Holds the current normalized mouse position. */
-        glm::vec2 mousePositionNormalized_;
+        glm::vec2 mousePositionNormalized_ = glm::vec2{0.0f, 0.0f};
         /** Holds the current keyboard state. */
         std::vector<bool> keyPressedState_;
         /** Holds the current mouse button state. */

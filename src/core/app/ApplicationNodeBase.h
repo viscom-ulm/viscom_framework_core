@@ -13,6 +13,8 @@
 #include "OpenVR.h"
 #include "OpenVRControllerIfc.h"
 
+struct GLFWwindow;
+
 namespace viscom {
 
     class FrameworkInternal;
@@ -33,7 +35,7 @@ namespace viscom {
         ApplicationNodeBase& operator=(const ApplicationNodeBase&) = delete;
         ApplicationNodeBase& operator=(ApplicationNodeBase&&) = delete;
         virtual ~ApplicationNodeBase();
-        
+
         /** Called before a window is created. */
         [[deprecated("All initialization should be moved to the constructor in the future.")]]
         virtual void PreWindow();
@@ -68,7 +70,7 @@ namespace viscom {
         /** This method is called when exiting the application in order to delete vertex arrays and buffers. */
         [[deprecated("All initialization should be moved to the destructor in the future.")]]
         virtual void CleanUp();
-        
+
         /**
          *  Called when receiving a message from another node.
          *  @param receivedData pointer to the received data.
@@ -89,7 +91,7 @@ namespace viscom {
          *  @param clientID index of the node connected or disconnected.
          */
         virtual bool DataTransferStatusCallback(bool connected, int clientID);
-        
+
         /**
          *  This method is called to handle keyboard input.
          *  @param key GLFW key code.
@@ -122,7 +124,7 @@ namespace viscom {
          *  @param yoffset vertical movement of the mouse wheel.
          */
         virtual bool MouseScrollCallback(double xoffset, double yoffset);
-        
+
         /**
          *  Called for touch screens to add a cursor.
          *  @param tcur cursor to be added.
@@ -283,6 +285,8 @@ namespace viscom {
         ApplicationNodeInternal* GetApplication() const { return appNode_; }
         /** Returns the current window id. */
         std::size_t GetCurrentWindowID() const { return framework_->GetCurrentWindowID(); }
+        /** Returns the main window of the current node (for shared contexts). */
+        GLFWwindow* GetCurrentNodeMainWindow() const { return framework_->GetCurrentNodeMainWindow(); }
         /**
          *  Returns the viewport for the specified window.
          *  @param windowId the window id.

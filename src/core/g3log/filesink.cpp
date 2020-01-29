@@ -13,17 +13,31 @@
 
 namespace viscom {
 
+    /**
+     *  Creates the filename for this the FileSink logger sink.
+     *  @param _log_prefix_backup the prefix for the filename.
+     *  @param logger_id the id of the logger.
+     *  @param useTimestamp whether to add a timestamp to the filename.
+     *  @return returns the filename.
+     */
     std::string createLogFileName(const std::string& _log_prefix_backup, const std::string& logger_id, bool useTimestamp)
     {
         auto file_name = internal::createLogFileName(_log_prefix_backup, logger_id);
         if (!useTimestamp) {
             file_name = _log_prefix_backup;
-            if (logger_id != "") file_name += "." + logger_id;
+            if (!logger_id.empty()) file_name += "." + logger_id;
             file_name += ".log";
         }
         return file_name;
     }
 
+    /**
+     *  Filesink constructor.
+     *  @param log_prefix the prefix for the filename.
+     *  @param log_directory the directory to place the log file in.
+     *  @param useTimestamp whether to add a timestamp to the filename.
+     *  @param logger_id the id of the logger.
+     */
     FileSink::FileSink(const std::string &log_prefix, const std::string &log_directory, bool useTimestamp, const std::string& logger_id)
         : useTimestamp_{ useTimestamp },
         _log_file_with_path(log_directory)
@@ -49,7 +63,9 @@ namespace viscom {
         addLogFileHeader();
     }
 
-
+    /**
+     *  Filesink destructor.
+     */
     FileSink::~FileSink() {
         std::string exit_msg{ "\ng3log g3FileSink shutdown at: " };
         auto now = std::chrono::system_clock::now();
@@ -60,13 +76,22 @@ namespace viscom {
         std::cerr << exit_msg << std::flush;
     }
 
-    // The actual log receiving function
+    /**
+     *  The actual log receiving function.
+     *  @param message the log message.
+     */
     void FileSink::fileWrite(g3::LogMessageMover message) const
     {
         auto& out(filestream());
         out << message.get().toString() << std::flush;
     }
 
+    /**
+     *  Changes the filename of the logger sink.
+     *  @param directory the directory to place the log file in.
+     *  @param logger_id the id of the logger.
+     *  @return the path of the new log file.
+     */
     std::string FileSink::changeLogFile(const std::string &directory, const std::string &logger_id) {
         auto now = std::chrono::system_clock::now();
         auto now_formatted = g3::localtime_formatted(now, { g3::internal::date_formatted + " " + g3::internal::time_formatted });
@@ -94,10 +119,19 @@ namespace viscom {
         filestream() << now_formatted << ss_change.str();
         return _log_file_with_path;
     }
+
+    /**
+     *  Accessor for the log filename.
+     *  @return the path of the new log file.
+     */
     std::string FileSink::fileName() const
     {
         return _log_file_with_path;
     }
+
+    /**
+     *  Writes the header into the log.
+     */
     void FileSink::addLogFileHeader() const
     {
         filestream() << internal::header();

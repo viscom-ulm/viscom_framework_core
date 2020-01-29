@@ -62,9 +62,10 @@ namespace viscom {
         }
     }
 
-    void Texture::Initialize(bool useSRGB)
+    void Texture::Initialize(bool useSRGB, bool flipTexture)
     {
         sRGB_ = useSRGB;
+        flipTexture_ = flipTexture;
         InitializeFinished();
     }
 
@@ -72,14 +73,16 @@ namespace viscom {
     {
         auto fullFilename = FindResourceLocation(GetId());
 
-        stbi_set_flip_vertically_on_load(1);
+        if (flipTexture_) stbi_set_flip_vertically_on_load(1);
+        else stbi_set_flip_vertically_on_load(0);
 
         std::pair<void*, std::size_t> image = std::make_pair(nullptr, 0);
         if (stbi_is_hdr(fullFilename.c_str()) != 0) image = LoadImageHDR(fullFilename);
         else image = LoadImageLDR(fullFilename, sRGB_);
 
         glBindTexture(GL_TEXTURE_2D, textureId_);
-        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, image.first);
+        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, static_cast<GLsizei>(width_),
+                     static_cast<GLsizei>(height_), 0, descriptor_.format_, descriptor_.type_, image.first);
 
         if (data.has_value()) {
             data->clear();
@@ -114,7 +117,8 @@ namespace viscom {
         dataptr += sizeof(bool);
 
         glBindTexture(GL_TEXTURE_2D, textureId_);
-        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, width_, height_, 0, descriptor_.format_, descriptor_.type_, dataptr);
+        glTexImage2D(GL_TEXTURE_2D, 0, descriptor_.internalFormat_, static_cast<GLsizei>(width_),
+                     static_cast<GLsizei>(height_), 0, descriptor_.format_, descriptor_.type_, dataptr);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
@@ -130,8 +134,8 @@ namespace viscom {
             throw resource_loading_error(filename, "Failed to load texture.");
         }
 
-        width_ = imgWidth;
-        height_ = imgHeight;
+        width_ = static_cast<unsigned int>(imgWidth);
+        height_ = static_cast<unsigned int>(imgHeight);
         descriptor_.type_ = GL_UNSIGNED_BYTE;
         std::tie(descriptor_.bytesPP_, descriptor_.internalFormat_, descriptor_.format_) = FindFormatLDR(filename, imgChannels, useSRGB);
         return std::make_pair(image, imgWidth * imgHeight * imgChannels);
@@ -149,8 +153,8 @@ namespace viscom {
             throw resource_loading_error(filename, "Failed to load texture.");
         }
 
-        width_ = imgWidth;
-        height_ = imgHeight;
+        width_ = static_cast<unsigned int>(imgWidth);
+        height_ = static_cast<unsigned int>(imgHeight);
         descriptor_.type_ = GL_FLOAT;
         std::tie(descriptor_.bytesPP_, descriptor_.internalFormat_, descriptor_.format_) = FindFormatHDR(filename, imgChannels);
         return std::make_pair(image, imgWidth * imgHeight * imgChannels);
