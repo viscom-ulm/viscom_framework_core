@@ -10,6 +10,7 @@
 
 #include "core/main.h"
 #include <glm/gtc/quaternion.hpp>
+#include <openvr.h>
 
 namespace vr {
     class IVRSystem;
