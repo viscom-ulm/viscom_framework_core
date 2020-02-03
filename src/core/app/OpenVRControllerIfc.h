@@ -55,17 +55,17 @@ namespace viscom::ovr {
         virtual bool InitialiseDisplayVR() override { return false; }
         virtual bool CalibrateVR(CalibrateMethod method) override { return false; }
         virtual const std::vector<DeviceInfo>& GetConnectedDevices() const override { return noDeviceInfo_; }
-        virtual const glm::vec3& GetControllerPosition(std::uint32_t trackedDeviceId) const override { return zeroVec3_; }
-        virtual const glm::vec3& GetControllerDirection(std::uint32_t trackedDeviceId) const override { return zeroVec3_; }
-        virtual const glm::quat& GetControllerOrientation(std::uint32_t trackedDeviceId) const override { return identityQuat_; }
-        virtual const glm::vec2& GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const override { return zeroVec2_; }
+        virtual const glm::vec3& GetControllerPosition(std::uint32_t) const override { return zeroVec3_; }
+        virtual const glm::vec3& GetControllerDirection(std::uint32_t) const override { return zeroVec3_; }
+        virtual const glm::quat& GetControllerOrientation(std::uint32_t) const override { return identityQuat_; }
+        virtual const glm::vec2& GetDisplayPointerPosition(std::uint32_t) const override { return zeroVec2_; }
 
-        virtual bool ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override { return false; }
-        virtual bool ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override { return false; }
-        virtual bool ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override { return false; }
-        virtual bool ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid)  override { return false; }
+        virtual bool ControllerButtonPressedCallback(std::uint32_t, std::size_t) override { return false; }
+        virtual bool ControllerButtonTouchedCallback(std::uint32_t, std::size_t) override { return false; }
+        virtual bool ControllerButtonPressReleasedCallback(std::uint32_t, std::size_t) override { return false; }
+        virtual bool ControllerButtonTouchReleasedCallback(std::uint32_t, std::size_t)  override { return false; }
 
-        virtual void GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ButtonState& buttonstate) const override {};
+        virtual void GetControllerButtonState(std::uint32_t, std::size_t, glm::vec2&, ButtonState&) const override {};
 
         virtual std::vector<std::string> OutputDevices() const override { return std::vector<std::string>(); }
     };

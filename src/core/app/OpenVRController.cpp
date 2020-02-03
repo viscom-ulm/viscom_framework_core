@@ -10,7 +10,7 @@
 
 #include <openvr.h>
 #include <fstream>
-#include <windows.h>
+#include <chrono>
 
 #include "DisplayPointerCalibrationController.h"
 
@@ -138,7 +138,7 @@ namespace viscom::ovr {
 #endif
 
 #ifdef MOCKING
-        double time = 0.001 * GetTickCount();
+        double time = 0.001 * std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
         value = glm::vec2(0.5 * sin(0.3 * time) + 0.5, 0.5 * cos(time) + 0.5);
     
         return value;
