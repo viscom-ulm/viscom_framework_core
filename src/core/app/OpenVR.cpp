@@ -34,9 +34,9 @@ namespace viscom::ovr {
             glm::sqrt(glm::max(0.0f, 1.0f - m.m[0][0] + m.m[1][1] - m.m[2][2])) / 2.0f,
             glm::sqrt(glm::max(0.0f, 1.0f - m.m[0][0] - m.m[1][1] + m.m[2][2])) / 2.0f
         };
-        result.x = copysign(result.x, m.m[2][1] - m.m[1][2]);
-        result.y = copysign(result.y, m.m[0][2] - m.m[2][0]);
-        result.z = copysign(result.z, m.m[1][0] - m.m[0][1]);
+        result.x = copysignf(result.x, static_cast<float>(m.m[2][1] - m.m[1][2]));
+        result.y = copysignf(result.y, static_cast<float>(m.m[0][2] - m.m[2][0]));
+        result.z = copysignf(result.z, static_cast<float>(m.m[1][0] - m.m[0][1]));
         return result;
     }
 
