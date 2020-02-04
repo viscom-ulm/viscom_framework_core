@@ -53,7 +53,7 @@ namespace viscom::ovr {
     {
         virtual bool InitialiseVR() override { return false; }
         virtual bool InitialiseDisplayVR() override { return false; }
-        virtual bool CalibrateVR(CalibrateMethod method) override { return false; }
+        virtual bool CalibrateVR(CalibrateMethod) override { return false; }
         virtual const std::vector<DeviceInfo>& GetConnectedDevices() const override { return noDeviceInfo_; }
         virtual const glm::vec3& GetControllerPosition(std::uint32_t) const override { return zeroVec3_; }
         virtual const glm::vec3& GetControllerDirection(std::uint32_t) const override { return zeroVec3_; }

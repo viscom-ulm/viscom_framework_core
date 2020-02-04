@@ -157,17 +157,17 @@ namespace viscom::ovr {
         auto touched = controllerState.ulButtonTouched;
 
 
-        int triggerID = 0;
-        int trackPadID = 0;
+        //int triggerID = 0;
+        //int trackPadID = 0; // ...not used
 
-        for (int i = 0; i < vr::k_unControllerStateAxisCount; i++)
+        for (unsigned int i = 0; i < vr::k_unControllerStateAxisCount; i++)
         {
             int deviceProperty = pHMD_->GetInt32TrackedDeviceProperty(trackedDeviceId, (vr::ETrackedDeviceProperty)(vr::Prop_Axis0Type_Int32 + i));
 
             if (deviceProperty == vr::k_eControllerAxis_Trigger)
-                triggerID = i;
+                //triggerID = i;
             else if (deviceProperty == vr::k_eControllerAxis_TrackPad)
-                trackPadID = i;
+                //trackPadID = i;
         }
 
 
@@ -358,9 +358,9 @@ namespace viscom::ovr {
     *   @param pos position of the tracker
     *   @param q tracker orientation
     */
+#ifdef VISCOM_USE_SGCT
     void OpenVRController::HandleSCGT(const glm::vec3& pos, const glm::quat& q) const
     {
-#ifdef VISCOM_USE_SGCT
         sgct_wrapper::wVec3 position;
         position[0] = pos.x - displayPlane_.center_.x;
         position[1] = pos.y - displayPlane_.center_.y;
@@ -369,8 +369,12 @@ namespace viscom::ovr {
         sgct_wrapper::wQuat orientation{ q.w, q.x, q.y, q.z };
         sgct_wrapper::SetDefaultUserPosition(position);
         sgct_wrapper::SetDefaultUserOrientation(orientation);
-#endif // VISCOM_USE_SGCT
     }
+#endif // VISCOM_USE_SGCT
+
+#ifndef VISCOM_USE_SGCT
+    void OpenVRController::HandleSCGT(const glm::vec3&, const glm::quat&) const {}
+#endif // VISCOM_USE_SGCT
 
     /** Reads displayEdges.txt and initializes the display with found values. */
     bool OpenVRController::InitCalibrationFromFile()
