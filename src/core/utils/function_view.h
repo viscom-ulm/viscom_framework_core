@@ -22,6 +22,7 @@ namespace viscom {
     /// a function_ref.
     template<typename Fn> class function_view;
 
+    /** @see \ref viscom::function_view< Fn > */
     template<typename Ret, typename ...Params>
     class function_view<Ret(Params...)> {
         Ret(*callback)(intptr_t callable, Params ...params) = nullptr;
@@ -35,8 +36,13 @@ namespace viscom {
 
     public:
         function_view() = default;
+        /** Constructor for a function view with a nullptr. */
         function_view(std::nullptr_t) {}
 
+        /**
+         *  Constructor for function_view.
+         *  @param callable the callable object to be wrapped by the \ref function_view.
+         */
         template <typename Callable>
         function_view(Callable &&callable,
             typename std::enable_if<
@@ -45,10 +51,12 @@ namespace viscom {
             : callback(callback_fn<typename std::remove_reference<Callable>::type>),
             callable(reinterpret_cast<intptr_t>(&callable)) {}
 
+        /** Calls the function contained within the function view with parameters. */
         Ret operator()(Params ...params) const {
             return callback(callable, std::forward<Params>(params)...);
         }
 
+        /** Checks whether the function_view contains a function. */
         operator bool() const { return callback; }
     };
 }

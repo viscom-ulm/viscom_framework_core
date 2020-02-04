@@ -40,7 +40,7 @@ namespace viscom {
         for (std::size_t i = 0; i < numChildren; ++i) children_.push_back(std::make_unique<SceneMeshNode>(node->mChildren[i], this, boneMap));
 
         auto nodeBone = boneMap.find(nodeName_);
-        if (nodeBone != boneMap.end()) boneIndex_ = nodeBone->second;
+        if (nodeBone != boneMap.end()) boneIndex_ = static_cast<int>(nodeBone->second);
     }
 
     SceneMeshNode::SceneMeshNode(const SceneMeshNode& rhs) :

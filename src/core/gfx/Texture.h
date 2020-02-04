@@ -53,9 +53,10 @@ namespace viscom {
 
         /**
          *  Initializes the Texture.
-         *  @param useSRGB defines if the texture uses the standart RGB color space.
+         *  @param useSRGB defines if the texture uses the standard RGB color space.
+         *  @param flipTexture flips the texture on load.
          */
-        void Initialize(bool useSRGB = true);
+        void Initialize(bool useSRGB = true, bool flipTexture = true);
 
         /** Returns the size of the texture. */
         glm::uvec2 getDimensions() const noexcept { return glm::uvec2(width_, height_); }
@@ -81,7 +82,7 @@ namespace viscom {
         /**
          *  Loads a low dynamic range image from file.
          *  @param filename the path to the image file.
-         *  @param useSRGB defines if the texture uses the standart RGB color space.
+         *  @param useSRGB defines if the texture uses the standard RGB color space.
          */
         std::pair<void*, std::size_t> LoadImageLDR(const std::string& filename, bool useSRGB);
         /**
@@ -93,7 +94,7 @@ namespace viscom {
          *  Finds the appropriate format, internal format and number of bytes per pixel for a low dynamic range image.
          *  @param filename the path to the image file.
          *  @param imgChannels the number of channels the image uses.
-         *  @param useSRGB defines if the texture uses the standart RGB color space.
+         *  @param useSRGB defines if the texture uses the standard RGB color space.
          */
         std::tuple<unsigned int, int, int> FindFormatLDR(const std::string& filename, int imgChannels, bool useSRGB = false) const;
         /**
@@ -114,5 +115,7 @@ namespace viscom {
         unsigned int height_;
         /** Is this an sRGB texture. */
         bool sRGB_;
+        /** Flip the texture on load. */
+        bool flipTexture_ = true;
     };
 }

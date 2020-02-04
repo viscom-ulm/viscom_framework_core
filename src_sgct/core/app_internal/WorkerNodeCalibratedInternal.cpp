@@ -124,7 +124,7 @@ namespace viscom {
             projectorViewport_[i] = GetFramework().GetViewportScreen(i);
             auto projectorSize = GetFramework().GetViewportScreen(i).size_;
 
-            auto projectorNo = GetFramework().GetGlobalProjectorId(slaveId, i);
+            auto projectorNo = GetFramework().GetGlobalProjectorId(slaveId, static_cast<int>(i));
             auto quadCornersName = FWConfiguration::CALIBRATION_QUAD_CORNERS_NAME + std::to_string(projectorNo);
             auto quadTexCoordsName = FWConfiguration::CALIBRATION_QUAD_TEX_COORDS_NAME + std::to_string(projectorNo);
             auto resolutionScalingName = FWConfiguration::CALIBRATION_QUAD_RESOLUTION_SCALING_NAME + std::to_string(projectorNo);
@@ -183,7 +183,10 @@ namespace viscom {
 
             CreateProjectorFBO(i, fboSize);
 
-            sceneFBOs_[i].SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, GetFramework().GetViewportQuadSize(i).x, GetFramework().GetViewportQuadSize(i).y);
+            LOG(DBUG) << "VP Pos: " << projectorViewport_[i].position_.x << ", " << projectorViewport_[i].position_.y;
+            LOG(DBUG) << "VP Size: " << GetFramework().GetViewportQuadSize(i).x << ", " << GetFramework().GetViewportQuadSize(i).y;
+            sceneFBOs_[i].SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y,
+                static_cast<unsigned int>(GetFramework().GetViewportQuadSize(i).x), static_cast<unsigned int>(GetFramework().GetViewportQuadSize(i).y));
             GetFramework().GetFramebuffer(i).SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, projectorViewport_[i].size_.x, projectorViewport_[i].size_.y);
 
 
@@ -208,7 +211,7 @@ namespace viscom {
              
 
                 glBindTexture(GL_TEXTURE_2D, alphaTextures_[i]);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, projectorSize.x, projectorSize.y, 0, GL_RED, GL_FLOAT, texAlphaData.data());
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, static_cast<int>(projectorSize.x), static_cast<int>(projectorSize.y), 0, GL_RED, GL_FLOAT, texAlphaData.data());
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -240,7 +243,7 @@ namespace viscom {
 
     void WorkerNodeCalibratedInternal::DrawFrame(FrameBuffer&)
     {
-        auto windowId = GetFramework().GetEngine()->getCurrentWindowPtr()->getId();
+        auto windowId = static_cast<std::size_t>(GetFramework().GetEngine()->getCurrentWindowPtr()->getId());
 
         GetFramework().GetEngine()->getCurrentWindowPtr()->getFBOPtr()->unBind();
 
@@ -251,7 +254,7 @@ namespace viscom {
 
     void WorkerNodeCalibratedInternal::Draw2D(FrameBuffer& fbo)
     {
-        auto windowId = GetFramework().GetEngine()->getCurrentWindowPtr()->getId();
+        auto windowId = static_cast<std::size_t>(GetFramework().GetEngine()->getCurrentWindowPtr()->getId());
         WorkerNodeLocalInternal::Draw2D(sceneFBOs_[windowId]);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -284,7 +287,7 @@ namespace viscom {
                 glUniform3f(calibrationColorLoc_, 1.0, 1.0, 1.0);
 
                 glBindVertexArray(vaoProjectorQuads_);
-                glDrawArrays(GL_TRIANGLE_FAN, 4 * windowId, 4);
+                glDrawArrays(GL_TRIANGLE_FAN, 4 * static_cast<int>(windowId), 4);
                 glBindVertexArray(0);
             }
 

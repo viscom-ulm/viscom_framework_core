@@ -8,7 +8,6 @@
 
 #include "CameraBase.h"
 
-#define GLM_FORCE_SWIZZLE
 #include <core/open_gl.h>
 
 #define GLM_ENABLE_EXPERIMENTAL

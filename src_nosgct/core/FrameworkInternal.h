@@ -111,6 +111,8 @@ namespace viscom {
         FrameBuffer& GetFramebuffer(std::size_t) { return backBuffer_; }
         /** Returns the applications window id. */
         std::size_t GetCurrentWindowID() const { return 0; }
+        /** Returns the main window of the current node (for shared contexts). */
+        GLFWwindow* GetCurrentNodeMainWindow() const { return window_; }
         /**
          *  Returns the viewport for the specified window.
          *  @param windowId the window id.

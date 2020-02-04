@@ -85,7 +85,7 @@ POP_WARNINGS
 
     void WorkerNodeLocalInternal::Draw2D(FrameBuffer& fbo)
     {
-        auto windowId = GetFramework().GetEngine()->getCurrentWindowPtr()->getId();
+        auto windowId = static_cast<std::size_t>(GetFramework().GetEngine()->getCurrentWindowPtr()->getId());
         if constexpr (SHOW_CLIENT_GUI) {
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame(-GetFramework().GetViewportScreen(windowId).position_,

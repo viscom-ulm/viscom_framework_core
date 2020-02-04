@@ -6,8 +6,6 @@
  * @brief  Implementation of an arcball camera.
  */
 
-#define GLM_FORCE_SWIZZLE
-
 #include "ArcballCamera.h"
 
 #include "core/glfw.h"
