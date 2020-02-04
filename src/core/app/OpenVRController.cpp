@@ -164,10 +164,12 @@ namespace viscom::ovr {
         {
             int deviceProperty = pHMD_->GetInt32TrackedDeviceProperty(trackedDeviceId, (vr::ETrackedDeviceProperty)(vr::Prop_Axis0Type_Int32 + i));
 
-            if (deviceProperty == vr::k_eControllerAxis_Trigger)
+            if (deviceProperty == vr::k_eControllerAxis_Trigger) {
                 //triggerID = i;
-            else if (deviceProperty == vr::k_eControllerAxis_TrackPad)
+            }
+            else if (deviceProperty == vr::k_eControllerAxis_TrackPad) {
                 //trackPadID = i;
+            }
         }
 
 
