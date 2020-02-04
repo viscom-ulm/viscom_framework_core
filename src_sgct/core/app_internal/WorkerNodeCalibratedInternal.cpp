@@ -105,7 +105,7 @@ namespace viscom {
             GetFramework().GetViewportScaling(i) = totalScreenSize / GetFramework().GetConfig().virtualScreenSize_;
 
 
-            glm::vec2 vpLocalSize = glm::vec2(vpLocalUpperRight[0], vpLocalUpperRight[1]) - glm::vec2(vpLocalLowerLeft[0], vpLocalLowerLeft[1]);
+            //glm::vec2 vpLocalSize = glm::vec2(vpLocalUpperRight[0], vpLocalUpperRight[1]) - glm::vec2(vpLocalLowerLeft[0], vpLocalLowerLeft[1]); // ...not used
             glm::vec2 vpTotalSize = 2.0f * GetFramework().GetConfig().nearPlaneSize_;
 
             glm::ivec2 projectorViewportPosition = ((glm::vec2(vpLocalLowerLeft[0], vpLocalLowerLeft[1]) + GetFramework().GetConfig().nearPlaneSize_) / vpTotalSize) * totalScreenSize;
