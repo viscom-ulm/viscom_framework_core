@@ -57,7 +57,7 @@ namespace viscom {
 
         LOG(DBUG) << "Initializing viewports.";
         auto slaveId = sgct_core::ClusterManager::instance()->getThisNodeId();
-        auto numSlaves = sgct_core::ClusterManager::instance()->getNumberOfNodes();
+        //auto numSlaves = sgct_core::ClusterManager::instance()->getNumberOfNodes(); // ...not used
         auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
         projectorViewport_.resize(numWindows);
         sceneFBOs_.reserve(numWindows);
@@ -162,7 +162,7 @@ namespace viscom {
             GetFramework().GetViewportQuadSize(i) = fboSize;
             GetFramework().GetViewportScaling(i) = totalScreenSize / GetFramework().GetConfig().virtualScreenSize_;
 
-            glm::vec2 vpLocalSize = glm::vec2(vpLocalUpperRight[0], vpLocalUpperRight[1]) - glm::vec2(vpLocalLowerLeft[0], vpLocalLowerLeft[1]);
+            //glm::vec2 vpLocalSize = glm::vec2(vpLocalUpperRight[0], vpLocalUpperRight[1]) - glm::vec2(vpLocalLowerLeft[0], vpLocalLowerLeft[1]); // ...not used
             glm::vec2 vpTotalSize = 2.0f * GetFramework().GetConfig().nearPlaneSize_;
 
             glm::ivec2 projectorViewportPosition = ((glm::vec2(vpLocalLowerLeft[0], vpLocalLowerLeft[1]) + GetFramework().GetConfig().nearPlaneSize_) / vpTotalSize) * totalScreenSize;
@@ -280,9 +280,9 @@ namespace viscom {
                 glUniform1i(calibrationSceneTexLoc_, 0);
                 glUniform1i(calibrationAlphaTexLoc_, 1);
 
-                int slaveId = sgct_core::ClusterManager::instance()->getThisNodeId();
-                int windowId = int(GetFramework().GetCurrentWindowID());
-                int projectorNo = GetFramework().GetGlobalProjectorId(slaveId, windowId);
+                //int slaveId = sgct_core::ClusterManager::instance()->getThisNodeId();
+                //int windowId = int(GetFramework().GetCurrentWindowID());
+                //int projectorNo = GetFramework().GetGlobalProjectorId(slaveId, windowId);
                 //glUniform3f(calibrationColorLoc_, calibrationColors_[projectorNo].x * calibrationBrightness_, calibrationColors_[projectorNo].y * calibrationBrightness_, calibrationColors_[projectorNo].z * calibrationBrightness_);
                 glUniform3f(calibrationColorLoc_, 1.0, 1.0, 1.0);
 
