@@ -82,7 +82,7 @@ namespace viscom {
         LOG(DBUG) << numWindows << "\n";
 
         for (auto i = 0U; i < numSlaves * numWindows; ++i) {
-            /*if (std::getline(colorCorrectionFile, line)){
+            if (std::getline(colorCorrectionFile, line)){
                 float r = float(std::atof(line.substr(0, line.find(' ')).c_str()));
                 line = line.substr(line.find(' ') + 1, line.length());
                 float g = float(std::atof(line.substr(0, line.find(' ')).c_str()));
