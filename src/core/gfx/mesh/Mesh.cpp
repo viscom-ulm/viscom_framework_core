@@ -128,7 +128,7 @@ namespace viscom {
 
     void Mesh::LoadAssimpMeshFromFile(const std::string& filename, const std::string& binFilename, FrameworkInternal* node)
     {
-        auto fullFilename = FindResourceLocation(filename);
+        auto fullFilename = filename;
         // Load a Model from File
         Assimp::Importer loader;
         auto scene = loader.ReadFile(fullFilename, forceGenNormals_ ? ASSIMP_FLAGS_FORCEGEN : ASSIMP_FLAGS);
