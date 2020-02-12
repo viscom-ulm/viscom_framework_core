@@ -74,6 +74,5 @@ namespace viscom {
          *  @see ApplicationNodeBase::RemoveTuioCursor.
          */
         virtual void RemoveTuioCursor(TUIO::TuioCursor* tcur) override;
-
     };
 }

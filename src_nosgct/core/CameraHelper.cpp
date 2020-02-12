@@ -82,6 +82,12 @@ namespace viscom {
         return glm::vec3(postProjPos) / postProjPos.w;
     }
 
+    glm::mat4 CameraHelper::GetLocalCoordMatrix() const
+    {
+        glm::mat4 localCoordMatrix = glm::mat4(1.0f);
+        return localCoordMatrix;
+    }
+
 #undef near
 #undef far
 

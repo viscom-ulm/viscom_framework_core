@@ -9,10 +9,17 @@
 #pragma once
 
 #include "core/app_internal/ApplicationNodeInternal.h"
+#include "core/app/OpenVRController.h"
 
 namespace viscom {
 
-    class CoordinatorNodeInternal : public ApplicationNodeInternal
+    struct VrSyncedInfo {
+        glm::vec2 displayPosLeftController_ = glm::vec2{ 0.0f };
+        glm::vec2 displayPosRightController_ = glm::vec2{ 0.0f };
+    };
+
+    
+    class CoordinatorNodeInternal : public ovr::OpenVRController, public ApplicationNodeInternal
     {
     public:
         /**
@@ -73,6 +80,71 @@ namespace viscom {
          *  @see ApplicationNodeBase::RemoveTuioCursor.
          */
         virtual void RemoveTuioCursor(TUIO::TuioCursor* tcur) override;
+
+        void EncodeData();
+        void DecodeData();
+
+        bool ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override {
+            return ApplicationNodeInternal::ControllerButtonPressedCallback(trackedDeviceId, buttonid);
+        }
+
+        bool ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override {
+            return ApplicationNodeInternal::ControllerButtonTouchedCallback(trackedDeviceId, buttonid);
+        }
+
+        bool ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override {
+            return ApplicationNodeInternal::ControllerButtonPressReleasedCallback(trackedDeviceId, buttonid);
+        }
+
+        bool ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override {
+            return ApplicationNodeInternal::ControllerButtonTouchReleasedCallback(trackedDeviceId, buttonid);
+        }
+
+        bool InitialiseVR() override {
+            return ovr::OpenVRController::InitialiseVR();
+        }
+
+        bool InitialiseDisplayVR() override {
+            return ovr::OpenVRController::InitialiseDisplayVR();
+        }
+
+        bool CalibrateVR(ovr::CalibrateMethod method) override {
+            return ovr::OpenVRController::CalibrateVR(method);
+        }
+
+        const std::vector<ovr::DeviceInfo>& GetConnectedDevices() const override {
+            return ovr::OpenVRController::GetConnectedDevices();
+        }
+
+        const glm::vec3& GetControllerPosition(std::uint32_t trackedDeviceId) const override {
+            return ovr::OpenVRController::GetControllerPosition(trackedDeviceId);
+        }
+
+        const glm::vec3& GetControllerDirection(std::uint32_t trackedDeviceId) const override {
+            return ovr::OpenVRController::GetControllerDirection(trackedDeviceId);
+        }
+
+        const glm::quat& GetControllerOrientation(std::uint32_t trackedDeviceId) const override {
+            return ovr::OpenVRController::GetControllerOrientation(trackedDeviceId);
+        }
+
+        const glm::vec2& GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const override {
+            return ovr::OpenVRController::GetDisplayPointerPosition(trackedDeviceId);
+        }
+
+        void GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ovr::ButtonState& buttonstate) const override {
+            return ovr::OpenVRController::GetControllerButtonState(trackedDeviceId, buttonid, axisvalues, buttonstate);
+        }
+
+        std::vector<std::string> OutputDevices() const override {
+            return ovr::OpenVRController::OutputDevices();
+        }
+
+    protected:
+        /** Holds the synchronized object (local). */
+        VrSyncedInfo vrInfoLocal_;
+        /** Holds the synchronized object (synced). */
+        sgct::SharedObject<VrSyncedInfo> vrInfoSynced_;
 
     private:
 #ifdef VISCOM_SYNCINPUT

@@ -10,6 +10,8 @@
 
 #include "core/app_internal/ApplicationNodeInternal.h"
 #include "core/FrameworkInternal.h"
+#include "OpenVR.h"
+#include "OpenVRControllerIfc.h"
 
 struct GLFWwindow;
 
@@ -20,7 +22,7 @@ namespace viscom {
     class FrameBuffer;
 
     /** Base class for the application node. */
-    class ApplicationNodeBase
+    class ApplicationNodeBase : public ovr::OpenVRControllerIfc
     {
     public:
         /**
@@ -208,6 +210,74 @@ namespace viscom {
          */
         void TransferData(const void* data, std::size_t length, std::uint16_t packageId) const { framework_->TransferData(data, length, packageId); }
 
+        /** Initializes OpenVR */
+        virtual bool InitialiseVR() override { return appNode_->InitialiseVR(); }
+        /** Initializes the display edges either by file or with default values if no displayEdges txt is found */
+        virtual bool InitialiseDisplayVR() override { return appNode_->InitialiseDisplayVR(); }
+        /** Calibrates OpenVR */
+        virtual bool CalibrateVR(ovr::CalibrateMethod method) override { return appNode_->CalibrateVR(method); }
+        /** Returns a vector containing the connected Devices */
+        virtual const std::vector<ovr::DeviceInfo>& GetConnectedDevices() const override { return appNode_->GetConnectedDevices(); }
+        /**
+        * Returns the current controller position for a given device id.
+        * @param trackedDeviceId to select a device.
+        * @return position of the selected controller.
+        */
+        virtual const glm::vec3& GetControllerPosition(std::uint32_t trackedDeviceId) const override { return appNode_->GetControllerPosition(trackedDeviceId); }
+        /**
+        * Returns the current z-vector for a given device id.
+        * @param trackedDeviceId to select a device.
+        * @return z-vector of the selected controller.
+        */
+        virtual const glm::vec3& GetControllerDirection(std::uint32_t trackedDeviceId) const override { return appNode_->GetControllerDirection(trackedDeviceId); }
+        /**
+        * Returns the current controller rotation for a given device id.
+        * @param trackedDeviceId to select a device.
+        * @return rotation quaternion for the selected controller.
+        */
+        virtual const glm::quat& GetControllerOrientation(std::uint32_t trackedDeviceId) const override { return appNode_->GetControllerOrientation(trackedDeviceId); }
+        /**
+        * Returns the display pointing position for a given device id.
+        * @param trackedDeviceId to select a device.
+        * @return position of the selected controller.
+        */
+        virtual const glm::vec2& GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const override { return appNode_->GetDisplayPointerPosition(trackedDeviceId); }
+
+        /** 
+        * Callback for a button press on a controller.
+        * @param trackedDeviceId identifies the device.
+        * @param buttonid identifies the button ( using the OpenVR button ids).
+        */
+        virtual bool ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override;
+        /**
+        * Callback for a button touch on a controller.
+        * @param trackedDeviceId identifies the device.
+        * @param buttonid identifies the button ( using the OpenVR button ids).
+        */
+        virtual bool ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override;
+        /**
+        * Callback if a button on a controller is not pressed anymore.
+        * @param trackedDeviceId identifies the device.
+        * @param buttonid identifies the button ( using the OpenVR button ids).
+        */
+        virtual bool ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override;
+        /**
+        * Callback if a button on a controller is not touched anymore.
+        * @param trackedDeviceId identifies the device.
+        * @param buttonid identifies the button ( using the OpenVR button ids).
+        */
+        virtual bool ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid) override;
+
+        /**
+        * Immediate method to get the buttonstate of a controller.
+        * @param trackedDeviceId identifies the device.
+        * @param buttonid identifies the button ( using the OpenVR button ids).
+        * @param axisvalues for buttons having axis this will be filled with the axis values.
+        * @param buttonstate for identifying the button state ( pressed, touched, released)
+        */
+        virtual void GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ovr::ButtonState& buttonstate) const override;
+        virtual std::vector<std::string> OutputDevices() const override { return appNode_->OutputDevices(); }
+
     protected:
         /** Returns the applications configuration. */
         const FWConfiguration& GetConfig() const { return framework_->GetConfig(); }
@@ -221,32 +291,32 @@ namespace viscom {
          *  Returns the viewport for the specified window.
          *  @param windowId the window id.
          */
-        const Viewport& GetViewportScreen(size_t windowId) const { return framework_->GetViewportScreen(windowId); }
+        const Viewport& GetViewportScreen(std::size_t windowId) const { return framework_->GetViewportScreen(windowId); }
         /**
          *  Returns the viewport for the specified window.
          *  @param windowId the window id.
          */
-        Viewport& GetViewportScreen(size_t windowId) { return framework_->GetViewportScreen(windowId); }
+        Viewport& GetViewportScreen(std::size_t windowId) { return framework_->GetViewportScreen(windowId); }
         /**
          *  Returns the size of the viewport for the specified window.
          *  @param windowId the window id.
          */
-        const glm::ivec2& GetViewportQuadSize(size_t windowId) const { return framework_->GetViewportQuadSize(windowId); }
+        const glm::ivec2& GetViewportQuadSize(std::size_t windowId) const { return framework_->GetViewportQuadSize(windowId); }
         /**
          *  Returns the size of the viewport for the specified window.
          *  @param windowId the window id.
          */
-        glm::ivec2& GetViewportQuadSize(size_t windowId) { return framework_->GetViewportQuadSize(windowId); }
+        glm::ivec2& GetViewportQuadSize(std::size_t windowId) { return framework_->GetViewportQuadSize(windowId); }
         /**
          *  Returns the viewport scaling for the specified window.
          *  @param windowId the window id.
          */
-        const glm::vec2& GetViewportScaling(size_t windowId) const { return framework_->GetViewportScaling(windowId); }
+        const glm::vec2& GetViewportScaling(std::size_t windowId) const { return framework_->GetViewportScaling(windowId); }
         /**
          *  Returns the viewport scaling for the specified window.
          *  @param windowId the window id.
          */
-        glm::vec2& GetViewportScaling(size_t windowId) { return framework_->GetViewportScaling(windowId); }
+        glm::vec2& GetViewportScaling(std::size_t windowId) { return framework_->GetViewportScaling(windowId); }
 
         /** Returns the current application time. */
         double GetCurrentAppTime() const { return appNode_->GetCurrentAppTime(); }
@@ -260,5 +330,6 @@ namespace viscom {
         ApplicationNodeInternal* appNode_;
         /** Holds the framework. */
         FrameworkInternal* framework_;
+
     };
 }

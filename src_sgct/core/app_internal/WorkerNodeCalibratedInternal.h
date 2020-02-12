@@ -24,7 +24,7 @@ namespace viscom {
 
     private:
         void InitOffscreenBuffers();
-        void CreateProjectorFBO(size_t windowId, const glm::ivec2& fboSize);
+        void CreateProjectorFBO(std::size_t windowId, const glm::ivec2& fboSize);
 
 
         /** Holds the viewport for rendering directly to the projector. */

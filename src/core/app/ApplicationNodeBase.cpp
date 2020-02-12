@@ -9,6 +9,7 @@
 #include "ApplicationNodeBase.h"
 #include <imgui.h>
 #include "core/FrameworkInternal.h"
+//#include <openvr.h>
 
 namespace viscom {
 
@@ -16,10 +17,11 @@ namespace viscom {
         appNode_{ appNode },
         framework_{ &appNode_->GetFramework() }
     {
+
     }
 
     ApplicationNodeBase::~ApplicationNodeBase() = default;
-
+ 
     void ApplicationNodeBase::PreWindow()
     {
     }
@@ -122,5 +124,30 @@ namespace viscom {
     void ApplicationNodeBase::Terminate() const
     {
         framework_->Terminate();
+    }
+    
+    bool ApplicationNodeBase::ControllerButtonPressedCallback(std::uint32_t, std::size_t)
+    {
+        return false;
+    }
+
+    bool ApplicationNodeBase::ControllerButtonTouchedCallback(std::uint32_t, std::size_t)
+    {
+        return false;
+    }
+
+    bool ApplicationNodeBase::ControllerButtonPressReleasedCallback(std::uint32_t, std::size_t)
+    {
+        return false;
+    }
+
+    bool ApplicationNodeBase::ControllerButtonTouchReleasedCallback(std::uint32_t, std::size_t)
+    {
+        return false;
+    }
+
+    void ApplicationNodeBase::GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ovr::ButtonState& buttonstate) const
+    {
+        return appNode_->GetControllerButtonState(trackedDeviceId, buttonid, axisvalues, buttonstate);
     }
 }

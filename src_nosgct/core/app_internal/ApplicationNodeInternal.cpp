@@ -10,6 +10,9 @@
 #include <imgui.h>
 #include "core/open_gl.h"
 #include "core/app/ApplicationNodeBase.h"
+#include <openvr.h>
+#include <iostream>
+#include <fstream>
 
 namespace viscom {
 
@@ -57,6 +60,8 @@ POP_WARNINGS
 
     void ApplicationNodeInternal::PreSync()
     {
+        ParseTrackingFrame();
+        PollAndParseEvents();
         appNodeImpl_->PreSync();
     }
 
@@ -159,4 +164,25 @@ POP_WARNINGS
             appNodeImpl_->RemoveTuioCursor(tcur);
         }
     }
+
+    bool ApplicationNodeInternal::ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid)
+    {
+        return appNodeImpl_->ControllerButtonPressedCallback(trackedDeviceId, buttonid);
+    }
+
+    bool ApplicationNodeInternal::ControllerButtonTouchedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid)
+    {
+        return appNodeImpl_->ControllerButtonTouchedCallback(trackedDeviceId, buttonid);
+    }
+
+    bool ApplicationNodeInternal::ControllerButtonPressReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid)
+    {
+        return appNodeImpl_->ControllerButtonPressReleasedCallback(trackedDeviceId, buttonid);
+    }
+
+    bool ApplicationNodeInternal::ControllerButtonTouchReleasedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid)
+    {
+        return appNodeImpl_->ControllerButtonTouchReleasedCallback(trackedDeviceId, buttonid);
+    }
+
 }

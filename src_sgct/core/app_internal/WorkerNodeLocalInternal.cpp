@@ -140,5 +140,4 @@ POP_WARNINGS
     void WorkerNodeLocalInternal::RemoveTuioCursor(TUIO::TuioCursor*)
     {
     }
-
 }

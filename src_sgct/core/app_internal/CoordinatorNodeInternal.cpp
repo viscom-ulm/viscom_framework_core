@@ -13,6 +13,9 @@
 #include "core/imgui/imgui_impl_opengl3.h"
 #include <imgui.h>
 #include "core/app/ApplicationNodeBase.h"
+#include <iostream>
+#include <fstream>
+#include <openvr.h>
 
 namespace viscom {
 
@@ -97,6 +100,13 @@ POP_WARNINGS
 
         syncInfoSynced_.setVal(syncInfoLocal_);
 
+        ParseTrackingFrame();
+        vrInfoLocal_.displayPosLeftController_ = GetLeftControllerDisplayPosition();
+        vrInfoLocal_.displayPosRightController_ = GetRightControllerDisplayPosition();
+        vrInfoSynced_.setVal(vrInfoLocal_);
+
+        PollAndParseEvents();
+
         ApplicationNodeInternal::PreSync();
     }
 
@@ -108,6 +118,8 @@ POP_WARNINGS
             GetFramework().GetViewportQuadSize(windowId), GetFramework().GetViewportScreen(windowId).size_,
             GetFramework().GetViewportScaling(windowId), GetCurrentAppTime(), GetElapsedTime());
         ImGui::NewFrame();
+
+        if (IsCalibrating()) DisplayCalibrationGUI();
 
         ApplicationNodeInternal::Draw2D(fbo);
 
@@ -202,4 +214,13 @@ POP_WARNINGS
 #endif
     }
 
+    void CoordinatorNodeInternal::EncodeData()
+    {
+        sgct::SharedData::instance()->writeObj(&vrInfoSynced_);
+    }
+
+    void CoordinatorNodeInternal::DecodeData()
+    {
+        sgct::SharedData::instance()->readObj(&vrInfoSynced_);
+    }
 }

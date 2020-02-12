@@ -79,9 +79,12 @@ namespace viscom {
          */
         glm::vec3 GetPickPosition(const glm::vec2& globalScreenCoords) const;
 
-        /** Returns the cameras near plane. */
+        /** Returns the matrix to calculate local coordinates from global ones. */
+        glm::mat4 GetLocalCoordMatrix() const;
+
+        /** Returns the camera's near plane. */
         inline float GetNearPlane() const { return nearPlane_; }
-        /** Returns the cameras far plane. */
+        /** Returns the camera's far plane. */
         inline float GetFarPlane() const { return farPlane_; }
         /**
          *  Sets the near and far plane values;
@@ -96,7 +99,7 @@ namespace viscom {
 
         /** Position of the camera. */
         glm::vec3 position_;
-        /** Orientation of the camera. */ 
+        /** Orientation of the camera. */
         glm::quat cameraOrientation_;
 
         /** The user position. */

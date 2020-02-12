@@ -75,7 +75,7 @@ namespace viscom {
 
 #ifdef VISCOM_CLIENTGUI
     /** Defines if the client GUI should be displayed. */
-    constexpr bool SHOW_CLIENT_GUI = true;
+    constexpr bool SHOW_CLIENT_GUI = false;
 #else
     /** Defines if the client GUI should be displayed. */
     constexpr bool SHOW_CLIENT_GUI = false;
