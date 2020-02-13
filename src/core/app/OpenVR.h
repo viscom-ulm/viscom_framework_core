@@ -16,7 +16,6 @@ namespace vr {
     class IVRSystem;
     struct VREvent_t;
     struct HmdMatrix34_t;
-    enum ETrackedControllerRole;
 }
 
 namespace viscom::ovr {
