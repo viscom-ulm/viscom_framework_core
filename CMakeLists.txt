@@ -47,7 +47,14 @@ set(VISCOM_OPENGL_PROFILE "3.3" CACHE STRING "OpenGL profile version to use.")
 # This could be changed to "off" if the default target doesn't need the tuio library
 set(VISCOM_USE_TUIO ON CACHE BOOL "Use TUIO input library")
 set(VISCOM_TUIO_PORT 3333 CACHE STRING "UDP Port for TUIO to listen on")
-set(VISCOM_USE_OPEN_VR ON CACHE BOOL "Use OpenVR library")
+set(VISCOM_USE_OPEN_VR OFF CACHE BOOL "Use OpenVR library")
+
+# Hide the "Use open vr" option under MacOS
+if(APPLE)
+    mark_as_advanced(FORCE VISCOM_USE_OPEN_VR)
+else()
+    mark_as_advanced(CLEAR VISCOM_USE_OPEN_VR)
+endif()
 
 
 # Build-flags.
@@ -128,6 +135,14 @@ if (${VISCOM_LOCAL_ONLY})
     list(REMOVE_ITEM SRC_FILES_CORE "${VISCOM_SGCT_WRAPPER_DIR}/core/app_internal/WorkerNodeCalibratedInternal.cpp")
     list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.h")
     list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.cpp")
+endif()
+
+if(NOT ${VISCOM_USE_OPEN_VR})
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVRController.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVRController.cpp")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVR.cpp")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/DisplayPointerCalibrationController.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/DisplayPointerCalibrationController.cpp")
 endif()
 
 foreach(f ${SRC_FILES_CORE})
@@ -224,6 +239,10 @@ endif()
 
 if (${VISCOM_LOCAL_ONLY})
     list(APPEND COMPILE_TIME_DEFS VISCOM_LOCAL_ONLY)
+endif()
+
+if (${VISCOM_USE_OPEN_VR})
+    list(APPEND COMPILE_TIME_DEFS VISCOM_USE_OPEN_VR)
 endif()
 
 if(${VISCOM_USE_TUIO})

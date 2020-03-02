@@ -9,7 +9,18 @@
 #pragma once
 
 #include "core/app_internal/ApplicationNodeInternal.h"
+
+#ifdef VISCOM_USE_OPEN_VR
 #include "core/app/OpenVRController.h"
+namespace viscom {
+    using OpenVRControllerAlias = ovr::OpenVRController;
+}
+#else
+#include "core/app/OpenVRControllerIfc.h"
+namespace viscom {
+    using OpenVRControllerAlias = ovr::OpenVRControllerDummy;
+}
+#endif
 
 namespace viscom {
 
@@ -19,7 +30,7 @@ namespace viscom {
     };
 
     
-    class CoordinatorNodeInternal : public ovr::OpenVRController, public ApplicationNodeInternal
+    class CoordinatorNodeInternal : public OpenVRControllerAlias, public ApplicationNodeInternal
     {
     public:
         /**
@@ -101,43 +112,43 @@ namespace viscom {
         }
 
         bool InitialiseVR() override {
-            return ovr::OpenVRController::InitialiseVR();
+            return OpenVRControllerAlias::InitialiseVR();
         }
 
         bool InitialiseDisplayVR() override {
-            return ovr::OpenVRController::InitialiseDisplayVR();
+            return OpenVRControllerAlias::InitialiseDisplayVR();
         }
 
         bool CalibrateVR(ovr::CalibrateMethod method) override {
-            return ovr::OpenVRController::CalibrateVR(method);
+            return OpenVRControllerAlias::CalibrateVR(method);
         }
 
         const std::vector<ovr::DeviceInfo>& GetConnectedDevices() const override {
-            return ovr::OpenVRController::GetConnectedDevices();
+            return OpenVRControllerAlias::GetConnectedDevices();
         }
 
         const glm::vec3& GetControllerPosition(std::uint32_t trackedDeviceId) const override {
-            return ovr::OpenVRController::GetControllerPosition(trackedDeviceId);
+            return OpenVRControllerAlias::GetControllerPosition(trackedDeviceId);
         }
 
         const glm::vec3& GetControllerDirection(std::uint32_t trackedDeviceId) const override {
-            return ovr::OpenVRController::GetControllerDirection(trackedDeviceId);
+            return OpenVRControllerAlias::GetControllerDirection(trackedDeviceId);
         }
 
         const glm::quat& GetControllerOrientation(std::uint32_t trackedDeviceId) const override {
-            return ovr::OpenVRController::GetControllerOrientation(trackedDeviceId);
+            return OpenVRControllerAlias::GetControllerOrientation(trackedDeviceId);
         }
 
         const glm::vec2& GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const override {
-            return ovr::OpenVRController::GetDisplayPointerPosition(trackedDeviceId);
+            return OpenVRControllerAlias::GetDisplayPointerPosition(trackedDeviceId);
         }
 
         void GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ovr::ButtonState& buttonstate) const override {
-            return ovr::OpenVRController::GetControllerButtonState(trackedDeviceId, buttonid, axisvalues, buttonstate);
+            return OpenVRControllerAlias::GetControllerButtonState(trackedDeviceId, buttonid, axisvalues, buttonstate);
         }
 
         std::vector<std::string> OutputDevices() const override {
-            return ovr::OpenVRController::OutputDevices();
+            return OpenVRControllerAlias::OutputDevices();
         }
 
     protected:
