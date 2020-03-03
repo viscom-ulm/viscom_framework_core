@@ -51,7 +51,7 @@ namespace viscom::ovr {
 
     class OpenVRControllerDummy : public OpenVRControllerIfc
     {
-    protected:
+    public:
         virtual bool InitialiseVR() override { return false; }
         virtual bool InitialiseDisplayVR() override { return false; }
         virtual bool CalibrateVR(CalibrateMethod) override { return false; }

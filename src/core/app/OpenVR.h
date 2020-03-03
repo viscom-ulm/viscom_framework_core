@@ -11,6 +11,10 @@
 #include "core/main.h"
 #include <glm/gtc/quaternion.hpp>
 
+#ifdef VISCOM_USE_OPEN_VR
+#include <openvr.h>
+#endif
+
 namespace vr {
     class IVRSystem;
     struct VREvent_t;
