@@ -10,7 +10,10 @@
 
 #include "core/main.h"
 #include <glm/gtc/quaternion.hpp>
+
+#ifdef VISCOM_USE_OPEN_VR
 #include <openvr.h>
+#endif
 
 namespace vr {
     class IVRSystem;
@@ -49,8 +52,11 @@ namespace viscom::ovr {
         glm::vec3 up_ = glm::vec3{ 0.0f, 2.0f, 0.0f };
     };
 
+#ifdef VISCOM_USE_OPEN_VR
     TrackedDeviceRole GetTrackedDeviceRoleFromTrackedControllerRole(const vr::ETrackedControllerRole& role);
     glm::vec3 GetPositionFromHmdMatrix34(const vr::HmdMatrix34_t& m);
     glm::quat GetOrientationFromHmdMatrix34(const vr::HmdMatrix34_t& m);
     glm::vec3 GetDirectionFromHmdMatrix34(const vr::HmdMatrix34_t& m);
+#endif
+
 }

@@ -51,6 +51,7 @@ namespace viscom::ovr {
 
     class OpenVRControllerDummy : public OpenVRControllerIfc
     {
+    public:
         virtual bool InitialiseVR() override { return false; }
         virtual bool InitialiseDisplayVR() override { return false; }
         virtual bool CalibrateVR(CalibrateMethod) override { return false; }
@@ -68,5 +69,14 @@ namespace viscom::ovr {
         virtual void GetControllerButtonState(std::uint32_t, std::size_t, glm::vec2&, ButtonState&) const override {};
 
         virtual std::vector<std::string> OutputDevices() const override { return std::vector<std::string>(); }
+
+        const glm::vec2& GetLeftControllerDisplayPosition() const { return zeroVec2_; }
+        const glm::vec2& GetRightControllerDisplayPosition() const { return zeroVec2_; }
+
+        void ParseTrackingFrame() {};
+        void PollAndParseEvents() {};
+
+        void DisplayCalibrationGUI() const {};
+        bool IsCalibrating() const { return false; };
     };
 }

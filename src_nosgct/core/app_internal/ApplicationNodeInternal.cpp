@@ -10,7 +10,6 @@
 #include <imgui.h>
 #include "core/open_gl.h"
 #include "core/app/ApplicationNodeBase.h"
-#include <openvr.h>
 #include <iostream>
 #include <fstream>
 

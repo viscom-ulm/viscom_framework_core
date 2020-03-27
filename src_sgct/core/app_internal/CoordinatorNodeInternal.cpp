@@ -15,7 +15,6 @@
 #include "core/app/ApplicationNodeBase.h"
 #include <iostream>
 #include <fstream>
-#include <openvr.h>
 
 namespace viscom {
 
