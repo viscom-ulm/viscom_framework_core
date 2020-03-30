@@ -260,6 +260,19 @@ if(TARGET Doxygen::doxygen)
     ## doxygen_add_docs(VISCOMCoreDoc src)
 endif()
 
+
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+   message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+   file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake")
+endif()
+
+include(${CMAKE_BINARY_DIR}/conan.cmake)
+
+conan_add_remote(NAME arsen-studio URL https://api.bintray.com/conan/arsen-studio/arsen-deps)
+
+conan_cmake_run(REQUIRES openvr/1.0.17@arsen-studio/stable BASIC_SETUP BUILD missing)
+
+
 if (${VISCOM_USE_OPEN_VR})
     if(UNIX AND NOT APPLE)
         if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -281,8 +294,8 @@ if (${VISCOM_USE_OPEN_VR})
         endif()
     endif()
     list(APPEND CORE_INCLUDE_DIRS extern/openvr/headers)
-    find_library(OPENVR_LIBRARY NAMES openvr_api libopenvr_api PATHS extern/openvr/lib/${SYS_NAME_STR} REQUIRED)
-    find_file(OPENVR_LIBRARY_BINARY NAMES openvr_api.dll libopenvr_api.so libopenvr_api.dylib PATHS extern/openvr/bin/${SYS_NAME_STR} REQUIRED)
+    find_library(OPENVR_LIBRARY NAMES openvr_api libopenvr_api PATHS "Path to openvr package" REQUIRED)
+    find_file(OPENVR_LIBRARY_BINARY NAMES openvr_api.dll libopenvr_api.so libopenvr_api.dylib PATHS "Path to openvr package" REQUIRED)
 
     add_library(OpenVR SHARED IMPORTED)
     set_property(TARGET OpenVR PROPERTY IMPORTED_LOCATION ${OPENVR_LIBRARY_BINARY})
