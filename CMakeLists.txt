@@ -261,6 +261,7 @@ if(TARGET Doxygen::doxygen)
 endif()
 
 
+# Loading conan
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
    file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake")
@@ -268,10 +269,9 @@ endif()
 
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
+
 conan_add_remote(NAME arsen-studio URL https://api.bintray.com/conan/arsen-studio/arsen-deps)
-
-conan_cmake_run(REQUIRES openvr/1.0.17@arsen-studio/stable BASIC_SETUP BUILD missing)
-
+conan_cmake_run(REQUIRES openvr/1.0.17@arsen-studio/stable BASIC_SETUP CMAKE_TARGETS BUILD missing)
 
 if (${VISCOM_USE_OPEN_VR})
     if(UNIX AND NOT APPLE)
@@ -293,14 +293,14 @@ if (${VISCOM_USE_OPEN_VR})
             set(SYS_NAME_STR "win32")
         endif()
     endif()
-    list(APPEND CORE_INCLUDE_DIRS extern/openvr/headers)
-    find_library(OPENVR_LIBRARY NAMES openvr_api libopenvr_api PATHS "Path to openvr package" REQUIRED)
-    find_file(OPENVR_LIBRARY_BINARY NAMES openvr_api.dll libopenvr_api.so libopenvr_api.dylib PATHS "Path to openvr package" REQUIRED)
+    # list(APPEND CORE_INCLUDE_DIRS extern/openvr/headers)
+    # find_library(OPENVR_LIBRARY NAMES openvr_api libopenvr_api PATHS "Path to openvr package" REQUIRED)
+    # find_file(OPENVR_LIBRARY_BINARY NAMES openvr_api.dll libopenvr_api.so libopenvr_api.dylib PATHS "Path to openvr package" REQUIRED)
 
-    add_library(OpenVR SHARED IMPORTED)
-    set_property(TARGET OpenVR PROPERTY IMPORTED_LOCATION ${OPENVR_LIBRARY_BINARY})
-    set_property(TARGET OpenVR PROPERTY IMPORTED_IMPLIB ${OPENVR_LIBRARY})
-    list(APPEND CORE_LIBS OpenVR)
+    # add_library(OpenVR SHARED IMPORTED)
+    # set_property(TARGET OpenVR PROPERTY IMPORTED_LOCATION ${OPENVR_LIBRARY_BINARY})
+    # set_property(TARGET OpenVR PROPERTY IMPORTED_IMPLIB ${OPENVR_LIBRARY})
+    # list(APPEND CORE_LIBS OpenVR)
     list(APPEND COMPILE_TIME_DEFS VISCOM_USE_OPEN_VR)
 endif()
 
@@ -316,6 +316,7 @@ set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
 target_include_directories(VISCOMCore PUBLIC src)
 target_include_directories(VISCOMCore SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
 target_link_libraries(VISCOMCore PUBLIC VISCOMExternal)
+target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::openvr)
 target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
 set_build_flags(VISCOMCore 1)
 
@@ -324,10 +325,10 @@ macro(copy_core_lib_dlls APP_NAME)
         add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:libTUIO> ${PROJECT_BINARY_DIR})
         install(FILES $<TARGET_FILE:libTUIO> DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
     endif()
-    if (${VISCOM_USE_OPEN_VR})
-        add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different ${OPENVR_LIBRARY_BINARY} ${CMAKE_BINARY_DIR})
-        install(FILES ${OPENVR_LIBRARY_BINARY} DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
-    endif()
+    # if (${VISCOM_USE_OPEN_VR})
+    #     add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different ${OPENVR_LIBRARY_BINARY} ${CMAKE_BINARY_DIR})
+    #     install(FILES ${OPENVR_LIBRARY_BINARY} DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
+    # endif()
 endmacro()
 
 install(DIRECTORY resources/ DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME}/resources)
