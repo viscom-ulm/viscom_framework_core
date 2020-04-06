@@ -27,7 +27,6 @@ set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_NO_EXPORT ON CACHE BOOL "" FORCE)
 option(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF)
-add_subdirectory(extern/assimp EXCLUDE_FROM_ALL)
 
 find_package(Doxygen)
 
@@ -219,11 +218,9 @@ list(APPEND CORE_INCLUDE_DIRS
     ${CMAKE_CURRENT_BINARY_DIR}/extern/g3log/include
     extern/imgui
     extern/imgui/misc/cpp
-    extern/stb
-    extern/assimp/include
-    ${CMAKE_CURRENT_BINARY_DIR}/extern/assimp/include)
+    extern/stb)
 
-list(APPEND CORE_LIBS g3logger assimp)
+list(APPEND CORE_LIBS g3logger)
 
 
 if (${VISCOM_CLIENTMOUSECURSOR})
@@ -270,6 +267,9 @@ endif()
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 
 
+conan_cmake_run(REQUIRES assimp/5.0.1 BASIC_SETUP CMAKE_TARGETS BUILD missing)
+
+
 if (${VISCOM_USE_OPEN_VR})
     conan_add_remote(NAME arsen-studio URL https://api.bintray.com/conan/arsen-studio/arsen-deps)
     conan_cmake_run(REQUIRES openvr/1.0.17@arsen-studio/stable BASIC_SETUP CMAKE_TARGETS BUILD missing)
@@ -307,6 +307,7 @@ set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
 target_include_directories(VISCOMCore PUBLIC src)
 target_include_directories(VISCOMCore SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
 target_link_libraries(VISCOMCore PUBLIC VISCOMExternal)
+target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::assimp)
 
 if (${VISCOM_USE_OPEN_VR})
     target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::openvr)
