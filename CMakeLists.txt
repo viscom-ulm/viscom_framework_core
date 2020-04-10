@@ -22,11 +22,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
     target_compile_options(g3logger PUBLIC -fvisibility=hidden -fvisibility-inlines-hidden)
 endif()
 
-set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_NO_EXPORT ON CACHE BOOL "" FORCE)
-option(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF)
 
 find_package(Doxygen)
 
