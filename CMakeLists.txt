@@ -257,6 +257,11 @@ conan_cmake_run(REQUIRES assimp/5.0.1 BASIC_SETUP CMAKE_TARGETS BUILD missing)
 conan_cmake_run(REQUIRES imgui/1.75 BASIC_SETUP CMAKE_TARGETS BUILD missing)
 conan_cmake_run(REQUIRES stb/20200203 BASIC_SETUP CMAKE_TARGETS BUILD missing)
 
+# Download imgui.natvis
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/imgui.natvis")
+   file(DOWNLOAD "https://github.com/ocornut/imgui/raw/master/misc/natvis/imgui.natvis" "${CMAKE_BINARY_DIR}/imgui.natvis")
+endif()
+
 
 if (${VISCOM_USE_OPEN_VR})
     conan_add_remote(NAME arsen-studio URL https://api.bintray.com/conan/arsen-studio/arsen-deps)
