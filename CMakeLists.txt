@@ -264,6 +264,7 @@ include(${CMAKE_BINARY_DIR}/conan.cmake)
 
 
 conan_cmake_run(REQUIRES assimp/5.0.1 BASIC_SETUP CMAKE_TARGETS BUILD missing)
+conan_cmake_run(REQUIRES imgui/1.75 BASIC_SETUP CMAKE_TARGETS BUILD missing)
 
 
 if (${VISCOM_USE_OPEN_VR})
@@ -304,6 +305,7 @@ target_include_directories(VISCOMCore PUBLIC src)
 target_include_directories(VISCOMCore SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
 target_link_libraries(VISCOMCore PUBLIC VISCOMExternal)
 target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::assimp)
+target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::imgui)
 
 if (${VISCOM_USE_OPEN_VR})
     target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::openvr)
