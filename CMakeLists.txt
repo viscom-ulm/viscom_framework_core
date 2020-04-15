@@ -104,12 +104,6 @@ if (${VISCOM_USE_SGCT})
     set(VISCOM_SGCT_TAG "sgct")
     set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/src_sgct/)
 else()
-    option(GLFW_BUILD_DOCS OFF)
-    option(GLFW_BUILD_EXAMPLES OFF)
-    option(GLFW_BUILD_TESTS OFF)
-    option(GLFW_INSTALL OFF)
-    add_subdirectory(extern/glfw EXCLUDE_FROM_ALL)
-
     set(VISCOM_SGCT_TAG "nosgct")
     list(APPEND COMPILE_TIME_DEFS GLEW_STATIC)
     list(APPEND EXTERN_SOURCES_CORE src_nosgct/glew/src/glew.cc)
@@ -154,10 +148,6 @@ foreach(f ${SRC_FILES_CORE})
     source_group("${SRCGR}" FILES ${f})
 endforeach()
 
-file(GLOB TOP_SRC_FILES_CORE
-    extern/glm/util/glm.natvis
-    extern/imgui/misc/natvis/imgui.natvis)
-
 if(UNIX)
     set(OpenGL_GL_PREFERENCE GLVND)
 endif()
@@ -200,7 +190,6 @@ if (${VISCOM_USE_SGCT})
     list(APPEND CORE_INCLUDE_DIRS ${SGCT_INCLUDE_DIRECTORY})
 else()
     find_package(OpenGL REQUIRED)
-    list(APPEND CORE_LIBS glfw ${GLFW_LIBRARIES})
     if(MSVC)
         list(APPEND CORE_LIBS OpenGL::GL)
     elseif(UNIX)
@@ -210,7 +199,6 @@ else()
             list(APPEND CORE_LIBS OpenGL::GL)
         endif()
     endif()
-    list(APPEND CORE_INCLUDE_DIRS extern/glfw/include)
 endif()
 
 list(APPEND CORE_INCLUDE_DIRS
@@ -270,9 +258,17 @@ conan_cmake_run(REQUIRES imgui/1.75 BASIC_SETUP CMAKE_TARGETS BUILD missing)
 conan_cmake_run(REQUIRES stb/20200203 BASIC_SETUP CMAKE_TARGETS BUILD missing)
 conan_cmake_run(REQUIRES glm/0.9.9.8 BASIC_SETUP CMAKE_TARGETS BUILD missing)
 
-# Download imgui.natvis
+# Download natvis files
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/imgui.natvis")
    file(DOWNLOAD "https://github.com/ocornut/imgui/raw/master/misc/natvis/imgui.natvis" "${CMAKE_BINARY_DIR}/imgui.natvis")
+endif()
+
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/glm.natvis")
+   file(DOWNLOAD "https://github.com/g-truc/glm/raw/0.9.9.8/util/glm.natvis" "${CMAKE_BINARY_DIR}/glm.natvis")
+endif()
+
+if (NOT ${VISCOM_USE_SGCT})
+    conan_cmake_run(REQUIRES glfw/3.3.2@bincrafters/stable BASIC_SETUP CMAKE_TARGETS BUILD missing)
 endif()
 
 
@@ -320,6 +316,10 @@ target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::glm)
 
 if (${VISCOM_USE_OPEN_VR})
     target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::openvr)
+endif()
+
+if (NOT ${VISCOM_USE_SGCT})
+    target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::glfw)
 endif()
 
 target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
