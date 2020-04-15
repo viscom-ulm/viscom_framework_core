@@ -197,7 +197,7 @@ if (${VISCOM_USE_SGCT})
     set_build_flags(SGCTWrapper 0)
 
     list(APPEND CORE_LIBS SGCTWrapper)
-    list(APPEND CORE_INCLUDE_DIRS extern/glm ${SGCT_INCLUDE_DIRECTORY})
+    list(APPEND CORE_INCLUDE_DIRS ${SGCT_INCLUDE_DIRECTORY})
 else()
     find_package(OpenGL REQUIRED)
     list(APPEND CORE_LIBS glfw ${GLFW_LIBRARIES})
@@ -210,7 +210,7 @@ else()
             list(APPEND CORE_LIBS OpenGL::GL)
         endif()
     endif()
-    list(APPEND CORE_INCLUDE_DIRS extern/glm extern/glfw/include)
+    list(APPEND CORE_INCLUDE_DIRS extern/glfw/include)
 endif()
 
 list(APPEND CORE_INCLUDE_DIRS
@@ -268,6 +268,7 @@ include(${CMAKE_BINARY_DIR}/conan.cmake)
 conan_cmake_run(REQUIRES assimp/5.0.1 BASIC_SETUP CMAKE_TARGETS BUILD missing)
 conan_cmake_run(REQUIRES imgui/1.75 BASIC_SETUP CMAKE_TARGETS BUILD missing)
 conan_cmake_run(REQUIRES stb/20200203 BASIC_SETUP CMAKE_TARGETS BUILD missing)
+conan_cmake_run(REQUIRES glm/0.9.9.8 BASIC_SETUP CMAKE_TARGETS BUILD missing)
 
 # Download imgui.natvis
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/imgui.natvis")
@@ -315,6 +316,7 @@ target_link_libraries(VISCOMCore PUBLIC VISCOMExternal)
 target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::assimp)
 target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::imgui)
 target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::stb)
+target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::glm)
 
 if (${VISCOM_USE_OPEN_VR})
     target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::openvr)
