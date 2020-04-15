@@ -87,13 +87,6 @@ macro(set_build_flags TARGET_NAME USE_CONVERSION)
     endif()
 endmacro()
 
-file(GLOB EXTERN_SOURCES_CORE
-    extern/imgui/imgui.cpp
-    extern/imgui/imgui_draw.cpp
-    extern/imgui/imgui_demo.cpp
-    extern/imgui/imgui_widgets.cpp
-    extern/imgui/misc/cpp/imgui_stdlib.cpp)
-
 if (${VISCOM_USE_SGCT})
     list(APPEND COMPILE_TIME_DEFS VISCOM_USE_SGCT)
     set(VISCOM_SGCT_TAG "sgct")
@@ -211,10 +204,7 @@ endif()
 list(APPEND CORE_INCLUDE_DIRS
     ${VISCOM_SGCT_WRAPPER_DIR}
     extern/g3log/src
-    ${CMAKE_CURRENT_BINARY_DIR}/extern/g3log/include
-    extern/imgui
-    extern/imgui/misc/cpp
-    extern/stb)
+    ${CMAKE_CURRENT_BINARY_DIR}/extern/g3log/include)
 
 list(APPEND CORE_LIBS g3logger)
 
@@ -265,6 +255,7 @@ include(${CMAKE_BINARY_DIR}/conan.cmake)
 
 conan_cmake_run(REQUIRES assimp/5.0.1 BASIC_SETUP CMAKE_TARGETS BUILD missing)
 conan_cmake_run(REQUIRES imgui/1.75 BASIC_SETUP CMAKE_TARGETS BUILD missing)
+conan_cmake_run(REQUIRES stb/20200203 BASIC_SETUP CMAKE_TARGETS BUILD missing)
 
 
 if (${VISCOM_USE_OPEN_VR})
@@ -306,6 +297,7 @@ target_include_directories(VISCOMCore SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
 target_link_libraries(VISCOMCore PUBLIC VISCOMExternal)
 target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::assimp)
 target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::imgui)
+target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::stb)
 
 if (${VISCOM_USE_OPEN_VR})
     target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::openvr)
