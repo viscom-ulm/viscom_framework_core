@@ -38,7 +38,7 @@ conan_add_remote(NAME arsen-studio URL https://api.bintray.com/conan/arsen-studi
 set(IMGUI_VERSION "1.75")
 set(GLM_VERSION "0.9.9.8")
 
-set(CONAN_LIBRARIES CONAN_PKG::assimp CONAN_PKG::imgui CONAN_PKG::stb CONAN_PKG::glm)
+set(CONAN_LIBRARIES CONAN_PKG::fmt CONAN_PKG::spdlog CONAN_PKG::assimp CONAN_PKG::imgui CONAN_PKG::stb CONAN_PKG::glm)
 set(CONAN_EXTRA_REQUIRES fmt/6.1.2
                          spdlog/1.5.0
                          glm/${GLM_VERSION}
@@ -313,19 +313,24 @@ conan_cmake_run(REQUIRES ${CONAN_EXTRA_REQUIRES}
     CMAKE_TARGETS
     BUILD missing)
 
-add_library(VISCOMExternal ${EXTERN_SOURCES_CORE})
-set_property(TARGET VISCOMExternal PROPERTY CXX_STANDARD 17)
-target_include_directories(VISCOMExternal SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
-target_link_libraries(VISCOMExternal PUBLIC ${CORE_LIBS})
-target_compile_definitions(VISCOMExternal PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
-set_build_flags(VISCOMExternal 0)
+
+if (${VISCOM_USE_SGCT})
+    set(CORE_LIBS ${CORE_LIBS} ${CONAN_LIBRARIES})
+else()
+    add_library(VISCOMExternal ${EXTERN_SOURCES_CORE})
+    set_property(TARGET VISCOMExternal PROPERTY CXX_STANDARD 17)
+    target_include_directories(VISCOMExternal SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
+    target_link_libraries(VISCOMExternal PUBLIC ${CORE_LIBS} ${CONAN_LIBRARIES})
+    target_compile_definitions(VISCOMExternal PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
+    set_build_flags(VISCOMExternal 0)
+    set(CORE_LIBS VISCOMExternal)
+endif()
 
 add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${TOP_SRC_FILES_CORE})
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
 target_include_directories(VISCOMCore PUBLIC src)
-target_include_directories(VISCOMCore SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
-target_link_libraries(VISCOMCore PUBLIC VISCOMExternal ${CONAN_LIBRARIES})
-target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
+target_link_libraries(VISCOMCore PUBLIC ${CORE_LIBS})
+## target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
 set_build_flags(VISCOMCore 1)
 
 macro(copy_core_lib_dlls APP_NAME)
