@@ -13,7 +13,6 @@ matrix:
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" CMAKE_BUILDER="Visual Studio 15 2017 Win64"
       before_install: &windowsbefore_install
         - choco install python -y
-        - $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
     - name: Windows, SGCT, local only
       os: windows
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" CMAKE_BUILDER="Visual Studio 15 2017 Win64" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="" LIB_ENDING="lib"
@@ -64,6 +63,7 @@ matrix:
             - python3-pip
       before_install: &linuxbefore_install
         - eval "${VISCOM_COMPILER_ENV}"
+        - pip install --upgrade pip
     - name: Linux (GCC), SGCT, local only
       if: branch = master
       os: linux
