@@ -10,21 +10,27 @@ set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_DEBUGWORKER_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows.")
 
-set(G3_SHARED_LIB OFF CACHE BOOL "Build shared library." FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Force compiler to create static libs." FORCE)
-set(ADD_FATAL_EXAMPLE OFF CACHE BOOL "Fatal (fatal-crashes/contract) examples " FORCE)
-set(ADD_BUILD_WIN_SHARED OFF CACHE BOOL "Build shared library on Windows" FORCE)
-set(USE_DYNAMIC_LOGGING_LEVELS ON CACHE BOOL "Turn ON/OFF log levels. An disabled level will not push logs of that level to the sink. By default dynamic logging is disabled" FORCE)
-set(CHANGE_G3LOG_DEBUG_TO_DBUG ON CACHE BOOL "Use DBUG logging level instead of DEBUG. By default DEBUG is the debugging level" FORCE)
-set(VERSION "1.3.160-0")
-add_subdirectory(extern/g3log EXCLUDE_FROM_ALL)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-    target_compile_options(g3logger PUBLIC -fvisibility=hidden -fvisibility-inlines-hidden)
+find_package(Doxygen)
+
+
+# Loading conan
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+   message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+   file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake")
 endif()
 
-set(ASSIMP_NO_EXPORT ON CACHE BOOL "" FORCE)
+include(${CMAKE_BINARY_DIR}/conan.cmake)
+conan_add_remote(NAME arsen-studio URL https://api.bintray.com/conan/arsen-studio/arsen-deps)
+set(IMGUI_VERSION "1.75")
+set(GLM_VERSION "0.9.9.8")
 
-find_package(Doxygen)
+set(CONAN_LIBRARIES CONAN_PKG::fmt CONAN_PKG::spdlog CONAN_PKG::glm CONAN_PKG::stb CONAN_PKG::imgui CONAN_PKG::assimp)
+set(CONAN_EXTRA_REQUIRES fmt/6.1.2
+                         spdlog/1.5.0
+                         glm/${GLM_VERSION}
+                         imgui/${IMGUI_VERSION}
+                         stb/20200203
+                         assimp/5.0.1)
 
 set(VISCOM_CLIENTGUI ON CACHE BOOL "Use ImGui on clients.")
 set(VISCOM_SYNCINPUT OFF CACHE BOOL "Synchronize input from master to clients.")
@@ -162,11 +168,10 @@ if (${VISCOM_USE_SGCT})
     find_library(SGCT_DEBUG_LIBRARY NAMES sgctd libsgctd PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
     find_path(SGCT_INCLUDE_DIRECTORY NAMES sgct PATHS $ENV{SGCT_ROOT_DIR}/include NO_DEFAULT_PATH REQUIRED)
 
-    set(SGCT_LIBS
-        debug ${SGCT_DEBUG_LIBRARY}
-        optimized ${SGCT_RELEASE_LIBRARY})
+    add_library(sgct INTERFACE IMPORTED)
+    target_link_libraries(sgct INTERFACE debug ${SGCT_DEBUG_LIBRARY} optimized ${SGCT_RELEASE_LIBRARY})
+    target_include_directories(sgct SYSTEM INTERFACE ${SGCT_INCLUDE_DIRECTORY})
 
-    list(APPEND CORE_LIBS ${SGCT_LIBS})
     if(MSVC)
         list(APPEND CORE_LIBS OpenGL::GL ws2_32)
     elseif(UNIX)
@@ -181,14 +186,14 @@ if (${VISCOM_USE_SGCT})
     add_library(SGCTWrapper ${VISCOM_SGCT_WRAPPER_DIR}/wrapper/sgct_wrapper.cpp)
     set_property(TARGET SGCTWrapper PROPERTY CXX_STANDARD 17)
     target_include_directories(SGCTWrapper PUBLIC ${VISCOM_SGCT_WRAPPER_DIR}/wrapper)
-    target_include_directories(SGCTWrapper SYSTEM PUBLIC ${SGCT_INCLUDE_DIRECTORY})
-    target_link_libraries(SGCTWrapper ${CORE_LIBS})
+    target_link_libraries(SGCTWrapper PUBLIC ${CORE_LIBS} sgct)
     target_compile_definitions(SGCTWrapper PUBLIC ${COMPILE_TIME_DEFS})
     set_build_flags(SGCTWrapper 0)
 
     list(APPEND CORE_LIBS SGCTWrapper)
-    list(APPEND CORE_INCLUDE_DIRS ${SGCT_INCLUDE_DIRECTORY})
 else()
+    set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} glfw/3.3.2@bincrafters/stable)
+    set(CONAN_LIBRARIES ${CONAN_LIBRARIES} CONAN_PKG::glfw)
     find_package(OpenGL REQUIRED)
     if(MSVC)
         list(APPEND CORE_LIBS OpenGL::GL)
@@ -201,12 +206,7 @@ else()
     endif()
 endif()
 
-list(APPEND CORE_INCLUDE_DIRS
-    ${VISCOM_SGCT_WRAPPER_DIR}
-    extern/g3log/src
-    ${CMAKE_CURRENT_BINARY_DIR}/extern/g3log/include)
-
-list(APPEND CORE_LIBS g3logger)
+list(APPEND CORE_INCLUDE_DIRS ${VISCOM_SGCT_WRAPPER_DIR})
 
 
 if (${VISCOM_CLIENTMOUSECURSOR})
@@ -243,38 +243,27 @@ if(TARGET Doxygen::doxygen)
     ## doxygen_add_docs(VISCOMCoreDoc src)
 endif()
 
-
-# Loading conan
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-   message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-   file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake")
-endif()
-
-include(${CMAKE_BINARY_DIR}/conan.cmake)
-
-
-conan_cmake_run(REQUIRES assimp/5.0.1 BASIC_SETUP CMAKE_TARGETS BUILD missing)
-conan_cmake_run(REQUIRES imgui/1.75 BASIC_SETUP CMAKE_TARGETS BUILD missing)
-conan_cmake_run(REQUIRES stb/20200203 BASIC_SETUP CMAKE_TARGETS BUILD missing)
-conan_cmake_run(REQUIRES glm/0.9.9.8 BASIC_SETUP CMAKE_TARGETS BUILD missing)
-
 # Download natvis files
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/imgui.natvis")
-   file(DOWNLOAD "https://github.com/ocornut/imgui/raw/master/misc/natvis/imgui.natvis" "${CMAKE_BINARY_DIR}/imgui.natvis")
-endif()
-
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/glm.natvis")
-   file(DOWNLOAD "https://github.com/g-truc/glm/raw/0.9.9.8/util/glm.natvis" "${CMAKE_BINARY_DIR}/glm.natvis")
+  message(
+    STATUS
+      "Downloading glm.natvis from https://github.com/g-truc/glm")
+  file(DOWNLOAD "https://github.com/g-truc/glm/raw/${GLM_VERSION}/util/glm.natvis"
+       "${CMAKE_BINARY_DIR}/glm.natvis")
 endif()
 
-if (NOT ${VISCOM_USE_SGCT})
-    conan_cmake_run(REQUIRES glfw/3.3.2@bincrafters/stable BASIC_SETUP CMAKE_TARGETS BUILD missing)
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/imgui.natvis")
+  message(
+    STATUS
+      "Downloading imgui.natvis from https://github.com/ocornut/imgui")
+  file(DOWNLOAD "https://github.com/ocornut/imgui/raw/v${IMGUI_VERSION}/misc/natvis/imgui.natvis"
+       "${CMAKE_BINARY_DIR}/imgui.natvis")
 endif()
 
 
 if (${VISCOM_USE_OPEN_VR})
-    conan_add_remote(NAME arsen-studio URL https://api.bintray.com/conan/arsen-studio/arsen-deps)
-    conan_cmake_run(REQUIRES openvr/1.0.17@arsen-studio/stable BASIC_SETUP CMAKE_TARGETS BUILD missing)
+    set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} openvr/1.0.17@arsen-studio/stable)
+    set(CONAN_LIBRARIES ${CONAN_LIBRARIES} CONAN_PKG::openvr)
     if(UNIX AND NOT APPLE)
         if(CMAKE_SIZEOF_VOID_P EQUAL 8)
             set(SYS_NAME_STR "linux64")
@@ -297,32 +286,29 @@ if (${VISCOM_USE_OPEN_VR})
     list(APPEND COMPILE_TIME_DEFS VISCOM_USE_OPEN_VR)
 endif()
 
-add_library(VISCOMExternal ${EXTERN_SOURCES_CORE})
-set_property(TARGET VISCOMExternal PROPERTY CXX_STANDARD 17)
-target_include_directories(VISCOMExternal SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
-target_link_libraries(VISCOMExternal PUBLIC ${CORE_LIBS})
-target_compile_definitions(VISCOMExternal PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
-set_build_flags(VISCOMExternal 0)
+conan_cmake_run(REQUIRES ${CONAN_EXTRA_REQUIRES}
+    BASIC_SETUP
+    CMAKE_TARGETS
+    BUILD missing)
+
+
+if (${VISCOM_USE_SGCT})
+    set(CORE_LIBS ${CONAN_LIBRARIES} ${CORE_LIBS})
+else()
+    add_library(VISCOMExternal ${EXTERN_SOURCES_CORE})
+    set_property(TARGET VISCOMExternal PROPERTY CXX_STANDARD 17)
+    target_link_libraries(VISCOMExternal PUBLIC ${CORE_LIBS} ${CONAN_LIBRARIES})
+    target_include_directories(VISCOMExternal SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
+    target_compile_definitions(VISCOMExternal PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
+    set_build_flags(VISCOMExternal 0)
+    set(CORE_LIBS VISCOMExternal)
+endif()
 
 add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${TOP_SRC_FILES_CORE})
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
-target_include_directories(VISCOMCore PUBLIC src)
-target_include_directories(VISCOMCore SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
-target_link_libraries(VISCOMCore PUBLIC VISCOMExternal)
-target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::assimp)
-target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::imgui)
-target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::stb)
-target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::glm)
-
-if (${VISCOM_USE_OPEN_VR})
-    target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::openvr)
-endif()
-
-if (NOT ${VISCOM_USE_SGCT})
-    target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::glfw)
-endif()
-
-target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
+target_link_libraries(VISCOMCore PUBLIC ${CORE_LIBS})
+target_include_directories(VISCOMCore PUBLIC src ${CORE_INCLUDE_DIRS})
+## target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
 set_build_flags(VISCOMCore 1)
 
 macro(copy_core_lib_dlls APP_NAME)

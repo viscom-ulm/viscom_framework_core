@@ -8,8 +8,6 @@
 
 #include "CameraBase.h"
 
-#include <core/open_gl.h>
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/rotate_vector.hpp>

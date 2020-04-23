@@ -6,11 +6,11 @@
  * @brief  Implementation of the GPU program class.
  */
 
+#include "core/open_gl.h"
 #include "GPUProgram.h"
 #include <iostream>
 #include "core/FrameworkInternal.h"
 #include "core/gfx/Shader.h"
-#include "core/open_gl.h"
 #include "core/utils/utils.h"
 
 namespace viscom {

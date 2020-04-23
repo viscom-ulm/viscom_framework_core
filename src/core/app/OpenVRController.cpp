@@ -34,10 +34,10 @@ namespace viscom::ovr {
         // VRApplication_Scene (starts SteamVR no proper data) VRApplication_Overlay (starts SteamVR no SteamVRHome)  VRApplication_Background (doesn't start SteamVR uses SteamVRHome)
         pHMD_ = vr::VR_Init(&peError, vr::EVRApplicationType::VRApplication_Background);
         if (peError != vr::VRInitError_None) {
-            LOG(WARNING) << "Error while initializing OpenVR.";
+            spdlog::warn("Error while initializing OpenVR.");
             pHMD_ = nullptr;
         }
-        LOG(INFO) << "OpenVR initialized.";
+        spdlog::warn("OpenVR initialized.");
         controllerStates_.resize(vr::k_unMaxTrackedDeviceCount);
         controllerDisplayPositions_.resize(vr::k_unMaxTrackedDeviceCount);
     }
@@ -50,7 +50,7 @@ namespace viscom::ovr {
 
     bool OpenVRController::InitialiseVR()
     {
-        LOG(G3LOG_DEBUG) << "InitialiseVR called.";
+        spdlog::debug("InitialiseVR called.");
         if (pHMD_ && InitCalibrationFromFile()) return true;
         return false;
     }
@@ -66,14 +66,14 @@ namespace viscom::ovr {
 
     bool OpenVRController::CalibrateVR(CalibrateMethod method)
     {
-        LOG(G3LOG_DEBUG) << "CalibrateVR called.";
+        spdlog::debug("CalibrateVR called.");
         calibration_ = std::make_unique<CalibrationController>(method);
         return true;
     }
 
     const std::vector<DeviceInfo>& OpenVRController::GetConnectedDevices() const
     {
-        LOG(G3LOG_DEBUG) << "GetConnectedDevices called.";
+        spdlog::debug("GetConnectedDevices called.");
         return connectedDevices_;
     }
 
@@ -115,7 +115,7 @@ namespace viscom::ovr {
 
     const glm::vec3& OpenVRController::GetControllerPosition(std::uint32_t trackedDeviceId) const
     {
-        LOG(G3LOG_DEBUG) << "GetControllerPos called.";
+        spdlog::debug("GetControllerPos called.");
         return controllerStates_[trackedDeviceId].position_;
     }
 
@@ -131,7 +131,7 @@ namespace viscom::ovr {
 
     const glm::vec2& OpenVRController::GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const
     {
-        LOG(G3LOG_DEBUG) << "GetDisplayPointerPosition called.";
+        spdlog::debug("GetDisplayPointerPosition called.");
 
 #ifndef MOCKING
         return controllerDisplayPositions_[trackedDeviceId];
@@ -140,7 +140,7 @@ namespace viscom::ovr {
 #ifdef MOCKING
         double time = 0.001 * std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
         value = glm::vec2(0.5 * sin(0.3 * time) + 0.5, 0.5 * cos(time) + 0.5);
-    
+
         return value;
 #endif
     }
@@ -213,10 +213,10 @@ namespace viscom::ovr {
         // float d2[3] = { displayEdges_[1][0] - displayEdges_[0][0], displayEdges_[1][1] - displayEdges_[0][1], displayEdges_[1][2] - displayEdges_[0][2] }; // up vector
         // float d3[3] = { displayEdges_[2][0] - displayEdges_[0][0], displayEdges_[2][1] - displayEdges_[0][1], displayEdges_[2][2] - displayEdges_[0][2] }; // right vector
         // glm::vec2 result;
-        // 
+        //
         // result[1] = (position[0] * zvector[1] * d3[0] * zvector[2] - position.x * zvector.y * d3[2] * zvector[0] - position[1] * zvector[0] * d3[0] * zvector[2] + position[1] * zvector[0] * d3[2] * zvector[0] - d1[0] * zvector[1] * d3[0] * zvector[2] + d1[0] * zvector[1] * d3[2] * zvector[0] + d1[1] * zvector[0] * d3[0] * zvector[2] - d1[1] * zvector[0] * d3[2] * zvector[0] - position[0] * zvector[2] * d3[0] * zvector[1] + position[0] * zvector[2] * d3[1] * zvector[0] + position[2] * zvector[0] * d3[0] * zvector[1] - position[2] * zvector[0] * d3[1] * zvector[0] + d1[0] * zvector[2] * d3[0] * zvector[1] - d1[0] * zvector[2] * d3[1] * zvector[0] - d1[2] * zvector[0] * d3[0] * zvector[1] + d1[2] * zvector[0] * d3[1] * zvector[0]) / (d2[0] * zvector[1] * d3[0] * zvector[2] - d2[0] * zvector[1] * d3[2] * zvector[0] - d2[1] * zvector[0] * d3[0] * zvector[2] + d2[1] * zvector[0] * d3[2] * zvector[0] - d2[0] * zvector[2] * d3[0] * zvector[1] + d2[0] * zvector[2] * d3[1] * zvector[0] + d2[2] * zvector[0] * d3[0] * zvector[1] - d2[2] * zvector[0] * d3[1] * zvector[0]);
         // result[0] = (position[0] * zvector[1] * d2[0] * zvector[2] - position.x * zvector.y * d2[2] * zvector[0] - position[1] * zvector[0] * d2[0] * zvector[2] + position[1] * zvector[0] * d2[2] * zvector[0] - d1[0] * zvector[1] * d2[0] * zvector[2] + d1[0] * zvector[1] * d2[2] * zvector[0] + d1[1] * zvector[0] * d2[0] * zvector[2] - d1[1] * zvector[0] * d2[2] * zvector[0] - position[0] * zvector[2] * d2[0] * zvector[1] + position[0] * zvector[2] * d2[1] * zvector[0] + position[2] * zvector[0] * d2[0] * zvector[1] - position[2] * zvector[0] * d2[1] * zvector[0] + d1[0] * zvector[2] * d2[0] * zvector[1] - d1[0] * zvector[2] * d2[1] * zvector[0] - d1[2] * zvector[0] * d2[0] * zvector[1] + d1[2] * zvector[0] * d2[1] * zvector[0]) / (d3[0] * zvector[1] * d2[0] * zvector[2] - d3[0] * zvector[1] * d2[2] * zvector[0] - d3[1] * zvector[0] * d2[0] * zvector[2] + d3[1] * zvector[0] * d2[2] * zvector[0] - d3[0] * zvector[2] * d2[0] * zvector[1] + d3[0] * zvector[2] * d2[1] * zvector[0] + d3[2] * zvector[0] * d2[0] * zvector[1] - d3[2] * zvector[0] * d2[1] * zvector[0]);
-        // 
+        //
         // midDisplayPos_[0] = d1[0] + 0.5f * d2[0] + 0.5f * d3[0];
         // midDisplayPos_[1] = d1[1] + 0.5f * d2[1] + 0.5f * d3[1];
         // midDisplayPos_[2] = d1[2] + 0.5f * d2[2] + 0.5f * d3[2];
@@ -226,7 +226,7 @@ namespace viscom::ovr {
     /** Parses a OpenVR Tracking Frame by going through all connected devices. */
     void OpenVRController::ParseTrackingFrame()
     {
-        LOG(G3LOG_DEBUG) << "ParseTrackingFrame called.";
+        spdlog::debug("ParseTrackingFrame called.");
         if (!pHMD_ || !vr::VRSystem()->IsInputAvailable()) return;
 
         connectedDevices_.clear();
@@ -313,7 +313,7 @@ namespace viscom::ovr {
     */
     bool OpenVRController::ProcessVREvent(const vr::VREvent_t& event)
     {
-        LOG(INFO) << "ProcessVREvent called on Coordinator.";
+        spdlog::info("ProcessVREvent called on Coordinator.");
 
         switch (event.eventType)
         {

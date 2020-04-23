@@ -15,10 +15,10 @@ namespace viscom {
 
     FWConfiguration LoadConfiguration(const std::string& configFilename)
     {
-        LOG(INFO) << "Loading configuration.";
+        spdlog::info("Loading configuration.");
         std::ifstream ifs(configFilename);
         if (!ifs.is_open()) {
-            LOG(INFO) << "Could not open config file (" << configFilename << ")." << std::endl;
+            spdlog::info("Could not open config file ({}).", configFilename );
             std::cout << "Could not open config file (" << configFilename << ")." << std::endl;
             throw std::runtime_error("Could not open config file (" + configFilename + ").");
         }

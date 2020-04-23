@@ -22,7 +22,6 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
-#include "core/FrameworkInternal.h"
 #include "core/resources/ResourceManager.h"
 #include "core/open_gl.h"
 
@@ -130,7 +129,7 @@ namespace viscom {
         auto image = stbi_load(filename.c_str(), &imgWidth, &imgHeight, &imgChannels, imgForceChannels);
         if (imgForceChannels != 0) imgChannels = imgForceChannels;
         if (!image) {
-            LOG(WARNING) << "Failed to load texture (" << filename << ").";
+            spdlog::warn("Failed to load texture ({}).", filename);
             throw resource_loading_error(filename, "Failed to load texture.");
         }
 
@@ -149,7 +148,7 @@ namespace viscom {
         auto image = stbi_loadf(filename.c_str(), &imgWidth, &imgHeight, &imgChannels, imgForceChannels);
         if (imgForceChannels != 0) imgChannels = imgForceChannels;
         if (!image) {
-            LOG(WARNING) << "Failed to load texture (" << filename << ").";
+            spdlog::warn("Failed to load texture ({}).", filename);
             throw resource_loading_error(filename, "Failed to load texture.");
         }
 
@@ -171,7 +170,7 @@ namespace viscom {
         case 3: bytesPP = 3U; internalFmt = useSRGB ? GL_SRGB8 : GL_RGB8; fmt = GL_RGB; break;
         case 4: bytesPP = 4U; internalFmt = useSRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8; fmt = GL_RGBA; break;
         default:
-            LOG(WARNING) << L"Invalid number of texture channels (" << imgChannels << ").";
+            spdlog::warn("Invalid number of texture channels ({}).", imgChannels);
             throw resource_loading_error(filename, "Invalid number of texture channels.");
         }
         return std::make_tuple(bytesPP, internalFmt, fmt);
@@ -188,7 +187,7 @@ namespace viscom {
         case 3: bytesPP = 12U; internalFmt = GL_RGB32F; fmt = GL_RGB; break;
         case 4: bytesPP = 16U; internalFmt = GL_RGBA32F; fmt = GL_RGBA; break;
         default:
-            LOG(WARNING) << L"Invalid number of texture channels (" << imgChannels << ").";
+            spdlog::warn("Invalid number of texture channels ({}).", imgChannels);
             throw resource_loading_error(filename, "Invalid number of texture channels.");
         }
         return std::make_tuple(bytesPP, internalFmt, fmt);

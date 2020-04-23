@@ -14,7 +14,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include <g3log/g3log.hpp>
+#include <spdlog/spdlog.h>
 // ReSharper restore CppUnusedIncludeDirective
 
 #include <core/config.h>

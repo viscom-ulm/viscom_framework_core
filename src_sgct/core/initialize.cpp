@@ -6,15 +6,15 @@
  * @brief  Implementation of functions needed to initialize the application.
  */
 
+#include <sgct.h>
 #include "core/initialize.h"
 #include "core/main.h"
 #include "core/FrameworkInternal.h"
-#include <sgct.h>
 
 void SGCTLog(const char* msg)
 {
     std::string msgStripped = msg;
-    LOG(INFO) << msgStripped.substr(0, msgStripped.size() - 1);
+    spdlog::info(msgStripped.substr(0, msgStripped.size() - 1));
 }
 
 namespace viscom {

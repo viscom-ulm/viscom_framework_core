@@ -1,11 +1,13 @@
 language: cpp
-sudo: required
 git:
   depth: 1
 notifications:
   email: false
 
-matrix:
+_anchors:
+  - &refreshpath eval $(powershell -NonInteractive -Command 'write("export PATH=`"" + ([Environment]::GetEnvironmentVariable("PATH","Machine") + ";" + [Environment]::GetEnvironmentVariable("PATH","User")).replace("\","/").replace("C:","/c").replace(";",":") + ":`$PATH`"")')
+
+jobs:
   include:
     - name: Windows, no-SGCT
       if: branch IN (develop, master)
@@ -13,12 +15,16 @@ matrix:
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" CMAKE_BUILDER="Visual Studio 15 2017 Win64"
       before_install: &windowsbefore_install
         - choco install python -y
-        - cmd
-        - refreshenv
-        - pip install conan
+        - cmd //C 'RefreshEnv.cmd & pip install conan'
+      script: &windows_script
+        - mkdir build && cd build
+        - *refreshpath
+        - cmake -G "${CMAKE_BUILDER}" -D VISCOM_USE_SGCT:BOOL=${VISCOM_SGCT} -D VISCOM_LOCAL_ONLY:BOOL=${VISCOM_LOCAL} -D SGCT_INCLUDE_DIRECTORY="${SGCT_ROOT_DIR}/include" -D SGCT_DEBUG_LIBRARY="${SGCT_ROOT_DIR}/lib/sgctd.lib" -D SGCT_RELEASE_LIBRARY="${SGCT_ROOT_DIR}/lib/sgct.lib" ..
+        - *refreshpath
+        - cmake --build .
     - name: Windows, SGCT, local only
       os: windows
-      env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" CMAKE_BUILDER="Visual Studio 15 2017 Win64" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="" LIB_ENDING="lib"
+      env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" SGCT_ROOT_DIR="../deps/sgct_install"  CMAKE_BUILDER="Visual Studio 15 2017 Win64"
       before_install: *windowsbefore_install
       before_script: &sgctbefore_script
         - mkdir -p deps/sgct
@@ -33,12 +39,14 @@ matrix:
         - cd deps/sgct_install/lib
         - dir
         - cd ../../..
+      script: *windows_script
     - name: Windows, SGCT
       if: branch = master
       os: windows
-      env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" CMAKE_BUILDER="Visual Studio 15 2017 Win64" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="" LIB_ENDING="lib"
+      env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" SGCT_ROOT_DIR="../deps/sgct_install"  CMAKE_BUILDER="Visual Studio 15 2017 Win64"
       before_install: *windowsbefore_install
       before_script: *sgctbefore_script
+      script: *windows_script
     - name: Linux (GCC), no-SGCT
       if: branch IN (develop, master)
       os: linux
@@ -63,10 +71,15 @@ matrix:
             - libxinerama-dev
             - libxxf86vm-dev
             - python3
+            - python3-setuptools
             - python3-pip
       before_install: &linuxbefore_install
         - eval "${VISCOM_COMPILER_ENV}"
-        - pip install --user conan
+        - pip3 install conan
+      script: &linux_script
+        - mkdir build && cd build
+        - cmake -G "${CMAKE_BUILDER}" -D VISCOM_USE_SGCT:BOOL=${VISCOM_SGCT} -D VISCOM_LOCAL_ONLY:BOOL=${VISCOM_LOCAL} -D SGCT_INCLUDE_DIRECTORY="${SGCT_ROOT_DIR}/include" -D SGCT_DEBUG_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgctd.${LIB_ENDING}" -D SGCT_RELEASE_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgct.${LIB_ENDING}" -DCMAKE_BUILD_TYPE=Release ..
+        - cmake --build .
     - name: Linux (GCC), SGCT, local only
       if: branch = master
       os: linux
@@ -75,6 +88,7 @@ matrix:
       addons: *linuxaddons
       before_install: *linuxbefore_install
       before_script: *sgctbefore_script
+      script: *linux_script
     - name: Linux (GCC), SGCT
       os: linux
       dist: xenial
@@ -82,6 +96,7 @@ matrix:
       addons: *linuxaddons
       before_install: *linuxbefore_install
       before_script: *sgctbefore_script
+      script: *linux_script
     - name: Linux (clang), no-SGCT
       if: branch IN (develop, master)
       os: linux
@@ -89,6 +104,7 @@ matrix:
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-7 && CXX=clang++-7" CMAKE_BUILDER="Unix Makefiles"
       addons: *linuxaddons
       before_install: *linuxbefore_install
+      script: *linux_script
     - name: Linux (clang), SGCT, local only
       if: branch = master
       os: linux
@@ -97,6 +113,7 @@ matrix:
       addons: *linuxaddons
       before_install: *linuxbefore_install
       before_script: *sgctbefore_script
+      script: *linux_script
     - name: Linux (clang), SGCT
       if: branch = master
       os: linux
@@ -105,15 +122,14 @@ matrix:
       addons: *linuxaddons
       before_install: *linuxbefore_install
       before_script: *sgctbefore_script
+      script: *linux_script
     - name: MacOS X, no-SGCT
       os: osx
       osx_image: xcode10.1
-      env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" CMAKE_BUILDER="Xcode"
       before_install: &macbefore_install
         - HOMEBREW_NO_AUTO_UPDATE=1 brew install python3
         - pip install conan
-
-script:
-  - mkdir build && cd build
-  - cmake -G "${CMAKE_BUILDER}" -D VISCOM_USE_SGCT:BOOL=${VISCOM_SGCT} -D VISCOM_LOCAL_ONLY:BOOL=${VISCOM_LOCAL} -D SGCT_INCLUDE_DIRECTORY="${SGCT_ROOT_DIR}/include" -D SGCT_DEBUG_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgctd.${LIB_ENDING}" -D SGCT_RELEASE_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgct.${LIB_ENDING}" ..
-  - cmake --build .
+      script: &osx_script
+        - mkdir build && cd build
+        - cmake -G "Xcode" -D VISCOM_USE_SGCT:BOOL=OFF -D VISCOM_LOCAL_ONLY:BOOL=ON ..
+        - cmake --build .
