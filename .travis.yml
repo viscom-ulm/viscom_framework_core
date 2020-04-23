@@ -13,6 +13,7 @@ matrix:
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" CMAKE_BUILDER="Visual Studio 15 2017 Win64"
       before_install: &windowsbefore_install
         - choco install python
+        - refreshenv
     - name: Windows, SGCT, local only
       os: windows
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" CMAKE_BUILDER="Visual Studio 15 2017 Win64" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="" LIB_ENDING="lib"
@@ -39,7 +40,6 @@ matrix:
     - name: Linux (GCC), no-SGCT
       if: branch IN (develop, master)
       os: linux
-      python: 3.8
       dist: xenial
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" LIB_PREFIX="lib" LIB_ENDING="a"
       addons: &linuxaddons
@@ -62,10 +62,11 @@ matrix:
             - libxxf86vm-dev
       before_install: &linuxbefore_install
         - eval "${VISCOM_COMPILER_ENV}"
+        - sudo apt-get update
+        - sudo apt-get install python3.8
     - name: Linux (GCC), SGCT, local only
       if: branch = master
       os: linux
-      python: 3.8
       dist: xenial
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
       addons: *linuxaddons
@@ -73,7 +74,6 @@ matrix:
       before_script: *sgctbefore_script
     - name: Linux (GCC), SGCT
       os: linux
-      python: 3.8
       dist: xenial
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
       addons: *linuxaddons
@@ -82,7 +82,6 @@ matrix:
     - name: Linux (clang), no-SGCT
       if: branch IN (develop, master)
       os: linux
-      python: 3.8
       dist: xenial
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-7 && CXX=clang++-7" CMAKE_BUILDER="Unix Makefiles"
       addons: *linuxaddons
@@ -90,7 +89,6 @@ matrix:
     - name: Linux (clang), SGCT, local only
       if: branch = master
       os: linux
-      python: 3.8
       dist: xenial
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-7 && CXX=clang++-7" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a" VCXXFLAGS="-stdlib=libc++" VLDFLAGS="-stdlib=libc++"
       addons: *linuxaddons
@@ -99,7 +97,6 @@ matrix:
     - name: Linux (clang), SGCT
       if: branch = master
       os: linux
-      python: 3.8
       dist: xenial
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" VISCOM_COMPILER_ENV="CC=clang-7 && CXX=clang++-7" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a" VCXXFLAGS="-stdlib=libc++" VLDFLAGS="-stdlib=libc++"
       addons: *linuxaddons
