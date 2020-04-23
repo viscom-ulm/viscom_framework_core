@@ -11,9 +11,12 @@ matrix:
       if: branch IN (develop, master)
       os: windows
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" CMAKE_BUILDER="Visual Studio 15 2017 Win64"
+      before_install: &windowsbefore_install
+        - choco install python -y
     - name: Windows, SGCT, local only
       os: windows
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" CMAKE_BUILDER="Visual Studio 15 2017 Win64" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="" LIB_ENDING="lib"
+      before_install: *windowsbefore_install
       before_script: &sgctbefore_script
         - mkdir -p deps/sgct
         - cd deps/sgct
@@ -31,6 +34,7 @@ matrix:
       if: branch = master
       os: windows
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" CMAKE_BUILDER="Visual Studio 15 2017 Win64" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="" LIB_ENDING="lib"
+      before_install: *windowsbefore_install
       before_script: *sgctbefore_script
     - name: Linux (GCC), no-SGCT
       if: branch IN (develop, master)
@@ -55,6 +59,8 @@ matrix:
             - libxrandr-dev
             - libxinerama-dev
             - libxxf86vm-dev
+            - python3
+            - python3-pip
       before_install: &linuxbefore_install
         - eval "${VISCOM_COMPILER_ENV}"
     - name: Linux (GCC), SGCT, local only
@@ -99,8 +105,11 @@ matrix:
       os: osx
       osx_image: xcode10.1
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" CMAKE_BUILDER="Xcode"
+      before_install: &macbefore_install
+        - HOMEBREW_NO_AUTO_UPDATE=1 brew install python3
 
 script:
+  - pip install --user conan
   - mkdir build && cd build
   - cmake -G "${CMAKE_BUILDER}" -D VISCOM_USE_SGCT:BOOL=${VISCOM_SGCT} -D VISCOM_LOCAL_ONLY:BOOL=${VISCOM_LOCAL} -D SGCT_INCLUDE_DIRECTORY="${SGCT_ROOT_DIR}/include" -D SGCT_DEBUG_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgctd.${LIB_ENDING}" -D SGCT_RELEASE_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgct.${LIB_ENDING}" ..
   - cmake --build .
