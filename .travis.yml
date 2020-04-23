@@ -39,6 +39,7 @@ matrix:
     - name: Linux (GCC), no-SGCT
       if: branch IN (develop, master)
       os: linux
+      python: 3.8
       dist: xenial
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" LIB_PREFIX="lib" LIB_ENDING="a"
       addons: &linuxaddons
@@ -59,12 +60,12 @@ matrix:
             - libxrandr-dev
             - libxinerama-dev
             - libxxf86vm-dev
-            - python3
       before_install: &linuxbefore_install
         - eval "${VISCOM_COMPILER_ENV}"
     - name: Linux (GCC), SGCT, local only
       if: branch = master
       os: linux
+      python: 3.8
       dist: xenial
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
       addons: *linuxaddons
@@ -72,6 +73,7 @@ matrix:
       before_script: *sgctbefore_script
     - name: Linux (GCC), SGCT
       os: linux
+      python: 3.8
       dist: xenial
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
       addons: *linuxaddons
@@ -80,6 +82,7 @@ matrix:
     - name: Linux (clang), no-SGCT
       if: branch IN (develop, master)
       os: linux
+      python: 3.8
       dist: xenial
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-7 && CXX=clang++-7" CMAKE_BUILDER="Unix Makefiles"
       addons: *linuxaddons
@@ -87,6 +90,7 @@ matrix:
     - name: Linux (clang), SGCT, local only
       if: branch = master
       os: linux
+      python: 3.8
       dist: xenial
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-7 && CXX=clang++-7" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a" VCXXFLAGS="-stdlib=libc++" VLDFLAGS="-stdlib=libc++"
       addons: *linuxaddons
@@ -95,6 +99,7 @@ matrix:
     - name: Linux (clang), SGCT
       if: branch = master
       os: linux
+      python: 3.8
       dist: xenial
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" VISCOM_COMPILER_ENV="CC=clang-7 && CXX=clang++-7" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a" VCXXFLAGS="-stdlib=libc++" VLDFLAGS="-stdlib=libc++"
       addons: *linuxaddons
@@ -105,7 +110,7 @@ matrix:
       osx_image: xcode10.1
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" CMAKE_BUILDER="Xcode"
       before_install: &macbefore_install
-        - brew install python3
+        - HOMEBREW_NO_AUTO_UPDATE=1 brew install python3
 
 script:
   - pip install conan
