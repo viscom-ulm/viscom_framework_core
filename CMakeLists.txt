@@ -10,20 +10,6 @@ set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_DEBUGWORKER_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows.")
 
-set(G3_SHARED_LIB OFF CACHE BOOL "Build shared library." FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Force compiler to create static libs." FORCE)
-set(ADD_FATAL_EXAMPLE OFF CACHE BOOL "Fatal (fatal-crashes/contract) examples " FORCE)
-set(ADD_BUILD_WIN_SHARED OFF CACHE BOOL "Build shared library on Windows" FORCE)
-set(USE_DYNAMIC_LOGGING_LEVELS ON CACHE BOOL "Turn ON/OFF log levels. An disabled level will not push logs of that level to the sink. By default dynamic logging is disabled" FORCE)
-set(CHANGE_G3LOG_DEBUG_TO_DBUG ON CACHE BOOL "Use DBUG logging level instead of DEBUG. By default DEBUG is the debugging level" FORCE)
-set(VERSION "1.3.160-0")
-add_subdirectory(extern/g3log EXCLUDE_FROM_ALL)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-    target_compile_options(g3logger PUBLIC -fvisibility=hidden -fvisibility-inlines-hidden)
-endif()
-
-set(ASSIMP_NO_EXPORT ON CACHE BOOL "" FORCE)
-
 find_package(Doxygen)
 
 
@@ -223,12 +209,7 @@ else()
     endif()
 endif()
 
-list(APPEND CORE_INCLUDE_DIRS
-    ${VISCOM_SGCT_WRAPPER_DIR}
-    extern/g3log/src
-    ${CMAKE_CURRENT_BINARY_DIR}/extern/g3log/include)
-
-list(APPEND CORE_LIBS g3logger)
+list(APPEND CORE_INCLUDE_DIRS ${VISCOM_SGCT_WRAPPER_DIR})
 
 
 if (${VISCOM_CLIENTMOUSECURSOR})

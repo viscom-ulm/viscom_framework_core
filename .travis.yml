@@ -13,7 +13,7 @@ matrix:
       env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" CMAKE_BUILDER="Visual Studio 15 2017 Win64"
       before_install: &windowsbefore_install
         - choco install python -y
-        - cmd /C refreshenv && pip install conan
+        - cmd /C "refreshenv && pip install conan"
     - name: Windows, SGCT, local only
       os: windows
       env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" CMAKE_BUILDER="Visual Studio 15 2017 Win64" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="" LIB_ENDING="lib"

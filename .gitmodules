@@ -1,6 +1,3 @@
-[submodule "extern/g3log"]
-	path = extern/g3log
-	url = https://github.com/KjellKod/g3log.git
 [submodule "extern/tuio"]
 	path = extern/tuio
 	url = https://github.com/viscom-ulm/TUIO11_CPP.git
