@@ -1,17 +1,16 @@
 cmake_minimum_required(VERSION 3.9)
 PROJECT("VISCOMCore")
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    add_compile_options(-stdlib=libc++ -isystem /usr/include/c++/v1)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
-endif()
+## if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+##     add_compile_options(-stdlib=libc++ -isystem /usr/include/c++/v1)
+##     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+## endif()
 
 set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_DEBUGWORKER_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows.")
 
 find_package(Doxygen)
-
 
 # Loading conan
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
@@ -115,44 +114,25 @@ else()
     list(APPEND EXTERN_SOURCES_CORE src_nosgct/glew/src/glew.cc)
     set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/src_nosgct/)
 endif()
+source_group("extern\\core" FILES ${EXTERN_SOURCES_CORE})
 
 
-file(GLOB_RECURSE SHADER_FILES_CORE ${PROJECT_SOURCE_DIR}/resources/shader/*.*)
+file(GLOB_RECURSE SHADER_FILES_CORE CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/resources/shader/*.*)
 list(FILTER SHADER_FILES_CORE EXCLUDE REGEX ".*\.gen$")
-file(GLOB_RECURSE SRC_FILES_CORE
+source_group(TREE ${PROJECT_SOURCE_DIR}/resources/shader PREFIX "shader" FILES ${SHADER_FILES_CORE})
+
+
+file(GLOB_RECURSE SRC_FILES_CORE CONFIGURE_DEPENDS
     ${PROJECT_SOURCE_DIR}/src/core/*.h
     ${PROJECT_SOURCE_DIR}/src/core/*.cpp
-    ${PROJECT_SOURCE_DIR}/src/core/*.inl
+    ${PROJECT_SOURCE_DIR}/src/core/*.inl)
+source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${SRC_FILES_CORE})
+file(GLOB_RECURSE SRC_FILES_CORE_WRAPPER CONFIGURE_DEPENDS
     ${VISCOM_SGCT_WRAPPER_DIR}/core/*.h
     ${VISCOM_SGCT_WRAPPER_DIR}/core/*.cpp
     ${VISCOM_SGCT_WRAPPER_DIR}/core/*.inl)
-source_group("extern\\core" FILES ${EXTERN_SOURCES_CORE})
-source_group("shader\\core" FILES ${SHADER_FILES_CORE})
-
-if (${VISCOM_LOCAL_ONLY})
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/CalibrationVertices.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${VISCOM_SGCT_WRAPPER_DIR}/core/app_internal/WorkerNodeCalibratedInternal.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${VISCOM_SGCT_WRAPPER_DIR}/core/app_internal/WorkerNodeCalibratedInternal.cpp")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.cpp")
-endif()
-
-if(NOT ${VISCOM_USE_OPEN_VR})
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVRController.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVRController.cpp")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVR.cpp")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/DisplayPointerCalibrationController.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/DisplayPointerCalibrationController.cpp")
-endif()
-
-foreach(f ${SRC_FILES_CORE})
-    file(RELATIVE_PATH SRCGR ${PROJECT_SOURCE_DIR} ${f})
-    string(REGEX REPLACE "(.*)(/[^/]*)$" "\\1" SRCGR ${SRCGR})
-    string(REPLACE / \\ SRCGR ${SRCGR})
-    string(REPLACE src_sgct src SRCGR ${SRCGR})
-    string(REPLACE src_nosgct src SRCGR ${SRCGR})
-    source_group("${SRCGR}" FILES ${f})
-endforeach()
+source_group(TREE ${VISCOM_SGCT_WRAPPER_DIR} PREFIX "src" FILES ${SRC_FILES_CORE_WRAPPER})
+list(APPEND SRC_FILES_CORE ${SRC_FILES_CORE_WRAPPER})
 
 if(UNIX)
     set(OpenGL_GL_PREFERENCE GLVND)
@@ -208,6 +188,14 @@ endif()
 
 list(APPEND CORE_INCLUDE_DIRS ${VISCOM_SGCT_WRAPPER_DIR})
 
+if (${VISCOM_LOCAL_ONLY})
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/CalibrationVertices.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${VISCOM_SGCT_WRAPPER_DIR}/core/app_internal/WorkerNodeCalibratedInternal.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${VISCOM_SGCT_WRAPPER_DIR}/core/app_internal/WorkerNodeCalibratedInternal.cpp")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.cpp")
+    list(APPEND COMPILE_TIME_DEFS VISCOM_LOCAL_ONLY)
+endif()
 
 if (${VISCOM_CLIENTMOUSECURSOR})
     list(APPEND COMPILE_TIME_DEFS VISCOM_CLIENTGUI VISCOM_SYNCINPUT VISCOM_CLIENTMOUSECURSOR)
@@ -218,10 +206,6 @@ else()
     if(${VISCOM_CLIENTGUI})
         list(APPEND COMPILE_TIME_DEFS VISCOM_CLIENTGUI)
     endif()
-endif()
-
-if (${VISCOM_LOCAL_ONLY})
-    list(APPEND COMPILE_TIME_DEFS VISCOM_LOCAL_ONLY)
 endif()
 
 if(${VISCOM_USE_TUIO})
@@ -284,6 +268,12 @@ if (${VISCOM_USE_OPEN_VR})
         endif()
     endif()
     list(APPEND COMPILE_TIME_DEFS VISCOM_USE_OPEN_VR)
+else()
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVRController.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVRController.cpp")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVR.cpp")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/DisplayPointerCalibrationController.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/DisplayPointerCalibrationController.cpp")
 endif()
 
 conan_cmake_run(REQUIRES ${CONAN_EXTRA_REQUIRES}
@@ -308,7 +298,6 @@ add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${TOP_SRC_FILES_CO
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
 target_link_libraries(VISCOMCore PUBLIC ${CORE_LIBS})
 target_include_directories(VISCOMCore PUBLIC src ${CORE_INCLUDE_DIRS})
-## target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
 set_build_flags(VISCOMCore 1)
 
 macro(copy_core_lib_dlls APP_NAME)
