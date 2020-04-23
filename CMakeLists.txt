@@ -106,15 +106,41 @@ endmacro()
 
 if (${VISCOM_USE_SGCT})
     list(APPEND COMPILE_TIME_DEFS VISCOM_USE_SGCT)
-    set(VISCOM_SGCT_TAG "sgct")
     set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/src_sgct/)
 else()
-    set(VISCOM_SGCT_TAG "nosgct")
     list(APPEND COMPILE_TIME_DEFS GLEW_STATIC)
     list(APPEND EXTERN_SOURCES_CORE src_nosgct/glew/src/glew.cc)
     set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/src_nosgct/)
 endif()
 source_group("extern\\core" FILES ${EXTERN_SOURCES_CORE})
+
+if (${VISCOM_USE_OPEN_VR})
+    set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} openvr/1.0.17@arsen-studio/stable)
+    set(CONAN_LIBRARIES ${CONAN_LIBRARIES} CONAN_PKG::openvr)
+    if(UNIX AND NOT APPLE)
+        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+            set(SYS_NAME_STR "linux64")
+        else()
+            set(SYS_NAME_STR "linux32")
+        endif()
+    elseif(UNIX AND APPLE)
+        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+            set(SYS_NAME_STR "osx64")
+        else()
+            set(SYS_NAME_STR "osx32")
+        endif()
+    elseif(WIN32)
+        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+            set(SYS_NAME_STR "win64")
+        else()
+            set(SYS_NAME_STR "win32")
+        endif()
+    endif()
+    list(APPEND COMPILE_TIME_DEFS VISCOM_USE_OPEN_VR)
+    set(VISCOM_OPENVR_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/src_openvr/)
+else()
+    set(VISCOM_OPENVR_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/src_noopenvr/)
+endif()
 
 
 file(GLOB_RECURSE SHADER_FILES_CORE CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/resources/shader/*.*)
@@ -127,12 +153,17 @@ file(GLOB_RECURSE SRC_FILES_CORE CONFIGURE_DEPENDS
     ${PROJECT_SOURCE_DIR}/src/core/*.cpp
     ${PROJECT_SOURCE_DIR}/src/core/*.inl)
 source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${SRC_FILES_CORE})
+file(GLOB_RECURSE SRC_FILES_CORE_OVR_WRAPPER CONFIGURE_DEPENDS
+    ${VISCOM_OPENVR_WRAPPER_DIR}/core/*.h
+    ${VISCOM_OPENVR_WRAPPER_DIR}/core/*.cpp
+    ${VISCOM_OPENVR_WRAPPER_DIR}/core/*.inl)
+source_group(TREE ${VISCOM_OPENVR_WRAPPER_DIR} PREFIX "src" FILES ${SRC_FILES_CORE_OVR_WRAPPER})
 file(GLOB_RECURSE SRC_FILES_CORE_WRAPPER CONFIGURE_DEPENDS
     ${VISCOM_SGCT_WRAPPER_DIR}/core/*.h
     ${VISCOM_SGCT_WRAPPER_DIR}/core/*.cpp
     ${VISCOM_SGCT_WRAPPER_DIR}/core/*.inl)
 source_group(TREE ${VISCOM_SGCT_WRAPPER_DIR} PREFIX "src" FILES ${SRC_FILES_CORE_WRAPPER})
-list(APPEND SRC_FILES_CORE ${SRC_FILES_CORE_WRAPPER})
+list(APPEND SRC_FILES_CORE ${SRC_FILES_CORE_WRAPPER} ${SRC_FILES_CORE_OVR_WRAPPER})
 
 if(UNIX)
     set(OpenGL_GL_PREFERENCE GLVND)
@@ -186,7 +217,7 @@ else()
     endif()
 endif()
 
-list(APPEND CORE_INCLUDE_DIRS ${VISCOM_SGCT_WRAPPER_DIR})
+list(APPEND CORE_INCLUDE_DIRS ${VISCOM_SGCT_WRAPPER_DIR} ${VISCOM_OPENVR_WRAPPER_DIR})
 
 if (${VISCOM_LOCAL_ONLY})
     list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/CalibrationVertices.h")
@@ -244,38 +275,6 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/imgui.natvis")
        "${CMAKE_BINARY_DIR}/imgui.natvis")
 endif()
 
-
-if (${VISCOM_USE_OPEN_VR})
-    set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} openvr/1.0.17@arsen-studio/stable)
-    set(CONAN_LIBRARIES ${CONAN_LIBRARIES} CONAN_PKG::openvr)
-    if(UNIX AND NOT APPLE)
-        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-            set(SYS_NAME_STR "linux64")
-        else()
-            set(SYS_NAME_STR "linux32")
-        endif()
-    elseif(UNIX AND APPLE)
-        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-            set(SYS_NAME_STR "osx64")
-        else()
-            set(SYS_NAME_STR "osx32")
-        endif()
-    elseif(WIN32)
-        if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-            set(SYS_NAME_STR "win64")
-        else()
-            set(SYS_NAME_STR "win32")
-        endif()
-    endif()
-    list(APPEND COMPILE_TIME_DEFS VISCOM_USE_OPEN_VR)
-else()
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVRController.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVRController.cpp")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVR.cpp")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/DisplayPointerCalibrationController.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/DisplayPointerCalibrationController.cpp")
-endif()
-
 conan_cmake_run(REQUIRES ${CONAN_EXTRA_REQUIRES}
     BASIC_SETUP
     CMAKE_TARGETS
@@ -298,6 +297,7 @@ add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${TOP_SRC_FILES_CO
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
 target_link_libraries(VISCOMCore PUBLIC ${CORE_LIBS})
 target_include_directories(VISCOMCore PUBLIC src ${CORE_INCLUDE_DIRS})
+target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
 set_build_flags(VISCOMCore 1)
 
 macro(copy_core_lib_dlls APP_NAME)

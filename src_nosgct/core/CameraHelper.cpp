@@ -15,7 +15,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 namespace viscom {
-    CameraHelper::CameraHelper(float width, float height, const glm::vec3& userPosition) :
+    CameraHelper::CameraHelper(float width, float height, const glm::ivec2& screenSize, const glm::vec3& userPosition) :
         position_{ 0.0f },
         cameraOrientation_{ 0.0f, 0.0f, 1.0f, 0.0f },
         userPosition_{ userPosition },
@@ -25,7 +25,8 @@ namespace viscom {
         width_{ width },
         height_{ height },
         nearPlane_{ 0.1f },
-        farPlane_{ 100.0f }
+        farPlane_{ 100.0f },
+        screenSize_{ screenSize }
     {
     }
 
@@ -89,6 +90,11 @@ namespace viscom {
     {
         glm::mat4 localCoordMatrix = glm::mat4(1.0f);
         return localCoordMatrix;
+    }
+
+    glm::ivec2 CameraHelper::GetGlobalScreenSize() const
+    {
+        return screenSize_;
     }
 
 #undef near

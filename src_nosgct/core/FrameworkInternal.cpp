@@ -34,7 +34,7 @@ namespace viscom {
         workerNodeFactory_{ std::move(workerNodeFactory) },
         config_(std::move(config)),
         window_{ nullptr },
-        camHelper_{ config_.nearPlaneSize_.x, config.nearPlaneSize_.y, glm::vec3(0.0f, 0.0f, 4.0f) },
+        camHelper_{ config_.nearPlaneSize_.x, config.nearPlaneSize_.y, glm::ivec2{config.virtualScreenSize_}, glm::vec3(0.0f, 0.0f, 4.0f) },
         gpuProgramManager_{ this },
         textureManager_{ this },
         meshManager_{ this }

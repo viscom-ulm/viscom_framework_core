@@ -11,18 +11,7 @@
 #include "core/main.h"
 #include "core/app/TuioInputWrapper.h"
 #include "core/FrameworkInternal.h"
-
-#ifdef VISCOM_USE_OPEN_VR
 #include "core/app/OpenVRController.h"
-namespace viscom {
-    using OpenVRControllerAlias = ovr::OpenVRController;
-}
-#else
-#include "core/app/OpenVRControllerIfc.h"
-namespace viscom {
-    using OpenVRControllerAlias = ovr::OpenVRControllerDummy;
-}
-#endif
 
 namespace viscom {
 
@@ -35,7 +24,7 @@ namespace viscom {
         glm::mat4 pickMatrix_;
     };
 
-    class ApplicationNodeInternal : public viscom::tuio::TuioInputWrapper, public OpenVRControllerAlias
+    class ApplicationNodeInternal : public viscom::tuio::TuioInputWrapper, public ovr::OpenVRController
     {
     public:
         /**

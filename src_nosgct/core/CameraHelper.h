@@ -25,7 +25,7 @@ namespace viscom {
          *  @param height the camera view plane height.
          *  @param userPosition position of the user.
          */
-        CameraHelper(float width, float height, const glm::vec3& userPosition);
+        CameraHelper(float width, float height, const glm::ivec2& screenSize, const glm::vec3& userPosition);
 
         /** Returns the user position. */
         glm::vec3 GetUserPosition() const;
@@ -82,6 +82,9 @@ namespace viscom {
         /** Returns the matrix to calculate local coordinates from global ones. */
         glm::mat4 GetLocalCoordMatrix() const;
 
+        /** Returns the size of the global screen. **/
+        glm::ivec2 GetGlobalScreenSize() const;
+
         /** Returns the camera's near plane. */
         inline float GetNearPlane() const { return nearPlane_; }
         /** Returns the camera's far plane. */
@@ -122,5 +125,7 @@ namespace viscom {
         float nearPlane_;
         /** The cameras far plane. */
         float farPlane_;
+        /** The screen size. */
+        glm::ivec2 screenSize_;
     };
 }
