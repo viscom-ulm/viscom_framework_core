@@ -24,7 +24,7 @@ conan_add_remote(NAME arsen-studio URL https://api.bintray.com/conan/arsen-studi
 set(IMGUI_VERSION "1.75")
 set(GLM_VERSION "0.9.9.8")
 
-set(CONAN_LIBRARIES CONAN_PKG::fmt CONAN_PKG::spdlog CONAN_PKG::assimp CONAN_PKG::imgui CONAN_PKG::stb CONAN_PKG::glm)
+set(CONAN_LIBRARIES CONAN_PKG::fmt CONAN_PKG::spdlog CONAN_PKG::glm CONAN_PKG::stb CONAN_PKG::imgui CONAN_PKG::assimp)
 set(CONAN_EXTRA_REQUIRES fmt/6.1.2
                          spdlog/1.5.0
                          glm/${GLM_VERSION}
@@ -168,11 +168,10 @@ if (${VISCOM_USE_SGCT})
     find_library(SGCT_DEBUG_LIBRARY NAMES sgctd libsgctd PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
     find_path(SGCT_INCLUDE_DIRECTORY NAMES sgct PATHS $ENV{SGCT_ROOT_DIR}/include NO_DEFAULT_PATH REQUIRED)
 
-    set(SGCT_LIBS
-        debug ${SGCT_DEBUG_LIBRARY}
-        optimized ${SGCT_RELEASE_LIBRARY})
+    add_library(sgct INTERFACE IMPORTED)
+    target_link_libraries(sgct INTERFACE debug ${SGCT_DEBUG_LIBRARY} optimized ${SGCT_RELEASE_LIBRARY})
+    target_include_directories(sgct SYSTEM INTERFACE ${SGCT_INCLUDE_DIRECTORY})
 
-    list(APPEND CORE_LIBS ${SGCT_LIBS})
     if(MSVC)
         list(APPEND CORE_LIBS OpenGL::GL ws2_32)
     elseif(UNIX)
@@ -187,13 +186,11 @@ if (${VISCOM_USE_SGCT})
     add_library(SGCTWrapper ${VISCOM_SGCT_WRAPPER_DIR}/wrapper/sgct_wrapper.cpp)
     set_property(TARGET SGCTWrapper PROPERTY CXX_STANDARD 17)
     target_include_directories(SGCTWrapper PUBLIC ${VISCOM_SGCT_WRAPPER_DIR}/wrapper)
-    target_include_directories(SGCTWrapper SYSTEM PUBLIC ${SGCT_INCLUDE_DIRECTORY})
-    target_link_libraries(SGCTWrapper ${CORE_LIBS})
+    target_link_libraries(SGCTWrapper PUBLIC ${CORE_LIBS} sgct)
     target_compile_definitions(SGCTWrapper PUBLIC ${COMPILE_TIME_DEFS})
     set_build_flags(SGCTWrapper 0)
 
     list(APPEND CORE_LIBS SGCTWrapper)
-    list(APPEND CORE_INCLUDE_DIRS ${SGCT_INCLUDE_DIRECTORY})
 else()
     set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} glfw/3.3.2@bincrafters/stable)
     set(CONAN_LIBRARIES ${CONAN_LIBRARIES} CONAN_PKG::glfw)
@@ -296,12 +293,12 @@ conan_cmake_run(REQUIRES ${CONAN_EXTRA_REQUIRES}
 
 
 if (${VISCOM_USE_SGCT})
-    set(CORE_LIBS ${CORE_LIBS} ${CONAN_LIBRARIES})
+    set(CORE_LIBS ${CONAN_LIBRARIES} ${CORE_LIBS})
 else()
     add_library(VISCOMExternal ${EXTERN_SOURCES_CORE})
     set_property(TARGET VISCOMExternal PROPERTY CXX_STANDARD 17)
-    target_include_directories(VISCOMExternal SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
     target_link_libraries(VISCOMExternal PUBLIC ${CORE_LIBS} ${CONAN_LIBRARIES})
+    target_include_directories(VISCOMExternal SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
     target_compile_definitions(VISCOMExternal PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
     set_build_flags(VISCOMExternal 0)
     set(CORE_LIBS VISCOMExternal)
@@ -309,8 +306,8 @@ endif()
 
 add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${TOP_SRC_FILES_CORE})
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
-target_include_directories(VISCOMCore PUBLIC src)
 target_link_libraries(VISCOMCore PUBLIC ${CORE_LIBS})
+target_include_directories(VISCOMCore PUBLIC src ${CORE_INCLUDE_DIRS})
 ## target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
 set_build_flags(VISCOMCore 1)
 

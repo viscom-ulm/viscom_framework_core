@@ -12,18 +12,22 @@
 #ifdef VISCOM_SYNCINPUT
 #include "core/InputWrapper.h"
 #endif
-#include <mutex>
+// #include <mutex>
 #include "core/resources/GPUProgramManager.h"
 #include "core/resources/TextureManager.h"
 #include "core/resources/MeshManager.h"
 #include "core/gfx/FrameBuffer.h"
 #include "core/CameraHelper.h"
-#include "core/gfx/FullscreenQuad.h"
-#include <sgct/SharedDataTypes.h>
 
 struct GLFWwindow;
 
+namespace sgct {
+    class Engine;
+}
+
 namespace viscom {
+
+    class FullscreenQuad;
 
     class FrameworkInternal
     {

@@ -6,12 +6,12 @@
  * @brief  Implementation of the mesh class.
  */
 
+#include "core/open_gl.h"
 #include "Mesh.h"
 #include "SceneMeshNode.h"
 #include "assimp_convert_helpers.h"
 #include "core/FrameworkInternal.h"
 #include "core/gfx/Material.h"
-#include "core/open_gl.h"
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>

@@ -6,20 +6,21 @@
  * @brief  Implementation of the ApplicationNodeInternal for calibrated workers.
  */
 
-#define GLM_FORCE_SWIZZLE
-
 #include "core/main.h"
 #include <sgct.h>
 #include "WorkerNodeCalibratedInternal.h"
 #include "core/OpenCVParserHelper.h"
 #include <fstream>
 #include <imgui.h>
-#include <experimental/filesystem>
+#include <filesystem>
 #include "core/open_gl.h"
 #include "core/app/ApplicationNodeBase.h"
 #include "sgct_wrapper.h"
 
 #include <iostream>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/vec_swizzle.hpp>
 
 namespace viscom {
 
@@ -42,19 +43,19 @@ namespace viscom {
 
     void WorkerNodeCalibratedInternal::InitOffscreenBuffers()
     {
-        LOG(DBUG) << "Initializing calibration data.";
+        spdlog::debug("Initializing calibration data.");
         // init shaders
         calibrationProgram_ = GetFramework().GetGPUProgramManager().GetResource("calibrationRendering", std::vector<std::string>{ "calibrationRendering.vert", "calibrationRendering.frag" });
         calibrationAlphaTexLoc_ = calibrationProgram_->getUniformLocation("alphaTex");
         calibrationSceneTexLoc_ = calibrationProgram_->getUniformLocation("tex");
 
-        LOG(DBUG) << "Loading projector data.";
+        spdlog::debug("Loading projector data.");
         tinyxml2::XMLDocument doc;
         OpenCVParserHelper::LoadXMLDocument("Projector data", GetFramework().GetConfig().projectorData_, doc);
-        std::experimental::filesystem::path projectorDataPath(GetFramework().GetConfig().projectorData_);
+        std::filesystem::path projectorDataPath(GetFramework().GetConfig().projectorData_);
         auto alphaTexturePath = projectorDataPath.parent_path();
 
-        LOG(DBUG) << "Initializing viewports.";
+        spdlog::debug("Initializing viewports.");
         auto slaveId = sgct_core::ClusterManager::instance()->getThisNodeId();
         auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
         projectorViewport_.resize(numWindows);
@@ -64,7 +65,7 @@ namespace viscom {
         glGenTextures(static_cast<GLsizei>(numWindows), alphaTextures_.data());
 
         for (auto i = 0U; i < numWindows; ++i) {
-            LOG(DBUG) << "Initializing viewport: " << i;
+            spdlog::debug("Initializing viewport: {}", i);
             projectorViewport_[i] = GetFramework().GetViewportScreen(i);
             auto projectorSize = GetFramework().GetViewportScreen(i).size_;
 
@@ -98,8 +99,8 @@ namespace viscom {
 
             auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling));
             glm::vec3 vpSize(GetFramework().GetConfig().nearPlaneSize_.x, GetFramework().GetConfig().nearPlaneSize_.y, 1.0f);
-            auto totalScreenSize = (glm::vec2(fboSize) * 2.0f * vpSize.xy) / (viewport[1] - viewport[3]).xy;
-            GetFramework().GetViewportScreen(i).position_ = glm::ivec2(glm::floor(((viewport[3] + vpSize) / (2.0f * vpSize)).xy * totalScreenSize));
+            auto totalScreenSize = (glm::vec2(fboSize) * 2.0f * glm::xy(vpSize)) / glm::xy(viewport[1] - viewport[3]);
+            GetFramework().GetViewportScreen(i).position_ = glm::ivec2(glm::floor(glm::xy((viewport[3] + vpSize) / (2.0f * vpSize)) * totalScreenSize));
             GetFramework().GetViewportScreen(i).size_ = glm::uvec2(glm::floor(totalScreenSize));
             GetFramework().GetViewportQuadSize(i) = fboSize;
             GetFramework().GetViewportScaling(i) = totalScreenSize / GetFramework().GetConfig().virtualScreenSize_;
@@ -120,16 +121,16 @@ namespace viscom {
             glbToLcMatrix[3][1] = -static_cast<float>(projectorViewportPosition.y);
             GetFramework().GetCamera()->SetLocalCoordMatrix(i, glbToLcMatrix, glm::vec2(GetFramework().GetViewportQuadSize(i)));
 
-            LOG(DBUG) << "WORKER NODE CALIBRATED INTERNAL:\n";
-            LOG(DBUG) << "Total.x: " << totalScreenSize.x << "\nTotal.y: " << totalScreenSize.y << "\n\n";
-            LOG(DBUG) << "Position.x: " << projectorViewportPosition.x << "\nPosition.y: " << projectorViewportPosition.y << "\n\n";
-            LOG(DBUG) << "Projector.x: " << projectorSize.x << "\nProjector.y: " << projectorSize.y << "\n\n";
+            spdlog::debug("WORKER NODE CALIBRATED INTERNAL:");
+            spdlog::debug("Total.x: {}\nTotal.y: {}\n\n", totalScreenSize.x, totalScreenSize.y);
+            spdlog::debug("Position.x: {}\nPosition.y: {}\n\n", projectorViewportPosition.x, projectorViewportPosition.y);
+            spdlog::debug("Projector.x: {}\nProjector.y: {}\n\n", projectorSize.x, projectorSize.y);
 
 
             CreateProjectorFBO(i, fboSize);
 
-            LOG(DBUG) << "VP Pos: " << projectorViewport_[i].position_.x << ", " << projectorViewport_[i].position_.y;
-            LOG(DBUG) << "VP Size: " << GetFramework().GetViewportQuadSize(i).x << ", " << GetFramework().GetViewportQuadSize(i).y;
+            spdlog::debug("VP Pos: {}, {}", projectorViewport_[i].position_.x, projectorViewport_[i].position_.y);
+            spdlog::debug("VP Size: {}, {}", GetFramework().GetViewportQuadSize(i).x, GetFramework().GetViewportQuadSize(i).y);
             sceneFBOs_[i].SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y,
                 static_cast<unsigned int>(GetFramework().GetViewportQuadSize(i).x), static_cast<unsigned int>(GetFramework().GetViewportQuadSize(i).y));
             GetFramework().GetFramebuffer(i).SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, projectorViewport_[i].size_.x, projectorViewport_[i].size_.y);
@@ -157,7 +158,7 @@ namespace viscom {
             glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         }
 
-        LOG(DBUG) << "Creating VBOs.";
+        spdlog::debug("Creating VBOs.");
         glGenBuffers(1, &vboProjectorQuads_);
         glBindBuffer(GL_ARRAY_BUFFER, vboProjectorQuads_);
         glBufferData(GL_ARRAY_BUFFER, quadCoordsProjector_.size() * sizeof(CalbrationProjectorQuadVertex), quadCoordsProjector_.data(), GL_STATIC_DRAW);
@@ -170,7 +171,7 @@ namespace viscom {
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(CalbrationProjectorQuadVertex), reinterpret_cast<GLvoid*>(offsetof(CalbrationProjectorQuadVertex, texCoords_)));
         glBindVertexArray(0);
 
-        LOG(DBUG) << "Calibration Initialized.";
+        spdlog::debug("Calibration Initialized.");
     }
 
 

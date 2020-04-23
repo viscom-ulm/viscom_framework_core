@@ -7,11 +7,11 @@
  */
 
 
+#include "core/open_gl.h"
 #include "SceneMeshNode.h"
 #include "SubMesh.h"
 #include "core/gfx/Material.h"
 #include "core/gfx/Texture.h"
-#include "core/open_gl.h"
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>

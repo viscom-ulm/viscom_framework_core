@@ -15,7 +15,7 @@ namespace viscom {
         auto result = doc.LoadFile(filename.c_str());
 
         if (result != tinyxml2::XML_SUCCESS) {
-            LOG(FATAL) << docName << " file not found (" << filename << ").";
+            spdlog::critical("{} file not found ({}).", docName, filename);
             throw std::runtime_error(docName + " file not found.");
         }
     }

@@ -10,6 +10,7 @@
 
 #include "core/app_internal/ApplicationNodeInternal.h"
 #include "core/FrameworkInternal.h"
+#include "core/gfx/FullscreenQuad.h"
 #include "OpenVR.h"
 #include "OpenVRControllerIfc.h"
 
@@ -243,7 +244,7 @@ namespace viscom {
         */
         virtual const glm::vec2& GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const override { return appNode_->GetDisplayPointerPosition(trackedDeviceId); }
 
-        /** 
+        /**
         * Callback for a button press on a controller.
         * @param trackedDeviceId identifies the device.
         * @param buttonid identifies the button ( using the OpenVR button ids).

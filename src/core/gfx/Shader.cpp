@@ -6,6 +6,7 @@
  * @brief  Implementation of the shader helper class.
  */
 
+#include "core/open_gl.h"
 #include "Shader.h"
 #include <fstream>
 #include <iostream>
@@ -16,7 +17,6 @@
 #endif
 #include "core/FrameworkInternal.h"
 #include <regex>
-#include "core/open_gl.h"
 
 namespace viscom {
 
