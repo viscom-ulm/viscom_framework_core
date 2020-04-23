@@ -89,7 +89,7 @@ namespace viscom {
 
         if (data.has_value()) {
             data->clear();
-            LOG(WARNING) << "Sending memory versions of meshes will most probably not work. Do not use this!!!";
+            spdlog::warn("Sending memory versions of meshes will most probably not work. Do not use this!!!");
             auto hint = filename.substr(filename.find_last_of(".") + 1);
             auto hintSize = hint.size() * sizeof(std::remove_reference_t<decltype(hint)>::value_type);
             std::ifstream meshFile(filename, std::ios::binary | std::ios::ate);
@@ -110,7 +110,7 @@ namespace viscom {
 
     void Mesh::LoadFromMemory(const void* data, std::size_t size)
     {
-        LOG(WARNING) << "Loading meshes from memory will most probably not work. Do not use this!!!";
+        spdlog::warn("Loading meshes from memory will most probably not work. Do not use this!!!");
 
         auto hintSize = reinterpret_cast<const std::size_t*>(data);
         std::string hint;

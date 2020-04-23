@@ -13,6 +13,7 @@
 #include "core/utils/serializationHelper.h"
 #include <core/math/math.h>
 #include <unordered_map>
+#include <map>
 
 struct aiNode;
 

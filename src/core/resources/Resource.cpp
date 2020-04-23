@@ -69,7 +69,7 @@ namespace viscom {
             if (utils::file_exists(filename)) return filename;
         }
 
-        LOG(WARNING) << "Cannot find local resource file \"" << localFilename.c_str() << "\".";
+        spdlog::warn("Cannot find local resource file \"{}\".", localFilename);
         throw resource_loading_error(resourceId, "Cannot find local resource file (" + localFilename + ").");
     }
 
@@ -81,7 +81,7 @@ namespace viscom {
             if (utils::file_exists(filename)) return filename;
         }
 
-        LOG(WARNING) << "Cannot find local resource file \"" << localFilename.c_str() << "\".";
+        spdlog::warn("Cannot find local resource file \"{}\".", localFilename);
         throw resource_loading_error(resourceId, "Cannot find local resource file (" + localFilename + ").");
     }
 

@@ -59,7 +59,7 @@ namespace viscom {
         glfwSetErrorCallback(FrameworkInternal::ErrorCallbackStatic);
         window_ = glfwCreateWindow(static_cast<int>(config_.virtualScreenSize_.x), static_cast<int>(config_.virtualScreenSize_.y), "VISCOM Framework", nullptr, nullptr);
         if (window_ == nullptr) {
-            LOG(FATAL) << "Could not create window!";
+            spdlog::critical("Could not create window!");
             glfwTerminate();
             throw std::runtime_error("Could not create window!");
         }
@@ -75,12 +75,12 @@ namespace viscom {
         glfwSetScrollCallback(window_, FrameworkInternal::BaseMouseScrollCallbackStatic);
         glfwMakeContextCurrent(window_);
 
-        LOG(INFO) << "Window successfully initialized.";
+        spdlog::info("Window successfully initialized.");
 
         glewExperimental = GL_TRUE;
         GLenum err = glewInit();
         if (GLEW_OK != err) {
-            LOG(FATAL) << "Could not load OpenGL: " << glewGetErrorString(err);
+            spdlog::critical("Could not load OpenGL: {}", glewGetErrorString(err));
             glfwTerminate();
             throw std::runtime_error("Could not load OpenGL.");
         }
@@ -232,8 +232,7 @@ POP_WARNINGS
     {
         std::cerr << "An GLFW error occurred (" << error << "): " << std::endl;
         std::cerr << description << std::endl;
-        LOG(WARNING) << "An GLFW error occurred (" << error << "): ";
-        LOG(WARNING) << description << std::endl;
+        spdlog::warn("An GLFW error occurred ({}):\n{}", error, description);
     }
 
     void FrameworkInternal::BaseKeyboardCallbackStatic(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -325,37 +324,37 @@ POP_WARNINGS
 
     void FrameworkInternal::TransferDataToNode(const void*, std::size_t, std::uint16_t, std::size_t)
     {
-        LOG(INFO) << "TransferDataToNode(...) not implemented in local mode.";
+        spdlog::info("TransferDataToNode(...) not implemented in local mode.");
     }
 
     void FrameworkInternal::TransferData(const void*, std::size_t, std::uint16_t)
     {
-        LOG(INFO) << "TransferData(...) not implemented in local mode.";
+        spdlog::info("TransferData(...) not implemented in local mode.");
     }
 
     void FrameworkInternal::TransferResource(std::string_view, const void*, std::size_t, ResourceType)
     {
-        LOG(INFO) << "TransferResource(...) not implemented in local mode.";
+        spdlog::info("TransferResource(...) not implemented in local mode.");
     }
 
     void FrameworkInternal::TransferResourceToNode(std::string_view, const void*, std::size_t, ResourceType, std::size_t)
     {
-        LOG(INFO) << "TransferResourceToNode(...) not implemented in local mode.";
+        spdlog::info("TransferResourceToNode(...) not implemented in local mode.");
     }
 
     void FrameworkInternal::TransferReleaseResource(std::string_view, ResourceType)
     {
-        LOG(INFO) << "TransferReleaseResource(...) not implemented in local mode.";
+        spdlog::info("TransferReleaseResource(...) not implemented in local mode.");
     }
 
     void FrameworkInternal::RequestSharedResource(std::string_view, ResourceType)
     {
-        LOG(INFO) << "RequestSharedResource(...) not implemented in local mode.";
+        spdlog::info("RequestSharedResource(...) not implemented in local mode.");
     }
 
     void FrameworkInternal::WaitForResource(const std::string&, ResourceType)
     {
-        LOG(INFO) << "WaitForResource(...) not implemented in local mode.";
+        spdlog::info("WaitForResource(...) not implemented in local mode.");
     }
 
     glm::dvec2 FrameworkInternal::ConvertInputCoordinates(double x, double y)
