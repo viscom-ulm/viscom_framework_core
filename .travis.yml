@@ -78,7 +78,7 @@ jobs:
         - pip3 install conan
       script: &linux_script
         - mkdir build && cd build
-        - cmake -G "${CMAKE_BUILDER}" -D VISCOM_USE_SGCT:BOOL=${VISCOM_SGCT} -D VISCOM_LOCAL_ONLY:BOOL=${VISCOM_LOCAL} -D SGCT_INCLUDE_DIRECTORY="${SGCT_ROOT_DIR}/include" -D SGCT_DEBUG_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgctd.${LIB_ENDING}" -D SGCT_RELEASE_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgct.${LIB_ENDING}" -DCMAKE_BUILD_TYPE=Release ..
+        - cmake -G "${CMAKE_BUILDER}" -D VISCOM_USE_SGCT:BOOL=${VISCOM_SGCT} -D VISCOM_LOCAL_ONLY:BOOL=${VISCOM_LOCAL} -D SGCT_INCLUDE_DIRECTORY="${SGCT_ROOT_DIR}/include" -D SGCT_DEBUG_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgctd.${LIB_ENDING}" -D SGCT_RELEASE_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgct.${LIB_ENDING}" -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..
         - cmake --build .
     - name: Linux (GCC), SGCT, local only
       if: branch = master

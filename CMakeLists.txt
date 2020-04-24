@@ -23,7 +23,7 @@ conan_add_remote(NAME arsen-studio URL https://api.bintray.com/conan/arsen-studi
 set(IMGUI_VERSION "1.75")
 set(GLM_VERSION "0.9.9.8")
 
-set(CONAN_LIBRARIES CONAN_PKG::fmt CONAN_PKG::spdlog CONAN_PKG::glm CONAN_PKG::stb CONAN_PKG::imgui CONAN_PKG::assimp)
+set(CONAN_LIBRARIES CONAN_PKG::imgui CONAN_PKG::assimp)
 set(CONAN_EXTRA_REQUIRES fmt/6.1.2
                          spdlog/1.5.0
                          glm/${GLM_VERSION}
@@ -282,7 +282,7 @@ conan_cmake_run(REQUIRES ${CONAN_EXTRA_REQUIRES}
 
 
 if (${VISCOM_USE_SGCT})
-    set(CORE_LIBS ${CORE_LIBS}   ${CONAN_LIBRARIES} )
+    set(CORE_LIBS ${CORE_LIBS})
 else()
     add_library(VISCOMExternal ${EXTERN_SOURCES_CORE})
     set_property(TARGET VISCOMExternal PROPERTY CXX_STANDARD 17)
@@ -295,7 +295,7 @@ endif()
 
 add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${TOP_SRC_FILES_CORE})
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
-target_link_libraries(VISCOMCore PUBLIC ${CORE_LIBS} ${CONAN_LIBRARIES})
+target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::fmt CONAN_PKG::spdlog CONAN_PKG::glm CONAN_PKG::stb ${CORE_LIBS} ${CONAN_LIBRARIES})
 target_include_directories(VISCOMCore PUBLIC src ${VISCOM_SGCT_WRAPPER_DIR} ${VISCOM_OPENVR_WRAPPER_DIR})
 target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
 set_build_flags(VISCOMCore 1)
