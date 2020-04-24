@@ -294,7 +294,7 @@ endif()
 
 add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${TOP_SRC_FILES_CORE})
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
-target_link_libraries(VISCOMCore PUBLIC ${CORE_LIBS_LOW_LEVEL})
+# target_link_libraries(VISCOMCore PUBLIC ${CORE_LIBS_LOW_LEVEL})
 target_link_libraries(VISCOMCore PUBLIC ${CORE_LIBS})
 # target_include_directories(VISCOMCore SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
 target_include_directories(VISCOMCore PUBLIC src ${VISCOM_SGCT_WRAPPER_DIR} ${VISCOM_OPENVR_WRAPPER_DIR})
