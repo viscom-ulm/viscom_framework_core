@@ -179,6 +179,10 @@ if (${VISCOM_USE_SGCT})
     find_library(SGCT_DEBUG_LIBRARY NAMES sgctd libsgctd PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
     find_path(SGCT_INCLUDE_DIRECTORY NAMES sgct PATHS $ENV{SGCT_ROOT_DIR}/include NO_DEFAULT_PATH REQUIRED)
 
+    add_library(sgct INTERFACE IMPORTED)
+    target_link_libraries(sgct INTERFACE debug ${SGCT_DEBUG_LIBRARY} optimized ${SGCT_RELEASE_LIBRARY})
+    target_include_directories(sgct SYSTEM INTERFACE ${SGCT_INCLUDE_DIRECTORY})
+
     if(MSVC)
         list(APPEND CORE_LIBS_LOW_LEVEL OpenGL::GL ws2_32)
     elseif(UNIX)
@@ -191,18 +195,14 @@ if (${VISCOM_USE_SGCT})
         endif()
     endif()
 
-    add_library(sgct INTERFACE IMPORTED)
-    target_link_libraries(sgct INTERFACE ${CORE_LIBS_LOW_LEVEL} debug ${SGCT_DEBUG_LIBRARY} optimized ${SGCT_RELEASE_LIBRARY})
-    target_include_directories(sgct SYSTEM INTERFACE ${SGCT_INCLUDE_DIRECTORY})
-
     add_library(SGCTWrapper ${VISCOM_SGCT_WRAPPER_DIR}/wrapper/sgct_wrapper.cpp)
     set_property(TARGET SGCTWrapper PROPERTY CXX_STANDARD 17)
     target_include_directories(SGCTWrapper PUBLIC ${VISCOM_SGCT_WRAPPER_DIR}/wrapper)
-    target_link_libraries(SGCTWrapper PUBLIC sgct)
+    target_link_libraries(SGCTWrapper PRIVATE ${CORE_LIBS_LOW_LEVEL} sgct)
     target_compile_definitions(SGCTWrapper PUBLIC ${COMPILE_TIME_DEFS})
     set_build_flags(SGCTWrapper 0)
 
-    list(APPEND CORE_LIBS SGCTWrapper)
+    list(APPEND CORE_LIBS SGCTWrapper sgct)
 else()
     set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} glfw/3.3.2@bincrafters/stable)
     set(CONAN_LIBRARIES ${CONAN_LIBRARIES} CONAN_PKG::glfw)
@@ -281,7 +281,7 @@ conan_cmake_run(REQUIRES ${CONAN_EXTRA_REQUIRES}
 
 
 if (${VISCOM_USE_SGCT})
-    set(CORE_LIBS ${CONAN_LIBRARIES} ${CORE_LIBS})
+    set(CORE_LIBS ${CORE_LIBS_LOW_LEVEL}  ${CONAN_LIBRARIES} ${CORE_LIBS})
 else()
     add_library(VISCOMExternal ${EXTERN_SOURCES_CORE})
     set_property(TARGET VISCOMExternal PROPERTY CXX_STANDARD 17)
