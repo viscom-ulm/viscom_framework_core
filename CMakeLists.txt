@@ -179,10 +179,6 @@ if (${VISCOM_USE_SGCT})
     find_library(SGCT_DEBUG_LIBRARY NAMES sgctd libsgctd PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
     find_path(SGCT_INCLUDE_DIRECTORY NAMES sgct PATHS $ENV{SGCT_ROOT_DIR}/include NO_DEFAULT_PATH REQUIRED)
 
-    add_library(sgct INTERFACE IMPORTED)
-    target_link_libraries(sgct INTERFACE ${CORE_LIBS_LOW_LEVEL} debug ${SGCT_DEBUG_LIBRARY} optimized ${SGCT_RELEASE_LIBRARY})
-    target_include_directories(sgct SYSTEM INTERFACE ${SGCT_INCLUDE_DIRECTORY})
-
     if(MSVC)
         list(APPEND CORE_LIBS_LOW_LEVEL OpenGL::GL ws2_32)
     elseif(UNIX)
@@ -194,6 +190,11 @@ if (${VISCOM_USE_SGCT})
             list(APPEND CORE_LIBS_LOW_LEVEL OpenGL::GL)
         endif()
     endif()
+
+    add_library(sgct INTERFACE IMPORTED)
+    target_link_libraries(sgct INTERFACE ${CORE_LIBS_LOW_LEVEL} debug ${SGCT_DEBUG_LIBRARY} optimized ${SGCT_RELEASE_LIBRARY})
+    target_include_directories(sgct SYSTEM INTERFACE ${SGCT_INCLUDE_DIRECTORY})
+
     add_library(SGCTWrapper ${VISCOM_SGCT_WRAPPER_DIR}/wrapper/sgct_wrapper.cpp)
     set_property(TARGET SGCTWrapper PROPERTY CXX_STANDARD 17)
     target_include_directories(SGCTWrapper PUBLIC ${VISCOM_SGCT_WRAPPER_DIR}/wrapper)
