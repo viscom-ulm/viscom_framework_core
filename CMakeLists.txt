@@ -23,13 +23,49 @@ conan_add_remote(NAME arsen-studio URL https://api.bintray.com/conan/arsen-studi
 set(IMGUI_VERSION "1.75")
 set(GLM_VERSION "0.9.9.8")
 
-set(CONAN_LIBRARIES CONAN_PKG::imgui CONAN_PKG::assimp)
+set(CONAN_LIBRARIES CONAN_PKG::assimp)
 set(CONAN_EXTRA_REQUIRES fmt/6.1.2
                          spdlog/1.5.0
                          glm/${GLM_VERSION}
                          imgui/${IMGUI_VERSION}
                          stb/20200203
                          assimp/5.0.1)
+                         
+
+# Download natvis files
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/glm.natvis")
+  message(
+    STATUS
+      "Downloading glm.natvis from https://github.com/g-truc/glm")
+  file(DOWNLOAD "https://github.com/g-truc/glm/raw/${GLM_VERSION}/util/glm.natvis"
+       "${CMAKE_BINARY_DIR}/glm.natvis")
+endif()
+
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/imgui.natvis")
+  message(
+    STATUS
+      "Downloading imgui.natvis from https://github.com/ocornut/imgui")
+  file(DOWNLOAD "https://github.com/ocornut/imgui/raw/v${IMGUI_VERSION}/misc/natvis/imgui.natvis"
+       "${CMAKE_BINARY_DIR}/imgui.natvis")
+endif()
+
+
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/extern/imgui/cpp/imgui_stdlib.cpp")
+  message(
+    STATUS
+      "Downloading imgui_stdlib.cpp from https://github.com/ocornut/imgui")
+  file(DOWNLOAD "https://github.com/ocornut/imgui/raw/v${IMGUI_VERSION}/misc/cpp/imgui_stdlib.cpp"
+       "${CMAKE_BINARY_DIR}/extern/imgui/cpp/imgui_stdlib.cpp")
+endif()
+
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/extern/imgui/cpp/imgui_stdlib.h")
+  message(
+    STATUS
+      "Downloading imgui.natvis from https://github.com/ocornut/imgui")
+  file(DOWNLOAD "https://github.com/ocornut/imgui/raw/v${IMGUI_VERSION}/misc/cpp/imgui_stdlib.h"
+       "${CMAKE_BINARY_DIR}/extern/imgui/cpp/imgui_stdlib.h")
+endif()
+list(APPEND EXTERN_SOURCES_CORE ${CMAKE_BINARY_DIR}/extern/imgui/cpp/imgui_stdlib.cpp)
 
 set(VISCOM_CLIENTGUI ON CACHE BOOL "Use ImGui on clients.")
 set(VISCOM_SYNCINPUT OFF CACHE BOOL "Synchronize input from master to clients.")
@@ -258,23 +294,6 @@ if(TARGET Doxygen::doxygen)
     ## doxygen_add_docs(VISCOMCoreDoc src)
 endif()
 
-# Download natvis files
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/glm.natvis")
-  message(
-    STATUS
-      "Downloading glm.natvis from https://github.com/g-truc/glm")
-  file(DOWNLOAD "https://github.com/g-truc/glm/raw/${GLM_VERSION}/util/glm.natvis"
-       "${CMAKE_BINARY_DIR}/glm.natvis")
-endif()
-
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/imgui.natvis")
-  message(
-    STATUS
-      "Downloading imgui.natvis from https://github.com/ocornut/imgui")
-  file(DOWNLOAD "https://github.com/ocornut/imgui/raw/v${IMGUI_VERSION}/misc/natvis/imgui.natvis"
-       "${CMAKE_BINARY_DIR}/imgui.natvis")
-endif()
-
 conan_cmake_run(REQUIRES ${CONAN_EXTRA_REQUIRES}
     BASIC_SETUP
     CMAKE_TARGETS
@@ -282,12 +301,12 @@ conan_cmake_run(REQUIRES ${CONAN_EXTRA_REQUIRES}
 
 
 if (${VISCOM_USE_SGCT})
-    set(CORE_LIBS ${CORE_LIBS})
+    set(CORE_LIBS ${CORE_LIBS} CONAN_PKG::imgui)
 else()
     add_library(VISCOMExternal ${EXTERN_SOURCES_CORE})
     set_property(TARGET VISCOMExternal PROPERTY CXX_STANDARD 17)
-    target_link_libraries(VISCOMExternal PUBLIC ${CORE_LIBS})
-    target_include_directories(VISCOMExternal SYSTEM PUBLIC ${VISCOM_SGCT_WRAPPER_DIR})
+    target_link_libraries(VISCOMExternal PUBLIC ${CORE_LIBS} CONAN_PKG::imgui)
+    target_include_directories(VISCOMExternal SYSTEM PUBLIC ${VISCOM_SGCT_WRAPPER_DIR} ${CMAKE_BINARY_DIR}/extern/imgui/cpp)
     target_compile_definitions(VISCOMExternal PUBLIC ${COMPILE_TIME_DEFS})
     set_build_flags(VISCOMExternal 0)
     set(CORE_LIBS VISCOMExternal)
@@ -296,7 +315,7 @@ endif()
 add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${TOP_SRC_FILES_CORE})
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
 target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::fmt CONAN_PKG::spdlog CONAN_PKG::glm CONAN_PKG::stb ${CORE_LIBS} ${CONAN_LIBRARIES})
-target_include_directories(VISCOMCore PUBLIC src ${VISCOM_SGCT_WRAPPER_DIR} ${VISCOM_OPENVR_WRAPPER_DIR})
+target_include_directories(VISCOMCore PUBLIC src ${VISCOM_SGCT_WRAPPER_DIR} ${VISCOM_OPENVR_WRAPPER_DIR} ${CMAKE_BINARY_DIR}/extern/imgui/cpp)
 target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
 set_build_flags(VISCOMCore 1)
 
