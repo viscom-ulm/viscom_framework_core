@@ -23,8 +23,12 @@ conan_add_remote(NAME arsen-studio URL https://api.bintray.com/conan/arsen-studi
 set(IMGUI_VERSION "1.75")
 set(GLM_VERSION "0.9.9.8")
 
+set(CONAN_EXTRA_OPTIONS "")
+set(CONAN_EXTRA_REQUIRES "")
+
 set(CONAN_LIBRARIES CONAN_PKG::assimp)
-set(CONAN_EXTRA_REQUIRES fmt/6.1.2
+set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES}
+                         fmt/6.1.2
                          spdlog/1.5.0
                          glm/${GLM_VERSION}
                          imgui/${IMGUI_VERSION}
@@ -294,11 +298,8 @@ if(TARGET Doxygen::doxygen)
     ## doxygen_add_docs(VISCOMCoreDoc src)
 endif()
 
-conan_cmake_run(REQUIRES ${CONAN_EXTRA_REQUIRES}
-    BASIC_SETUP
-    CMAKE_TARGETS
-    BUILD missing)
-
+include(cmake/Conan.cmake)
+run_conan()
 
 if (${VISCOM_USE_SGCT})
     set(CORE_LIBS ${CORE_LIBS} CONAN_PKG::imgui)
