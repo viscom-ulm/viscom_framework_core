@@ -50,7 +50,7 @@ namespace viscom {
                 argVec.back().push_back('\0');
                 args.push_back(argVec.back().data());
 
-                if (config.sgctSlave_) {
+                if (config.sgctWorker_) {
                     argVec.emplace_back(); argVec.back() = { '-', '-', 's', 'l', 'a', 'v', 'e', '\0' };
                     args.push_back(argVec.back().data());
                 }

@@ -49,7 +49,7 @@ namespace viscom {
         /** Index to node to use settings from. */
         std::string sgctLocal_;
         /** Defines if the node is a worker or coordinator. */
-        bool sgctSlave_ = false;
+        bool sgctWorker_ = false;
         /** TUIO port for touch screen. */
         int tuioPort_ = 3333;
         /** Virtual size of the screen. If only one screen exists the virtual screen size is the actual size of this screen. */
