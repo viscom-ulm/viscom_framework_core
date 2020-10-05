@@ -28,6 +28,7 @@ set(CONAN_EXTRA_REQUIRES "")
 
 set(CONAN_LIBRARIES CONAN_PKG::assimp)
 set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES}
+                         docopt.cpp/0.6.2
                          fmt/6.1.2
                          spdlog/1.5.0
                          glm/${GLM_VERSION}
@@ -315,7 +316,7 @@ endif()
 
 add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${TOP_SRC_FILES_CORE})
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
-target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::fmt CONAN_PKG::spdlog CONAN_PKG::glm CONAN_PKG::stb ${CORE_LIBS} ${CONAN_LIBRARIES})
+target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::docopt.cpp CONAN_PKG::fmt CONAN_PKG::spdlog CONAN_PKG::glm CONAN_PKG::stb ${CORE_LIBS} ${CONAN_LIBRARIES})
 target_include_directories(VISCOMCore PUBLIC src ${VISCOM_SGCT_WRAPPER_DIR} ${VISCOM_OPENVR_WRAPPER_DIR} ${CMAKE_BINARY_DIR}/extern/imgui/cpp)
 target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
 set_build_flags(VISCOMCore 1)
