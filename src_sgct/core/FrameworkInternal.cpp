@@ -629,6 +629,7 @@ POP_WARNINGS
             textureManager_.SynchronizeAllResourcesToNode(clientID);
             meshManager_.SynchronizeAllResourcesToNode(clientID);
             gpuProgramManager_.SynchronizeAllResourcesToNode(clientID);
+            fontManager_.SynchronizeAllResourcesToNode(clientID);
         }
         else {
             std::string name(reinterpret_cast<const char*>(data), length);
@@ -642,6 +643,9 @@ POP_WARNINGS
                 break;
             case viscom::ResourceType::GPUProgram:
                 gpuProgramManager_.SynchronizeResourceToNode(name, clientID);
+                break;
+            case viscom::ResourceType::Font:
+                fontManager_.SynchronizeResourceToNode(name, clientID);
                 break;
             default:
                 spdlog::warn("Unknown ResourceTransferType: {}", static_cast<std::uint8_t>(type));

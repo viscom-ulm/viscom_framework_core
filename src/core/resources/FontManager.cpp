@@ -1,12 +1,12 @@
 /**
- * @file   MeshManager.cpp
+ * @file   FontManager.cpp
  * @author Sebastian Maisch <sebastian.maisch@uni-ulm.de>
- * @date   2016.12.15
+ * @date   2020.10.13
  *
- * @brief  Implementation of the mesh manager.
+ * @brief  Implementation of the font manager.
  */
 
-#include "MeshManager.h"
+#include "FontManager.h"
 
 namespace viscom {
 
@@ -14,21 +14,21 @@ namespace viscom {
      * Constructor.
      * @param node the application object for resolving dependencies.
      */
-    MeshManager::MeshManager(FrameworkInternal* node) :
+    FontManager::FontManager(FrameworkInternal* node) :
         ResourceManagerBase(node)
     {
     }
 
     /** Default copy constructor. */
-    MeshManager::MeshManager(const MeshManager&) = default;
+    FontManager::FontManager(const FontManager&) = default;
     /** Default copy assignment operator. */
-    MeshManager& MeshManager::operator=(const MeshManager&) = default;
+    FontManager& FontManager::operator=(const FontManager&) = default;
 
     /** Default move constructor. */
-    MeshManager::MeshManager(MeshManager&& rhs) noexcept : ResourceManagerBase(std::move(rhs)) {}
+    FontManager::FontManager(FontManager&& rhs) noexcept : ResourceManagerBase(std::move(rhs)) {}
 
     /** Default move assignment operator. */
-    MeshManager& MeshManager::operator=(MeshManager&& rhs) noexcept
+    FontManager& FontManager::operator=(FontManager&& rhs) noexcept
     {
         ResourceManagerBase* tResMan = this;
         *tResMan = static_cast<ResourceManagerBase&&>(std::move(rhs));
@@ -36,5 +36,5 @@ namespace viscom {
     }
 
     /** Default destructor. */
-    MeshManager::~MeshManager() = default;
+    FontManager::~FontManager() = default;
 }

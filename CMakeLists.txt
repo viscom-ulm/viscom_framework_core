@@ -26,7 +26,7 @@ set(GLM_VERSION "0.9.9.8")
 set(CONAN_EXTRA_OPTIONS "")
 set(CONAN_EXTRA_REQUIRES "")
 
-set(CONAN_LIBRARIES CONAN_PKG::assimp)
+set(CONAN_LIBRARIES CONAN_PKG::assimp CONAN_PKG::nlohmann_json)
 set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES}
                          docopt.cpp/0.6.2
                          fmt/6.1.2
@@ -34,8 +34,9 @@ set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES}
                          glm/${GLM_VERSION}
                          imgui/${IMGUI_VERSION}
                          stb/20200203
-                         assimp/5.0.1)
-                         
+                         assimp/5.0.1
+                         nlohmann_json/3.9.1)
+
 
 # Download natvis files
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/glm.natvis")

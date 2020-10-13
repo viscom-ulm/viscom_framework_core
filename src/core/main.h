@@ -102,7 +102,8 @@ namespace viscom {
         All_Resources,
         Texture,
         Mesh,
-        GPUProgram
+        GPUProgram,
+        Font
     };
 
     /**
@@ -121,6 +122,8 @@ namespace viscom {
             return str << "Mesh";
         case viscom::ResourceType::GPUProgram:
             return str << "GPUProgram";
+        case viscom::ResourceType::Font:
+            return str << "Font";
         default:
             return str << "unknown Resource";
         }

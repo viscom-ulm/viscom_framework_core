@@ -37,7 +37,8 @@ namespace viscom {
         camHelper_{ config_.nearPlaneSize_.x, config.nearPlaneSize_.y, glm::ivec2{config.virtualScreenSize_}, glm::vec3(0.0f, 0.0f, 4.0f) },
         gpuProgramManager_{ this },
         textureManager_{ this },
-        meshManager_{ this }
+        meshManager_{ this },
+        fontManager_{ this }
     {
         std::pair<int, int> oglVer = std::make_pair(3, 3);
         if (config_.openglProfile_ == "3.3") oglVer = std::make_pair(3, 3);

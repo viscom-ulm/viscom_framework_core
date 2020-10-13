@@ -16,6 +16,7 @@
 #include "core/resources/GPUProgramManager.h"
 #include "core/resources/TextureManager.h"
 #include "core/resources/MeshManager.h"
+#include "core/resources/FontManager.h"
 #include "core/gfx/FrameBuffer.h"
 #include "core/CameraHelper.h"
 
@@ -173,19 +174,19 @@ namespace viscom {
         /** Returns the camera helper. */
         CameraHelper* GetCamera() { return &camHelper_; }
         /**
-         *  Creates frame buffers, appropriate textures and render buffers for offscreen rendering.
+         *  Creates frame buffers, appropriate textures and render buffers for off screen rendering.
          *  @param fboDesc descriptor holding information about the number and type of textures and render buffers.
          *  @param sizeDivisor size of the frame buffers in inverse proportion to the size of the back buffer.
          */
         std::vector<FrameBuffer> CreateOffscreenBuffers(const FrameBufferDescriptor& fboDesc, int sizeDivisor = 1) const;
         /**
-         *  Returns a frame buffer from previously created offscreen buffers.
-         *  @param offscreenBuffers list of frame buffers created for offscreen rendering.
+         *  Returns a frame buffer from previously created off screen buffers.
+         *  @param offscreenBuffers list of frame buffers created for off screen rendering.
          */
         const FrameBuffer* SelectOffscreenBuffer(const std::vector<FrameBuffer>& offscreenBuffers) const;
         /**
-         *  Creates a fullscreen quad for shading.
-         *  @param fragmentShader fragment shader to be used by the fullscreen quad.
+         *  Creates a full screen quad for shading.
+         *  @param fragmentShader fragment shader to be used by the full screen quad.
          */
         std::unique_ptr<FullscreenQuad> CreateFullscreenQuad(const std::string& fragmentShader);
 
@@ -195,6 +196,8 @@ namespace viscom {
         TextureManager& GetTextureManager() { return textureManager_; }
         /** Returns the mesh manager. */
         MeshManager& GetMeshManager() { return meshManager_; }
+        /** Returns the font manager. */
+        FontManager& GetFontManager() { return fontManager_; }
 
         /** Returns the initialization state. */
         bool IsInitialized() const { return initialized_; }
@@ -214,11 +217,11 @@ namespace viscom {
         void CreateSynchronizedResources();
 
     private:
-        /** The base pre window function. */
+        /** The base pre-window function. */
         void BasePreWindow();
         /** The base function to initialize OpenGL. */
         void BaseInitOpenGL();
-        /** The base pre synchronization function. */
+        /** The base pre-synchronization function. */
         void BasePreSync();
         /** The base post synchronization function. */
         void PostSyncFunction();
@@ -358,6 +361,8 @@ namespace viscom {
         TextureManager textureManager_;
         /** Holds the mesh manager. */
         MeshManager meshManager_;
+        /** Holds the font manager. */
+        FontManager fontManager_;
 
         /** Holds the current mouse position. */
         glm::vec2 mousePosition_ = glm::vec2{0.0f, 0.0f};
