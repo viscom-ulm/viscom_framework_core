@@ -6,6 +6,7 @@
  * @brief  Implementation of the font resource
  */
 
+#include <core/open_gl.h>
 #include "Font.h"
 #include <core/FrameworkInternal.h>
 #include <nlohmann/json.hpp>
@@ -173,32 +174,75 @@ namespace viscom {
         fontInfo_ = j.get<font::font>();
 
         // sort chars
-        std::size_t max_id = 0;
+        maxCharId_ = 0;
         for (const auto& charInfo : fontInfo_.chars) {
-            max_id = std::max(max_id, charInfo.id);
+            maxCharId_ = std::max(maxCharId_, charInfo.id);
         }
-        fontInfoGPU_.resize(max_id);
-        kerningGPU_.resize(max_id * max_id, 0);
+        fontCharsGPU_.resize(maxCharId_);
+        x_advance_.resize(maxCharId_);
+        kerningGPU_.resize(maxCharId_ * maxCharId_, 0);
+
+        fontInfoGPU_.line_height = static_cast<unsigned int>(fontInfo_.common.lineHeight);
+        fontInfoGPU_.base = static_cast<unsigned int>(fontInfo_.common.base);
 
         for (const auto& charInfo : fontInfo_.chars) {
-            fontInfoGPU_[charInfo.id].width = static_cast<unsigned int>(charInfo.width);
-            fontInfoGPU_[charInfo.id].height = static_cast<unsigned int>(charInfo.height);
-            fontInfoGPU_[charInfo.id].xoffset = static_cast<unsigned int>(charInfo.xoffset);
-            fontInfoGPU_[charInfo.id].yoffset = static_cast<unsigned int>(charInfo.yoffset);
-            fontInfoGPU_[charInfo.id].xadvance = static_cast<unsigned int>(charInfo.xadvance);
-            fontInfoGPU_[charInfo.id].chnl = static_cast<unsigned int>(charInfo.chnl);
-            fontInfoGPU_[charInfo.id].x = static_cast<unsigned int>(charInfo.x);
-            fontInfoGPU_[charInfo.id].y = static_cast<unsigned int>(charInfo.y);
-            fontInfoGPU_[charInfo.id].page = static_cast<unsigned int>(charInfo.page);
+            fontCharsGPU_[charInfo.id].texture_position = glm::uvec2{ charInfo.x, charInfo.y };
+            fontCharsGPU_[charInfo.id].texture_size = glm::uvec2{ charInfo.width, charInfo.height };
+            fontCharsGPU_[charInfo.id].offset = glm::uvec2{ charInfo.xoffset, charInfo.yoffset };
+            // fontCharsGPU_[charInfo.id].width = static_cast<unsigned int>(charInfo.width);
+            // fontCharsGPU_[charInfo.id].height = static_cast<unsigned int>(charInfo.height);
+            // fontCharsGPU_[charInfo.id].xoffset = static_cast<unsigned int>(charInfo.xoffset);
+            // fontCharsGPU_[charInfo.id].yoffset = static_cast<unsigned int>(charInfo.yoffset);
+            fontCharsGPU_[charInfo.id].chnl = static_cast<unsigned int>(charInfo.chnl);
+            // fontCharsGPU_[charInfo.id].x = static_cast<unsigned int>(charInfo.x);
+            // fontCharsGPU_[charInfo.id].y = static_cast<unsigned int>(charInfo.y);
+            fontCharsGPU_[charInfo.id].page = static_cast<unsigned int>(charInfo.page);
+
+            x_advance_[charInfo.id] = static_cast<unsigned int>(charInfo.xadvance);
         }
 
         for (const auto& kerning : fontInfo_.kernings) {
-            kerningGPU_[kerning.second * max_id + kerning.first] = static_cast<unsigned int>(kerning.amount);
+            kerningGPU_[kerning.second * maxCharId_ + kerning.first] = static_cast<unsigned int>(kerning.amount);
         }
+    }
+
+    void Font::InitGPU()
+    {
+        glGenBuffers(1, &fontMetricsUBO_);
+        glBindBuffer(GL_UNIFORM_BUFFER, fontMetricsUBO_);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(font::font_info_gpu), &fontInfoGPU_, GL_STATIC_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        glGenBuffers(1, &charMetricsSBO_);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, charMetricsSBO_);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(font::font_char_gpu) * fontCharsGPU_.size(), fontCharsGPU_.data(), GL_STATIC_DRAW);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+        glGenTextures(1, &kerningTexture_);
+        glBindTexture(GL_TEXTURE_2D, kerningTexture_);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32UI, static_cast<GLsizei>(fontCharsGPU_.size()), static_cast<GLsizei>(fontCharsGPU_.size()), 0, GL_RED, GL_UNSIGNED_INT, kerningGPU_.data());
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     Font::~Font() noexcept
     {
+        if (fontMetricsUBO_ != 0) {
+            glDeleteBuffers(1, &fontMetricsUBO_);
+            fontMetricsUBO_ = 0;
+        }
+        if (charMetricsSBO_ != 0) {
+            glDeleteBuffers(1, &charMetricsSBO_);
+            charMetricsSBO_ = 0;
+        }
+        if (kerningTexture_ != 0) {
+            glDeleteTextures(1, &kerningTexture_);
+            kerningTexture_ = 0;
+        }
+    }
+
+    void Font::Initialize()
+    {
+        InitializeFinished();
     }
 
 }

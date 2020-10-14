@@ -175,6 +175,8 @@ namespace viscom {
         TextureManager& GetTextureManager() { return framework_->GetTextureManager(); }
         /** Returns the mesh manager for mesh resource management. */
         MeshManager& GetMeshManager() { return framework_->GetMeshManager(); }
+        /** Returns the font manager for mesh resource management. */
+        FontManager& GetFontManager() { return framework_->GetFontManager(); }
 
         /** Return the camera of the scene. */
         CameraHelper* GetCamera() { return framework_->GetCamera(); }
