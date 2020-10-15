@@ -10,6 +10,7 @@
 
 #include "core/app_internal/ApplicationNodeInternal.h"
 
+
 #ifdef VISCOM_USE_OPEN_VR
 #include "core/app/OpenVRController.h"
 namespace viscom {
@@ -22,6 +23,7 @@ namespace viscom {
 }
 #endif
 
+
 namespace viscom {
 
     struct VrSyncedInfo {
@@ -29,7 +31,6 @@ namespace viscom {
         glm::vec2 displayPosRightController_ = glm::vec2{ 0.0f };
     };
 
-    
     class CoordinatorNodeInternal : public OpenVRControllerAlias, public ApplicationNodeInternal
     {
     public:

@@ -10,6 +10,7 @@
 
 #include "core/app_internal/ApplicationNodeInternal.h"
 #include "core/FrameworkInternal.h"
+#include "core/gfx/FullscreenQuad.h"
 #include "OpenVR.h"
 #include "OpenVRControllerIfc.h"
 
@@ -174,6 +175,8 @@ namespace viscom {
         TextureManager& GetTextureManager() { return framework_->GetTextureManager(); }
         /** Returns the mesh manager for mesh resource management. */
         MeshManager& GetMeshManager() { return framework_->GetMeshManager(); }
+        /** Returns the font manager for mesh resource management. */
+        FontManager& GetFontManager() { return framework_->GetFontManager(); }
 
         /** Return the camera of the scene. */
         CameraHelper* GetCamera() { return framework_->GetCamera(); }
@@ -243,7 +246,7 @@ namespace viscom {
         */
         virtual const glm::vec2& GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const override { return appNode_->GetDisplayPointerPosition(trackedDeviceId); }
 
-        /** 
+        /**
         * Callback for a button press on a controller.
         * @param trackedDeviceId identifies the device.
         * @param buttonid identifies the button ( using the OpenVR button ids).

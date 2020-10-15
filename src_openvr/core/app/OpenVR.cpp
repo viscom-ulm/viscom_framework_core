@@ -6,7 +6,7 @@
  * @brief  Basic types for open vr interface.
  */
 
-#include "OpenVR.h"
+#include "core/app/OpenVR.h"
 #include <openvr.h>
 
 namespace viscom::ovr {

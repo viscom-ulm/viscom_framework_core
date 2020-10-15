@@ -6,13 +6,13 @@
  * @brief  Implementation of the resource base class.
  */
 
-#include "Resource.h"
-#include "core/FrameworkInternal.h"
-#include "core/utils/utils.h"
-
 #ifdef VISCOM_USE_SGCT
 #include <sgct.h>
 #endif
+
+#include "Resource.h"
+#include "core/FrameworkInternal.h"
+#include "core/utils/utils.h"
 
 namespace viscom {
     /**
@@ -69,7 +69,7 @@ namespace viscom {
             if (utils::file_exists(filename)) return filename;
         }
 
-        LOG(WARNING) << "Cannot find local resource file \"" << localFilename.c_str() << "\".";
+        spdlog::warn("Cannot find local resource file \"{}\".", localFilename);
         throw resource_loading_error(resourceId, "Cannot find local resource file (" + localFilename + ").");
     }
 
@@ -81,7 +81,7 @@ namespace viscom {
             if (utils::file_exists(filename)) return filename;
         }
 
-        LOG(WARNING) << "Cannot find local resource file \"" << localFilename.c_str() << "\".";
+        spdlog::warn("Cannot find local resource file \"{}\".", localFilename);
         throw resource_loading_error(resourceId, "Cannot find local resource file (" + localFilename + ").");
     }
 

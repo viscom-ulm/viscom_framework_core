@@ -6,15 +6,15 @@
  * @brief  Implementation of functions needed to initialize the application.
  */
 
+#include <sgct.h>
 #include "core/initialize.h"
 #include "core/main.h"
 #include "core/FrameworkInternal.h"
-#include <sgct.h>
 
 void SGCTLog(const char* msg)
 {
     std::string msgStripped = msg;
-    LOG(INFO) << msgStripped.substr(0, msgStripped.size() - 1);
+    spdlog::info(msgStripped.substr(0, msgStripped.size() - 1));
 }
 
 namespace viscom {
@@ -50,7 +50,7 @@ namespace viscom {
                 argVec.back().push_back('\0');
                 args.push_back(argVec.back().data());
 
-                if (config.sgctSlave_) {
+                if (config.sgctWorker_) {
                     argVec.emplace_back(); argVec.back() = { '-', '-', 's', 'l', 'a', 'v', 'e', '\0' };
                     args.push_back(argVec.back().data());
                 }

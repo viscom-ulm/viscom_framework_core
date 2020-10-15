@@ -214,7 +214,7 @@ POP_WARNINGS
     {
         return zeroVec2_;
     }
-   
+
     bool ApplicationNodeInternal::ControllerButtonPressedCallback(std::uint32_t trackedDeviceId, std::size_t buttonid)
     {
         return appNodeImpl_->ControllerButtonPressedCallback(trackedDeviceId, buttonid);

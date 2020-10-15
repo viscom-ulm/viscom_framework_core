@@ -6,9 +6,9 @@
  * @brief  Implementation of the free flight camera.
  */
 
+#include <core/open_gl.h>
 #include "FreeCamera.h"
 
-#include <core/open_gl.h>
 #include "core/app/ApplicationNodeBase.h"
 
 #define GLM_ENABLE_EXPERIMENTAL

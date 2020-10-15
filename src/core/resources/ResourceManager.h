@@ -254,7 +254,9 @@ namespace viscom {
                 TransferResourceToNode(rit->first, rit->second->GetData().data(), rit->second->GetData().size(),
                                        rit->second->GetType(), static_cast<std::size_t>(clientID));
             }
-            else LOG(WARNING) << "Requested resource does not exist: " << resId;
+            else {
+                spdlog::warn("Requested resource does not exist: {}", resId);
+            }
         }
 
     protected:
@@ -273,7 +275,7 @@ namespace viscom {
                 wpResource = resources_.at(resId);
             }
             catch (std::out_of_range&) {
-                LOG(INFO) << "No resource with id \"" << resId << "\" found. Creating new one.";
+                spdlog::info("No resource with id \"{}\" found. Creating new one.", resId);
             }
             if (wpResource.expired()) {
                 std::shared_ptr<ResourceType> spResource(nullptr);
@@ -300,8 +302,7 @@ namespace viscom {
                 spResource->Initialize(std::forward<Args>(args)...);
             }
             catch (const resource_loading_error& loadingError) {
-                LOG(INFO) << "Error while loading resource \"" << resId << "\"." << std::endl
-                    << "Description: " << loadingError.errorDescription_;
+                spdlog::info("Error while loading resource \"{}\".\nDescription: {}", resId, loadingError.errorDescription_);
                 throw;
             }
         }

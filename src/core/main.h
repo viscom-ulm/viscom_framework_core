@@ -14,7 +14,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-#include <g3log/g3log.hpp>
+#include <spdlog/spdlog.h>
 // ReSharper restore CppUnusedIncludeDirective
 
 #include <core/config.h>
@@ -102,7 +102,8 @@ namespace viscom {
         All_Resources,
         Texture,
         Mesh,
-        GPUProgram
+        GPUProgram,
+        Font
     };
 
     /**
@@ -121,6 +122,8 @@ namespace viscom {
             return str << "Mesh";
         case viscom::ResourceType::GPUProgram:
             return str << "GPUProgram";
+        case viscom::ResourceType::Font:
+            return str << "Font";
         default:
             return str << "unknown Resource";
         }

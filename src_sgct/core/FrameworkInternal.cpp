@@ -6,15 +6,16 @@
  * @brief  Implementation of the internal framework class for the VISCOM lab cluster.
  */
 
+ #include <sgct.h>
 #include "FrameworkInternal.h"
 #include "external/tinyxml2.h"
 #include "core/utils/utils.h"
 #include <imgui.h>
-#include <sgct.h>
 #include "sgct_wrapper.h"
 #include "core/app_internal/CoordinatorNodeInternal.h"
 #include "core/app_internal/WorkerNodeInternal.h"
 #include "core/app/ApplicationNodeBase.h"
+#include "core/gfx/FullscreenQuad.h"
 
 #ifndef VISCOM_LOCAL_ONLY
 #include "core/OpenCVParserHelper.h"
@@ -43,7 +44,8 @@ namespace viscom {
         camHelper_{ engine_.get() },
         gpuProgramManager_{ this },
         textureManager_{ this },
-        meshManager_{ this }
+        meshManager_{ this },
+        fontManager_{ this }
     {
 #ifndef VISCOM_LOCAL_ONLY
         loadProperties();
@@ -95,7 +97,7 @@ namespace viscom {
 
         if (!engine_->init(rm))
         {
-            LOG(FATAL) << "Failed to create SGCT engine.";
+            spdlog::critical("Failed to create SGCT engine.");
             throw std::runtime_error("Failed to create SGCT engine.");
         }
 
@@ -173,10 +175,10 @@ namespace viscom {
             glbToLcMatrix[3][1] = -static_cast<float>(viewportScreen_[wId].position_.y);
             camHelper_.SetLocalCoordMatrix(wId, glbToLcMatrix, glm::vec2(projectorSize));
 
-            LOG(DBUG) << "FRAMEWORK INTERNAL:\n";
-            LOG(DBUG) << "Total.x: " << totalScreenSize.x << "\nTotal.y: " << totalScreenSize.y << "\n\n";
-            LOG(DBUG) << "Position.x: " << viewportScreen_[wId].position_.x << "\nPosition.y: " << viewportScreen_[wId].position_.y << "\n\n";
-            LOG(DBUG) << "Projector.x: " << projectorSize.x << "\nProjector.y: " << projectorSize.y << "\n\n";
+            spdlog::debug("FRAMEWORK INTERNAL:)");
+            spdlog::debug("Total.x: {}\nTotal.y: {}\n\n", totalScreenSize.x, totalScreenSize.y);
+            spdlog::debug("Position.x: {}\nPosition.y: {}\n\n", viewportScreen_[wId].position_.x, viewportScreen_[wId].position_.y);
+            spdlog::debug("Projector.x: {}\nProjector.y: {}\n\n", projectorSize.x, projectorSize.y);
         }
 
         FullscreenQuad::InitializeStatic();
@@ -315,7 +317,7 @@ POP_WARNINGS
                                 static_cast<std::size_t>(receivedLength), clientID);
             break;
         default:
-            LOG(WARNING) << "Unknown InternalTransferType: " << internalID[0];
+            spdlog::warn("Unknown InternalTransferType: {}", internalID[0]);
             break;
         }
     }
@@ -335,7 +337,7 @@ POP_WARNINGS
         case InternalTransferType::ResourceRequest:
             break;
         default:
-            LOG(WARNING) << "Unknown InternalTransferType: " << internalID[0];
+            spdlog::warn("Unknown InternalTransferType: {}", internalID[0]);
             break;
         }
     }
@@ -397,7 +399,7 @@ POP_WARNINGS
         // and check that we do not connect to other nodes on slaves.
         if (engine_->isMaster()) nodeIndex -= 1;
         else if (nodeIndex != 0) {
-            LOG(WARNING) << "SGCT does not allow inter-node connections (nodeIndex: " << nodeIndex << ").";
+            spdlog::warn("SGCT does not allow inter-node connections (nodeIndex: {}).", nodeIndex);
         }
         engine_->transferDataToNode(data, static_cast<int>(length), completePackageId, nodeIndex);
     }
@@ -414,7 +416,7 @@ POP_WARNINGS
         // we can just reduce the node index by 1 when on master ...
         // and check that we do not connect to other nodes on slaves.
         if (!engine_->isMaster()) {
-            LOG(WARNING) << "SGCT does not allow inter-node connections (all nodes).";
+            spdlog::warn("SGCT does not allow inter-node connections (all nodes).");
         }
         engine_->transferDataBetweenNodes(data, static_cast<int>(length), completePackageId);
     }
@@ -437,7 +439,7 @@ POP_WARNINGS
             // we can just reduce the node index by 1 when on master ...
             // and check that we do not connect to other nodes on slaves.
             if (!engine_->isMaster()) {
-                LOG(WARNING) << "SGCT does not allow inter-node connections (all nodes).";
+                spdlog::warn("SGCT does not allow inter-node connections (all nodes).");
             }
             engine_->transferDataBetweenNodes(transferedData.data(), static_cast<int>(transferedData.size()), completePackageId);
         }
@@ -459,7 +461,7 @@ POP_WARNINGS
             // and check that we do not connect to other nodes on slaves.
             if (engine_->isMaster()) nodeIndex -= 1;
             else if (nodeIndex != 0) {
-                LOG(WARNING) << "SGCT does not allow inter-node connections (nodeIndex: " << nodeIndex << ").";
+                spdlog::warn("SGCT does not allow inter-node connections (nodeIndex: {}).", nodeIndex);
             }
             engine_->transferDataToNode(transferedData.data(), static_cast<int>(transferedData.size()), completePackageId, nodeIndex);
         }
@@ -505,7 +507,7 @@ POP_WARNINGS
             textureManager_.WaitForResource(name);
             break;
         default:
-            LOG(WARNING) << "Unknown ResourceTransferType: " << static_cast<std::uint8_t>(type);
+            spdlog::warn("Unknown ResourceTransferType: {}", static_cast<std::uint8_t>(type));
             break;
         }
     }
@@ -536,8 +538,8 @@ POP_WARNINGS
         for (std::size_t i = 0; i < viewportScreen_.size(); ++i) {
             const auto& fboSize = viewportQuadSize_[i] / sizeDivisor;
             result.emplace_back(fboSize.x, fboSize.y, fboDesc);
-            LOG(DBUG) << "Offscreen FBO VP Pos: " << 0.0f << ", " << 0.0f;
-            LOG(DBUG) << "Offscreen FBO VP Size: " << fboSize.x << ", " << fboSize.y;
+            spdlog::warn("Offscreen FBO VP Pos: {}, {}", 0.0f, 0.0f);
+            spdlog::warn("Offscreen FBO VP Size: {}, {}", fboSize.x, fboSize.y);
             result.back().SetStandardViewport(0, 0, static_cast<unsigned int>(fboSize.x), static_cast<unsigned int>(fboSize.y));
         }
         return result;
@@ -566,7 +568,7 @@ POP_WARNINGS
             textureManager_.ReleaseSharedResource(std::string(name));
             break;
         default:
-            LOG(WARNING) << "Unknown ResourceTransferType: " << static_cast<std::uint8_t>(type);
+            spdlog::warn("Unknown ResourceTransferType: {}", static_cast<std::uint8_t>(type));
             break;
         }
     }
@@ -586,7 +588,7 @@ POP_WARNINGS
         key.name_ = resourceName;
         auto rit = std::find(creatableResources_.begin(), creatableResources_.end(), key);
         if (rit != creatableResources_.end()) {
-            LOG(WARNING) << "Resource already synchronized: " << resourceName << "(" << type << ")";
+            spdlog::warn("Resource already synchronized: {}({})", resourceName, type);
         }
         else {
             creatableResources_.emplace_back(std::move(key));
@@ -613,7 +615,7 @@ POP_WARNINGS
                 textureManager_.CreateSharedResource(res.name_, dataPtr, dataLength);
                 break;
             default:
-                LOG(WARNING) << "Unknown ResourceTransferType: " << static_cast<std::uint8_t>(res.type_);
+                spdlog::warn("Unknown ResourceTransferType: {}", static_cast<std::uint8_t>(res.type_));
                 break;
             }
         }
@@ -628,6 +630,7 @@ POP_WARNINGS
             textureManager_.SynchronizeAllResourcesToNode(clientID);
             meshManager_.SynchronizeAllResourcesToNode(clientID);
             gpuProgramManager_.SynchronizeAllResourcesToNode(clientID);
+            fontManager_.SynchronizeAllResourcesToNode(clientID);
         }
         else {
             std::string name(reinterpret_cast<const char*>(data), length);
@@ -642,8 +645,11 @@ POP_WARNINGS
             case viscom::ResourceType::GPUProgram:
                 gpuProgramManager_.SynchronizeResourceToNode(name, clientID);
                 break;
+            case viscom::ResourceType::Font:
+                fontManager_.SynchronizeResourceToNode(name, clientID);
+                break;
             default:
-                LOG(WARNING) << "Unknown ResourceTransferType: " << static_cast<std::uint8_t>(type);
+                spdlog::warn("Unknown ResourceTransferType: {}", static_cast<std::uint8_t>(type));
                 break;
             }
         }

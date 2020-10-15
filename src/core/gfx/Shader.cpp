@@ -6,6 +6,7 @@
  * @brief  Implementation of the shader helper class.
  */
 
+#include "core/open_gl.h"
 #include "Shader.h"
 #include <fstream>
 #include <iostream>
@@ -16,7 +17,6 @@
 #endif
 #include "core/FrameworkInternal.h"
 #include <regex>
-#include "core/open_gl.h"
 
 namespace viscom {
 
@@ -247,11 +247,11 @@ namespace viscom {
     {
 #ifdef VISCOM_NO_FILESYSTEM
         if (!defines.empty()) {
-            LOG(WARNING) << "Defines and includes in shaders not supported on MacOS.";
+            spdlog::warn("Defines and includes in shaders not supported on MacOS.");
         }
         std::ifstream file(filename.c_str(), std::ifstream::in);
         if (!file) {
-            LOG(WARNING) << "Could not load shader file!";
+            spdlog::warn("Could not load shader file!");
             std::cerr << "Could not load shader file!";
             throw resource_loading_error(filename, "Could not load shader file!");
         }
@@ -265,7 +265,7 @@ namespace viscom {
         return content.str();
 #else
         if (recursionDepth > MAX_INCLUDE_RECURSION_DEPTH) {
-            LOG(WARNING) << L"Header inclusion depth limit reached! Cyclic header inclusion?";
+            spdlog::warn("Header inclusion depth limit reached! Cyclic header inclusion?");
             throw resource_loading_error(filename, "Header inclusion depth limit reached! Cyclic header inclusion? File " + filename);
         }
         namespace filesystem = std::filesystem;
@@ -287,8 +287,7 @@ namespace viscom {
                 filesystem::path relativeFilename{ relativeParentPath + matches[1].str() };
                 auto includeFile = Resource::FindResourceLocation("shader/" + relativeFilename.string(), node);
                 if (!filesystem::exists(includeFile)) {
-                    LOG(WARNING) << filename.c_str() << L"(" << lineCount << R"() : fatal error: cannot open include file ")"
-                        << includeFile.c_str() << R"(".)";
+                    spdlog::warn("{}({}) : fatal error: cannot open include file \"{}\".", filename, lineCount, includeFile);
                     throw resource_loading_error(filename, "Cannot open include file: " + includeFile);
                 }
                 content << "#line " << 1 << " " << nextFileId << std::endl;
@@ -331,7 +330,7 @@ namespace viscom {
     {
         auto shader = glCreateShader(type);
         if (shader == 0) {
-            LOG(WARNING) << "Could not create shader!";
+            spdlog::warn("Could not create shader!");
             std::cerr << "Could not create shader!";
             throw resource_loading_error(filename, "Could not create shader!");
         }
@@ -350,8 +349,7 @@ namespace viscom {
             strInfoLog.resize(static_cast<std::size_t>(infoLogLength + 1));
             glGetShaderInfoLog(shader, infoLogLength, nullptr, strInfoLog.data());
 
-            LOG(WARNING) << "Compile error in " << strType << " shader (" << filename.c_str() << "): "
-                << std::endl << strInfoLog;
+            spdlog::warn("Compile error in {} shader ({}):\n{}", strType, filename, strInfoLog);
             std::cerr << "Compile error in " << strType << " shader (" << filename.c_str() << "): "
                 << std::endl << strInfoLog;
             glDeleteShader(shader);

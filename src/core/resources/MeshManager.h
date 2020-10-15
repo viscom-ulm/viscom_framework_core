@@ -3,7 +3,7 @@
  * @author Sebastian Maisch <sebastian.maisch@uni-ulm.de>
  * @date   2016.12.14
  *
- * @brief  Declaration of the texture manager.
+ * @brief  Declaration of the mesh manager.
  */
 
 #pragma once

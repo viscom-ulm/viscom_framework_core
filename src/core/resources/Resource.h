@@ -69,6 +69,8 @@ namespace viscom {
         const FrameworkInternal* GetAppNode() const { return appNode_; }
         /** Returns the application object. */
         FrameworkInternal* GetAppNode() { return appNode_; }
+        /** Check if this resource is synchronized. */
+        bool IsSynchronized() const { return synchronized_; }
 
         /**
          *  Returns the location of the file with the specified file name.

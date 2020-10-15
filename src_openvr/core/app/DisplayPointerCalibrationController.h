@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "OpenVR.h"
+#include "core/app/OpenVR.h"
 
 namespace viscom::ovr {
 

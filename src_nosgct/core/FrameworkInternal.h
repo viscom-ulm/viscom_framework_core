@@ -12,6 +12,7 @@
 #include "core/resources/GPUProgramManager.h"
 #include "core/resources/TextureManager.h"
 #include "core/resources/MeshManager.h"
+#include "core/resources/FontManager.h"
 #include "core/gfx/FrameBuffer.h"
 #include "core/CameraHelper.h"
 #include "core/gfx/FullscreenQuad.h"
@@ -172,6 +173,8 @@ namespace viscom {
         TextureManager& GetTextureManager() { return textureManager_; }
         /** Returns the mesh manager. */
         MeshManager& GetMeshManager() { return meshManager_; }
+        /** Returns the font manager. */
+        FontManager& GetFontManager() { return fontManager_; }
 
         /** Returns the function that will create a coordinator node. */
         InitNodeFunc& GetCoordinatorNodeFactory() { return coordinatorNodeFactory_; }
@@ -306,6 +309,8 @@ namespace viscom {
         TextureManager textureManager_;
         /** Holds the mesh manager. */
         MeshManager meshManager_;
+        /** Holds the font manager. */
+        FontManager fontManager_;
 
         /** Holds the current mouse position. */
         glm::vec2 mousePosition_ = glm::vec2{ 0.0f };

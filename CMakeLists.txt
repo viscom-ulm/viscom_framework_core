@@ -1,35 +1,77 @@
 cmake_minimum_required(VERSION 3.9)
 PROJECT("VISCOMCore")
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    add_compile_options(-stdlib=libc++ -isystem /usr/include/c++/v1)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
-endif()
+## if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+##     add_compile_options(-stdlib=libc++ -isystem /usr/include/c++/v1)
+##     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+## endif()
 
 set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_DEBUGWORKER_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows.")
 
-set(G3_SHARED_LIB OFF CACHE BOOL "Build shared library." FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Force compiler to create static libs." FORCE)
-set(ADD_FATAL_EXAMPLE OFF CACHE BOOL "Fatal (fatal-crashes/contract) examples " FORCE)
-set(ADD_BUILD_WIN_SHARED OFF CACHE BOOL "Build shared library on Windows" FORCE)
-set(USE_DYNAMIC_LOGGING_LEVELS ON CACHE BOOL "Turn ON/OFF log levels. An disabled level will not push logs of that level to the sink. By default dynamic logging is disabled" FORCE)
-set(CHANGE_G3LOG_DEBUG_TO_DBUG ON CACHE BOOL "Use DBUG logging level instead of DEBUG. By default DEBUG is the debugging level" FORCE)
-set(VERSION "1.3.160-0")
-add_subdirectory(extern/g3log EXCLUDE_FROM_ALL)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-    target_compile_options(g3logger PUBLIC -fvisibility=hidden -fvisibility-inlines-hidden)
+find_package(Doxygen)
+
+# Loading conan
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
+   message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
+   file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake")
 endif()
 
-set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(ASSIMP_NO_EXPORT ON CACHE BOOL "" FORCE)
-option(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF)
-add_subdirectory(extern/assimp EXCLUDE_FROM_ALL)
+include(${CMAKE_BINARY_DIR}/conan.cmake)
+conan_add_remote(NAME arsen-studio URL https://api.bintray.com/conan/arsen-studio/arsen-deps)
+set(IMGUI_VERSION "1.75")
+set(GLM_VERSION "0.9.9.8")
 
-find_package(Doxygen)
+set(CONAN_EXTRA_OPTIONS "")
+set(CONAN_EXTRA_REQUIRES "")
+
+set(CONAN_LIBRARIES CONAN_PKG::assimp CONAN_PKG::nlohmann_json)
+set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES}
+                         docopt.cpp/0.6.2
+                         fmt/6.1.2
+                         spdlog/1.5.0
+                         glm/${GLM_VERSION}
+                         imgui/${IMGUI_VERSION}
+                         stb/20200203
+                         assimp/5.0.1
+                         nlohmann_json/3.9.1)
+
+
+# Download natvis files
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/glm.natvis")
+  message(
+    STATUS
+      "Downloading glm.natvis from https://github.com/g-truc/glm")
+  file(DOWNLOAD "https://github.com/g-truc/glm/raw/${GLM_VERSION}/util/glm.natvis"
+       "${CMAKE_BINARY_DIR}/glm.natvis")
+endif()
+
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/imgui.natvis")
+  message(
+    STATUS
+      "Downloading imgui.natvis from https://github.com/ocornut/imgui")
+  file(DOWNLOAD "https://github.com/ocornut/imgui/raw/v${IMGUI_VERSION}/misc/natvis/imgui.natvis"
+       "${CMAKE_BINARY_DIR}/imgui.natvis")
+endif()
+
+
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/extern/imgui/cpp/imgui_stdlib.cpp")
+  message(
+    STATUS
+      "Downloading imgui_stdlib.cpp from https://github.com/ocornut/imgui")
+  file(DOWNLOAD "https://github.com/ocornut/imgui/raw/v${IMGUI_VERSION}/misc/cpp/imgui_stdlib.cpp"
+       "${CMAKE_BINARY_DIR}/extern/imgui/cpp/imgui_stdlib.cpp")
+endif()
+
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/extern/imgui/cpp/imgui_stdlib.h")
+  message(
+    STATUS
+      "Downloading imgui.natvis from https://github.com/ocornut/imgui")
+  file(DOWNLOAD "https://github.com/ocornut/imgui/raw/v${IMGUI_VERSION}/misc/cpp/imgui_stdlib.h"
+       "${CMAKE_BINARY_DIR}/extern/imgui/cpp/imgui_stdlib.h")
+endif()
+list(APPEND EXTERN_SOURCES_CORE ${CMAKE_BINARY_DIR}/extern/imgui/cpp/imgui_stdlib.cpp)
 
 set(VISCOM_CLIENTGUI ON CACHE BOOL "Use ImGui on clients.")
 set(VISCOM_SYNCINPUT OFF CACHE BOOL "Synchronize input from master to clients.")
@@ -48,6 +90,8 @@ set(VISCOM_OPENGL_PROFILE "3.3" CACHE STRING "OpenGL profile version to use.")
 set(VISCOM_USE_TUIO ON CACHE BOOL "Use TUIO input library")
 set(VISCOM_TUIO_PORT 3333 CACHE STRING "UDP Port for TUIO to listen on")
 set(VISCOM_USE_OPEN_VR OFF CACHE BOOL "Use OpenVR library")
+option(VISCOM_ENABLE_AVX "Enable AVX optimization for release build." OFF)
+option(VISCOM_ENABLE_AVX2 "Enable AVX2 optimization for release build." OFF)
 
 # Hide the "Use open vr" option under MacOS
 if(APPLE)
@@ -59,13 +103,18 @@ endif()
 
 # Build-flags.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    list(APPEND CORE_LIBS c++experimental c++abi c++fs)
+    list(APPEND CORE_LIBS_LOW_LEVEL c++experimental c++abi c++fs)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    list(APPEND CORE_LIBS stdc++fs)
+    list(APPEND CORE_LIBS_LOW_LEVEL stdc++fs)
 endif()
 
 macro(set_build_flags TARGET_NAME USE_CONVERSION)
     if(UNIX)
+        if(ENABLE_AVX2)
+            target_compile_options(${TARGET_NAME} PUBLIC -mavx2)
+        elseif(ENABLE_AVX)
+            target_compile_options(${TARGET_NAME} PUBLIC -mavx)
+        endif()
         target_compile_options(${TARGET_NAME} PUBLIC -Werror -O0 -Wall -Wno-unused-function -Wno-unused-parameter -Wextra -Wpedantic $<${USE_CONVERSION}:-Wconversion>)
         if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             target_compile_options(${TARGET_NAME} PUBLIC -stdlib=libc++ -Wno-unused-command-line-argument)
@@ -88,179 +137,28 @@ macro(set_build_flags TARGET_NAME USE_CONVERSION)
             endif()
         endif()
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        if(ENABLE_AVX2)
+            target_compile_options(${TARGET_NAME} PUBLIC /arch:AVX2)
+        elseif(ENABLE_AVX)
+            target_compile_options(${TARGET_NAME} PUBLIC /arch:AVX)
+        endif()
         target_compile_options(${TARGET_NAME} PUBLIC /WX /W3 /EHsc /MP)
     endif()
 endmacro()
 
-file(GLOB EXTERN_SOURCES_CORE
-    extern/imgui/imgui.cpp
-    extern/imgui/imgui_draw.cpp
-    extern/imgui/imgui_demo.cpp
-    extern/imgui/imgui_widgets.cpp
-    extern/imgui/misc/cpp/imgui_stdlib.cpp)
-
 if (${VISCOM_USE_SGCT})
     list(APPEND COMPILE_TIME_DEFS VISCOM_USE_SGCT)
-    set(VISCOM_SGCT_TAG "sgct")
     set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/src_sgct/)
 else()
-    option(GLFW_BUILD_DOCS OFF)
-    option(GLFW_BUILD_EXAMPLES OFF)
-    option(GLFW_BUILD_TESTS OFF)
-    option(GLFW_INSTALL OFF)
-    add_subdirectory(extern/glfw EXCLUDE_FROM_ALL)
-
-    set(VISCOM_SGCT_TAG "nosgct")
     list(APPEND COMPILE_TIME_DEFS GLEW_STATIC)
     list(APPEND EXTERN_SOURCES_CORE src_nosgct/glew/src/glew.cc)
     set(VISCOM_SGCT_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/src_nosgct/)
 endif()
-
-
-file(GLOB_RECURSE SHADER_FILES_CORE ${PROJECT_SOURCE_DIR}/resources/shader/*.*)
-list(FILTER SHADER_FILES_CORE EXCLUDE REGEX ".*\.gen$")
-file(GLOB_RECURSE SRC_FILES_CORE
-    ${PROJECT_SOURCE_DIR}/src/core/*.h
-    ${PROJECT_SOURCE_DIR}/src/core/*.cpp
-    ${PROJECT_SOURCE_DIR}/src/core/*.inl
-    ${VISCOM_SGCT_WRAPPER_DIR}/core/*.h
-    ${VISCOM_SGCT_WRAPPER_DIR}/core/*.cpp
-    ${VISCOM_SGCT_WRAPPER_DIR}/core/*.inl)
 source_group("extern\\core" FILES ${EXTERN_SOURCES_CORE})
-source_group("shader\\core" FILES ${SHADER_FILES_CORE})
-
-if (${VISCOM_LOCAL_ONLY})
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/CalibrationVertices.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${VISCOM_SGCT_WRAPPER_DIR}/core/app_internal/WorkerNodeCalibratedInternal.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${VISCOM_SGCT_WRAPPER_DIR}/core/app_internal/WorkerNodeCalibratedInternal.cpp")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.cpp")
-endif()
-
-if(NOT ${VISCOM_USE_OPEN_VR})
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVRController.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVRController.cpp")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/OpenVR.cpp")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/DisplayPointerCalibrationController.h")
-    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/app/DisplayPointerCalibrationController.cpp")
-endif()
-
-foreach(f ${SRC_FILES_CORE})
-    file(RELATIVE_PATH SRCGR ${PROJECT_SOURCE_DIR} ${f})
-    string(REGEX REPLACE "(.*)(/[^/]*)$" "\\1" SRCGR ${SRCGR})
-    string(REPLACE / \\ SRCGR ${SRCGR})
-    string(REPLACE src_sgct src SRCGR ${SRCGR})
-    string(REPLACE src_nosgct src SRCGR ${SRCGR})
-    source_group("${SRCGR}" FILES ${f})
-endforeach()
-
-file(GLOB TOP_SRC_FILES_CORE
-    extern/glm/util/glm.natvis
-    extern/imgui/misc/natvis/imgui.natvis)
-
-if(UNIX)
-    set(OpenGL_GL_PREFERENCE GLVND)
-endif()
-
-if(MSVC)
-    list(APPEND COMPILE_TIME_DEFS _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN NOMINMAX)
-endif()
-
-if (${VISCOM_USE_SGCT})
-    find_package(OpenGL REQUIRED)
-    find_library(SGCT_RELEASE_LIBRARY NAMES sgct libsgct PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
-    find_library(SGCT_DEBUG_LIBRARY NAMES sgctd libsgctd PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
-    find_path(SGCT_INCLUDE_DIRECTORY NAMES sgct PATHS $ENV{SGCT_ROOT_DIR}/include NO_DEFAULT_PATH REQUIRED)
-
-    set(SGCT_LIBS
-        debug ${SGCT_DEBUG_LIBRARY}
-        optimized ${SGCT_RELEASE_LIBRARY})
-
-    list(APPEND CORE_LIBS ${SGCT_LIBS})
-    if(MSVC)
-        list(APPEND CORE_LIBS OpenGL::GL ws2_32)
-    elseif(UNIX)
-        find_package(Threads REQUIRED)
-        if(OpenGL_GLX_FOUND)
-            list(APPEND CORE_LIBS OpenGL::OpenGL OpenGL::GLX)
-        else()
-            list(APPEND CORE_LIBS OpenGL::GL)
-        endif()
-        list(APPEND CORE_LIBS dl X11 Xrandr Xcursor Xinerama Xxf86vm Threads::Threads)
-    endif()
-    add_library(SGCTWrapper ${VISCOM_SGCT_WRAPPER_DIR}/wrapper/sgct_wrapper.cpp)
-    set_property(TARGET SGCTWrapper PROPERTY CXX_STANDARD 17)
-    target_include_directories(SGCTWrapper PUBLIC ${VISCOM_SGCT_WRAPPER_DIR}/wrapper)
-    target_include_directories(SGCTWrapper SYSTEM PUBLIC ${SGCT_INCLUDE_DIRECTORY})
-    target_link_libraries(SGCTWrapper ${CORE_LIBS})
-    target_compile_definitions(SGCTWrapper PUBLIC ${COMPILE_TIME_DEFS})
-    set_build_flags(SGCTWrapper 0)
-
-    list(APPEND CORE_LIBS SGCTWrapper)
-    list(APPEND CORE_INCLUDE_DIRS extern/glm ${SGCT_INCLUDE_DIRECTORY})
-else()
-    find_package(OpenGL REQUIRED)
-    list(APPEND CORE_LIBS glfw ${GLFW_LIBRARIES})
-    if(MSVC)
-        list(APPEND CORE_LIBS OpenGL::GL)
-    elseif(UNIX)
-        if(OpenGL_GLX_FOUND)
-            list(APPEND CORE_LIBS OpenGL::OpenGL OpenGL::GLX)
-        else()
-            list(APPEND CORE_LIBS OpenGL::GL)
-        endif()
-    endif()
-    list(APPEND CORE_INCLUDE_DIRS extern/glm extern/glfw/include)
-endif()
-
-list(APPEND CORE_INCLUDE_DIRS
-    ${VISCOM_SGCT_WRAPPER_DIR}
-    extern/g3log/src
-    ${CMAKE_CURRENT_BINARY_DIR}/extern/g3log/include
-    extern/imgui
-    extern/imgui/misc/cpp
-    extern/stb
-    extern/assimp/include
-    ${CMAKE_CURRENT_BINARY_DIR}/extern/assimp/include)
-
-list(APPEND CORE_LIBS g3logger assimp)
-
-
-if (${VISCOM_CLIENTMOUSECURSOR})
-    list(APPEND COMPILE_TIME_DEFS VISCOM_CLIENTGUI VISCOM_SYNCINPUT VISCOM_CLIENTMOUSECURSOR)
-else()
-    if(${VISCOM_SYNCINPUT})
-        list(APPEND COMPILE_TIME_DEFS VISCOM_SYNCINPUT)
-    endif()
-    if(${VISCOM_CLIENTGUI})
-        list(APPEND COMPILE_TIME_DEFS VISCOM_CLIENTGUI)
-    endif()
-endif()
-
-if (${VISCOM_LOCAL_ONLY})
-    list(APPEND COMPILE_TIME_DEFS VISCOM_LOCAL_ONLY)
-endif()
-
-if(${VISCOM_USE_TUIO})
-    add_subdirectory(extern/tuio EXCLUDE_FROM_ALL)
-    list(APPEND COMPILE_TIME_DEFS VISCOM_USE_TUIO)
-    list(APPEND CORE_LIBS libTUIO)
-    list(APPEND CORE_INCLUDE_DIRS extern/tuio/TUIO extern/tuio/oscpack)
-endif()
-
-if(TARGET Doxygen::doxygen)
-    get_property(DOXYGEN_EXECUTABLE TARGET Doxygen::doxygen PROPERTY IMPORTED_LOCATION)
-
-    set(DOXYGEN_IN ${PROJECT_SOURCE_DIR}/doc/Doxyfile.in)
-    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
-
-    add_custom_target(doc_doxygen ALL COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc COMMENT "Generating API documentation with Doxygen" VERBATIM)
-    ## doxygen_add_docs(VISCOMCoreDoc src)
-endif()
 
 if (${VISCOM_USE_OPEN_VR})
+    set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} openvr/1.0.17@arsen-studio/stable)
+    set(CONAN_LIBRARIES ${CONAN_LIBRARIES} CONAN_PKG::openvr)
     if(UNIX AND NOT APPLE)
         if(CMAKE_SIZEOF_VOID_P EQUAL 8)
             set(SYS_NAME_STR "linux64")
@@ -280,29 +178,147 @@ if (${VISCOM_USE_OPEN_VR})
             set(SYS_NAME_STR "win32")
         endif()
     endif()
-    list(APPEND CORE_INCLUDE_DIRS extern/openvr/headers)
-    find_library(OPENVR_LIBRARY NAMES openvr_api libopenvr_api PATHS extern/openvr/lib/${SYS_NAME_STR} REQUIRED)
-    find_file(OPENVR_LIBRARY_BINARY NAMES openvr_api.dll libopenvr_api.so libopenvr_api.dylib PATHS extern/openvr/bin/${SYS_NAME_STR} REQUIRED)
-
-    add_library(OpenVR SHARED IMPORTED)
-    set_property(TARGET OpenVR PROPERTY IMPORTED_LOCATION ${OPENVR_LIBRARY_BINARY})
-    set_property(TARGET OpenVR PROPERTY IMPORTED_IMPLIB ${OPENVR_LIBRARY})
-    list(APPEND CORE_LIBS OpenVR)
     list(APPEND COMPILE_TIME_DEFS VISCOM_USE_OPEN_VR)
+    set(VISCOM_OPENVR_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/src_openvr/)
+else()
+    set(VISCOM_OPENVR_WRAPPER_DIR ${PROJECT_SOURCE_DIR}/src_noopenvr/)
 endif()
 
-add_library(VISCOMExternal ${EXTERN_SOURCES_CORE})
-set_property(TARGET VISCOMExternal PROPERTY CXX_STANDARD 17)
-target_include_directories(VISCOMExternal SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
-target_link_libraries(VISCOMExternal PUBLIC ${CORE_LIBS})
-target_compile_definitions(VISCOMExternal PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
-set_build_flags(VISCOMExternal 0)
+
+file(GLOB_RECURSE SHADER_FILES_CORE CONFIGURE_DEPENDS ${PROJECT_SOURCE_DIR}/resources/shader/*.*)
+list(FILTER SHADER_FILES_CORE EXCLUDE REGEX ".*\.gen$")
+source_group(TREE ${PROJECT_SOURCE_DIR}/resources/shader PREFIX "shader" FILES ${SHADER_FILES_CORE})
+
+
+file(GLOB_RECURSE SRC_FILES_CORE CONFIGURE_DEPENDS
+    ${PROJECT_SOURCE_DIR}/src/core/*.h
+    ${PROJECT_SOURCE_DIR}/src/core/*.cpp
+    ${PROJECT_SOURCE_DIR}/src/core/*.inl)
+source_group(TREE ${PROJECT_SOURCE_DIR} FILES ${SRC_FILES_CORE})
+file(GLOB_RECURSE SRC_FILES_CORE_OVR_WRAPPER CONFIGURE_DEPENDS
+    ${VISCOM_OPENVR_WRAPPER_DIR}/core/*.h
+    ${VISCOM_OPENVR_WRAPPER_DIR}/core/*.cpp
+    ${VISCOM_OPENVR_WRAPPER_DIR}/core/*.inl)
+source_group(TREE ${VISCOM_OPENVR_WRAPPER_DIR} PREFIX "src" FILES ${SRC_FILES_CORE_OVR_WRAPPER})
+file(GLOB_RECURSE SRC_FILES_CORE_WRAPPER CONFIGURE_DEPENDS
+    ${VISCOM_SGCT_WRAPPER_DIR}/core/*.h
+    ${VISCOM_SGCT_WRAPPER_DIR}/core/*.cpp
+    ${VISCOM_SGCT_WRAPPER_DIR}/core/*.inl)
+source_group(TREE ${VISCOM_SGCT_WRAPPER_DIR} PREFIX "src" FILES ${SRC_FILES_CORE_WRAPPER})
+list(APPEND SRC_FILES_CORE ${SRC_FILES_CORE_WRAPPER} ${SRC_FILES_CORE_OVR_WRAPPER})
+
+if(UNIX)
+    set(OpenGL_GL_PREFERENCE GLVND)
+endif()
+
+if(MSVC)
+    list(APPEND COMPILE_TIME_DEFS _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS WIN32_LEAN_AND_MEAN NOMINMAX)
+endif()
+
+if (${VISCOM_USE_SGCT})
+    find_package(OpenGL REQUIRED)
+    find_library(SGCT_RELEASE_LIBRARY NAMES sgct libsgct PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
+    find_library(SGCT_DEBUG_LIBRARY NAMES sgctd libsgctd PATHS $ENV{SGCT_ROOT_DIR}/lib REQUIRED)
+    find_path(SGCT_INCLUDE_DIRECTORY NAMES sgct PATHS $ENV{SGCT_ROOT_DIR}/include NO_DEFAULT_PATH REQUIRED)
+
+    if(MSVC)
+        list(APPEND CORE_LIBS_LOW_LEVEL OpenGL::GL ws2_32)
+    elseif(UNIX)
+        find_package(Threads REQUIRED)
+        list(APPEND CORE_LIBS_LOW_LEVEL dl X11 Xrandr Xcursor Xinerama Xxf86vm Threads::Threads)
+        if(OpenGL_GLX_FOUND)
+            list(APPEND CORE_LIBS_LOW_LEVEL OpenGL::OpenGL OpenGL::GLX)
+        else()
+            list(APPEND CORE_LIBS_LOW_LEVEL OpenGL::GL)
+        endif()
+    endif()
+
+    add_library(sgct INTERFACE IMPORTED)
+    target_link_libraries(sgct INTERFACE debug ${SGCT_DEBUG_LIBRARY} optimized ${SGCT_RELEASE_LIBRARY} ${CORE_LIBS_LOW_LEVEL})
+    target_include_directories(sgct SYSTEM INTERFACE ${SGCT_INCLUDE_DIRECTORY})
+
+    add_library(SGCTWrapper ${VISCOM_SGCT_WRAPPER_DIR}/wrapper/sgct_wrapper.cpp)
+    set_property(TARGET SGCTWrapper PROPERTY CXX_STANDARD 17)
+    target_include_directories(SGCTWrapper PUBLIC ${VISCOM_SGCT_WRAPPER_DIR}/wrapper)
+    target_link_libraries(SGCTWrapper PUBLIC sgct ${CORE_LIBS_LOW_LEVEL})
+    target_compile_definitions(SGCTWrapper PUBLIC ${COMPILE_TIME_DEFS})
+    set_build_flags(SGCTWrapper 0)
+
+    list(APPEND CORE_LIBS SGCTWrapper)
+else()
+    set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} glfw/3.3.2@bincrafters/stable)
+    set(CONAN_LIBRARIES ${CONAN_LIBRARIES} CONAN_PKG::glfw)
+    find_package(OpenGL REQUIRED)
+    if(MSVC)
+        list(APPEND CORE_LIBS_LOW_LEVEL OpenGL::GL)
+    elseif(UNIX)
+        if(OpenGL_GLX_FOUND)
+            list(APPEND CORE_LIBS_LOW_LEVEL OpenGL::OpenGL OpenGL::GLX)
+        else()
+            list(APPEND CORE_LIBS_LOW_LEVEL OpenGL::GL)
+        endif()
+    endif()
+    list(APPEND CORE_LIBS ${CORE_LIBS_LOW_LEVEL})
+endif()
+
+if (${VISCOM_LOCAL_ONLY})
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/CalibrationVertices.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${VISCOM_SGCT_WRAPPER_DIR}/core/app_internal/WorkerNodeCalibratedInternal.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${VISCOM_SGCT_WRAPPER_DIR}/core/app_internal/WorkerNodeCalibratedInternal.cpp")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.h")
+    list(REMOVE_ITEM SRC_FILES_CORE "${PROJECT_SOURCE_DIR}/src/core/OpenCVParserHelper.cpp")
+    list(APPEND COMPILE_TIME_DEFS VISCOM_LOCAL_ONLY)
+endif()
+
+if (${VISCOM_CLIENTMOUSECURSOR})
+    list(APPEND COMPILE_TIME_DEFS VISCOM_CLIENTGUI VISCOM_SYNCINPUT VISCOM_CLIENTMOUSECURSOR)
+else()
+    if(${VISCOM_SYNCINPUT})
+        list(APPEND COMPILE_TIME_DEFS VISCOM_SYNCINPUT)
+    endif()
+    if(${VISCOM_CLIENTGUI})
+        list(APPEND COMPILE_TIME_DEFS VISCOM_CLIENTGUI)
+    endif()
+endif()
+
+if(${VISCOM_USE_TUIO})
+    add_subdirectory(extern/tuio EXCLUDE_FROM_ALL)
+    list(APPEND COMPILE_TIME_DEFS VISCOM_USE_TUIO)
+    list(APPEND CORE_LIBS libTUIO)
+    # list(APPEND CORE_INCLUDE_DIRS extern/tuio/TUIO extern/tuio/oscpack)
+endif()
+
+if(TARGET Doxygen::doxygen)
+    get_property(DOXYGEN_EXECUTABLE TARGET Doxygen::doxygen PROPERTY IMPORTED_LOCATION)
+
+    set(DOXYGEN_IN ${PROJECT_SOURCE_DIR}/doc/Doxyfile.in)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+
+    add_custom_target(doc_doxygen ALL COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc COMMENT "Generating API documentation with Doxygen" VERBATIM)
+    ## doxygen_add_docs(VISCOMCoreDoc src)
+endif()
+
+include(cmake/Conan.cmake)
+run_conan()
+
+if (${VISCOM_USE_SGCT})
+    set(CORE_LIBS ${CORE_LIBS} CONAN_PKG::imgui)
+else()
+    add_library(VISCOMExternal ${EXTERN_SOURCES_CORE})
+    set_property(TARGET VISCOMExternal PROPERTY CXX_STANDARD 17)
+    target_link_libraries(VISCOMExternal PUBLIC ${CORE_LIBS} CONAN_PKG::imgui)
+    target_include_directories(VISCOMExternal SYSTEM PUBLIC ${VISCOM_SGCT_WRAPPER_DIR} ${CMAKE_BINARY_DIR}/extern/imgui/cpp)
+    target_compile_definitions(VISCOMExternal PUBLIC ${COMPILE_TIME_DEFS})
+    set_build_flags(VISCOMExternal 0)
+    set(CORE_LIBS VISCOMExternal)
+endif()
 
 add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${TOP_SRC_FILES_CORE})
 set_property(TARGET VISCOMCore PROPERTY CXX_STANDARD 17)
-target_include_directories(VISCOMCore PUBLIC src)
-target_include_directories(VISCOMCore SYSTEM PUBLIC ${CORE_INCLUDE_DIRS})
-target_link_libraries(VISCOMCore PUBLIC VISCOMExternal)
+target_link_libraries(VISCOMCore PUBLIC CONAN_PKG::docopt.cpp CONAN_PKG::fmt CONAN_PKG::spdlog CONAN_PKG::glm CONAN_PKG::stb ${CORE_LIBS} ${CONAN_LIBRARIES})
+target_include_directories(VISCOMCore PUBLIC src ${VISCOM_SGCT_WRAPPER_DIR} ${VISCOM_OPENVR_WRAPPER_DIR} ${CMAKE_BINARY_DIR}/extern/imgui/cpp)
 target_compile_definitions(VISCOMCore PUBLIC ${COMPILE_TIME_DEFS} GLFW_INCLUDE_NONE)
 set_build_flags(VISCOMCore 1)
 
@@ -310,10 +326,6 @@ macro(copy_core_lib_dlls APP_NAME)
     if (${VISCOM_USE_TUIO})
         add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:libTUIO> ${PROJECT_BINARY_DIR})
         install(FILES $<TARGET_FILE:libTUIO> DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
-    endif()
-    if (${VISCOM_USE_OPEN_VR})
-        add_custom_command(TARGET ${APP_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different ${OPENVR_LIBRARY_BINARY} ${CMAKE_BINARY_DIR})
-        install(FILES ${OPENVR_LIBRARY_BINARY} DESTINATION ${VISCOM_INSTALL_BASE_PATH}/${VISCOM_APP_NAME})
     endif()
 endmacro()
 

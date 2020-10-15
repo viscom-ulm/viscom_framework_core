@@ -6,11 +6,14 @@
  * @brief  Implementation of a helper class for camera movement.
  */
 
+#include <sgct.h>
 #include "CameraHelper.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include <sgct.h>
 #include <sgct_wrapper.h>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 namespace viscom {
     CameraHelper::CameraHelper(sgct::Engine * engine) :
@@ -77,7 +80,7 @@ namespace viscom {
 
         glReadPixels(iScreenCoords.x, iScreenCoords.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &screenCoords.z);
         screenCoords = glm::vec4((glm::vec3(screenCoords) * 2.0f) - 1.0f, screenCoords.w);
-        LOG(INFO) << "Picked position: (" << screenCoords.x << ", " << screenCoords.y << ", " << screenCoords.z << ")";
+        spdlog::info("Picked position: ({})", glm::to_string(screenCoords));
         auto viewProjInv = glm::inverse(GetViewPerspectiveMatrix());
 
         auto postProjPos = viewProjInv * screenCoords;

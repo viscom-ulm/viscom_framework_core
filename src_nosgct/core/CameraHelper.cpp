@@ -11,8 +11,11 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
+
 namespace viscom {
-    CameraHelper::CameraHelper(float width, float height, const glm::vec3& userPosition) :
+    CameraHelper::CameraHelper(float width, float height, const glm::ivec2& screenSize, const glm::vec3& userPosition) :
         position_{ 0.0f },
         cameraOrientation_{ 0.0f, 0.0f, 1.0f, 0.0f },
         userPosition_{ userPosition },
@@ -22,7 +25,8 @@ namespace viscom {
         width_{ width },
         height_{ height },
         nearPlane_{ 0.1f },
-        farPlane_{ 100.0f }
+        farPlane_{ 100.0f },
+        screenSize_{ screenSize }
     {
     }
 
@@ -75,7 +79,7 @@ namespace viscom {
 
         glReadPixels(iScreenCoords.x, iScreenCoords.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &screenCoords.z);
         screenCoords = glm::vec4((glm::vec3(screenCoords) * 2.0f) - 1.0f, screenCoords.w);
-        LOG(INFO) << "Picked position: (" << screenCoords.x << ", " << screenCoords.y << ", " << screenCoords.z << ")";
+        spdlog::info("Picked position: ({}).", glm::to_string(screenCoords));
         auto viewProjInv = glm::inverse(GetViewPerspectiveMatrix());
 
         auto postProjPos = viewProjInv * screenCoords;
@@ -86,6 +90,11 @@ namespace viscom {
     {
         glm::mat4 localCoordMatrix = glm::mat4(1.0f);
         return localCoordMatrix;
+    }
+
+    glm::ivec2 CameraHelper::GetGlobalScreenSize() const
+    {
+        return screenSize_;
     }
 
 #undef near
