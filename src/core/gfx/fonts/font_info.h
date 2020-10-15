@@ -36,7 +36,7 @@ namespace viscom::font {
         std::size_t size = 0;
         std::size_t bold = 0;
         std::size_t italic = 0;
-        std::vector<char> charset;
+        std::vector<std::string> charset;
         std::size_t unicode = 0;
         std::size_t stretchH = 0;
         std::size_t smooth = 0;

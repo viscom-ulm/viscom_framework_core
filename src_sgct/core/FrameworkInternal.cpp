@@ -44,7 +44,8 @@ namespace viscom {
         camHelper_{ engine_.get() },
         gpuProgramManager_{ this },
         textureManager_{ this },
-        meshManager_{ this }
+        meshManager_{ this },
+        fontManager_{ this }
     {
 #ifndef VISCOM_LOCAL_ONLY
         loadProperties();

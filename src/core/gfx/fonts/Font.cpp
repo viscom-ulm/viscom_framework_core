@@ -16,7 +16,8 @@
 namespace viscom::font {
 
     void to_json(nlohmann::json& j, const font_char& f) {
-        j = nlohmann::json{ {"id", f.id}, {"index", f.index}, {"char", f.c}, {"width", f.width},
+        std::string ch = "" + f.c;
+        j = nlohmann::json{ {"id", f.id}, {"index", f.index}, {"char", ch}, {"width", f.width},
             {"height", f.height}, {"xoffset", f.xoffset}, {"yoffset", f.yoffset},
             {"xadvance", f.xadvance}, {"chnl", f.chnl}, {"x", f.x}, {"y", f.y}, {"page", f.page} };
     }
@@ -24,7 +25,9 @@ namespace viscom::font {
     void from_json(const nlohmann::json& j, font_char& f) {
         j.at("id").get_to(f.id);
         j.at("index").get_to(f.index);
-        j.at("char").get_to(f.c);
+        std::string ch;
+        j.at("char").get_to(ch);
+        f.c = ch[0];
         j.at("width").get_to(f.width);
         j.at("height").get_to(f.height);
         j.at("xoffset").get_to(f.xoffset);
@@ -178,6 +181,7 @@ namespace viscom {
         for (const auto& charInfo : fontInfo_.chars) {
             maxCharId_ = std::max(maxCharId_, charInfo.id);
         }
+        maxCharId_ += 1;
         fontCharsGPU_.resize(maxCharId_);
         x_advance_.resize(maxCharId_);
         kerningGPU_.resize(maxCharId_ * maxCharId_, 0);
