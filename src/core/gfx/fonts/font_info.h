@@ -21,8 +21,8 @@ namespace viscom::font {
         char c = 0;
         std::size_t width = 0;
         std::size_t height = 0;
-        std::size_t xoffset = 0;
-        std::size_t yoffset = 0;
+        std::int64_t xoffset = 0;
+        std::int64_t yoffset = 0;
         std::size_t xadvance = 0;
         std::size_t chnl = 0;
         std::size_t x = 0;

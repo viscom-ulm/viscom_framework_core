@@ -154,6 +154,8 @@ namespace viscom {
             auto dataptr = data->data();
             memcpy(dataptr, json_dump.data(), json_dump.size());
         }
+
+        InitGPU();
     }
 
     void Font::LoadFromMemory(const void* data, std::size_t size)
@@ -169,6 +171,8 @@ namespace viscom {
         for (const auto& page : fontInfo_.pages) {
             pages_.emplace_back(GetAppNode()->GetTextureManager().GetSynchronizedResource((basePath / page).string()));
         }
+
+        InitGPU();
     }
 
     void Font::LoadFromJSON(const std::string& jsonString)
@@ -184,15 +188,15 @@ namespace viscom {
         maxCharId_ += 1;
         fontCharsGPU_.resize(maxCharId_);
         x_advance_.resize(maxCharId_);
-        kerningGPU_.resize(maxCharId_ * maxCharId_, 0);
+        kerning_.resize(maxCharId_ * maxCharId_, 0);
 
         fontInfoGPU_.line_height = static_cast<unsigned int>(fontInfo_.common.lineHeight);
         fontInfoGPU_.base = static_cast<unsigned int>(fontInfo_.common.base);
 
         for (const auto& charInfo : fontInfo_.chars) {
-            fontCharsGPU_[charInfo.id].texture_position = glm::uvec2{ charInfo.x, charInfo.y };
-            fontCharsGPU_[charInfo.id].texture_size = glm::uvec2{ charInfo.width, charInfo.height };
-            fontCharsGPU_[charInfo.id].offset = glm::uvec2{ charInfo.xoffset, charInfo.yoffset };
+            fontCharsGPU_[charInfo.id].texture_position = glm::ivec2{ charInfo.x, charInfo.y };
+            fontCharsGPU_[charInfo.id].texture_size = glm::ivec2{ charInfo.width, charInfo.height };
+            fontCharsGPU_[charInfo.id].offset = glm::ivec2{ charInfo.xoffset, charInfo.yoffset };
             // fontCharsGPU_[charInfo.id].width = static_cast<unsigned int>(charInfo.width);
             // fontCharsGPU_[charInfo.id].height = static_cast<unsigned int>(charInfo.height);
             // fontCharsGPU_[charInfo.id].xoffset = static_cast<unsigned int>(charInfo.xoffset);
@@ -206,12 +210,16 @@ namespace viscom {
         }
 
         for (const auto& kerning : fontInfo_.kernings) {
-            kerningGPU_[kerning.second * maxCharId_ + kerning.first] = static_cast<unsigned int>(kerning.amount);
+            kerning_[kerning.second * maxCharId_ + kerning.first] = static_cast<unsigned int>(kerning.amount);
         }
     }
 
     void Font::InitGPU()
     {
+        for (auto& fontChar : fontCharsGPU_) {
+            fontChar.texture_position.y = pages_[fontChar.page]->getDimensions().y - fontChar.texture_position.y;
+        }
+
         glGenBuffers(1, &fontMetricsUBO_);
         glBindBuffer(GL_UNIFORM_BUFFER, fontMetricsUBO_);
         glBufferData(GL_UNIFORM_BUFFER, sizeof(font::font_info_gpu), &fontInfoGPU_, GL_STATIC_DRAW);
@@ -224,7 +232,7 @@ namespace viscom {
 
         glGenTextures(1, &kerningTexture_);
         glBindTexture(GL_TEXTURE_2D, kerningTexture_);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32UI, static_cast<GLsizei>(fontCharsGPU_.size()), static_cast<GLsizei>(fontCharsGPU_.size()), 0, GL_RED, GL_UNSIGNED_INT, kerningGPU_.data());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_R32UI, static_cast<GLsizei>(maxCharId_), static_cast<GLsizei>(maxCharId_), 0, GL_RED, GL_UNSIGNED_INT, kerning_.data());
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 

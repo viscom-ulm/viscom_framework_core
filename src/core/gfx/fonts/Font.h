@@ -27,6 +27,7 @@ namespace viscom {
         struct font_info_gpu {
             unsigned int line_height = 0;
             unsigned int base = 0;
+            glm::uvec2 dummy = glm::uvec2{ 0 };
         };
     }
 
