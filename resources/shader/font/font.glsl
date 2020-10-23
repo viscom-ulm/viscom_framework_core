@@ -24,7 +24,7 @@ vec2 calc_character_position(vec2 char_base_position, uint char_index)
     vec2 texture_size = textureSize(font_pages[ci.page], 0).xy;
 
     vec2 base_offset = vec2(-ci.offset.x, -ci.offset.y + font.base);
-    return (char_base_position + base_offset) / texture_size;
+    return (char_base_position + base_offset);
 }
 
 vec2 calc_character_left(vec2 direction, uint char_index)
@@ -32,7 +32,7 @@ vec2 calc_character_left(vec2 direction, uint char_index)
     char_info ci = chars.ci[char_index];
     vec2 texture_size = textureSize(font_pages[ci.page], 0).xy;
 
-    return ci.texture_size.x * direction / texture_size;
+    return ci.texture_size.x * direction;
 }
 
 vec2 calc_character_up(vec2 direction, uint char_index)
@@ -40,5 +40,5 @@ vec2 calc_character_up(vec2 direction, uint char_index)
     char_info ci = chars.ci[char_index];
     vec2 texture_size = textureSize(font_pages[ci.page], 0).xy;
 
-    return -ci.texture_size.y * normalize(vec2(-direction.y, direction.x)) / texture_size;
+    return -ci.texture_size.y * normalize(vec2(-direction.y, direction.x));
 }
