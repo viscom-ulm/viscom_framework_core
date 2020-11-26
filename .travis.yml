@@ -125,7 +125,7 @@ jobs:
       script: *linux_script
     - name: MacOS X, no-SGCT
       os: osx
-      osx_image: xcode10.1
+      osx_image: xcode12.2
       before_install: &macbefore_install
         - HOMEBREW_NO_AUTO_UPDATE=1 brew install python3
         - pip install conan

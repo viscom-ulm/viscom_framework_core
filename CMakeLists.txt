@@ -28,9 +28,9 @@ set(CONAN_EXTRA_REQUIRES "")
 
 set(CONAN_LIBRARIES CONAN_PKG::assimp CONAN_PKG::nlohmann_json)
 set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES}
-                         docopt.cpp/0.6.3
-                         fmt/7.1.2
-                         spdlog/1.8.1
+                         docopt.cpp/0.6.2
+                         fmt/6.2.1
+                         spdlog/1.5.0
                          glm/${GLM_VERSION}
                          imgui/${IMGUI_VERSION}
                          stb/20200203
