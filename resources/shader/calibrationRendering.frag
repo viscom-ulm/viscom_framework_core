@@ -18,9 +18,9 @@ void main()
 
     vec4 colorTexture = texture(tex, coord);
     vec4 alpha = texture(alphaTex, screenCoords);
-    
-    alpha = vec4(vec3(pow(alpha.r, gamma)), 1.0f);
 
-    color = vec4(colorTexture.rgb * alpha.rgb, 1.0f);
+    alpha = vec4(vec3(pow(alpha.rgb, gamma)), 1.0f);
+
+    color = vec4(colorTexture * alpha);
 }
 

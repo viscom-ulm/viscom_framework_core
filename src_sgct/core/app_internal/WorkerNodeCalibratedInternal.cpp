@@ -16,6 +16,7 @@
 #include "core/open_gl.h"
 #include "core/app/ApplicationNodeBase.h"
 #include "sgct_wrapper.h"
+#include <stb_image.h>
 
 #include <iostream>
 
@@ -74,7 +75,13 @@ namespace viscom {
             auto quadTexCoordsName = FWConfiguration::CALIBRATION_QUAD_TEX_COORDS_NAME + std::to_string(projectorNo);
             auto resolutionScalingName = FWConfiguration::CALIBRATION_QUAD_RESOLUTION_SCALING_NAME + std::to_string(projectorNo);
             auto viewportName = FWConfiguration::CALIBRATION_VIEWPORT_NAME + std::to_string(projectorNo);
-            auto texAlphaFilename = alphaTexturePath.string() + "/" + FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo) + ".bin";
+            // check if hdr overlap file exists.
+            bool isRGB = true;
+            auto texAlphaFilename = alphaTexturePath / (FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo) + ".hdr");
+            if (!std::filesystem::exists(texAlphaFilename)) {
+                texAlphaFilename = alphaTexturePath / (FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo) + ".bin");
+                isRGB = false;
+            }
 
             auto screenQuadCoords = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadCornersName.c_str()));
             auto screenQuadTexCoords = OpenCVParserHelper::ParseVector3f(doc.FirstChildElement("opencv_storage")->FirstChildElement(quadTexCoordsName.c_str()));
@@ -92,10 +99,6 @@ namespace viscom {
             sgct_wrapper::SetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::UpperLeft, vpLocalUpperLeft);
             sgct_wrapper::wVec3 vpLocalUpperRight{ viewport[1].x, viewport[1].y, viewport[1].z };
             sgct_wrapper::SetProjectionPlaneCoordinate(window, 0, sgct_core::SGCTProjectionPlane::UpperRight, vpLocalUpperRight);
-
-            // GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::LowerLeft, viewport[3]);
-            // GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperLeft, viewport[0]);
-            // GetFramework().GetEngine()->getWindowPtr(i)->getViewport(0)->getProjectionPlane()->setCoordinate(sgct_core::SGCTProjectionPlane::ProjectionPlaneCorner::UpperRight, viewport[1]);
 
             auto fboSize = glm::ivec2(glm::ceil(glm::vec2(projectorSize) * resolutionScaling));
             glm::vec3 vpSize(GetFramework().GetConfig().nearPlaneSize_.x, GetFramework().GetConfig().nearPlaneSize_.y, 1.0f);
@@ -135,23 +138,7 @@ namespace viscom {
                 static_cast<unsigned int>(GetFramework().GetViewportQuadSize(i).x), static_cast<unsigned int>(GetFramework().GetViewportQuadSize(i).y));
             GetFramework().GetFramebuffer(i).SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, projectorViewport_[i].size_.x, projectorViewport_[i].size_.y);
 
-            {
-                std::ifstream texAlphaFile(texAlphaFilename, std::ios::binary);
-                glm::u32vec2 textureSize;
-                std::vector<float> texAlphaData(projectorSize.x * projectorSize.y);
-
-                texAlphaFile.read(reinterpret_cast<char*>(&textureSize), sizeof(textureSize));
-                assert(textureSize.x == projectorSize.x && textureSize.y == projectorSize.y);
-                texAlphaFile.read(reinterpret_cast<char*>(texAlphaData.data()), static_cast<std::streamsize>(sizeof(float) * texAlphaData.size()));
-
-                glBindTexture(GL_TEXTURE_2D, alphaTextures_[i]);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, static_cast<int>(projectorSize.x), static_cast<int>(projectorSize.y), 0, GL_RED, GL_FLOAT, texAlphaData.data());
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            }
+            LoadAlphaTexture(i, alphaTexturePath, projectorSize, isRGB);
 
 
             glBindTexture(GL_TEXTURE_2D, 0);
@@ -172,6 +159,41 @@ namespace viscom {
         glBindVertexArray(0);
 
         spdlog::debug("Calibration Initialized.");
+    }
+
+    void WorkerNodeCalibratedInternal::LoadAlphaTexture(std::size_t window, const std::filesystem::path& file, const glm::uvec2& projectorSize, bool isRGB)
+    {
+        if (isRGB) {
+            int textureSizeX = 0, textureSizeY = 0, textureComp = 0;
+            float* data = stbi_loadf(file.string().c_str(), &textureSizeX, &textureSizeY, &textureComp, 0);
+            assert(textureSizeX == projectorSize.x && textureSizeY == projectorSize.y && textureComp == 3);
+
+            glBindTexture(GL_TEXTURE_2D, alphaTextures_[window]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, static_cast<int>(projectorSize.x), static_cast<int>(projectorSize.y), 0, GL_RGB, GL_FLOAT, data);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            stbi_image_free(data);
+        }
+        else {
+            std::ifstream texAlphaFile(file.string(), std::ios::binary);
+            glm::u32vec2 textureSize;
+            std::vector<float> texAlphaData(projectorSize.x * projectorSize.y);
+
+            texAlphaFile.read(reinterpret_cast<char*>(&textureSize), sizeof(textureSize));
+            assert(textureSize.x == projectorSize.x && textureSize.y == projectorSize.y);
+            texAlphaFile.read(reinterpret_cast<char*>(texAlphaData.data()), static_cast<std::streamsize>(sizeof(float) * texAlphaData.size()));
+
+            glBindTexture(GL_TEXTURE_2D, alphaTextures_[window]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, static_cast<int>(projectorSize.x), static_cast<int>(projectorSize.y), 0, GL_RED, GL_FLOAT, texAlphaData.data());
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        }
     }
 
 

@@ -23,6 +23,7 @@ namespace viscom {
         void Draw2D(FrameBuffer& fbo) override;
 
     private:
+        void LoadAlphaTexture(std::size_t window, const std::filesystem::path& file, const glm::uvec2& projectorSize, bool isRGB);
         void InitOffscreenBuffers();
         void CreateProjectorFBO(std::size_t windowId, const glm::ivec2& fboSize);
 
