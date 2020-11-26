@@ -20,7 +20,7 @@ endif()
 
 include(${CMAKE_BINARY_DIR}/conan.cmake)
 conan_add_remote(NAME arsen-studio URL https://api.bintray.com/conan/arsen-studio/arsen-deps)
-set(IMGUI_VERSION "1.75")
+set(IMGUI_VERSION "1.79")
 set(GLM_VERSION "0.9.9.8")
 
 set(CONAN_EXTRA_OPTIONS "")
@@ -28,9 +28,9 @@ set(CONAN_EXTRA_REQUIRES "")
 
 set(CONAN_LIBRARIES CONAN_PKG::assimp CONAN_PKG::nlohmann_json)
 set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES}
-                         docopt.cpp/0.6.2
-                         fmt/6.1.2
-                         spdlog/1.5.0
+                         docopt.cpp/0.6.3
+                         fmt/7.1.2
+                         spdlog/1.8.1
                          glm/${GLM_VERSION}
                          imgui/${IMGUI_VERSION}
                          stb/20200203
@@ -225,7 +225,7 @@ if (${VISCOM_USE_SGCT})
         list(APPEND CORE_LIBS_LOW_LEVEL OpenGL::GL ws2_32)
     elseif(UNIX)
         find_package(Threads REQUIRED)
-        list(APPEND CORE_LIBS_LOW_LEVEL dl X11 Xrandr Xcursor Xinerama Xxf86vm Threads::Threads)
+        list(APPEND CORE_LIBS_LOW_LEVEL dl X11 Xrandr Xcursor Xinerama Xxf86vm Threads::Threads freetype)
         if(OpenGL_GLX_FOUND)
             list(APPEND CORE_LIBS_LOW_LEVEL OpenGL::OpenGL OpenGL::GLX)
         else()
