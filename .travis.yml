@@ -136,10 +136,9 @@ jobs:
         - HOMEBREW_NO_AUTO_UPDATE=1 brew install python3
         - CC=clang && CXX=clang++
         - pip install conan
-        - conan remote add arsen-studio https://api.bintray.com/conan/arsen-studio/arsen-deps
         - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
       script: &osx_script
         - mkdir build && cd build
-        - conan install --build=missing --install-folder=./fwcore ..
+        - conan install --build=missing --install-folder=./fwcore ../conanfile-osx.txt
         - cmake -G "Xcode" -D VISCOM_CONAN_BUILD_ALL:BOOL=ON -D VISCOM_USE_SGCT:BOOL=OFF -D VISCOM_LOCAL_ONLY:BOOL=ON ..
         - cmake --build .

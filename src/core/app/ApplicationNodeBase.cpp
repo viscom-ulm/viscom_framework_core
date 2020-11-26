@@ -21,7 +21,7 @@ namespace viscom {
     }
 
     ApplicationNodeBase::~ApplicationNodeBase() = default;
- 
+
     void ApplicationNodeBase::PreWindow()
     {
     }
@@ -125,7 +125,7 @@ namespace viscom {
     {
         framework_->Terminate();
     }
-    
+
     bool ApplicationNodeBase::ControllerButtonPressedCallback(std::uint32_t, std::size_t)
     {
         return false;

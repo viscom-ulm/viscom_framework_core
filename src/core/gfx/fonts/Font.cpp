@@ -16,7 +16,7 @@
 namespace viscom::font {
 
     void to_json(nlohmann::json& j, const font_char& f) {
-        std::string ch = "" + f.c;
+        std::string ch = std::string("") + f.c;
         j = nlohmann::json{ {"id", f.id}, {"index", f.index}, {"char", ch}, {"width", f.width},
             {"height", f.height}, {"xoffset", f.xoffset}, {"yoffset", f.yoffset},
             {"xadvance", f.xadvance}, {"chnl", f.chnl}, {"x", f.x}, {"y", f.y}, {"page", f.page} };

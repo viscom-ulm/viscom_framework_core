@@ -7,6 +7,7 @@ set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windo
 
 find_package(Doxygen)
 
+set(CONAN_DISABLE_CHECK_COMPILER ON)
 set(CONAN_LIBRARIES CONAN_PKG::assimp CONAN_PKG::nlohmann_json)
 include(${CMAKE_BINARY_DIR}/fwcore/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS)
