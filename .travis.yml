@@ -131,7 +131,7 @@ jobs:
       script: *linux_script
     - name: MacOS X, no-SGCT
       os: osx
-      osx_image: xcode11
+      osx_image: xcode11.6
       before_install: &macbefore_install
         - HOMEBREW_NO_AUTO_UPDATE=1 brew install python3
         - CC=clang && CXX=clang++
