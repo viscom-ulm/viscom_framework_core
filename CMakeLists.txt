@@ -286,7 +286,7 @@ else()
 endif()
 
 if(UNIX AND NOT APPLE)
-    set(CONAN_LIBRARIES ${CONAN_LIBRARIES} stdc++11)
+    set(CONAN_LIBRARIES ${CONAN_LIBRARIES} stdc++)
 endif()
 
 add_library(VISCOMCore ${SRC_FILES_CORE} ${SHADER_FILES_CORE} ${TOP_SRC_FILES_CORE})
