@@ -19,9 +19,9 @@ jobs:
       script: &windows_script
         - mkdir build && cd build
         - *refreshpath
-        - conan remote add openvr-remote https://api.bintray.com/conan/arsen-studio/arsen-deps
+        - conan remote add arsen-studio https://api.bintray.com/conan/arsen-studio/arsen-deps
         - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
-        - conan install --build=missing -s compiler='Visual Studio' -s compiler.version=14.16 --install-folder=./fwcore ..
+        - conan install --build=missing -s compiler='Visual Studio' -s compiler.version=14 --install-folder=./fwcore ..
         - cmake -G "${CMAKE_BUILDER}" -D VISCOM_USE_SGCT:BOOL=${VISCOM_SGCT} -D VISCOM_LOCAL_ONLY:BOOL=${VISCOM_LOCAL} -D SGCT_INCLUDE_DIRECTORY="${SGCT_ROOT_DIR}/include" -D SGCT_DEBUG_LIBRARY="${SGCT_ROOT_DIR}/lib/sgctd.lib" -D SGCT_RELEASE_LIBRARY="${SGCT_ROOT_DIR}/lib/sgct.lib" ..
         - *refreshpath
         - cmake --build .
@@ -79,7 +79,7 @@ jobs:
       before_install: &linuxbefore_install
         - eval "${VISCOM_COMPILER_ENV}"
         - pip3 install conan
-        - conan remote add openvr-remote https://api.bintray.com/conan/arsen-studio/arsen-deps
+        - conan remote add arsen-studio https://api.bintray.com/conan/arsen-studio/arsen-deps
         - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
       script: &linux_script
         - mkdir build && cd build
@@ -134,8 +134,9 @@ jobs:
       osx_image: xcode11
       before_install: &macbefore_install
         - HOMEBREW_NO_AUTO_UPDATE=1 brew install python3
+        - CC=clang && CXX=clang++
         - pip install conan
-        - conan remote add openvr-remote https://api.bintray.com/conan/arsen-studio/arsen-deps
+        - conan remote add arsen-studio https://api.bintray.com/conan/arsen-studio/arsen-deps
         - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
       script: &osx_script
         - mkdir build && cd build
