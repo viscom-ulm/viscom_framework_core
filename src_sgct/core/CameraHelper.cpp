@@ -90,7 +90,7 @@ namespace viscom {
     glm::mat4 CameraHelper::GetLocalCoordMatrix() const
     {
         // to local screen coordinates.
-        auto& localProps = localCoordsMatrices_[engine_->getCurrentWindowPtr()->getId()];
+        auto& localProps = localCoordsMatrices_[static_cast<std::size_t>(engine_->getCurrentWindowPtr()->getId())];
 
         glm::mat4 localCoordMatrix = glm::mat4(1.0f);
         localCoordMatrix[0][0] = 0.5f;
@@ -108,7 +108,7 @@ namespace viscom {
 
     glm::ivec2 CameraHelper::GetGlobalScreenSize() const
     {
-        auto& localProps = localCoordsMatrices_[engine_->getCurrentWindowPtr()->getId()];
+        auto& localProps = localCoordsMatrices_[static_cast<std::size_t>(engine_->getCurrentWindowPtr()->getId())];
         return glm::ivec2(localProps.first[0][0], localProps.first[1][1]);
     }
 
