@@ -54,7 +54,7 @@ jobs:
       if: branch IN (develop, master)
       os: linux
       dist: xenial
-      env: BUILD_ALL="OFF" VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" LIB_PREFIX="lib" LIB_ENDING="a"
+      env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" LIB_PREFIX="lib" LIB_ENDING="a"
       addons: &linuxaddons
         apt:
           sources:
