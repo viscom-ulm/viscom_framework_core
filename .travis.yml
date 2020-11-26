@@ -36,7 +36,7 @@ jobs:
         - git checkout c487fe9d778a730125b72027b2da5588a664d01b
         - git submodule update --init --recursive
         - mkdir build && cd build
-        - cmake -E env CXXFLAGS="${VCXXFLAGS}" LDFLAGS="${VLDFLAGS}" cmake -G "${CMAKE_BUILDER}" -D JPEG_TURBO_WITH_SIMD=OFF -D SGCT_INSTALL=ON -D CMAKE_INSTALL_PREFIX="../../sgct_install" ..
+        - cmake -E env cmake -G "${CMAKE_BUILDER}" -D JPEG_TURBO_WITH_SIMD=OFF -D SGCT_INSTALL=ON -D CMAKE_INSTALL_PREFIX="../../sgct_install" ..
         - cmake --build . --target install
         - cd ../../..
         - cd deps/sgct_install/lib
@@ -115,7 +115,7 @@ jobs:
       if: branch = master
       os: linux
       dist: xenial
-      env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-8 && CXX=clang++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a" VCXXFLAGS="-stdlib=libc++" VLDFLAGS="-stdlib=libc++"
+      env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-8 && CXX=clang++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
       addons: *linuxaddons
       before_install: *linuxbefore_install
       before_script: *sgctbefore_script
@@ -124,7 +124,7 @@ jobs:
       if: branch = master
       os: linux
       dist: xenial
-      env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" VISCOM_COMPILER_ENV="CC=clang-8 && CXX=clang++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a" VCXXFLAGS="-stdlib=libc++" VLDFLAGS="-stdlib=libc++"
+      env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" VISCOM_COMPILER_ENV="CC=clang-8 && CXX=clang++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
       addons: *linuxaddons
       before_install: *linuxbefore_install
       before_script: *sgctbefore_script

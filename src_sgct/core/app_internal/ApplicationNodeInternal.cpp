@@ -190,7 +190,7 @@ POP_WARNINGS
     {
         return false;
     }
-    bool ApplicationNodeInternal::CalibrateVR(ovr::CalibrateMethod method)
+    bool ApplicationNodeInternal::CalibrateVR(ovr::CalibrateMethod)
     {
         return false;
     }
@@ -198,19 +198,19 @@ POP_WARNINGS
     {
         return noDeviceInfo_;
     }
-    const glm::vec3& ApplicationNodeInternal::GetControllerPosition(std::uint32_t trackedDeviceId) const
+    const glm::vec3& ApplicationNodeInternal::GetControllerPosition(std::uint32_t ) const
     {
         return zeroVec3_;
     }
-    const glm::vec3& ApplicationNodeInternal::GetControllerDirection(std::uint32_t trackedDeviceId) const
+    const glm::vec3& ApplicationNodeInternal::GetControllerDirection(std::uint32_t) const
     {
         return zeroVec3_;
     }
-    const glm::quat& ApplicationNodeInternal::GetControllerOrientation(std::uint32_t trackedDeviceId) const
+    const glm::quat& ApplicationNodeInternal::GetControllerOrientation(std::uint32_t) const
     {
         return identityQuat_;
     }
-    const glm::vec2& ApplicationNodeInternal::GetDisplayPointerPosition(std::uint32_t trackedDeviceId) const
+    const glm::vec2& ApplicationNodeInternal::GetDisplayPointerPosition(std::uint32_t) const
     {
         return zeroVec2_;
     }
@@ -235,7 +235,7 @@ POP_WARNINGS
         return appNodeImpl_->ControllerButtonTouchReleasedCallback(trackedDeviceId, buttonid);
     }
 
-    void ApplicationNodeInternal::GetControllerButtonState(std::uint32_t trackedDeviceId, std::size_t buttonid, glm::vec2& axisvalues, ovr::ButtonState& buttonstate) const
+    void ApplicationNodeInternal::GetControllerButtonState(std::uint32_t, std::size_t, glm::vec2&, ovr::ButtonState&) const
     {
     }
 
