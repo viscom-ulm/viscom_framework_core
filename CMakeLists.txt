@@ -1,41 +1,14 @@
 cmake_minimum_required(VERSION 3.9)
 PROJECT("VISCOMCore")
 
-## if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-##     add_compile_options(-stdlib=libc++ -isystem /usr/include/c++/v1)
-##     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
-## endif()
-
 set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_DEBUGWORKER_POSTFIX "d" CACHE STRING "add a postfix, usually d on windows.")
 set(CMAKE_RELEASE_POSTFIX "" CACHE STRING "add a postfix, usually empty on windows.")
 
 find_package(Doxygen)
 
-# Loading conan
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
-   message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
-   file(DOWNLOAD "https://github.com/conan-io/cmake-conan/raw/v0.15/conan.cmake" "${CMAKE_BINARY_DIR}/conan.cmake")
-endif()
-
-include(${CMAKE_BINARY_DIR}/conan.cmake)
-conan_add_remote(NAME arsen-studio URL https://api.bintray.com/conan/arsen-studio/arsen-deps)
-set(IMGUI_VERSION "1.79")
-set(GLM_VERSION "0.9.9.8")
-
-set(CONAN_EXTRA_OPTIONS "")
-set(CONAN_EXTRA_REQUIRES "")
-
-set(CONAN_LIBRARIES CONAN_PKG::assimp CONAN_PKG::nlohmann_json)
-set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES}
-                         docopt.cpp/0.6.2
-                         fmt/6.2.1
-                         spdlog/1.5.0
-                         glm/${GLM_VERSION}
-                         imgui/${IMGUI_VERSION}
-                         stb/20200203
-                         assimp/5.0.1
-                         nlohmann_json/3.9.1)
+include(${CMAKE_BINARY_DIR}/fwcore/conanbuildinfo.cmake)
+conan_basic_setup(TARGETS)
 
 
 # Download natvis files
@@ -157,7 +130,6 @@ endif()
 source_group("extern\\core" FILES ${EXTERN_SOURCES_CORE})
 
 if (${VISCOM_USE_OPEN_VR})
-    set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} openvr/1.0.17@arsen-studio/stable)
     set(CONAN_LIBRARIES ${CONAN_LIBRARIES} CONAN_PKG::openvr)
     if(UNIX AND NOT APPLE)
         if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -246,7 +218,6 @@ if (${VISCOM_USE_SGCT})
 
     list(APPEND CORE_LIBS SGCTWrapper)
 else()
-    set(CONAN_EXTRA_REQUIRES ${CONAN_EXTRA_REQUIRES} glfw/3.3.2@bincrafters/stable)
     set(CONAN_LIBRARIES ${CONAN_LIBRARIES} CONAN_PKG::glfw)
     find_package(OpenGL REQUIRED)
     if(MSVC)
@@ -299,9 +270,6 @@ if(TARGET Doxygen::doxygen)
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/doc COMMENT "Generating API documentation with Doxygen" VERBATIM)
     ## doxygen_add_docs(VISCOMCoreDoc src)
 endif()
-
-include(cmake/Conan.cmake)
-run_conan()
 
 if (${VISCOM_USE_SGCT})
     set(CORE_LIBS ${CORE_LIBS} CONAN_PKG::imgui)

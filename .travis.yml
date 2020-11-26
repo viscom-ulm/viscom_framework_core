@@ -19,6 +19,7 @@ jobs:
       script: &windows_script
         - mkdir build && cd build
         - *refreshpath
+        - conan install --build=missing ..
         - cmake -G "${CMAKE_BUILDER}" -D VISCOM_USE_SGCT:BOOL=${VISCOM_SGCT} -D VISCOM_LOCAL_ONLY:BOOL=${VISCOM_LOCAL} -D SGCT_INCLUDE_DIRECTORY="${SGCT_ROOT_DIR}/include" -D SGCT_DEBUG_LIBRARY="${SGCT_ROOT_DIR}/lib/sgctd.lib" -D SGCT_RELEASE_LIBRARY="${SGCT_ROOT_DIR}/lib/sgct.lib" ..
         - *refreshpath
         - cmake --build .
@@ -78,13 +79,14 @@ jobs:
         - pip3 install conan
       script: &linux_script
         - mkdir build && cd build
-        - cmake -G "${CMAKE_BUILDER}" -D VISCOM_CONAN_BUILD_ALL:BOOL=${BUILD_ALL} -D VISCOM_USE_SGCT:BOOL=${VISCOM_SGCT} -D VISCOM_LOCAL_ONLY:BOOL=${VISCOM_LOCAL} -D SGCT_INCLUDE_DIRECTORY="${SGCT_ROOT_DIR}/include" -D SGCT_DEBUG_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgctd.${LIB_ENDING}" -D SGCT_RELEASE_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgct.${LIB_ENDING}" -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..
+        - conan install --build=missing ..
+        - cmake -G "${CMAKE_BUILDER}" -D VISCOM_USE_SGCT:BOOL=${VISCOM_SGCT} -D VISCOM_LOCAL_ONLY:BOOL=${VISCOM_LOCAL} -D SGCT_INCLUDE_DIRECTORY="${SGCT_ROOT_DIR}/include" -D SGCT_DEBUG_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgctd.${LIB_ENDING}" -D SGCT_RELEASE_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgct.${LIB_ENDING}" -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..
         - cmake --build .
     - name: Linux (GCC), SGCT, local only
       if: branch = master
       os: linux
       dist: xenial
-      env: BUILD_ALL="OFF" VISCOM_SGCT="ON" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
+      env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
       addons: *linuxaddons
       before_install: *linuxbefore_install
       before_script: *sgctbefore_script
@@ -92,7 +94,7 @@ jobs:
     - name: Linux (GCC), SGCT
       os: linux
       dist: xenial
-      env: BUILD_ALL="OFF" VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
+      env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" VISCOM_COMPILER_ENV="CC=gcc-8 && CXX=g++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a"
       addons: *linuxaddons
       before_install: *linuxbefore_install
       before_script: *sgctbefore_script
@@ -101,7 +103,7 @@ jobs:
       if: branch IN (develop, master)
       os: linux
       dist: xenial
-      env: BUILD_ALL="ON" VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-8 && CXX=clang++-8" CMAKE_BUILDER="Unix Makefiles"
+      env: VISCOM_SGCT="OFF" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-8 && CXX=clang++-8" CMAKE_BUILDER="Unix Makefiles"
       addons: *linuxaddons
       before_install: *linuxbefore_install
       script: *linux_script
@@ -109,7 +111,7 @@ jobs:
       if: branch = master
       os: linux
       dist: xenial
-      env: BUILD_ALL="ON" VISCOM_SGCT="ON" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-8 && CXX=clang++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a" VCXXFLAGS="-stdlib=libc++" VLDFLAGS="-stdlib=libc++"
+      env: VISCOM_SGCT="ON" VISCOM_LOCAL="ON" VISCOM_COMPILER_ENV="CC=clang-8 && CXX=clang++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a" VCXXFLAGS="-stdlib=libc++" VLDFLAGS="-stdlib=libc++"
       addons: *linuxaddons
       before_install: *linuxbefore_install
       before_script: *sgctbefore_script
@@ -118,7 +120,7 @@ jobs:
       if: branch = master
       os: linux
       dist: xenial
-      env: BUILD_ALL="ON" VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" VISCOM_COMPILER_ENV="CC=clang-8 && CXX=clang++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a" VCXXFLAGS="-stdlib=libc++" VLDFLAGS="-stdlib=libc++"
+      env: VISCOM_SGCT="ON" VISCOM_LOCAL="OFF" VISCOM_COMPILER_ENV="CC=clang-8 && CXX=clang++-8" CMAKE_BUILDER="Unix Makefiles" SGCT_ROOT_DIR="../deps/sgct_install" LIB_PREFIX="lib" LIB_ENDING="a" VCXXFLAGS="-stdlib=libc++" VLDFLAGS="-stdlib=libc++"
       addons: *linuxaddons
       before_install: *linuxbefore_install
       before_script: *sgctbefore_script
@@ -131,5 +133,6 @@ jobs:
         - pip install conan
       script: &osx_script
         - mkdir build && cd build
+        - conan install --build=missing ..
         - cmake -G "Xcode" -D VISCOM_CONAN_BUILD_ALL:BOOL=ON -D VISCOM_USE_SGCT:BOOL=OFF -D VISCOM_LOCAL_ONLY:BOOL=ON ..
         - cmake --build .
