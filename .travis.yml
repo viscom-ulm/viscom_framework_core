@@ -20,6 +20,7 @@ jobs:
         - mkdir build && cd build
         - *refreshpath
         - conan remote add openvr-remote https://api.bintray.com/conan/arsen-studio/arsen-deps
+        - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
         - conan install --build=missing ..
         - cmake -G "${CMAKE_BUILDER}" -D VISCOM_USE_SGCT:BOOL=${VISCOM_SGCT} -D VISCOM_LOCAL_ONLY:BOOL=${VISCOM_LOCAL} -D SGCT_INCLUDE_DIRECTORY="${SGCT_ROOT_DIR}/include" -D SGCT_DEBUG_LIBRARY="${SGCT_ROOT_DIR}/lib/sgctd.lib" -D SGCT_RELEASE_LIBRARY="${SGCT_ROOT_DIR}/lib/sgct.lib" ..
         - *refreshpath
@@ -79,9 +80,10 @@ jobs:
         - eval "${VISCOM_COMPILER_ENV}"
         - pip3 install conan
         - conan remote add openvr-remote https://api.bintray.com/conan/arsen-studio/arsen-deps
+        - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
       script: &linux_script
         - mkdir build && cd build
-        - conan install --build=missing ..
+        - conan install --build=missing -s compiler='Visual Studio' ..
         - cmake -G "${CMAKE_BUILDER}" -D VISCOM_USE_SGCT:BOOL=${VISCOM_SGCT} -D VISCOM_LOCAL_ONLY:BOOL=${VISCOM_LOCAL} -D SGCT_INCLUDE_DIRECTORY="${SGCT_ROOT_DIR}/include" -D SGCT_DEBUG_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgctd.${LIB_ENDING}" -D SGCT_RELEASE_LIBRARY="${SGCT_ROOT_DIR}/lib/${LIB_PREFIX}sgct.${LIB_ENDING}" -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..
         - cmake --build .
     - name: Linux (GCC), SGCT, local only
@@ -134,6 +136,7 @@ jobs:
         - HOMEBREW_NO_AUTO_UPDATE=1 brew install python3
         - pip install conan
         - conan remote add openvr-remote https://api.bintray.com/conan/arsen-studio/arsen-deps
+        - conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
       script: &osx_script
         - mkdir build && cd build
         - conan install --build=missing ..
