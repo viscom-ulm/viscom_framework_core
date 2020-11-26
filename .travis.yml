@@ -65,6 +65,7 @@ jobs:
             - clang-8
             - libc++-8-dev
             - libc++abi-8-dev
+            - xorg-dev
             - libgl1-mesa-dev
             - libxcb-glx0-dev
             - libglu-dev
