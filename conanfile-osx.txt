@@ -10,4 +10,4 @@ assimp/5.0.1
 nlohmann_json/3.9.1
 
 [generators]
-cmake
+cmake_multi

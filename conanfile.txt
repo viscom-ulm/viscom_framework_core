@@ -11,4 +11,4 @@ openvr/1.0.17@arsen-studio/stable
 nlohmann_json/3.9.1
 
 [generators]
-cmake
+cmake_multi

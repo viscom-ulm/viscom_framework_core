@@ -9,7 +9,7 @@ find_package(Doxygen)
 
 set(CONAN_DISABLE_CHECK_COMPILER ON)
 set(CONAN_LIBRARIES CONAN_PKG::assimp CONAN_PKG::nlohmann_json)
-include(${CMAKE_BINARY_DIR}/fwcore/conanbuildinfo.cmake)
+include(${CMAKE_BINARY_DIR}/fwcore/conanbuildinfo_multi.cmake)
 conan_basic_setup(TARGETS)
 
 
