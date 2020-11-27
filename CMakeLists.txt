@@ -12,6 +12,8 @@ set(CONAN_LIBRARIES CONAN_PKG::assimp CONAN_PKG::nlohmann_json)
 include(${CMAKE_BINARY_DIR}/fwcore/conanbuildinfo_multi.cmake)
 conan_basic_setup(TARGETS)
 
+set(IMGUI_VERSION "1.79")
+set(GLM_VERSION "0.9.9.8")
 
 # Download natvis files
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/glm.natvis")
