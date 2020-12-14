@@ -122,11 +122,10 @@ namespace viscom {
 
     void Font::Load(std::optional<std::vector<std::uint8_t>>& data)
     {
-        auto fontBaseFilename = "fonts/" + fontName_ + "/" + fontName_;
+        std::filesystem::path basePath = "fonts/" + fontName_ + "/";
+        auto fontBaseFilename = (basePath.string()) + fontName_;
         auto fontJsonFilename = fontBaseFilename + ".json";
         auto filename = FindResourceLocation(fontJsonFilename);
-
-        std::filesystem::path basePath = std::filesystem::path{ filename }.parent_path();
 
         std::ifstream inStream(filename);
         nlohmann::json j;
