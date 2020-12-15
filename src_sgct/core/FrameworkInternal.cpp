@@ -327,7 +327,10 @@ POP_WARNINGS
         if (!initialized_ || !appNodeInternal_) return;
         auto splitID = reinterpret_cast<std::uint16_t*>(&packageID);
 
-        if (splitID[0] == static_cast<std::uint16_t>(-1)) appNodeInternal_->DataAcknowledge(splitID[1], clientID);
+        if (splitID[0] == static_cast<std::uint16_t>(-1)) {
+            appNodeInternal_->DataAcknowledge(splitID[1], clientID);
+            return;
+        }
         auto internalID = reinterpret_cast<std::uint8_t*>(&splitID[0]);
         switch (static_cast<InternalTransferType>(internalID[0])) {
         case InternalTransferType::ResourceTransfer:
@@ -394,9 +397,9 @@ POP_WARNINGS
         splitId[1] = packageId;
         // So SGCT seems to have different node indices for the data connections than the actual node indices.
         // Basically: data connection indices are successive numbers starting at 0 but leaving out the current node.
-        // As connections only exist between masters and slaves (no direct inter-node connection possible, thanks documentation, not)
-        // we can just reduce the node index by 1 when on master ...
-        // and check that we do not connect to other nodes on slaves.
+        // As connections only exist between coordinators and workers (no direct inter-node connection possible, thanks documentation, not)
+        // we can just reduce the node index by 1 when on coordinator ...
+        // and check that we do not connect to other nodes on workers.
         if (engine_->isMaster()) nodeIndex -= 1;
         else if (nodeIndex != 0) {
             spdlog::warn("SGCT does not allow inter-node connections (nodeIndex: {}).", nodeIndex);
@@ -412,9 +415,9 @@ POP_WARNINGS
         splitId[1] = packageId;
         // So SGCT seems to have different node indices for the data connections than the actual node indices.
         // Basically: data connection indices are successive numbers starting at 0 but leaving out the current node.
-        // As connections only exist between masters and slaves (no direct inter-node connection possible, thanks documentation, not)
-        // we can just reduce the node index by 1 when on master ...
-        // and check that we do not connect to other nodes on slaves.
+        // As connections only exist between coordinators and workers (no direct inter-node connection possible, thanks documentation, not)
+        // we can just reduce the node index by 1 when on coordinator ...
+        // and check that we do not connect to other nodes on workers.
         if (!engine_->isMaster()) {
             spdlog::warn("SGCT does not allow inter-node connections (all nodes).");
         }
@@ -435,9 +438,9 @@ POP_WARNINGS
             utils::memcpyfaster(&transferedData[0] + sizeof(std::size_t) + name.length(), data, length);
             // So SGCT seems to have different node indices for the data connections than the actual node indices.
             // Basically: data connection indices are successive numbers starting at 0 but leaving out the current node.
-            // As connections only exist between masters and slaves (no direct inter-node connection possible, thanks documentation, not)
-            // we can just reduce the node index by 1 when on master ...
-            // and check that we do not connect to other nodes on slaves.
+            // As connections only exist between coordinators and workers (no direct inter-node connection possible, thanks documentation, not)
+            // we can just reduce the node index by 1 when on coordinator ...
+            // and check that we do not connect to other nodes on workers.
             if (!engine_->isMaster()) {
                 spdlog::warn("SGCT does not allow inter-node connections (all nodes).");
             }
@@ -456,9 +459,9 @@ POP_WARNINGS
             utils::memcpyfaster(&transferedData[0] + sizeof(std::size_t) + name.length(), data, length);
             // So SGCT seems to have different node indices for the data connections than the actual node indices.
             // Basically: data connection indices are successive numbers starting at 0 but leaving out the current node.
-            // As connections only exist between masters and slaves (no direct inter-node connection possible, thanks documentation, not)
-            // we can just reduce the node index by 1 when on master ...
-            // and check that we do not connect to other nodes on slaves.
+            // As connections only exist between coordinators and workers (no direct inter-node connection possible, thanks documentation, not)
+            // we can just reduce the node index by 1 when on coordinator ...
+            // and check that we do not connect to other nodes on workers.
             if (engine_->isMaster()) nodeIndex -= 1;
             else if (nodeIndex != 0) {
                 spdlog::warn("SGCT does not allow inter-node connections (nodeIndex: {}).", nodeIndex);

@@ -399,7 +399,7 @@ namespace viscom {
     private:
         void loadProperties();
 
-        /** Holds the start node used for slaves. */
+        /** Holds the start node used for workers. */
         unsigned int startNode_ = 0;
 #endif
     };
