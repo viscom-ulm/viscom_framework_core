@@ -77,8 +77,8 @@ namespace viscom {
             auto viewportName = FWConfiguration::CALIBRATION_VIEWPORT_NAME + std::to_string(projectorNo);
             // check if hdr overlap file exists.
             bool isRGB = true;
-            auto texAlphaFilename = alphaTexturePath / (FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo) + ".hdr");
-            if (!std::filesystem::exists(texAlphaFilename)) {
+            auto texAlphaFilename = GetFramework().GetMostCurrentFile(alphaTexturePath, FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo), ".hdr");
+            if (texAlphaFilename.empty() || !std::filesystem::exists(texAlphaFilename)) {
                 texAlphaFilename = alphaTexturePath / (FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo) + ".bin");
                 isRGB = false;
             }

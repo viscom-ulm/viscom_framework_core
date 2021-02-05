@@ -216,6 +216,12 @@ namespace viscom {
         /** Creates all synchronized resources from the creatable resources list. */
         void CreateSynchronizedResources();
 
+#ifndef VISCOM_NO_FILESYSTEM
+        /** Returns the current timestamp as string. */
+        std::filesystem::path GetTimestampedFilename(const std::filesystem::path& folder, const std::string& prefix, const std::string& extension) const;
+        /** Finds the file with a certain prefix and the newest timestamp in a folder. */
+        std::filesystem::path GetMostCurrentFile(const std::filesystem::path& folder, const std::string_view& prefix, const std::string_view& extension) const;
+#endif
     private:
         /** The base pre-window function. */
         void BasePreWindow();

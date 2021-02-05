@@ -16,6 +16,7 @@
 #include "core/app_internal/WorkerNodeInternal.h"
 #include "core/app/ApplicationNodeBase.h"
 #include "core/gfx/FullscreenQuad.h"
+#include <fmt/chrono.h>
 
 #ifndef VISCOM_LOCAL_ONLY
 #include "core/OpenCVParserHelper.h"
@@ -624,6 +625,43 @@ POP_WARNINGS
         }
         creatableResources_.clear();
     }
+
+#ifndef VISCOM_NO_FILESYSTEM
+    std::filesystem::path FrameworkInternal::GetTimestampedFilename(const std::filesystem::path& folder, const std::string& prefix, const std::string& extension) const
+    {
+        std::time_t t = std::time(nullptr);
+        auto timestamp = fmt::format("{:%Y-%m-%d_%H%M%S}", fmt::localtime(t));
+        return folder / (prefix + timestamp + extension);
+    }
+
+    std::filesystem::path FrameworkInternal::GetMostCurrentFile(const std::filesystem::path& folder, const std::string_view& prefix, const std::string_view& extension) const
+    {
+        // Yes well here is your year 10000 bug ... [2/4/2021 Sebastian Maisch]
+        std::string best_result_timestamp = "0000-00-00_00:00:00";
+        std::filesystem::path best_result_file;
+        bool found_file = false;
+        std::filesystem::path no_prefix_result_file;
+        for (const auto& entry : std::filesystem::directory_iterator(folder)) {
+            if (entry.is_regular_file() && entry.path().extension() == extension) {
+                auto entry_filename = entry.path().stem().string();
+                if (auto match_result = std::mismatch(prefix.begin(), prefix.end(), entry_filename.begin()); match_result.first == prefix.end()) {
+                    if (match_result.second == entry_filename.end()) {
+                        no_prefix_result_file = entry.path();
+                    }
+                    else {
+                        std::string timestamp{ match_result.second, entry_filename.end() };
+                        if (timestamp > best_result_timestamp) {
+                            best_result_timestamp = timestamp;
+                            best_result_file = entry.path();
+                        }
+                    }
+                }
+            }
+        }
+        if (best_result_file.empty()) return no_prefix_result_file;
+        return best_result_file;
+    }
+#endif
 
     void FrameworkInternal::SendResourcesToNode(ResourceType type, const void* data, std::size_t length, int clientID)
     {
