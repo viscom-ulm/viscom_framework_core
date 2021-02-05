@@ -52,9 +52,14 @@ namespace viscom {
 
         spdlog::debug("Loading projector data.");
         tinyxml2::XMLDocument doc;
-        OpenCVParserHelper::LoadXMLDocument("Projector data", GetFramework().GetConfig().projectorData_, doc);
+
         std::filesystem::path projectorDataPath(GetFramework().GetConfig().projectorData_);
-        auto alphaTexturePath = projectorDataPath.parent_path();
+        auto dataFolder = projectorDataPath.parent_path();
+        auto projectorDataPrefix = projectorDataPath.stem().string();
+        auto projectorDataExtension = projectorDataPath.extension().string();
+
+        auto projectorDataFile = GetFramework().GetMostCurrentFile(dataFolder, projectorDataPrefix, projectorDataExtension);
+        OpenCVParserHelper::LoadXMLDocument("Projector data", projectorDataFile.string(), doc);
 
         spdlog::debug("Initializing viewports.");
         auto slaveId = sgct_core::ClusterManager::instance()->getThisNodeId();
@@ -77,9 +82,9 @@ namespace viscom {
             auto viewportName = FWConfiguration::CALIBRATION_VIEWPORT_NAME + std::to_string(projectorNo);
             // check if hdr overlap file exists.
             bool isRGB = true;
-            auto texAlphaFilename = GetFramework().GetMostCurrentFile(alphaTexturePath, FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo), ".hdr");
+            auto texAlphaFilename = GetFramework().GetMostCurrentFile(dataFolder, FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo), ".hdr");
             if (texAlphaFilename.empty() || !std::filesystem::exists(texAlphaFilename)) {
-                texAlphaFilename = alphaTexturePath / (FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo) + ".bin");
+                texAlphaFilename = dataFolder / (FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo) + ".bin");
                 isRGB = false;
             }
 
@@ -138,7 +143,7 @@ namespace viscom {
                 static_cast<unsigned int>(GetFramework().GetViewportQuadSize(i).x), static_cast<unsigned int>(GetFramework().GetViewportQuadSize(i).y));
             GetFramework().GetFramebuffer(i).SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, projectorViewport_[i].size_.x, projectorViewport_[i].size_.y);
 
-            LoadAlphaTexture(i, alphaTexturePath, projectorSize, isRGB);
+            LoadAlphaTexture(i, dataFolder, projectorSize, isRGB);
 
 
             glBindTexture(GL_TEXTURE_2D, 0);

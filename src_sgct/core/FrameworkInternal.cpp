@@ -644,6 +644,7 @@ POP_WARNINGS
         for (const auto& entry : std::filesystem::directory_iterator(folder)) {
             if (entry.is_regular_file() && entry.path().extension() == extension) {
                 auto entry_filename = entry.path().stem().string();
+                if (entry_filename.size() < prefix.size()) continue;
                 if (auto match_result = std::mismatch(prefix.begin(), prefix.end(), entry_filename.begin()); match_result.first == prefix.end()) {
                     if (match_result.second == entry_filename.end()) {
                         no_prefix_result_file = entry.path();
