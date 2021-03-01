@@ -639,7 +639,6 @@ POP_WARNINGS
         // Yes well here is your year 10000 bug ... [2/4/2021 Sebastian Maisch]
         std::string best_result_timestamp = "0000-00-00_00:00:00";
         std::filesystem::path best_result_file;
-        bool found_file = false;
         std::filesystem::path no_prefix_result_file;
         for (const auto& entry : std::filesystem::directory_iterator(folder)) {
             if (entry.is_regular_file() && entry.path().extension() == extension) {
