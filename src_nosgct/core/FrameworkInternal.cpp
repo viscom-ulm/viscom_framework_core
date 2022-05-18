@@ -116,10 +116,10 @@ namespace viscom {
 
     void FrameworkInternal::BaseInitOpenGL()
     {
-        glCullFace(GL_BACK);
-        glFrontFace(GL_CCW);
-        glEnable(GL_CULL_FACE);
-        glEnable(GL_DEPTH_TEST);
+        //glCullFace(GL_BACK);
+        //glFrontFace(GL_CCW);
+        //glEnable(GL_CULL_FACE);
+        //glEnable(GL_DEPTH_TEST);
 
         viewportScreen_.resize(1);
         viewportQuadSize_.resize(1, glm::ivec2(0));
@@ -186,10 +186,10 @@ POP_WARNINGS
 
     void FrameworkInternal::BaseDrawFrame()
     {
-        glCullFace(GL_BACK);
-        glFrontFace(GL_CCW);
-        glEnable(GL_CULL_FACE);
-        glEnable(GL_DEPTH_TEST);
+        //glCullFace(GL_BACK);
+        //glFrontFace(GL_CCW);
+        //glEnable(GL_CULL_FACE);
+        //glEnable(GL_DEPTH_TEST);
         appNodeInternal_->DrawFrame(backBuffer_);
     }
 

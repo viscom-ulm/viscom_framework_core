@@ -44,9 +44,9 @@ namespace viscom {
 
     void ArcballCamera::SetCameraView(glm::vec3 eye, glm::vec3 lookat, glm::vec3 up)
     {
-        eye_ = std::move(eye);
-        lookAt_ = std::move(lookat);
-        upVector_ = std::move(up);
+        eye_ = eye;
+        lookAt_ = lookat;
+        upVector_ = up;
         UpdateViewMatrix();
     }
 
@@ -64,28 +64,17 @@ namespace viscom {
     void ArcballCamera::UpdateCamera(double elapsedTime, const ApplicationNodeBase* sender)
     {
         const auto mouseWheelSpeed = 1.0f;
-        //
         sphereRadius_ += mouseWheelDelta_ * mouseWheelSpeed;
         sphereRadius_ = glm::clamp(sphereRadius_, 1.0f, 20.0f);
-        mouseWheelDelta_ = 0.0f;
-        
         sphereAngle_ = mouseDelta_ * glm::vec2(2.0f, -1.5f);
-        
-             
+
         // reset to zero because handlemouse is not called every frame.
         mouseDelta_ = glm::vec2(0.0);
+        mouseWheelDelta_ = 0.0f;
 
-        
         // Get the homogenous position of the camera and pivot point
         glm::vec4 position(GetEye().x, GetEye().y, GetEye().z, 1);
         glm::vec4 pivot(GetLookAt().x, GetLookAt().y, GetLookAt().z, 1);
-        
-        // step 2 Rotate the camera around the view direction.
-        //auto transformation = glm::translate(-glm::vec3(pivot));
-        //transformation = glm::rotate(transformation, sphereAngle_.y, GetViewDir());
-        //transformation = glm::rotate(transformation, sphereAngle_.x, GetUpVector());
-        //transformation = glm::translate(transformation, glm::vec3(pivot));
-        //const auto finalPosition = transformation * position;
         
         // step 2: Rotate the camera around the pivot point on the first axis.
         glm::mat4x4 rotationMatrixX(1.0f);
@@ -97,17 +86,23 @@ namespace viscom {
         rotationMatrixY = glm::rotate(rotationMatrixY, sphereAngle_.y, GetRightVector());
         glm::vec4 finalPosition = (rotationMatrixY * (position - pivot)) + pivot;
 
+        // store old view matrix
+        auto eyeOld = GetEye();
+        auto lookAtOld = GetLookAt();
+        auto upOld = GetUpVector();
 
         // Update the camera view (we keep the same lookat and the same up vector)
         SetCameraView(finalPosition, GetLookAt(), GetUpVector());
-        
-                
-        auto camOrient = glm::quatLookAt(GetViewDir(), GetUpVector());
+        float v = glm::abs(glm::dot(GetViewDir(), GetUpVector()));
+        if (v > 0.99) { 
+            // reset to previous view matrix
+            SetCameraView(eyeOld, lookAtOld, upOld);
+        }         
 
+        // update internal camera helper state.
+        auto camOrient = glm::quatLookAt(GetViewDir(), GetUpVector());
         glm::mat3 matOrient{glm::mat3_cast(camOrient)};
         auto camPos = sphereRadius_ * (matOrient * baseCamPos_);
-        //auto camPos = finalPosition;
-        
         SetCameraPosition(camPos);
         SetCameraOrientation(glm::inverse(camOrient));
     }
