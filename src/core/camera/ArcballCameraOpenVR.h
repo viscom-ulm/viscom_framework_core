@@ -18,11 +18,11 @@ namespace viscom {
     /**
     * Represents a camera rotating around the origin.
     */
-    class ArcballCamera final : public CameraBase
+    class ArcballCameraOpenVR final : public CameraBase
     {
     public:
-        ArcballCamera(const glm::vec3& camPos, viscom::CameraHelper& cameraHelper) noexcept;
-        virtual ~ArcballCamera() override;
+        ArcballCameraOpenVR(const glm::vec3& camPos, viscom::CameraHelper& cameraHelper) noexcept;
+        virtual ~ArcballCameraOpenVR() override;
 
         virtual bool HandleMouse(int button, int action, float mouseWheelDelta, const ApplicationNodeBase* sender) override;
         virtual void UpdateCamera(double elapsedTime, const ApplicationNodeBase* sender) override;

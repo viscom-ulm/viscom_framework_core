@@ -1,12 +1,12 @@
 /**
- * @file   ArcballCamera.cpp
+ * @file   ArcballCameraOpenVR.cpp
  * @author Sebastian Maisch <sebastian.maisch@uni-ulm.de>
  * @date   2017.06.07
  *
  * @brief  Implementation of an arcball camera.
  */
 
-#include "ArcballCamera.h"
+#include "ArcballCameraOpenVR.h"
 
 #include "core/glfw.h"
 
@@ -24,7 +24,7 @@ namespace viscom {
      *  @param theCamPos the cameras initial position.
      *  @param cameraHelper the camera helper class.
      */
-    ArcballCamera::ArcballCamera(const glm::vec3& theCamPos, viscom::CameraHelper& cameraHelper) noexcept :
+    ArcballCameraOpenVR::ArcballCameraOpenVR(const glm::vec3& theCamPos, viscom::CameraHelper& cameraHelper) noexcept :
         CameraBase(theCamPos, cameraHelper),
         baseCamPos_{ glm::normalize(theCamPos) },
         mouseWheelDelta_{ 0.0f },
@@ -32,12 +32,12 @@ namespace viscom {
     {
     }
 
-    ArcballCamera::~ArcballCamera() = default;
+    ArcballCameraOpenVR::~ArcballCameraOpenVR() = default;
 
     /**
      *  Updates the camera parameters using the internal arc-ball.
      */
-    void ArcballCamera::UpdateCamera(double elapsedTime, const ApplicationNodeBase*)
+    void ArcballCameraOpenVR::UpdateCamera(double elapsedTime, const ApplicationNodeBase*)
     {
         const double mouseWheelSpeed = 8.0;
 
@@ -63,7 +63,7 @@ namespace viscom {
      *  @param mouseWheelDelta the change in the mousewheel rotation.
      *  @param sender the application to supply normalized screen coordinates.
      */
-    bool ArcballCamera::HandleMouse(int button, int action, float mouseWheelDelta, const ApplicationNodeBase* sender)
+    bool ArcballCameraOpenVR::HandleMouse(int button, int action, float mouseWheelDelta, const ApplicationNodeBase* sender)
     {
         bool handled = camArcball_.HandleMouse(button, action, sender);
 
@@ -75,12 +75,12 @@ namespace viscom {
         return handled;
     }
 
-    void ArcballCamera::SetCameraPosition(const glm::vec3 & position)
+    void ArcballCameraOpenVR::SetCameraPosition(const glm::vec3 & position)
     {
         CameraBase::SetCameraPosition(position - GetUserPosition());
     }
 
-    glm::vec3 ArcballCamera::GetPosition() const noexcept
+    glm::vec3 ArcballCameraOpenVR::GetPosition() const noexcept
     {
         return CameraBase::GetPosition() + GetUserPosition();
     }
