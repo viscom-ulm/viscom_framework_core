@@ -96,17 +96,21 @@ namespace viscom {
         else if (config_.openglProfile_ == "4.4") rm = sgct::Engine::OpenGL_4_4_Core_Profile;
         else if (config_.openglProfile_ == "4.5") rm = sgct::Engine::OpenGL_4_5_Core_Profile;
 
+        auto success = false;
         if (!engine_->init(rm))
         {
             spdlog::critical("Failed to create SGCT engine.");
             throw std::runtime_error("Failed to create SGCT engine.");
+        }
+        else {
+            success = true;
         }
 
         {
             std::lock_guard<std::mutex> lock{ instanceMutex_ };
             assert(instance_ == nullptr);
             instance_ = this;
-            initialized_ = true;
+            initialized_ = success;
         }
 
         sgct::SharedData::instance()->setEncodeFunction(BaseEncodeDataStatic);
@@ -133,6 +137,7 @@ namespace viscom {
         glEnable(GL_DEPTH_TEST);
 
         auto numWindows = sgct_core::ClusterManager::instance()->getThisNodePtr()->getNumberOfWindows();
+        std::cout << "Number of Windows: " << numWindows << std::endl;
         viewportScreen_.resize(numWindows);
         viewportQuadSize_.resize(numWindows, glm::ivec2(0));
         viewportScaling_.resize(numWindows, glm::vec2(1.0f));
