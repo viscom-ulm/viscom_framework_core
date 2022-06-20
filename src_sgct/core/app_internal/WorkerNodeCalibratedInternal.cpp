@@ -81,10 +81,16 @@ namespace viscom {
             auto resolutionScalingName = FWConfiguration::CALIBRATION_QUAD_RESOLUTION_SCALING_NAME + std::to_string(projectorNo);
             auto viewportName = FWConfiguration::CALIBRATION_VIEWPORT_NAME + std::to_string(projectorNo);
             // check if hdr overlap file exists.
-            bool isRGB = true;
-            auto texAlphaFilename = GetFramework().GetMostCurrentFile(dataFolder, FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo), ".hdr");
+            bool isRGB = false;
+            auto texAlphaFilename = GetFramework().GetMostCurrentFile(dataFolder, FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo), ".bin");
+            
             if (texAlphaFilename.empty() || !std::filesystem::exists(texAlphaFilename)) {
-                texAlphaFilename = dataFolder / (FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo) + ".bin");
+                spdlog::warn("Could not find Alpha Texture: (" + std::string(FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME) + std::to_string(projectorNo) + ").hdr. Loading old .bin");
+                texAlphaFilename = GetFramework().GetMostCurrentFile(dataFolder, FWConfiguration::CALIBRATION_ALPHA_TEXTURE_NAME + std::to_string(projectorNo), ".bin");
+                if (texAlphaFilename.empty() || !std::filesystem::exists(texAlphaFilename)) {
+                    spdlog::error("Could not load old .bin!");
+                    throw std::runtime_error("Could not load old .bin!");
+                }
                 isRGB = false;
             }
 
@@ -143,7 +149,7 @@ namespace viscom {
                 static_cast<unsigned int>(GetFramework().GetViewportQuadSize(i).x), static_cast<unsigned int>(GetFramework().GetViewportQuadSize(i).y));
             GetFramework().GetFramebuffer(i).SetStandardViewport(projectorViewport_[i].position_.x, projectorViewport_[i].position_.y, projectorViewport_[i].size_.x, projectorViewport_[i].size_.y);
 
-            LoadAlphaTexture(i, dataFolder, projectorSize, isRGB);
+            LoadAlphaTexture(i, texAlphaFilename, projectorSize, isRGB);
 
 
             glBindTexture(GL_TEXTURE_2D, 0);
@@ -171,6 +177,7 @@ namespace viscom {
         if (isRGB) {
             int textureSizeX = 0, textureSizeY = 0, textureComp = 0;
             float* data = stbi_loadf(file.string().c_str(), &textureSizeX, &textureSizeY, &textureComp, 0);
+
             assert(textureSizeX == projectorSize.x && textureSizeY == projectorSize.y && textureComp == 3);
 
             glBindTexture(GL_TEXTURE_2D, alphaTextures_[window]);
